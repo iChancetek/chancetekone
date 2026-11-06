@@ -1,0 +1,102 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    // Public catalog content (Read by anyone, Write by admin)
+    match /tracks/{trackId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /albums/{albumId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /artists/{artistId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /videos/{videoId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /audiobooks/{audiobookId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /merchandise/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Realtime Catalog Sync (meta doc revision nudge & collections)
+    // All writes are handled exclusively through the server route handlers via Firebase Admin SDK.
+    match /catalog_meta/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /catalog_tracks/{id} { allow read: if true; allow write: if false; }
+    match /catalog_albums/{id} { allow read: if true; allow write: if false; }
+    match /catalog_folders/{id} { allow read: if true; allow write: if false; }
+    match /catalog_crates/{id} { allow read: if true; allow write: if false; }
+    match /catalog_audiobooks/{id} { allow read: if true; allow write: if false; }
+    match /catalog_videos/{id} { allow read: if true; allow write: if false; }
+    match /catalog_podcasts/{id} { allow read: if true; allow write: if false; }
+    match /catalog_removed/{id} { allow read: if true; allow write: if false; }
+
+    // User profiles & AI memory
+    match /users/{userId} {
+      allow read: if true;
+      allow create, update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+
+      match /ai_memory/{memoryId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // User playlists
+    match /playlists/{playlistId} {
+      allow read: if resource.data.isPublic == true || isOwner(resource.data.userId);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Social Comments
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Reactions (Likes / Dislikes)
+    match /reactions/{reactionId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && (reactionId.matches('^' + request.auth.uid + '_.*') || request.resource.data.userId == request.auth.uid);
+    }
+
+    // Listening history & playback progress
+    match /listeningHistory/{historyId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+    match /playbackProgress/{progressId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // Orders
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+  }
+}

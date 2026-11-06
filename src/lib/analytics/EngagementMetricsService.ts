@@ -1,0 +1,450 @@
+'use client';
+
+import { AnalyticsEngine } from '@/lib/analytics/AnalyticsEngine';
+
+export type ContentPillar =
+  | 'music'
+  | 'video'
+  | 'audiobook'
+  | 'podcast'
+  | 'album'
+  | 'playlist'
+  | 'artist'
+  | 'producer'
+  | 'merch';
+
+export type ReactionKind = 'heart' | 'like' | 'fire';
+
+export interface AuthenticLikeEvent {
+  id: string;
+  contentId: string;
+  contentTitle: string;
+  contentType: ContentPillar;
+  reactionType: ReactionKind;
+  action: 'heart' | 'unheart' | 'like' | 'unlike' | 'fire' | 'unfire';
+  isLiked: boolean; // true = added, false = removed
+  userId: string;
+  userName: string;
+  userEmail?: string;
+  userRole?: string;
+  contextLocation: string; // where the user clicked: "Global Player Dock", "Full-Screen Player", "Track Row", "Album Page", etc.
+  timestamp: string; // ISO string
+  formattedDateTime: string; // e.g. "Oct 11, 2026, 7:52 PM"
+}
+
+export interface ContentLikeState {
+  contentId: string;
+  heartCount: number;
+  fireCount: number;
+  userReactions: Record<string, { heart?: boolean; fire?: boolean; userName?: string }>;
+}
+
+export interface EngagementSummary {
+  totalAuthenticHearts: number;
+  totalAuthenticFires: number;
+  totalInteractions: number;
+  uniqueActiveUsers: number;
+  byContentType: Record<ContentPillar, number>;
+  byContextLocation: Record<string, number>;
+  topLikedContent: {
+    contentId: string;
+    contentTitle: string;
+    contentType: ContentPillar;
+    heartCount: number;
+    fireCount: number;
+  }[];
+}
+
+const EVENTS_STORAGE_KEY = 'spades_authentic_like_events_v2';
+const COUNTS_STORAGE_KEY = 'spades_authentic_like_counts_v2';
+
+class EngagementMetricsServiceClass {
+  private events: AuthenticLikeEvent[] = [];
+  private contentCounts: Map<string, ContentLikeState> = new Map();
+  private listeners: Set<() => void> = new Set();
+
+  constructor() {
+    if (typeof window !== 'undefined') {
+      this.loadState();
+      window.addEventListener('storage', (e) => {
+        if (e.key === EVENTS_STORAGE_KEY || e.key === COUNTS_STORAGE_KEY) {
+          this.loadState();
+          this.notify();
+        }
+      });
+    }
+  }
+
+  private loadState(): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const rawEvents = localStorage.getItem(EVENTS_STORAGE_KEY);
+      if (rawEvents) {
+        const parsed = JSON.parse(rawEvents);
+        if (Array.isArray(parsed)) {
+          this.events = parsed;
+        }
+      } else {
+        this.events = [];
+      }
+    } catch (e) {
+      console.warn('Error reading authentic like events from storage:', e);
+      this.events = [];
+    }
+
+    try {
+      const rawCounts = localStorage.getItem(COUNTS_STORAGE_KEY);
+      this.contentCounts.clear();
+      if (rawCounts) {
+        const parsed: Record<string, ContentLikeState> = JSON.parse(rawCounts);
+        Object.entries(parsed).forEach(([id, state]) => {
+          this.contentCounts.set(id, state);
+        });
+      }
+    } catch (e) {
+      console.warn('Error reading authentic like counts from storage:', e);
+      this.contentCounts.clear();
+    }
+  }
+
+  private persist(): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+      // Keep last 3000 events
+      const trimmed = this.events.slice(-3000);
+      localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(trimmed));
+    } catch (e) {
+      console.warn('Failed to persist authentic like events:', e);
+    }
+
+    try {
+      const countsObj: Record<string, ContentLikeState> = {};
+      this.contentCounts.forEach((val, key) => {
+        countsObj[key] = val;
+      });
+      localStorage.setItem(COUNTS_STORAGE_KEY, JSON.stringify(countsObj));
+    } catch (e) {
+      console.warn('Failed to persist authentic like counts:', e);
+    }
+  }
+
+  private notify(): void {
+    this.listeners.forEach((cb) => {
+      try {
+        cb();
+      } catch (err) {
+        console.error('EngagementMetricsService listener error:', err);
+      }
+    });
+  }
+
+  public subscribe(cb: () => void): () => void {
+    this.listeners.add(cb);
+    return () => this.listeners.delete(cb);
+  }
+
+  /**
+   * Helper to normalize content type to standard ContentPillar
+   */
+  public normalizeContentType(type?: string): ContentPillar {
+    if (!type) return 'music';
+    const lower = type.toLowerCase();
+    if (lower.includes('video')) return 'video';
+    if (lower.includes('audiobook')) return 'audiobook';
+    if (lower.includes('podcast')) return 'podcast';
+    if (lower.includes('playlist') || lower.includes('crate')) return 'playlist';
+    if (lower.includes('album')) return 'album';
+    if (lower.includes('artist')) return 'artist';
+    if (lower.includes('producer')) return 'producer';
+    if (lower.includes('merch') || lower.includes('product')) return 'merch';
+    return 'music';
+  }
+
+  /**
+   * Record a real authentic Like / Heart / Fire interaction generated by a user
+   */
+  public recordInteraction(params: {
+    contentId: string;
+    contentTitle?: string;
+    contentType?: string;
+    reactionType?: ReactionKind;
+    action?: 'toggle' | 'add' | 'remove';
+    userId?: string;
+    userName?: string;
+    userEmail?: string;
+    userRole?: string;
+    contextLocation?: string;
+  }): { heartCount: number; fireCount: number; isLiked: boolean } {
+    const contentId = params.contentId;
+    const contentType = this.normalizeContentType(params.contentType);
+    const reactionType: ReactionKind = params.reactionType || 'heart';
+    const userId = params.userId || 'guest';
+    const userName = params.userName || (userId === 'guest' ? 'Guest Listener' : 'Registered User');
+    const userEmail = params.userEmail;
+    const userRole = params.userRole;
+    const contentTitle = params.contentTitle || `Content ${contentId}`;
+    const contextLocation = params.contextLocation || 'Platform Player';
+
+    // Get or initialize content state (BASELINE IS STRICTLY ZERO)
+    let state = this.contentCounts.get(contentId);
+    if (!state) {
+      state = {
+        contentId,
+        heartCount: 0,
+        fireCount: 0,
+        userReactions: {},
+      };
+      this.contentCounts.set(contentId, state);
+    }
+
+    if (!state.userReactions[userId]) {
+      state.userReactions[userId] = {};
+    }
+
+    const currentActive = Boolean(
+      reactionType === 'fire' ? state.userReactions[userId].fire : state.userReactions[userId].heart
+    );
+
+    let willBeActive: boolean;
+    if (params.action === 'add') {
+      willBeActive = true;
+    } else if (params.action === 'remove') {
+      willBeActive = false;
+    } else {
+      // Toggle
+      willBeActive = !currentActive;
+    }
+
+    // Update state counts
+    if (reactionType === 'fire') {
+      if (willBeActive && !currentActive) {
+        state.fireCount += 1;
+      } else if (!willBeActive && currentActive) {
+        state.fireCount = Math.max(0, state.fireCount - 1);
+      }
+      state.userReactions[userId].fire = willBeActive;
+    } else {
+      // 'heart' or 'like'
+      if (willBeActive && !currentActive) {
+        state.heartCount += 1;
+      } else if (!willBeActive && currentActive) {
+        state.heartCount = Math.max(0, state.heartCount - 1);
+      }
+      state.userReactions[userId].heart = willBeActive;
+    }
+
+    state.userReactions[userId].userName = userName;
+
+    // Build event
+    const now = new Date();
+    const actionLabel: AuthenticLikeEvent['action'] =
+      reactionType === 'fire'
+        ? willBeActive
+          ? 'fire'
+          : 'unfire'
+        : willBeActive
+        ? 'heart'
+        : 'unheart';
+
+    const event: AuthenticLikeEvent = {
+      id: `like-evt-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      contentId,
+      contentTitle,
+      contentType,
+      reactionType,
+      action: actionLabel,
+      isLiked: willBeActive,
+      userId,
+      userName,
+      userEmail,
+      userRole,
+      contextLocation,
+      timestamp: now.toISOString(),
+      formattedDateTime: now.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+      }),
+    };
+
+    // Prepend to event log
+    this.events.unshift(event);
+
+    this.persist();
+    this.notify();
+
+    // Broadcast into system-wide AnalyticsEngine telemetry
+    try {
+      AnalyticsEngine.trackEvent(willBeActive ? 'MEDIA_LIKED' : 'MEDIA_UNLIKED', {
+        contentId,
+        contentTitle,
+        contentType,
+        reactionType,
+        action: `${willBeActive ? 'Hearted' : 'Unhearted'} ${contentType} "${contentTitle}" via ${contextLocation}`,
+        resource: contentTitle,
+        resourceId: contentId,
+        userId,
+        userName,
+        userEmail,
+        platformArea: contentType === 'music' ? 'Music' : contentType === 'video' ? 'Videos' : contentType === 'audiobook' ? 'Audiobooks' : contentType === 'playlist' ? 'Playlists' : 'Admin',
+        metadata: {
+          contentId,
+          contentTitle,
+          contentType,
+          reactionType,
+          contextLocation,
+          isLiked: willBeActive,
+          heartCount: state.heartCount,
+          fireCount: state.fireCount,
+        },
+      });
+    } catch (e) {
+      console.warn('AnalyticsEngine bridge warning:', e);
+    }
+
+    return {
+      heartCount: state.heartCount,
+      fireCount: state.fireCount,
+      isLiked: willBeActive,
+    };
+  }
+
+  /**
+   * Get authentic real heart/like count for a piece of content (strictly 0 if never liked)
+   */
+  public getLikeCount(contentId: string): number {
+    const state = this.contentCounts.get(contentId);
+    return state ? state.heartCount : 0;
+  }
+
+  /**
+   * Get authentic fire count for a piece of content
+   */
+  public getFireCount(contentId: string): number {
+    const state = this.contentCounts.get(contentId);
+    return state ? state.fireCount : 0;
+  }
+
+  /**
+   * Check if user currently likes content
+   */
+  public isLikedByUser(contentId: string, userId: string = 'guest', reactionType: ReactionKind = 'heart'): boolean {
+    const state = this.contentCounts.get(contentId);
+    if (!state || !state.userReactions[userId]) return false;
+    return reactionType === 'fire'
+      ? Boolean(state.userReactions[userId].fire)
+      : Boolean(state.userReactions[userId].heart);
+  }
+
+  /**
+   * Get all recorded authentic like/heart events (chronological descending)
+   */
+  public getAllEvents(): AuthenticLikeEvent[] {
+    return [...this.events];
+  }
+
+  /**
+   * Get events filtered by content type
+   */
+  public getEventsByContentType(type: ContentPillar): AuthenticLikeEvent[] {
+    return this.events.filter((e) => e.contentType === type);
+  }
+
+  /**
+   * Comprehensive metrics summary for admin dashboard telemetry
+   */
+  public getMetricsSummary(): EngagementSummary {
+    const summary: EngagementSummary = {
+      totalAuthenticHearts: 0,
+      totalAuthenticFires: 0,
+      totalInteractions: this.events.length,
+      uniqueActiveUsers: 0,
+      byContentType: {
+        music: 0,
+        video: 0,
+        audiobook: 0,
+        podcast: 0,
+        album: 0,
+        playlist: 0,
+        artist: 0,
+        producer: 0,
+        merch: 0,
+      },
+      byContextLocation: {},
+      topLikedContent: [],
+    };
+
+    // Calculate totals across content
+    const uniqueUsersSet = new Set<string>();
+
+    this.contentCounts.forEach((st) => {
+      summary.totalAuthenticHearts += st.heartCount;
+      summary.totalAuthenticFires += st.fireCount;
+
+      Object.entries(st.userReactions).forEach(([uid, r]) => {
+        if (r.heart || r.fire) {
+          uniqueUsersSet.add(uid);
+        }
+      });
+    });
+
+    summary.uniqueActiveUsers = uniqueUsersSet.size;
+
+    // Calculate totals by content type and context location from authentic events
+    this.events.forEach((evt) => {
+      if (evt.isLiked) {
+        if (summary.byContentType[evt.contentType] !== undefined) {
+          summary.byContentType[evt.contentType]++;
+        }
+        const loc = evt.contextLocation || 'Platform';
+        summary.byContextLocation[loc] = (summary.byContextLocation[loc] || 0) + 1;
+      }
+    });
+
+    // Top liked content
+    const topItems: {
+      contentId: string;
+      contentTitle: string;
+      contentType: ContentPillar;
+      heartCount: number;
+      fireCount: number;
+    }[] = [];
+
+    this.contentCounts.forEach((st) => {
+      if (st.heartCount > 0 || st.fireCount > 0) {
+        // Find most recent title from events
+        const matchingEvt = this.events.find((e) => e.contentId === st.contentId);
+        topItems.push({
+          contentId: st.contentId,
+          contentTitle: matchingEvt?.contentTitle || st.contentId,
+          contentType: matchingEvt?.contentType || 'music',
+          heartCount: st.heartCount,
+          fireCount: st.fireCount,
+        });
+      }
+    });
+
+    topItems.sort((a, b) => b.heartCount - a.heartCount);
+    summary.topLikedContent = topItems.slice(0, 10);
+
+    return summary;
+  }
+
+  /**
+   * Admin utility to clear engagement events if needed
+   */
+  public resetEngagementLog(): void {
+    this.events = [];
+    this.contentCounts.clear();
+    this.persist();
+    this.notify();
+  }
+}
+
+export const EngagementMetricsService = new EngagementMetricsServiceClass();

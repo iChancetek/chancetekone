@@ -1,0 +1,46 @@
+{
+  "name": "8ofspadesworks",
+  "version": "1.0.0",
+  "description": "8ofspadesworks",
+  "main": "firebase.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build && node scripts/copy-standalone.js",
+    "start": "next start",
+    "test:ingestion": "tsx scripts/test-ingestion.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iChancetek/8ofspadesworks.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/iChancetek/8ofspadesworks/issues"
+  },
+  "homepage": "https://github.com/iChancetek/8ofspadesworks#readme",
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "firebase": "^12.18.0",
+    "firebase-admin": "^14.3.0",
+    "lucide-react": "^1.37.0",
+    "next": "^16.3.3",
+    "openai": "^7.8.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.4.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "autoprefixer": "^10.5.4",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
