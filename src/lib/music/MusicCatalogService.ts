@@ -556,7 +556,7 @@ export function getAuthenticCoverForTrack(
   // 8. Platform Original Creators & Labels
   if (a.includes('cipher voltage')) return '/images/quantum_break_sequence_banner.jpg';
   if (a.includes('luna brass')) return '/images/velvet_horns_tape_saturation_banner.jpg';
-  if (a.includes('sub-zero rhythm') || a.includes('sub zero')) return '/images/bronx_heritage_archive_banner.jpg';
+  if (a.includes('sub-zero rhythm') || a.includes('sub zero')) return '/images/chancetek_banner.png';
   if (a.includes('chancetek') || a.includes('chancellor')) return '/images/chancetek_banner.png';
 
   return undefined;
@@ -610,7 +610,7 @@ export function getDefaultCoverForTrack(track?: {
     t.includes('return of the break beats') ||
     (a.includes('8 of spades') || a.includes('chancetekone') && (t.includes('break') || t.includes('anthem')))
   ) {
-    return '/images/return_of_the_break_beats_master.png';
+    return '/images/chancetek_banner.png';
   }
 
   // Default for all R&B, Soul, Slow Jams, and general catalog
@@ -2568,7 +2568,7 @@ export const BREAKBEAT_ANTHEM_TRACK: Track = {
   albumId: 'album-1',
   albumTitle: 'Genesis of the Concrete Beat',
   audioUrl: '/audio/Fort_Apache.mp3',
-  coverUrl: '/images/return_of_the_break_beats_master.png',
+  coverUrl: '/images/chancetek_banner.png',
   duration: 194,
   genre: 'Hip Hop / Big Beat',
   bpm: 130,

@@ -1620,6 +1620,26 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
      - Replaced 565 user-facing occurrences of `ChanceTEKone` / `ChanceTEKOne` with `ChanceTEK One` across 114 files in `src/`, `public/sw.js`, and documentation.
      - Preserved technical domains (`chancetekone.com`, `chancetekone.us`), administrative email formats (`@chancetekone.com`, `@chancetekone.us`), social media handles (`@chancetekone`), asset paths (`/videos/chancetekone1.mp4`, `/images/chancetekone_banner.png`), and internal storage keys.
 
+### 68. Complete Elimination of Graffiti Slides & Images and Retention of Exactly Two Home Slides
+- **User Directives**:
+  1. Remove all slides that have "8 of Spades Works Presents" from the platform without replacing them. Exactly two slides should be showing on the platform.
+  2. Remove all graffiti and street-art mural imagery from across the entire platform. Zero graffiti on the platform.
+- **Architectural Implementation**:
+  1. **Strict Two-Slide Home Hero Carousel (`src/components/media/HeroBanner.tsx`)**:
+     - Purged all legacy "8 of Spades Works Presents", Bronx Archive, Quantum Break, and Velvet Horns slides.
+     - Preserved strictly two featured literature & cinematic upcoming work slides:
+       1. `Saturday Night, Sunday Morning... By Author, Kwame Thompson` (Video: `/videos/Kwame Book Promo 1.mp4`)
+       2. `Mi Vida Loca... By Author, Orlando Figueroa` (Video: `/videos/OrlandoFigueroa.mp4`)
+     - Cleaned up `getSlideCanonicalKey` and `UniversalShareModal` entity resolvers to strictly bind to these two slides.
+  2. **Physical Asset Purge & Substitution**:
+     - Replaced legacy graffiti banner files (`return_of_the_break_beats_master.png`, `chancetekone_banner.png`, `bronx_heritage_archive_banner.jpg`) directly on disk with the clean, official luxury high-tech ChanceTEK master banner (`/images/chancetek_banner.png`), eliminating any possibility of cached or link-driven graffiti exposure.
+     - Replaced `public/images/genres/hip-hop.jpg` with clean authentic vinyl turntable audio photography.
+  3. **Cover Art & Catalog Sanitization**:
+     - Updated `cover-bbx-3` in `CoverArtCatalog.ts` from subway mural / cypher to `Studio Tape Breakbeat Session` with authentic analog studio visuals.
+     - Re-routed all catalog default cover assignments in `MusicCatalogService.ts` (`getDefaultCoverForTrack`, `getAuthenticCoverForTrack`) and `mockData.ts` (`track-1`, `album-1`, `project-1`) to `/images/chancetek_banner.png`.
+     - Replaced all fallback image references in `src/app/projects/page.tsx`, `shareMetadataService.ts`, and all 9 dynamic server layouts (`/albums/[id]`, `/artists/[id]`, `/audiobooks/[id]`, `/merch/[id]`, `/music/[id]`, `/playlists/[id]`, `/podcasts/[id]`, `/projects/[id]`, `/videos/[id]`) to `/images/chancetek_banner.png`.
+
+
 
 
 

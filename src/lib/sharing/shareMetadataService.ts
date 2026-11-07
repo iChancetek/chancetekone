@@ -1,4 +1,4 @@
-﻿import { Track, Video, Audiobook, PodcastEpisode, Producer, Artist, Album, Project } from '@/types/media';
+import { Track, Video, Audiobook, PodcastEpisode, Producer, Artist, Album, Project } from '@/types/media';
 import { Product } from '@/types/commerce';
 import { Playlist } from '@/types/playlist';
 import { MusicCatalogService, getDefaultCoverForTrack } from '@/lib/music/MusicCatalogService';
@@ -198,12 +198,12 @@ export function resolveAuthenticCover(type: ShareContentType, item: any): string
     case 'project': {
       const project = item as Project;
       if (project?.id === 'project-1' || project?.id === 'return-of-the-break-beats') {
-        return '/images/return_of_the_break_beats_master.png';
+        return '/images/chancetek_banner.png';
       }
       if (project?.coverUrl && !isDefaultOrInvalidCover(project.coverUrl)) {
         return project.coverUrl;
       }
-      return '/images/return_of_the_break_beats_master.png';
+      return '/images/chancetek_banner.png';
     }
 
     default:

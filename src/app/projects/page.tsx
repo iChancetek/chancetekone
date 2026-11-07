@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -547,8 +547,8 @@ export default function ProjectsPage() {
           contentSubtitle={`${discussionProject.subtitle || ''} • Produced by ${discussionProject.producerName}`}
           coverUrl={
             discussionProject.id === 'project-1'
-              ? '/images/return_of_the_break_beats_master.png'
-              : discussionProject.coverUrl || '/images/return_of_the_break_beats_master.png'
+              ? '/images/chancetek_banner.png'
+              : discussionProject.coverUrl || '/images/chancetek_banner.png'
           }
           badgeLabel="Featured Project"
         />
@@ -567,8 +567,8 @@ export default function ProjectsPage() {
             customDescription: shareProject.description || shareProject.narrativeOverview,
             customCoverUrl:
               shareProject.id === 'project-1'
-                ? '/images/return_of_the_break_beats_master.png'
-                : shareProject.coverUrl || '/images/return_of_the_break_beats_master.png',
+                ? '/images/chancetek_banner.png'
+                : shareProject.coverUrl || '/images/chancetek_banner.png',
           }}
         />
       )}

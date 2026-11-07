@@ -10,7 +10,7 @@ export async function generateMetadata({
     const resolvedParams = params ? await Promise.resolve(params) : {};
     const id = (resolvedParams as any)?.id || '';
     const meta = resolveShareMetadataById('project', id);
-    const rawCover = meta?.coverUrl || '/images/return_of_the_break_beats_master.png';
+    const rawCover = meta?.coverUrl || '/images/chancetek_banner.png';
     const image = rawCover.startsWith('http')
       ? rawCover
       : `https://chancetekone.us${rawCover}`;
@@ -46,13 +46,13 @@ export async function generateMetadata({
         description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
         type: 'website',
         url: 'https://chancetekone.us/projects#project-1',
-        images: [{ url: 'https://chancetekone.us/images/return_of_the_break_beats_master.png' }],
+        images: [{ url: 'https://chancetekone.us/images/chancetek_banner.png' }],
       },
       twitter: {
         card: 'summary_large_image',
         title: 'THE RETURN OF THE BREAK BEATS',
         description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
-        images: ['https://chancetekone.us/images/return_of_the_break_beats_master.png'],
+        images: ['https://chancetekone.us/images/chancetek_banner.png'],
       },
     };
   }

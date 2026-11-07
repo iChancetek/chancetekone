@@ -570,10 +570,10 @@ export const COVER_ART_CATALOG: CoverArtItem[] = [
   },
   {
     id: 'cover-bbx-3',
-    title: 'Subway Train Breakdance Circle',
+    title: 'Studio Tape Breakbeat Session',
     category: 'boombox',
-    url: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&auto=format&fit=crop&q=80',
-    tags: ['bboy', 'subway', 'cypher'],
+    url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=80',
+    tags: ['breakbeat', 'studio', 'session'],
   },
   {
     id: 'cover-bbx-4',

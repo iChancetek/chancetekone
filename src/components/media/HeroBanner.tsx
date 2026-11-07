@@ -77,74 +77,6 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
       aiPrompt: 'Tell me about Mi Vida Loca... By Author, Orlando Figueroa!',
       projectHref: '/audiobooks/audiobook-1793148157988-bnzl3',
     },
-    {
-      id: 'chancetek-graph-banner',
-      badge: 'Featured Upcoming Works',
-      narrationText:
-        'Featured Upcoming Works. ChanceTEK One PRESENTS ChanceTEK: Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio by Chancellor @ ChanceTEK LLC.',
-      heading: 'ChanceTEK: The Master Series',
-      description:
-        'ChanceTEK One PRESENTS: ChanceTEK — The Master Series. Featuring Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio by Chancellor @ ChanceTEK LLC.',
-      bannerImage: '/images/chancetek_banner.png',
-      bannerAlt: 'ChanceTEK One PRESENTS CHANCETEK THE SOUND THE SCIENCE THE FUTURE',
-      aspectRatio: { width: 1024, height: 576 },
-      track: track,
-      videoHref: '/videos',
-      aiPrompt:
-        'Tell me about Chancellor @ ChanceTEK LLC, the ChanceTEK Project, Agentic AI, iSkylar, and Famio!',
-      projectHref: '/projects#project-chancetek',
-    },
-    {
-      id: 'the-bronx-heritage-archive',
-      badge: 'Featured Upcoming Works',
-      narrationText:
-        'Featured Upcoming Works. ChanceTEK One PRESENTS The Bronx Heritage Archive: Oral History and The Four Pillars of Hip-Hop. Documenting park jam sound systems and the golden era.',
-      heading: 'The Bronx Heritage Archive',
-      description:
-        'A comprehensive historical preservation documenting The Bronx, park jam sound systems, and the genesis of hip-hop.',
-      bannerImage: '/images/bronx_heritage_archive_banner.jpg',
-      bannerAlt: 'ChanceTEK One PRESENTS THE BRONX HERITAGE ARCHIVE',
-      aspectRatio: { width: 1024, height: 576 },
-      track: MusicCatalogService.getTrackById('track-2') || track,
-      videoHref: '/videos/video-6',
-      aiPrompt:
-        'Tell me about The Bronx Heritage Archive, the park jam sound systems, and oral histories of hip-hop!',
-      projectHref: '/projects#project-2',
-    },
-    {
-      id: 'quantum-break-sequence',
-      badge: 'Featured Upcoming Works',
-      narrationText:
-        'Featured Upcoming Works. ChanceTEK One PRESENTS Quantum Break Sequence: Synthetic Syncopation for Cyber Undergrounds, engineered with modular synthesis and accelerated breaks.',
-      heading: 'Quantum Break Sequence',
-      description:
-        'High-speed synthetic syncopation designed for underground cyber-arenas, electronic festivals, and late-night highway cruising.',
-      bannerImage: '/images/quantum_break_sequence_banner.jpg',
-      bannerAlt: 'ChanceTEK One PRESENTS QUANTUM BREAK SEQUENCE',
-      aspectRatio: { width: 1024, height: 576 },
-      track: MusicCatalogService.getTrackById('track-3') || track,
-      videoHref: '/videos/video-3',
-      aiPrompt:
-        'Tell me about Quantum Break Sequence by Cipher Voltage, modular synthesis, and cyber breakbeats!',
-      projectHref: '/projects#project-3',
-    },
-    {
-      id: 'velvet-horns-tape-saturation',
-      badge: 'Featured Upcoming Works',
-      narrationText:
-        'Featured Upcoming Works. ChanceTEK One PRESENTS Velvet Horns & Tape Saturation: Warm Tube Masters and 1970s Funk Grooves, recorded directly to reel-to-reel tape.',
-      heading: 'Velvet Horns & Tape Saturation',
-      description:
-        'Warm reel-to-reel master tapes, dynamic brass solos, and undeniable pocket grooves from the heart of the vinyl revolution.',
-      bannerImage: '/images/velvet_horns_tape_saturation_banner.jpg',
-      bannerAlt: 'ChanceTEK One PRESENTS VELVET HORNS & TAPE SATURATION',
-      aspectRatio: { width: 1024, height: 576 },
-      track: MusicCatalogService.getTrackById('track-4') || track,
-      videoHref: '/videos/video-4',
-      aiPrompt:
-        'Tell me about Velvet Horns & Tape Saturation by Luna Brass & The Crate Queens, 1970s funk breaks, and tape saturation!',
-      projectHref: '/projects#project-4',
-    },
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -169,18 +101,6 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
     }
     if (slide.id === 'saturday-night-sunday-morning') {
       return buildCanonicalContentKey('project', 'Saturday Night, Sunday Morning', 'Kwame Thompson');
-    }
-    if (slide.id === 'chancetek-graph-banner') {
-      return buildCanonicalContentKey('project', 'ChanceTEK The Master Series', 'Chancellor');
-    }
-    if (slide.id === 'the-bronx-heritage-archive') {
-      return buildCanonicalContentKey('project', 'The Bronx Heritage Archive', 'ChanceTEK One');
-    }
-    if (slide.id === 'quantum-break-sequence') {
-      return buildCanonicalContentKey('project', 'Quantum Break Sequence', 'Cipher Voltage');
-    }
-    if (slide.id === 'velvet-horns-tape-saturation') {
-      return buildCanonicalContentKey('project', 'Velvet Horns & Tape Saturation', 'Luna Brass & The Crate Queens');
     }
     return buildCanonicalContentKey('project', slide.heading, 'ChanceTEK One');
   }, []);
@@ -560,16 +480,6 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
                 customCreator: 'Author Kwame Thompson',
                 customDescription: currentSlide.narrationText,
                 customCoverUrl: '/images/genres/literature.jpg',
-              };
-            }
-            if (currentSlide.id === 'chancetek-graph-banner') {
-              return {
-                type: 'project',
-                id: 'project-chancetek',
-                customTitle: 'ChanceTEK: The Master Series',
-                customCreator: 'Chancellor @ ChanceTEK LLC',
-                customDescription: currentSlide.description,
-                customCoverUrl: '/images/chancetek_banner.png',
               };
             }
             return {

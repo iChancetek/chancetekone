@@ -46,13 +46,13 @@ export async function generateMetadata({
         description: 'Stream master album releases and breakbeat vinyl on ChanceTEK One.',
         type: 'website',
         url: 'https://chancetekone.us',
-        images: [{ url: 'https://chancetekone.us/images/return_of_the_break_beats_master.png' }],
+        images: [{ url: 'https://chancetekone.us/images/chancetek_banner.png' }],
       },
       twitter: {
         card: 'summary_large_image',
         title: 'ChanceTEK One',
         description: 'Stream master album releases and breakbeat vinyl on ChanceTEK One.',
-        images: ['https://chancetekone.us/images/return_of_the_break_beats_master.png'],
+        images: ['https://chancetekone.us/images/chancetek_banner.png'],
       },
     };
   }
