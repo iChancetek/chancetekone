@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — High-Performance MP3 & ID3 Parser
+ * ChanceTEK One — High-Performance MP3 & ID3 Parser
  * Native client-side and server-compatible ID3v2.3, ID3v2.4 & ID3v1 parser.
  * Extracts full metadata, embedded album artwork (APIC), audio properties, and SHA-256 checksums.
  */
@@ -406,7 +406,7 @@ function parseMetadataFromFilename(fileName: string): { title: string; artist: s
 
   // Pattern 3: "Title"
   return {
-    artist: 'ChanceTEKone',
+    artist: 'ChanceTEK One',
     title: cleanName,
   };
 }
@@ -720,7 +720,7 @@ export async function parseMP3File(
     composer,
     producer,
     copyright,
-    publisher: publisher || 'ChanceTEKone',
+    publisher: publisher || 'ChanceTEK One',
     isrc,
     durationSeconds,
     bitrateKbps,

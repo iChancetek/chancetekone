@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Tavily Search Client
+ * ChanceTEK One — Tavily Search Client
  * Real-time web search and multimedia discovery engine.
  */
 

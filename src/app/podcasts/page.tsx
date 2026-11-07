@@ -143,14 +143,14 @@ export default function PodcastsPage() {
               <span>Upload Podcast (MP3, MP4, .MOV)</span>
             </button>
             <VoiceNarrationButton
-              text="Welcome to ChanceTEKone Podcasts. Featuring episodic conversations on Agentic AI, sonic mastering, crate digging history, cultural storytelling, and independent creative sovereignty."
+              text="Welcome to ChanceTEK One Podcasts. Featuring episodic conversations on Agentic AI, sonic mastering, crate digging history, cultural storytelling, and independent creative sovereignty."
               variant="dual"
             />
           </div>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white">Podcasts & Spoken Broadcasts</h1>
         <p className="text-sm text-neutral-400 mt-1 max-w-3xl">
-          Original audio and video podcast series celebrating independent voices, beatmaker discussions, technology systems, and cultural dialogue by Chancellor @ ChanceTEK LLC and ChanceTEKone.
+          Original audio and video podcast series celebrating independent voices, beatmaker discussions, technology systems, and cultural dialogue by Chancellor @ ChanceTEK LLC and ChanceTEK One.
         </p>
       </div>
 

@@ -47,7 +47,7 @@ export type CreatorPersonaType = 'artist' | 'producer' | 'creator' | 'streamer';
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
-  title = 'Sign in to ChanceTEKone Platform',
+  title = 'Sign in to ChanceTEK One Platform',
   description = 'Access custom crates, AI memory sync, exclusive vinyl, and high-fidelity streaming.',
   initialTab = 'signin',
   onSuccess,
@@ -353,7 +353,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div className="relative w-36 h-10">
             <Image
               src="/logo.png"
-              alt="ChanceTEKone"
+              alt="ChanceTEK One"
               fill
               sizes="144px"
               className="object-contain"
@@ -510,7 +510,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     Are you an Artist, Producer, Creator, or Listener/Streamer?
                   </h4>
                   <p className="text-xs text-neutral-400">
-                    Select how you will participate on the ChanceTEKone platform.
+                    Select how you will participate on the ChanceTEK One platform.
                   </p>
                 </div>
 
@@ -664,7 +664,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         required
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
-                        placeholder="e.g. Chancellor @ ChanceTEKone"
+                        placeholder="e.g. Chancellor @ ChanceTEK One"
                         className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-brand-purple"
                       />
                     </div>
@@ -759,7 +759,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       ChanceTEKone.US — Music, Video &amp; Content Onboarding Agreement
                     </p>
                     <p className="text-neutral-300 text-[11px] leading-relaxed">
-                      Please review the agreement below. You retain 100% of your copyright. ChanceTEKone provides distribution, high-fidelity streaming, and monthly 80/20 royalty payouts. Once signed, your agreement is submitted to admin for Human-in-the-Loop review.
+                      Please review the agreement below. You retain 100% of your copyright. ChanceTEK One provides distribution, high-fidelity streaming, and monthly 80/20 royalty payouts. Once signed, your agreement is submitted to admin for Human-in-the-Loop review.
                     </p>
                   </div>
                 </div>
@@ -771,7 +771,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       Artist/Creator Distribution Agreement
                     </h5>
                     <p className="text-[11px] text-neutral-400 font-mono">
-                      ChanceTEKone • VERSION 1.0.0 • TEXAS JURISDICTION
+                      ChanceTEK One • VERSION 1.0.0 • TEXAS JURISDICTION
                     </p>
                   </div>
 
@@ -780,7 +780,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       1. Parties
                     </h6>
                     <p>
-                      This Artist/Creator Distribution Agreement (&quot;Agreement&quot;) is entered into between ChanceTEKone (&quot;ChanceTEKone.US&quot; or &quot;Platform&quot;), and the undersigned artist, producer, creator, or rights holder (&quot;Artist/Creator&quot;), collectively the &quot;Parties.&quot;
+                      This Artist/Creator Distribution Agreement (&quot;Agreement&quot;) is entered into between ChanceTEK One (&quot;ChanceTEKone.US&quot; or &quot;Platform&quot;), and the undersigned artist, producer, creator, or rights holder (&quot;Artist/Creator&quot;), collectively the &quot;Parties.&quot;
                     </p>
                   </div>
 
@@ -879,7 +879,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       required
                       value={artistMoniker}
                       onChange={(e) => setArtistMoniker(e.target.value)}
-                      placeholder="e.g. Chancellor @ ChanceTEKone"
+                      placeholder="e.g. Chancellor @ ChanceTEK One"
                       className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-brand-purple"
                     />
                   </div>
@@ -1059,7 +1059,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     Agreement Submitted • Human Review Active
                   </span>
                   <h4 className="text-xl font-black text-white">
-                    Welcome to ChanceTEKone, {artistMoniker || displayName}!
+                    Welcome to ChanceTEK One, {artistMoniker || displayName}!
                   </h4>
                   <p className="text-xs text-neutral-300 max-w-md mx-auto leading-relaxed">
                     Your {selectedRole} Distribution Agreement has been digitally signed and routed to our administrative queue for Human-in-the-Loop review.

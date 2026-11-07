@@ -90,7 +90,7 @@ export const MerchCarousel: React.FC<MerchCarouselProps> = ({ products }) => {
               )}
             </div>
             <p className="text-xs text-neutral-400 mt-0.5">
-              Limited ChanceTEKone bomber jackets, bucket hats, basketball jerseys, and apparel.
+              Limited ChanceTEK One bomber jackets, bucket hats, basketball jerseys, and apparel.
             </p>
           </div>
         </div>
@@ -206,7 +206,7 @@ export const MerchCarousel: React.FC<MerchCarouselProps> = ({ products }) => {
                 <div className="space-y-2 flex-1 flex flex-col justify-between">
                   <div>
                     <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider block">
-                      ChanceTEKone
+                      ChanceTEK One
                     </span>
                     <h3 className="text-xs sm:text-sm font-bold text-white group-hover:text-brand-gold transition-colors line-clamp-2 mt-0.5 leading-snug">
                       {prod.title}

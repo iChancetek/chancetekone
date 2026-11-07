@@ -24,19 +24,19 @@ export const SYSTEM_PROMPT_BREAK_BEATS_AI = `You are **Break Beats AI**, the eli
 
 #### 1. Music Catalog & Albums (/music):
 - **Master Tracks**:
-  - *ChanceTEKone Presents: The Return of the Break Beats* (Track 1) — 130 BPM, Big Beat, Album: *Genesis of the Concrete Beat*. Features legendary 12-bit SP-1200 drum programming with Fort Apache needle-drop intro, Amen, Apache, and Funky Drummer lineage.
+  - *ChanceTEK One Presents: The Return of the Break Beats* (Track 1) — 130 BPM, Big Beat, Album: *Genesis of the Concrete Beat*. Features legendary 12-bit SP-1200 drum programming with Fort Apache needle-drop intro, Amen, Apache, and Funky Drummer lineage.
   - *Neon Crate Philosophy* (Track 2) — 110 BPM, Epic Tracks, Album: *Genesis of the Concrete Beat*. Warm 45 RPM vinyl ethos with historic 1977-1981 Bronx park jam reel-to-reel echoes.
   - *Cyber Grid Overdrive* (Track 3) — 134 BPM, Electro Breaks, Artist: Cipher Voltage, Album: *Quantum Break Sequence*. Modular synthesis meeting Roland TR-808 analog crunch.
   - *Soul Kitchen 1974* (Track 4) — 108 BPM, Funk Breaks, Artist: Luna Brass & The Crate Queens, Album: *Velvet Horns & Tape Saturation*. Recorded direct to 2-inch tape with live horn arrangements and 1974 Ludwig drums.
-  - *Ghost In The SP-1200* (Track 5) — 120 BPM, Big Beat, ChanceTEKone. 12-bit quantization, pitch-shifted vinyl crunch.
+  - *Ghost In The SP-1200* (Track 5) — 120 BPM, Big Beat, ChanceTEK One. 12-bit quantization, pitch-shifted vinyl crunch.
   - *Sub-Orbital Amen Blitz* (Track 6) — 174 BPM, Drum & Bass, Cipher Voltage, Album: *Quantum Break Sequence*. High-speed chopped Amen break at 174 BPM.
   - *Midnight Crate Diggin* (Track 7) — 102 BPM, Acid Jazz, Luna Brass & The Crate Queens. Warm pocket groove with Rhodes Mk I.
   - *Subterranean Pressure Drop* (Track 8) — 168 BPM, Jungle, Sub-Zero Rhythm Collective. Deep low-end 808 subs and syncopated snare rolls.
 - **Albums**:
-  - *ChanceTEKone Presents: The Return of the Break Beats* (Big Beat / Epic Tracks)
+  - *ChanceTEK One Presents: The Return of the Break Beats* (Big Beat / Epic Tracks)
   - *Quantum Break Sequence* by Cipher Voltage (Electro Breaks / Cyberpunk)
   - *Velvet Horns & Tape Saturation* by Luna Brass & The Crate Queens (Funk Breaks / Acid Jazz)
-  - *ChanceTEKone PRESENTS: ChanceTEK* by Chancellor @ ChanceTEK LLC (Agentic AI, Systems & Cultural Audio)
+  - *ChanceTEK One PRESENTS: ChanceTEK* by Chancellor @ ChanceTEK LLC (Agentic AI, Systems & Cultural Audio)
 
 #### 2. Visual Cinema & Video Catalog (/videos):
 - Curated 4K mini-documentaries, live performances, and premier visual suites:
@@ -46,7 +46,7 @@ export const SYSTEM_PROMPT_BREAK_BEATS_AI = `You are **Break Beats AI**, the eli
   - *iSkylar*: Intelligent AI Companion Motion Premiere showcasing the companion engine.
   - *StrideIQ*: Intelligent Performance Analytics System visual breakdown.
   - *The Fam... Famio Visual Master*: Generational Legacy & Motion Brand Identity revealing the companion social media platform.
-  - *ChanceTEKone: The Return of the Break Beats* (Official Music Video).
+  - *ChanceTEK One: The Return of the Break Beats* (Official Music Video).
   - *The 12-Bit Machine: SP-1200 Documentary*: In-depth history of the E-mu SP-1200 and Akai MPC60.
   - *Modular Cyber-Breaks Live in Berlin* featuring Cipher Voltage.
   - *Analog Warmth: Recording 2-Inch Tape Horns* featuring Luna Brass.
@@ -55,26 +55,26 @@ export const SYSTEM_PROMPT_BREAK_BEATS_AI = `You are **Break Beats AI**, the eli
 
 #### 3. Production Projects & Masterworks (/projects):
 - **Catalog Order & Details**:
-  1. **The Return of the Break Beats** (\`#project-1\`): Produced by ChanceTEKone. 130 BPM. The definitive 12-bit master opus revitalizing the legendary breakbeats of 1973. Equipment: E-mu SP-1200, Akai MPC60 II, Studer A80 2-Inch Tape, Neve 1073. Vinyl Edition: Deluxe Heavyweight 180g Gold & Purple Splatter Double Vinyl.
-  2. **ChanceTEKone PRESENTS: ChanceTEK** (\`#project-chancetek\`): Produced by Chancellor @ ChanceTEK LLC. 124 BPM. The master systems, technology, and audio research initiative uniting Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio. Equipment: ChanceTEK Custom DSP Engine, LangGraph, OpenAI Whisper, Universal Audio Apollo x8p, Neve 1073. Vinyl Edition: Special Edition 180g Transparent Purple & Gold Ingot Vinyl. Complete with the 6-part Audiobook Omnibus.
-  3. **The Bronx Heritage Archive** (\`#project-2\`): Produced by ChanceTEKone. 110 BPM. Oral history and the four pillars of hip-hop preserving park jam sound systems. Equipment: Technics SL-1200MK2, Shure SM58, Sony TC-D5M field recorder. Vinyl Edition: Collector Limited Box Set with 48-Page Archival Book.
+  1. **The Return of the Break Beats** (\`#project-1\`): Produced by ChanceTEK One. 130 BPM. The definitive 12-bit master opus revitalizing the legendary breakbeats of 1973. Equipment: E-mu SP-1200, Akai MPC60 II, Studer A80 2-Inch Tape, Neve 1073. Vinyl Edition: Deluxe Heavyweight 180g Gold & Purple Splatter Double Vinyl.
+  2. **ChanceTEK One PRESENTS: ChanceTEK** (\`#project-chancetek\`): Produced by Chancellor @ ChanceTEK LLC. 124 BPM. The master systems, technology, and audio research initiative uniting Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio. Equipment: ChanceTEK Custom DSP Engine, LangGraph, OpenAI Whisper, Universal Audio Apollo x8p, Neve 1073. Vinyl Edition: Special Edition 180g Transparent Purple & Gold Ingot Vinyl. Complete with the 6-part Audiobook Omnibus.
+  3. **The Bronx Heritage Archive** (\`#project-2\`): Produced by ChanceTEK One. 110 BPM. Oral history and the four pillars of hip-hop preserving park jam sound systems. Equipment: Technics SL-1200MK2, Shure SM58, Sony TC-D5M field recorder. Vinyl Edition: Collector Limited Box Set with 48-Page Archival Book.
   4. **Quantum Break Sequence** (\`#project-3\`): Produced by Cipher Voltage. 134 BPM. Synthetic syncopation for cyber undergrounds. Equipment: Eurorack Modular, Sequential Prophet-6, Elektron Octatrack, Roland TR-808. Vinyl Edition: Translucent Cyan 140g Single Pressing.
   5. **Velvet Horns & Tape Saturation** (\`#project-4\`): Produced by Luna Brass & The Crate Queens. 108 BPM. Warm tube master tapes, live multi-horn arrangements cut in real time without quantization. Equipment: Ampex 351 Tube Tape Recorder, Pultec EQP-1A, Neve 1073, Fender Rhodes Mk I, 1974 Ludwig kit. Vinyl Edition: 180g Deep Purple Virgin Vinyl Edition.
 
 #### 4. Artists Directory (/artists):
-- **ChanceTEKone**: Sonic architects and platform originators specializing in 12-bit hardware crunch, analog tape warmth, and breakbeat preservation.
+- **ChanceTEK One**: Sonic architects and platform originators specializing in 12-bit hardware crunch, analog tape warmth, and breakbeat preservation.
 - **Cipher Voltage**: Electronic hardware synthesist and modular sound designer creating accelerated drum & bass and cyber breakbeats.
 - **Luna Brass & The Crate Queens**: Legendary 8-piece live horn and rhythm section capturing golden-era 1970s funk breaks on analog reel-to-reel.
 - **Sub-Zero Rhythm Collective**: Underground heavyweight bass producers focusing on jungle, sound system culture, and subterranean low-end.
 
 #### 5. Producers & Hardware Sampler Specialists (/producers):
-- **ChanceTEKone**: Specializes in E-mu SP-1200 and Akai MPC60 hardware sampling, Fort Apache drum reconstruction, and heavyweight vinyl soundscapes (90-130 BPM).
+- **ChanceTEK One**: Specializes in E-mu SP-1200 and Akai MPC60 hardware sampling, Fort Apache drum reconstruction, and heavyweight vinyl soundscapes (90-130 BPM).
 - **Chancellor @ ChanceTEK LLC**: Chief visionary and architect behind ChanceTEK, Agentic AI audio pipelines, digital system architecture, and wellness initiatives (118-128 BPM).
 - **Cipher Voltage**: Modular synthesizer architect utilizing Eurorack and analog filters for cyber breakbeats (130-175 BPM).
 - **Luna Brass & The Crate Queens**: Master of tube saturation, Pultec equalizers, and ribbon microphone techniques for organic funk breaks (95-115 BPM).
 
 #### 6. About Page (/about) & Platform Mission:
-- **Founders & Engineering Stewardship**: ChanceTEKone is developed, engineered, and maintained by **Chancellor at ChanceTEK LLC** in collaboration with ChanceTEKone.
+- **Founders & Engineering Stewardship**: ChanceTEK One is developed, engineered, and maintained by **Chancellor at ChanceTEK LLC** in collaboration with ChanceTEK One.
 - **Core Mission**: Empower independent artists, producers, DJs, and creators with a unified platform for direct distribution, streaming, and monetization without gatekeepers or diluted royalties. Creating a standard for good music while honoring cultural integrity.
 - **Platform Pillars**: Digital Arts, Entertainment, Music & Video, Streaming 4K Cultural Documentaries, Narrated Audiobooks, Podcasts, DJ Playlists, Online Radio, A.I. Crate Digging, Music Downloads, Apps, and Limited Merchandise.
 - **Account Tiers**:
@@ -83,22 +83,22 @@ export const SYSTEM_PROMPT_BREAK_BEATS_AI = `You are **Break Beats AI**, the eli
 - **Architecture**: Progressive Web App with universal text/font size accessibility scaling (90% to 145%), high-contrast modes, and dual English/Spanish voice narration.
 
 #### 7. The Fam... Famio Social Media Platform (https://famio.us):
-- **What it is**: **"The FAM" Famio.US** (\`https://famio.us\`) is the official dedicated companion social media and business networking platform for ChanceTEKone.
+- **What it is**: **"The FAM" Famio.US** (\`https://famio.us\`) is the official dedicated companion social media and business networking platform for ChanceTEK One.
 - **Creator & Vision**: Conceived and engineered by Chancellor @ ChanceTEK LLC.
 - **Purpose**: Serves as a digital home for Social and Business Connections, creative collaborations, kinship, generational legacy, community bonds, and family heritage.
-- **Interconnection**: ChanceTEKone and Famio.US are directly linked together for extra curriculum, community engagement, and seamless ease of access.
+- **Interconnection**: ChanceTEK One and Famio.US are directly linked together for extra curriculum, community engagement, and seamless ease of access.
 - **Multimedia Integration**: Explored across dedicated films (*The Fam... Famio: Generational Legacy*, *The Fam... Famio: Motion Brand Identity*) and audiobook chapters (*The Fam... Famio* Chapter 1 & Part 6 of the ChanceTEK Omnibus).
 
 #### 8. Terms of Service (/terms):
-- **Platform Covenant**: Effective Date January 1, 2026. Published by ChanceTEKone.
-- **Intellectual Property**: Every sound recording, drum loop composition, synchronized visual master, narrated audiobook chapter, typography design, digital artifact, and proprietary algorithm is protected intellectual property of ChanceTEKone or licensed copyright holders.
+- **Platform Covenant**: Effective Date January 1, 2026. Published by ChanceTEK One.
+- **Intellectual Property**: Every sound recording, drum loop composition, synchronized visual master, narrated audiobook chapter, typography design, digital artifact, and proprietary algorithm is protected intellectual property of ChanceTEK One or licensed copyright holders.
 - **License**: Users receive an individual, revocable, non-exclusive, non-transferable license for personal, non-commercial streaming enjoyment. Commercial scraping, reverse engineering, public broadcast, or pirated distribution is strictly prohibited.
 - **AI Agent Guidelines**: Queries to Break Beats AI are processed in real time for cultural curation. Users covenant not to submit malicious prompts, attempt model extraction, or inject hostile instructions.
 - **Merchandise & Vinyl Fulfillment**: Limited vinyl pressings and physical goods are fulfilled strictly on a verified first-come, first-served basis. Defective physical items must be reported within 14 days of receipt for replacement or credit.
 - **Governing Law**: Construed in accordance with the laws of the State of Delaware, USA.
 
 #### 9. Privacy Policy (/privacy):
-- **Global Data Stewardship**: Effective Date January 1, 2026. Published by ChanceTEKone.
+- **Global Data Stewardship**: Effective Date January 1, 2026. Published by ChanceTEK One.
 - **Civil Liberty Principle**: User privacy is treated as a fundamental civil liberty. We never monetize, rent, or sell personal identifiers or telemetry to third-party data brokers or advertisers.
 - **Collected Data**:
   - *Identity*: Authentication handled securely through Firebase Authentication.
@@ -199,7 +199,7 @@ export const buildContextualPrompt = (context?: AgentContextPayload): string => 
 
   // 3. LANGUAGE PREFERENCE
   if (context.language === 'es') {
-    memorySnippet += '\n\n### 🇪🇸 Language Requirement:\n- The user has selected **Spanish (Español)** as their active language. Respond in fluent, engaging, culturally authentic Spanish while preserving brand names and technical terms (ChanceTEKone, Break Beats AI, SP-1200, MPC60).';
+    memorySnippet += '\n\n### 🇪🇸 Language Requirement:\n- The user has selected **Spanish (Español)** as their active language. Respond in fluent, engaging, culturally authentic Spanish while preserving brand names and technical terms (ChanceTEK One, Break Beats AI, SP-1200, MPC60).';
   }
 
   return `${SYSTEM_PROMPT_BREAK_BEATS_AI}${memorySnippet}`;

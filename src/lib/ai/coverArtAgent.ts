@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Autonomous Agentic AI Cover Art Specialist
+ * ChanceTEK One — Autonomous Agentic AI Cover Art Specialist
  * An autonomous agent that searches the internet using Tavily to find authentic
  * cover art for artists, albums, and MP3 tracks, and embeds/attaches it across
  * the MP3 binaries, albums, folders, and platform catalog.

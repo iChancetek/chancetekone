@@ -44,7 +44,7 @@ export const DEFAULT_INITIAL_FACTS: MemoryFact[] = [
 
 export const createDefaultLongTermMemory = (userId: string = 'default-user', userName?: string): LongTermMemory => ({
   userId,
-  userName: userName || 'ChanceTEKone',
+  userName: userName || 'ChanceTEK One',
   tasteProfile: { ...DEFAULT_TASTE_PROFILE },
   explicitFacts: [...DEFAULT_INITIAL_FACTS],
   historicalSummary: 'Passionate breakbeat explorer, crate digger, and hip-hop culture enthusiast.',

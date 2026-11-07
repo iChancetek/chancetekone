@@ -66,8 +66,8 @@ export default function ArtistDetailPage() {
   const artist: Artist = matchingMock || {
     id: artistId,
     name: fallbackName,
-    label: artistTracks[0]?.label || 'ChanceTEKone',
-    bio: `Official artist profile and discography on ChanceTEKone.`,
+    label: artistTracks[0]?.label || 'ChanceTEK One',
+    bio: `Official artist profile and discography on ChanceTEK One.`,
     avatarUrl:
       artistTracks[0]?.coverUrl && !artistTracks[0].coverUrl.includes('logo.png') && !artistTracks[0].coverUrl.includes('chancetekone_banner.png')
         ? artistTracks[0].coverUrl

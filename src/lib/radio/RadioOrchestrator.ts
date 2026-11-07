@@ -1,5 +1,5 @@
 ﻿// ============================================================
-// Radio Orchestrator — ChanceTEKone
+// Radio Orchestrator — ChanceTEK One
 // Central coordinator for all 6 AI radio agents.
 // Manages dual-station lifecycle, queue automation, and telemetry.
 // ============================================================

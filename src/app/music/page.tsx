@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import Image from 'next/image';
@@ -61,7 +61,7 @@ const GENRE_ARTWORKS: Record<string, GenreArtworkInfo> = {
   Genre: {
     name: 'The Crates & Diggin Vault',
     artwork: '/images/genres/all-genres.jpg',
-    tagline: 'ChanceTEKone Master Audio Vault',
+    tagline: 'ChanceTEK One Master Audio Vault',
     description:
       'Explore authentic vinyl chops, heavyweight breakbeats, soulful chord progressions, and modern club anthems across the entire multi-genre sound spectrum.',
     accent: '#ffd700',
@@ -74,7 +74,7 @@ const GENRE_ARTWORKS: Record<string, GenreArtworkInfo> = {
     artwork: '/images/genres/hip-hop.jpg',
     tagline: 'SP-1200 Boom Bap & Street Turntablism',
     description:
-      'Raw spray-can graffiti culture, rhythmic vinyl scratching, heavy 12-bit kick drums, and unfiltered lyricism from the concrete trenches.',
+      'Raw street culture, rhythmic vinyl scratching, heavy 12-bit kick drums, and unfiltered lyricism from the concrete trenches.',
     accent: '#c084fc',
     badge: 'Raw Street Heat',
     bpmRange: '90 - 132 BPM',

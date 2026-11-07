@@ -71,7 +71,7 @@ export const ContextualAIRecommendations: React.FC<ContextualAIRecommendationsPr
         body: JSON.stringify({
           currentMedia,
           userContext: {
-            name: profile?.name || 'ChanceTEKone',
+            name: profile?.name || 'ChanceTEK One',
             explicitFacts: memory.explicitFacts,
             tasteProfile: memory.tasteProfile,
           },

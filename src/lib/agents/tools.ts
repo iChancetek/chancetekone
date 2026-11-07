@@ -133,11 +133,11 @@ export const executeAgentTool = async (
       const topic = (args.topic || '').toLowerCase();
       let details = '';
       if (topic.includes('famio') || topic.includes('fam') || topic.includes('social')) {
-        details = `The Fam... Famio (https://famio.us): The official companion social media and business networking platform for ChanceTEKone, created by Chancellor @ ChanceTEK LLC. Built for kinship, creative collaboration, social connection, and community legacy. Both platforms are linked for extra curriculum and ease of access.`;
+        details = `The Fam... Famio (https://famio.us): The official companion social media and business networking platform for ChanceTEK One, created by Chancellor @ ChanceTEK LLC. Built for kinship, creative collaboration, social connection, and community legacy. Both platforms are linked for extra curriculum and ease of access.`;
       } else if (topic.includes('about') || topic.includes('mission') || topic.includes('origin')) {
-        details = `About ChanceTEKone (/about): A cultural & sonic platform for Independent Artists and Creators developed by Chancellor @ ChanceTEK LLC & ChanceTEKone. Features direct distribution, streaming, and monetization without gatekeepers. Dual tiers: Account Holders and Members with audience Donation support.`;
+        details = `About ChanceTEK One (/about): A cultural & sonic platform for Independent Artists and Creators developed by Chancellor @ ChanceTEK LLC & ChanceTEK One. Features direct distribution, streaming, and monetization without gatekeepers. Dual tiers: Account Holders and Members with audience Donation support.`;
       } else if (topic.includes('term') || topic.includes('covenant') || topic.includes('license') || topic.includes('copyright')) {
-        details = `Terms of Service (/terms): Platform Covenant effective Jan 1, 2026. All audio, visual, and algorithmic media is protected IP of ChanceTEKone. Users receive an individual personal non-commercial license. Limited vinyl pressings fulfilled first-come, first-served. Delaware jurisdiction.`;
+        details = `Terms of Service (/terms): Platform Covenant effective Jan 1, 2026. All audio, visual, and algorithmic media is protected IP of ChanceTEK One. Users receive an individual personal non-commercial license. Limited vinyl pressings fulfilled first-come, first-served. Delaware jurisdiction.`;
       } else if (topic.includes('privacy') || topic.includes('data') || topic.includes('security')) {
         details = `Privacy Policy (/privacy): Data Stewardship effective Jan 1, 2026. Privacy is a civil liberty. Zero monetization or selling of personal data. Dual-memory stored with client-side isolation and user-controlled deletion. Full user data sovereignty.`;
       } else if (topic.includes('support') || topic.includes('contact') || topic.includes('help') || topic.includes('concierge')) {
@@ -145,7 +145,7 @@ export const executeAgentTool = async (
       } else if (topic.includes('project') || topic.includes('masterwork')) {
         details = `Projects (/projects): Explore production masterworks: 1) The Return of the Break Beats (12-bit SP-1200), 2) ChanceTEK (Agentic AI, iSkylar, Famio), 3) The Bronx Heritage Archive (oral history & park jams), 4) Quantum Break Sequence (cyber electro breaks), and 5) Velvet Horns & Tape Saturation (2-inch analog tape funk).`;
       } else if (topic.includes('producer') || topic.includes('gear') || topic.includes('sp-1200') || topic.includes('mpc')) {
-        details = `Producers (/producers): Discover sonic architects shaping the breakbeat renaissance: ChanceTEKone, Chancellor @ ChanceTEK LLC, Cipher Voltage, and Luna Brass & The Crate Queens.`;
+        details = `Producers (/producers): Discover sonic architects shaping the breakbeat renaissance: ChanceTEK One, Chancellor @ ChanceTEK LLC, Cipher Voltage, and Luna Brass & The Crate Queens.`;
       } else if (topic.includes('music') || topic.includes('stream') || topic.includes('track') || topic.includes('bpm')) {
         details = `Music Streaming: Explore the /music crate to stream high-definition breakbeat tracks, filter by BPM tempo (from 85 to 140+ BPM), view live waveforms, check lyrics, and inspect Sample DNA.`;
       } else if (topic.includes('video') || topic.includes('documentary')) {
@@ -243,7 +243,7 @@ export const executeAgentTool = async (
         description: args.description || 'AI-curated breakbeat session',
         type: args.type || 'music',
         ownerId: userId,
-        ownerName: 'ChanceTEKone',
+        ownerName: 'ChanceTEK One',
         visibility: args.visibility || 'public',
       });
 
@@ -479,7 +479,7 @@ export const executeAgentTool = async (
       const topic = args.topic || 'about';
       const policies: Record<string, any> = {
         about: {
-          title: 'About ChanceTEKone',
+          title: 'About ChanceTEK One',
           path: '/about',
           mission:
             'A sovereign digital stage and living sonic archive engineered for independent artists, producers, beatmakers, and crate diggers. Built to eliminate extractive middlemen and streaming gatekeepers, allowing creators to distribute music, video, and physical artifacts directly to their audience.',
@@ -495,11 +495,11 @@ export const executeAgentTool = async (
           url: 'https://famio.us',
           architect: 'Chancellor @ ChanceTEK LLC',
           description:
-            'The Fam... Famio is the official companion social media and business networking platform linked to ChanceTEKone. Engineered for family connection, creator collaboration, and professional networking without intrusive algorithms or data exploitation.',
+            'The Fam... Famio is the official companion social media and business networking platform linked to ChanceTEK One. Engineered for family connection, creator collaboration, and professional networking without intrusive algorithms or data exploitation.',
           features: [
             'Family circles & generational audio heritage reels.',
             'Creative and business networking for independent artists and engineers.',
-            'Direct cross-platform integration with the ChanceTEKone crate ecosystem.',
+            'Direct cross-platform integration with the ChanceTEK One crate ecosystem.',
           ],
         },
         terms: {
@@ -507,7 +507,7 @@ export const executeAgentTool = async (
           path: '/terms',
           effectiveDate: 'January 1, 2026',
           keyPoints: [
-            'Intellectual Property: All master recordings, stems, 4K video footage, liner notes, and visual artwork remain the exclusive intellectual property of ChanceTEKone and respective creators.',
+            'Intellectual Property: All master recordings, stems, 4K video footage, liner notes, and visual artwork remain the exclusive intellectual property of ChanceTEK One and respective creators.',
             'License: Account holders receive a revocable, non-exclusive, non-transferable personal license to stream and download for personal non-commercial listening.',
             'AI Integrity & Provenance: Break Beats AI provides curatorial and educational insights only. Scraping or unauthorized AI model training on audio stems is prohibited.',
             'Physical Goods & Vinyl: Limited edition vinyl pressings are fulfilled on a first-come, first-served basis with certified proof of inspection.',
@@ -562,7 +562,7 @@ export const executeAgentTool = async (
         pwa: {
           title: 'Progressive Web App Architecture',
           description:
-            'ChanceTEKone is engineered as an installable PWA for iOS, Android, macOS, and Windows. It features service-worker caching for full offline audio playback, dynamic typography scaling (90%-145%), and custom AudioWorklet DSP processing.',
+            'ChanceTEK One is engineered as an installable PWA for iOS, Android, macOS, and Windows. It features service-worker caching for full offline audio playback, dynamic typography scaling (90%-145%), and custom AudioWorklet DSP processing.',
         },
       };
 

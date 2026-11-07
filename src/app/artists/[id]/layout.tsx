@@ -26,7 +26,7 @@ export async function generateMetadata({
         images: [
           {
             url: image,
-            alt: `${meta.title} on ChanceTEKone`,
+            alt: `${meta.title} on ChanceTEK One`,
           },
         ],
       },
@@ -39,19 +39,19 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: 'ChanceTEKone — Featured Recording Artist',
-      description: 'Stream original artist discography, master singles, and studio albums on ChanceTEKone.',
+      title: 'ChanceTEK One — Featured Recording Artist',
+      description: 'Stream original artist discography, master singles, and studio albums on ChanceTEK One.',
       openGraph: {
-        title: 'ChanceTEKone',
-        description: 'Stream original artist discography, master singles, and studio albums on ChanceTEKone.',
+        title: 'ChanceTEK One',
+        description: 'Stream original artist discography, master singles, and studio albums on ChanceTEK One.',
         type: 'profile',
         url: 'https://chancetekone.us',
         images: [{ url: 'https://chancetekone.us/images/return_of_the_break_beats_master.png' }],
       },
       twitter: {
         card: 'summary_large_image',
-        title: 'ChanceTEKone',
-        description: 'Stream original artist discography, master singles, and studio albums on ChanceTEKone.',
+        title: 'ChanceTEK One',
+        description: 'Stream original artist discography, master singles, and studio albums on ChanceTEK One.',
         images: ['https://chancetekone.us/images/return_of_the_break_beats_master.png'],
       },
     };

@@ -20,23 +20,23 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  applicationName: 'ChanceTEKone',
+  applicationName: 'ChanceTEK One',
   title: {
-    default: 'ChanceTEKone — Agentic AI Entertainment Platform',
-    template: '%s · ChanceTEKone',
+    default: 'ChanceTEK One — Agentic AI Entertainment Platform',
+    template: '%s · ChanceTEK One',
   },
   description:
-    'Experience next-generation breakbeat music, 4K videos, audiobooks, exclusive vinyl merch, and Agentic AI curation with ChanceTEKone.',
+    'Experience next-generation breakbeat music, 4K videos, audiobooks, exclusive vinyl merch, and Agentic AI curation with ChanceTEK One.',
   openGraph: {
-    title: 'ChanceTEKone — Agentic AI Entertainment Platform',
+    title: 'ChanceTEK One — Agentic AI Entertainment Platform',
     description:
       'Experience next-generation breakbeat music, 4K videos, audiobooks, exclusive vinyl merch, and Agentic AI curation.',
-    siteName: 'ChanceTEKone',
+    siteName: 'ChanceTEK One',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChanceTEKone — Agentic AI Entertainment Platform',
+    title: 'ChanceTEK One — Agentic AI Entertainment Platform',
     description:
       'Experience next-generation breakbeat music, 4K videos, audiobooks, exclusive vinyl merch, and Agentic AI curation.',
   },
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'ChanceTEKone',
+    title: 'ChanceTEK One',
   },
   formatDetection: {
     telephone: false,

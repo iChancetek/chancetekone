@@ -330,7 +330,7 @@ export default function CreatorStudioPage() {
                   <Sparkles className="w-3 h-3 text-brand-gold" />
                   Official Creator Studio
                 </span>
-                <span className="text-xs text-neutral-400 font-mono">ChanceTEKone</span>
+                <span className="text-xs text-neutral-400 font-mono">ChanceTEK One</span>
               </div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight">
                 Creator Upload &amp; Publishing Portal
@@ -694,7 +694,7 @@ export default function CreatorStudioPage() {
                   />
                   <div className="text-xs text-neutral-200 leading-relaxed">
                     <strong className="text-brand-gold block mb-0.5">Mandatory Copyright &amp; Master Ownership Certification *</strong>
-                    I certify that I am the sole author, creator, or authorized rightsholder of this creative work. I declare that I own or control 100% of the copyrights and master recording rights, and authorize ChanceTEKone to review and publish this content upon administrative approval.
+                    I certify that I am the sole author, creator, or authorized rightsholder of this creative work. I declare that I own or control 100% of the copyrights and master recording rights, and authorize ChanceTEK One to review and publish this content upon administrative approval.
                   </div>
                 </label>
               </div>
@@ -881,7 +881,7 @@ export default function CreatorStudioPage() {
                         <div className="text-neutral-400">
                           {sub.publicationStatus === 'published' ? (
                             <span className="text-emerald-400 font-bold flex items-center gap-1">
-                              ✓ Live on ChanceTEKone Streaming Catalog
+                              ✓ Live on ChanceTEK One Streaming Catalog
                             </span>
                           ) : (
                             <span>Holding privately until reviewed</span>

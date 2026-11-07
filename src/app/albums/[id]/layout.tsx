@@ -39,19 +39,19 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: 'ChanceTEKone — Studio Album',
-      description: 'Stream master album releases and breakbeat vinyl on ChanceTEKone.',
+      title: 'ChanceTEK One — Studio Album',
+      description: 'Stream master album releases and breakbeat vinyl on ChanceTEK One.',
       openGraph: {
-        title: 'ChanceTEKone',
-        description: 'Stream master album releases and breakbeat vinyl on ChanceTEKone.',
+        title: 'ChanceTEK One',
+        description: 'Stream master album releases and breakbeat vinyl on ChanceTEK One.',
         type: 'website',
         url: 'https://chancetekone.us',
         images: [{ url: 'https://chancetekone.us/images/return_of_the_break_beats_master.png' }],
       },
       twitter: {
         card: 'summary_large_image',
-        title: 'ChanceTEKone',
-        description: 'Stream master album releases and breakbeat vinyl on ChanceTEKone.',
+        title: 'ChanceTEK One',
+        description: 'Stream master album releases and breakbeat vinyl on ChanceTEK One.',
         images: ['https://chancetekone.us/images/return_of_the_break_beats_master.png'],
       },
     };

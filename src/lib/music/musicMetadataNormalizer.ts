@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Music Metadata & Stream Normalizer
+ * ChanceTEK One — Music Metadata & Stream Normalizer
  * 
  * Centralized, authoritative normalizer for:
  * 1. Resolving full track titles (fixing track numbers like '01', '08', raw filenames, and OneDrive artifacts).
@@ -382,14 +382,14 @@ export const CANONICAL_ALBUM_REGISTRY: CanonicalMetadataMatch[] = [
   // Platform Originals & Creators
   {
     match: (a, t) =>
-      a.includes('ChanceTEKone') ||
+      a.includes('ChanceTEK One') ||
       t.includes('break beats') ||
       t.includes('neon crate') ||
       t.includes('sp-1200') ||
       t.includes('dembow underground') ||
       t.includes('concrete amplifier'),
     album: 'Genesis of the Concrete Beat',
-    artist: 'ChanceTEKone',
+    artist: 'ChanceTEK One',
   },
   {
     match: (a, t) =>
@@ -421,7 +421,7 @@ export const CANONICAL_ALBUM_REGISTRY: CanonicalMetadataMatch[] = [
   },
   {
     match: (a) => a.includes('chancetek') || a.includes('chancellor'),
-    album: 'ChanceTEKone PRESENTS: ChanceTEK',
+    album: 'ChanceTEK One PRESENTS: ChanceTEK',
     artist: 'Chancellor @ ChanceTEK LLC',
   },
 ];
@@ -547,7 +547,7 @@ export function normalizeArtistName(rawArtist?: string, title?: string): string 
   if (!a || a.toLowerCase() === 'unknown' || a.toLowerCase() === 'unknown artist') {
     const match = CANONICAL_ALBUM_REGISTRY.find((m) => m.match('', t));
     if (match) return match.artist;
-    return 'ChanceTEKone';
+    return 'ChanceTEK One';
   }
 
   const low = a.toLowerCase();
@@ -588,7 +588,7 @@ export function normalizeArtistName(rawArtist?: string, title?: string): string 
   if (low.includes('luna brass')) return 'Luna Brass & The Crate Queens';
   if (low.includes('sub-zero') || low.includes('sub zero')) return 'Sub-Zero Rhythm Collective';
   if (low.includes('chancetek') || low.includes('chancellor')) return 'Chancellor @ ChanceTEK LLC';
-  if (low.includes('8 of spades') || low.includes('chancetekone')) return 'ChanceTEKone';
+  if (low.includes('8 of spades') || low.includes('chancetekone')) return 'ChanceTEK One';
 
   return a;
 }

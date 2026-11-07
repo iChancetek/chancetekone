@@ -29,12 +29,12 @@ export const PWAInstallBanner: React.FC = () => {
     <div className="fixed bottom-20 md:bottom-24 left-4 md:left-80 z-30 animate-in slide-in-from-bottom duration-300">
       <div className="flex items-center gap-3 p-3 sm:p-3.5 rounded-2xl glass-panel bg-[#120e24]/95 border border-brand-gold/40 shadow-[0_15px_50px_rgba(0,0,0,0.8)] backdrop-blur-xl max-w-sm sm:max-w-md">
         <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-brand-gold/40 shrink-0">
-          <Image src="/logo.png" alt="ChanceTEKone" fill sizes="40px" className="object-cover" />
+          <Image src="/logo.png" alt="ChanceTEK One" fill sizes="40px" className="object-cover" />
         </div>
 
         <div className="flex-1 min-w-0">
           <p className="text-[11px] font-bold text-brand-gold tracking-tight truncate">
-            ChanceTEKone
+            ChanceTEK One
           </p>
           <div className="flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-brand-gold shrink-0" />

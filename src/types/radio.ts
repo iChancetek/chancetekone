@@ -1,5 +1,5 @@
 ﻿// ============================================================
-// Radio Domain Types — ChanceTEKone Agentic AI Radio
+// Radio Domain Types — ChanceTEK One Agentic AI Radio
 // ============================================================
 
 export type RadioStationId = 'hip-hop' | 'neo-soul';

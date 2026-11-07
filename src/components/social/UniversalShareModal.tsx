@@ -407,7 +407,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
 
         {/* Footer */}
         <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400 relative z-10">
-          <span className="text-[11px] font-mono text-neutral-400">ChanceTEKone Universal Social Suite</span>
+          <span className="text-[11px] font-mono text-neutral-400">ChanceTEK One Universal Social Suite</span>
           <button
             onClick={onClose}
             className="px-4 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition-colors cursor-pointer"

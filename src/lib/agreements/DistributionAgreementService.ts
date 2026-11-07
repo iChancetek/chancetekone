@@ -1,5 +1,5 @@
 /**
- * ChanceTEKone — Creator Distribution Agreement Service
+ * ChanceTEK One — Creator Distribution Agreement Service
  * Real-time legal agreement onboarding, digital signature verification,
  * and immutable submission tracking for platform artists, producers, and creators.
  *
@@ -69,7 +69,7 @@ function isMockRecord(a: any): boolean {
 
 export class DistributionAgreementService {
   public static readonly VERSION = '1.0.0';
-  public static readonly COUNTERSIGNED_BY = 'Chancellor @ ChanceTEKone';
+  public static readonly COUNTERSIGNED_BY = 'Chancellor @ ChanceTEK One';
   public static readonly COUNTERSIGNED_TITLE = 'Executive Director & Rights Curator';
 
   private static inMemoryAgreements: SignedDistributionAgreement[] = [];

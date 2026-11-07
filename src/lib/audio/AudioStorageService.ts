@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — IndexedDB Audio Blob Storage Service
+ * ChanceTEK One — IndexedDB Audio Blob Storage Service
  * Provides client-side binary persistence for uploaded MP3 files up to several gigabytes.
  * Ensures zero-latency instant playback and offline reliability.
  */

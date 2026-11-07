@@ -382,7 +382,7 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
                       </p>
                       <div className="p-3 rounded-xl bg-black/40 border border-white/5 text-xs text-brand-gold font-mono space-y-1">
                         <p>• Tempo: {currentTrack.bpm || 120} BPM</p>
-                        <p>• Producer / Label: {currentTrack.label || 'ChanceTEKone'}</p>
+                        <p>• Producer / Label: {currentTrack.label || 'ChanceTEK One'}</p>
                         <p>• Mixing Lane: Harmonic Flow ± 4 BPM</p>
                       </div>
                     </div>

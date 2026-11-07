@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
               // Parse artist and title from filename (e.g. "Artist_-_Title.mp3" or "Artist_Title.mp3")
               const cleanName = file.replace(/\.mp3$/i, '').replace(/_/g, ' ');
               const parts = cleanName.split('-');
-              const artist = parts[0]?.trim() || 'ChanceTEKone';
+              const artist = parts[0]?.trim() || 'ChanceTEK One';
               const title = (parts[1] || parts[0]).trim();
 
               const candidates = await TavilyCoverArtService.searchCoverArt({ artist, title });

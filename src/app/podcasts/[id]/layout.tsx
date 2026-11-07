@@ -39,19 +39,19 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: 'ChanceTEKone — Master Podcast Series',
-      description: 'Stream master audio podcast broadcasts and discussions on ChanceTEKone.',
+      title: 'ChanceTEK One — Master Podcast Series',
+      description: 'Stream master audio podcast broadcasts and discussions on ChanceTEK One.',
       openGraph: {
-        title: 'ChanceTEKone',
-        description: 'Stream master audio podcast broadcasts and discussions on ChanceTEKone.',
+        title: 'ChanceTEK One',
+        description: 'Stream master audio podcast broadcasts and discussions on ChanceTEK One.',
         type: 'website',
         url: 'https://chancetekone.us',
         images: [{ url: 'https://chancetekone.us/images/return_of_the_break_beats_master.png' }],
       },
       twitter: {
         card: 'summary_large_image',
-        title: 'ChanceTEKone',
-        description: 'Stream master audio podcast broadcasts and discussions on ChanceTEKone.',
+        title: 'ChanceTEK One',
+        description: 'Stream master audio podcast broadcasts and discussions on ChanceTEK One.',
         images: ['https://chancetekone.us/images/return_of_the_break_beats_master.png'],
       },
     };

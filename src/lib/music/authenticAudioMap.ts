@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Authentic Audio Stream Registry & Integrity Guard
+ * ChanceTEK One — Authentic Audio Stream Registry & Integrity Guard
  * 
  * Maps platform music tracks (Michael Jackson, Janet Jackson, Aaliyah, etc.)
  * directly to their verified studio audio files under /audio/uploads/.
@@ -10,7 +10,7 @@
  *    (e.g., Janet Jackson MP3s must NEVER play Lauryn Hill; Avant must NEVER play Tevin Campbell).
  * 3. User uploads are the inviolable source of truth.
  * 4. NEVER overwrite or replace a track's audio with Fort_Apache.mp3 unless the track
- *    is explicitly the ChanceTEKone "Return of the Break Beats" anthem.
+ *    is explicitly the ChanceTEK One "Return of the Break Beats" anthem.
  */
 
 export interface TrackIdentifier {
@@ -531,7 +531,7 @@ export function getAuthenticAudioUrl(track: TrackIdentifier): string | null {
     return '/audio/uploads/Michael_Jackson_-_01_-_Don_t_Stop__Til_You_Get_Enough.mp3';
   }
 
-  // 28. ChanceTEKone Original Breakbeat Anthem
+  // 28. ChanceTEK One Original Breakbeat Anthem
   if (
     id === 'track-1' ||
     title.includes('return of the break beats')
@@ -545,7 +545,7 @@ export function getAuthenticAudioUrl(track: TrackIdentifier): string | null {
 
 /**
  * Fallback audio only for tracks that have zero audioUrl specified.
- * NEVER returns Fort Apache unless the track is genuinely an ChanceTEKone breakbeat anthem.
+ * NEVER returns Fort Apache unless the track is genuinely an ChanceTEK One breakbeat anthem.
  */
 export function getResilientAudioFallback(track?: TrackIdentifier): string {
   if (!track) return '';
@@ -554,7 +554,7 @@ export function getResilientAudioFallback(track?: TrackIdentifier): string {
   const artist = (track.artistName || '').toLowerCase();
   const file = (track.fileName || '').toLowerCase();
 
-  // ONLY return Fort Apache for actual ChanceTEKone breakbeat anthems!
+  // ONLY return Fort Apache for actual ChanceTEK One breakbeat anthems!
   if (track.id === 'track-1' || title.includes('return of the break beats') || title.includes('breakbeat anthem')) {
     return '/audio/Fort_Apache.mp3';
   }

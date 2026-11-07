@@ -98,7 +98,7 @@ You must output STRICT JSON matching this schema:
 - BPM: ${currentMedia.bpm || 'Unknown'}
 
 User Profile / Memory:
-- User: ${userContext?.name || 'ChanceTEKone'}
+- User: ${userContext?.name || 'ChanceTEK One'}
 - Known Facts: ${JSON.stringify(userContext?.explicitFacts || [])}
 - Musical DNA: ${JSON.stringify(userContext?.tasteProfile || {})}
 

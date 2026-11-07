@@ -46,7 +46,7 @@ function SearchContent() {
         artistMap.set(lower, {
           id: `artist-${lower.replace(/[^a-z0-9]/g, '-')}`,
           name,
-          bio: `Artist on ChanceTEKone`,
+          bio: `Artist on ChanceTEK One`,
           avatarUrl: t.coverUrl || t.albumCoverUrl || '/images/logo.png',
           bannerUrl: t.albumCoverUrl || t.coverUrl || '/images/logo.png',
           genres: [t.genre || 'Music'],

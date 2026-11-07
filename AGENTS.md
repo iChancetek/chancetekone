@@ -1,4 +1,4 @@
-﻿<!-- BEGIN:nextjs-agent-rules -->
+<!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
 
@@ -1584,6 +1584,42 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
   5. **1-Click "Revert to Original Art" & "Undo"**:
      - `PlatformChangeCoverArtModal.tsx` provides 1-click "Revert to Original Art" and scopes updates strictly to single tracks when in virtual or singles mode (`effectiveIsAlbumMode && !isGeneric`).
      - Toast notifications provide an instant "Undo" button with `RotateCcw` to immediately reverse any cover art update or revert.
+
+### 67. Platform Brand Refinement (ChanceTEK One), Zero Graffiti Elimination, Official Merch Alignment & Home Slide Removal
+- **User Directives**:
+  1. Remove all 8 of spades works present slides from the home page.
+  2. Remove all graffiti references and content from the platform ("Do not use graffiti").
+  3. Replace all merchandise with "ChanceTEK One" merchandise while keeping the same apparel and accessory styles (bomber jacket, bucket hat, snapback, basketball jersey, backpack, t-shirt, hoodie) without graffiti.
+  4. Replace `ChanceTEKOne` across the platform with `ChanceTEK One` (adding space between `ChanceTEK` and `One`).
+- **Architectural Implementation**:
+  1. **Home Page Present Slides & Background Video (`HeroBanner.tsx`, `src/app/page.tsx`)**:
+     - Removed the `return-of-the-break-beats` slide (featuring the legacy 8 of spades works presents banner image) from `HeroBanner.tsx`.
+     - In `HeroBanner.tsx`, updated `getSlideCanonicalKey` and the social share modal entity builder to remove the legacy break beats slide.
+     - In `src/app/page.tsx`, updated the background video loop from `/videos/8ofSW1.mp4` to `/videos/chancetekone1.mp4`.
+  2. **Comprehensive Platform Graffiti Elimination**:
+     - `src/app/learn-more/page.tsx`: Transformed the 4th hip-hop discipline from "Graffiti" to "Visual Arts & Design", updating text, grid card, and voice narration audio script.
+     - `src/app/music/page.tsx`: Updated hip-hop crate description, replacing "Raw spray-can graffiti culture" with "Raw street culture".
+     - `src/lib/playlist/CoverArtCatalog.ts`: Updated title to "Wildstyle Street Mural Cap" and purged all `graffiti` tags across all artwork metadata.
+     - Verified zero occurrences of `graffiti` remain in the repository (`git grep -i "graffiti"` returns exit code 1).
+  3. **Official ChanceTEK One Merchandise Collection (`src/lib/mockData.ts`, `src/app/merch/page.tsx`)**:
+     - Transformed all 11 merchandise products into "Official ChanceTEK One" items while maintaining the exact original styles, cuts, and categories:
+       - `merch-1`: Official ChanceTEK One Luxury Satin Bomber Jacket (Dark Blue)
+       - `merch-2`: Official ChanceTEK One Dark Blue Streetwear Bucket Hat
+       - `merch-3`: Official ChanceTEK One 3D Embroidered Baseball Snapback (Dark Blue)
+       - `merch-4`: Official ChanceTEK One Pro Mesh Basketball Jersey (Dark Blue)
+       - `merch-5`: Official ChanceTEK One Ballistic Nylon Streetwear Backpack
+       - `merch-6`: Official ChanceTEK One Heavyweight Vintage Washed T-Shirt
+       - `merch-7`: Official ChanceTEK One Signature Medallion Streetwear Hoodie
+       - `merch-8`: Official ChanceTEK One 3D Medallion Snapback Cap
+       - `merch-9`: Official ChanceTEK One Embroidered Medallion Bucket Hat
+       - `merch-10`: Official ChanceTEK One Pro-Mesh Basketball Jersey (Midnight Black)
+       - `merch-11`: Official ChanceTEK One Luxury Satin Flight Bomber Jacket (Midnight Black)
+     - Replaced all descriptions mentioning graffiti with premium metallic gold crest, medallion embroidery, and luxury streetwear insignia.
+     - Updated `src/app/merch/page.tsx` store header, badge, and hero subtitle to "Official ChanceTEK One Store" and "Official ChanceTEK One Streetwear Collection".
+  4. **Platform-Wide Brand Typography Standardization (`ChanceTEK One`)**:
+     - Replaced 565 user-facing occurrences of `ChanceTEKone` / `ChanceTEKOne` with `ChanceTEK One` across 114 files in `src/`, `public/sw.js`, and documentation.
+     - Preserved technical domains (`chancetekone.com`, `chancetekone.us`), administrative email formats (`@chancetekone.com`, `@chancetekone.us`), social media handles (`@chancetekone`), asset paths (`/videos/chancetekone1.mp4`, `/images/chancetekone_banner.png`), and internal storage keys.
+
 
 
 

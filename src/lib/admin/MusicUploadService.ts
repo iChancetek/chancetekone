@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Mass Music Upload & Resumable Batch Processing Service
+ * ChanceTEK One — Mass Music Upload & Resumable Batch Processing Service
  * Supports up to 1,000 MP3 files per batch.
  * Features:
  * - Resumable, independently tracked jobs with SHA-256 checksums
@@ -497,7 +497,7 @@ class MusicUploadServiceClass {
       let hasEmbeddedArtwork = Boolean(specificCover);
       let artworkStatus: 'extracted' | 'missing' = specificCover ? 'extracted' : 'missing';
       let title = file.name.replace(/\.[a-zA-Z0-9]+$/i, '');
-      let artist = 'ChanceTEKone';
+      let artist = 'ChanceTEK One';
       let album = '';
       let genre = classifyGenre({ artist, title, crateId: batch.crateId, crateName: crate.name });
       let durationSeconds = 180;
@@ -716,7 +716,7 @@ class MusicUploadServiceClass {
       this.registerFile(sf.name, file);
 
       let title = sf.name.replace(/\.[a-zA-Z0-9]+$/i, '');
-      let artist = 'ChanceTEKone';
+      let artist = 'ChanceTEK One';
       let album = '';
       let albumArtist = '';
       let genre = classifyGenre({ artist, title, crateId: batch.crateId, crateName: crate.name });
@@ -2258,7 +2258,7 @@ class MusicUploadServiceClass {
 
         // Dynamically resolve artistId
         let effectiveArtistId = it.artistId || batch.artistId;
-        const normalizedArtistName = it.artist || batch.artistName || 'ChanceTEKone';
+        const normalizedArtistName = it.artist || batch.artistName || 'ChanceTEK One';
         if (!effectiveArtistId || effectiveArtistId === 'artist-1') {
           const matchArtist = MOCK_ARTISTS.find(
             (a) => a.name.toLowerCase().trim() === normalizedArtistName.toLowerCase().trim()
@@ -2293,7 +2293,7 @@ class MusicUploadServiceClass {
           artistName: normalizedArtistName,
           producer: effectiveProducer,
           producerId: effectiveProducerId,
-          label: 'ChanceTEKone',
+          label: 'ChanceTEK One',
           albumId: targetAlbumId,
           albumTitle: albTitle,
           albumCoverUrl: it.albumCoverUrl,
@@ -2470,7 +2470,7 @@ class MusicUploadServiceClass {
           title: it.title,
           artistId: 'artist-1',
           artistName: it.artist,
-          label: 'ChanceTEKone',
+          label: 'ChanceTEK One',
           albumId: targetAlbumId,
           albumTitle: albTitle,
           albumCoverUrl: it.albumCoverUrl,
@@ -2717,7 +2717,7 @@ class MusicUploadServiceClass {
     ];
 
     const artists = [
-      'ChanceTEKone', 'The Drum Architects', 'Luna Brass & The Crate Queens',
+      'ChanceTEK One', 'The Drum Architects', 'Luna Brass & The Crate Queens',
       'Cipher Voltage', 'Marcus Drumhead', 'Manhattan Vinyl Syndicate', 'The SP-1200 Kings',
     ];
 
@@ -2779,7 +2779,7 @@ class MusicUploadServiceClass {
   private generateSimulatedMetadata(fileName: string, crateId: string, existingCoverUrl?: string): ExtractedMP3Metadata {
     const cleanName = fileName.replace(/\.[a-zA-Z0-9]+$/i, '');
     const parts = cleanName.split(' - ');
-    const artist = parts[0] || 'ChanceTEKone';
+    const artist = parts[0] || 'ChanceTEK One';
     const title = parts[1] || cleanName;
     const crate =
       MusicCatalogService.getCrateById(crateId) ||
@@ -2800,9 +2800,9 @@ class MusicUploadServiceClass {
       trackNumber: 1,
       discNumber: 1,
       composer: artist,
-      producer: 'ChanceTEKone',
-      copyright: '© 2026 ChanceTEKone',
-      publisher: 'ChanceTEKone Publishing',
+      producer: 'ChanceTEK One',
+      copyright: '© 2026 ChanceTEK One',
+      publisher: 'ChanceTEK One Publishing',
       durationSeconds: 215,
       bitrateKbps: 320,
       sampleRateHz: 44100,

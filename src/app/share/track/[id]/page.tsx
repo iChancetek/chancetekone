@@ -24,7 +24,7 @@ export async function generateMetadata({
 
   const cover = paramCover && !isDefaultOrInvalidCover(paramCover) ? paramCover : resolved.coverUrl;
   const fullTitle = artist ? `${title} — ${artist}` : title;
-  const description = resolved.description || `Listen to ${fullTitle} on ChanceTEKone.`;
+  const description = resolved.description || `Listen to ${fullTitle} on ChanceTEK One.`;
   const image = cover.startsWith('http') ? cover : `${origin}${cover}`;
   const url = `${origin}/music/${id}`;
 

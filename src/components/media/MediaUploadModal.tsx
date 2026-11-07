@@ -240,7 +240,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
         const newPodcast: PodcastEpisode = {
           id: generatedId,
           title: title.trim(),
-          showTitle: creatorOrAuthor.trim() || 'ChanceTEKone Podcasts',
+          showTitle: creatorOrAuthor.trim() || 'ChanceTEK One Podcasts',
           host: narratorOrHost.trim() || 'Chancellor @ ChanceTEK LLC',
           description: description.trim() || 'Exclusive podcast episode release.',
           mediaUrl: mediaUrl,
@@ -261,7 +261,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
           title: title.trim(),
           artistId: 'producer-chancellor',
           artistName: creatorOrAuthor.trim() || 'Chancellor @ ChanceTEK LLC',
-          label: 'ChanceTEK LLC & ChanceTEKone',
+          label: 'ChanceTEK LLC & ChanceTEK One',
           videoUrl: mediaUrl,
           thumbnailUrl: finalCover,
           duration: 120,

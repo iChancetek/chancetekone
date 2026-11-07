@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Unified Genre Classification & Normalization Engine
+ * ChanceTEK One — Unified Genre Classification & Normalization Engine
  * 
  * Provides:
  * 1. PLATFORM_STANDARD_GENRES: The canonical platform music genres matching /music views & crates.
@@ -1000,7 +1000,7 @@ export function classifyGenre(metadata: {
   }
 
   // 5. Default authentic fallback
-  // R&B / Neo-Soul is the core ambient soundscape of ChanceTEKone The Lounge
+  // R&B / Neo-Soul is the core ambient soundscape of ChanceTEK One The Lounge
   return 'R&B / Neo-Soul';
 }
 

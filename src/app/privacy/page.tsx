@@ -5,10 +5,10 @@ import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 
 export const metadata = {
   title: 'Privacy Policy',
-  description: 'Global privacy standards, memory vault security, and data stewardship for ChanceTEKone.',
+  description: 'Global privacy standards, memory vault security, and data stewardship for ChanceTEK One.',
 };
 
-const PRIVACY_FULL_TEXT = `Privacy Policy and Global Data Stewardship. Effective Date: January 1, 2026. Published by ChanceTEKone. At ChanceTEKone, we regard user privacy as an essential civil liberty rather than an afterthought. We design our technology to minimize data footprint while delivering a transcendent, personalized listening experience. We never monetize, rent, or sell your personal identifiers to third-party data brokers. We collect only the telemetry and profile attributes required to power platform playback, persistent crate curation, and secure transactions. Preferred tempos and taste facts provided to Break Beats AI are stored with client-side isolation and user-controlled deletion. You retain full sovereignty over your digital footprint and may export or erase your archive at any time.`;
+const PRIVACY_FULL_TEXT = `Privacy Policy and Global Data Stewardship. Effective Date: January 1, 2026. Published by ChanceTEK One. At ChanceTEK One, we regard user privacy as an essential civil liberty rather than an afterthought. We design our technology to minimize data footprint while delivering a transcendent, personalized listening experience. We never monetize, rent, or sell your personal identifiers to third-party data brokers. We collect only the telemetry and profile attributes required to power platform playback, persistent crate curation, and secure transactions. Preferred tempos and taste facts provided to Break Beats AI are stored with client-side isolation and user-controlled deletion. You retain full sovereignty over your digital footprint and may export or erase your archive at any time.`;
 
 export default function PrivacyPage() {
   return (
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="text-sm sm:text-base text-neutral-300 max-w-2xl leading-relaxed">
-            Effective Date: January 1, 2026 • Published by ChanceTEKone
+            Effective Date: January 1, 2026 • Published by ChanceTEK One
           </p>
         </div>
       </div>
@@ -50,12 +50,12 @@ export default function PrivacyPage() {
               </h2>
             </div>
             <VoiceNarrationButton
-              text="At ChanceTEKone, we regard user privacy as an essential civil liberty rather than an afterthought. We design our technology to minimize data footprint while delivering a transcendent, personalized listening experience. We never monetize, rent, or sell your personal identifiers to third-party data brokers."
+              text="At ChanceTEK One, we regard user privacy as an essential civil liberty rather than an afterthought. We design our technology to minimize data footprint while delivering a transcendent, personalized listening experience. We never monetize, rent, or sell your personal identifiers to third-party data brokers."
               variant="icon"
             />
           </div>
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            At ChanceTEKone, we regard user privacy as an essential civil liberty rather than an afterthought. We design our technology to minimize data footprint while delivering a transcendent, personalized listening experience. We never monetize, rent, or sell your personal identifiers to third-party data brokers.
+            At ChanceTEK One, we regard user privacy as an essential civil liberty rather than an afterthought. We design our technology to minimize data footprint while delivering a transcendent, personalized listening experience. We never monetize, rent, or sell your personal identifiers to third-party data brokers.
           </p>
         </section>
 
@@ -166,7 +166,7 @@ export default function PrivacyPage() {
           </Link>
         </div>
         <p className="text-neutral-500">
-          © 2026 ChanceTEKone. All rights reserved.
+          © 2026 ChanceTEK One. All rights reserved.
         </p>
       </div>
     </div>

@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Shared admin identity list.
+ * ChanceTEK One — Shared admin identity list.
  * Safe to import from BOTH client and server code (no framework imports).
  */
 

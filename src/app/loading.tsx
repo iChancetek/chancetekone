@@ -9,7 +9,7 @@ export default function RootLoading() {
         <div className="w-3 h-3 rounded-full bg-brand-gold animate-pulse" />
       </div>
       <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
-        Loading ChanceTEKone...
+        Loading ChanceTEK One...
       </p>
     </div>
   );

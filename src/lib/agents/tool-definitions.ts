@@ -261,7 +261,7 @@ export const AGENT_TOOLS_DEFINITIONS = [
     type: 'function' as const,
     function: {
       name: 'searchProducers',
-      description: 'Find sonic architects, master beatmakers, and hardware sampler engineers (e.g. ChanceTEKone, Chancellor @ ChanceTEK LLC, Cipher Voltage, Luna Brass & The Crate Queens).',
+      description: 'Find sonic architects, master beatmakers, and hardware sampler engineers (e.g. ChanceTEK One, Chancellor @ ChanceTEK LLC, Cipher Voltage, Luna Brass & The Crate Queens).',
       parameters: {
         type: 'object',
         properties: {

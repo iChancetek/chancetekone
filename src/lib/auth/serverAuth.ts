@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Server-Side Admin Authorization Utility
+ * ChanceTEK One — Server-Side Admin Authorization Utility
  * Validates request authorization tokens, headers, and admin identities server-side.
  */
 

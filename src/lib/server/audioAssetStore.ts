@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — server-side audio asset store helpers.
+ * ChanceTEK One — server-side audio asset store helpers.
  * Only import from API routes / server code (uses Node fs + crypto).
  */
 

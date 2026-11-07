@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Server-Side Creator Submission Persistence
+ * ChanceTEK One — Server-Side Creator Submission Persistence
  * Stores creator uploads, review holding items, review audit history,
  * and maintains atomic status transitions.
  */

@@ -93,7 +93,7 @@ export function cleanDescription(desc?: string, fallback: string = ''): string {
 
 /**
  * Resolves the authentic cover art for any platform entity, guaranteeing
- * it never falls back to the default ChanceTEKone banner.
+ * it never falls back to the default ChanceTEK One banner.
  */
 export function resolveAuthenticCover(type: ShareContentType, item: any): string {
   // If custom or item has a non-default cover, verify it:
@@ -337,20 +337,20 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
     switch (type) {
       case 'song':
       case 'beat':
-        creator = item?.artistName || 'ChanceTEKone';
+        creator = item?.artistName || 'ChanceTEK One';
         break;
       case 'video':
         creator = item?.artist || item?.creator || 'Visual Cinema';
         break;
       case 'podcast':
-        creator = item?.host || item?.showTitle || 'ChanceTEKone';
+        creator = item?.host || item?.showTitle || 'ChanceTEK One';
         break;
       case 'audiobook':
       case 'book':
         creator = item?.author ? `Author ${item.author}` : (item?.narrator ? `Narrated by ${item.narrator}` : 'Master Author');
         break;
       case 'merch':
-        creator = item?.artistName || 'ChanceTEKone Official Merch';
+        creator = item?.artistName || 'ChanceTEK One Official Merch';
         break;
       case 'producer':
         creator = item?.role || 'Master Producer & Beatmaker';
@@ -362,13 +362,13 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
         creator = item?.artistName || (item as any)?.artist || 'Master Recording Artist';
         break;
       case 'playlist':
-        creator = item?.ownerName ? `Curated by ${item.ownerName}` : 'ChanceTEKone Crate';
+        creator = item?.ownerName ? `Curated by ${item.ownerName}` : 'ChanceTEK One Crate';
         break;
       case 'project':
-        creator = item?.producerName || item?.presenter || item?.label || 'ChanceTEKone';
+        creator = item?.producerName || item?.presenter || item?.label || 'ChanceTEK One';
         break;
       default:
-        creator = 'ChanceTEKone';
+        creator = 'ChanceTEK One';
     }
   }
 
@@ -381,49 +381,49 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
         description =
           cleanDescription(item?.lyrics) ||
           cleanDescription(item?.description) ||
-          `"${title}" by ${creator}. Authentic ${item?.genre || 'Soul & Breakbeat'} stream engineered at ${item?.bpm ? `${item.bpm} BPM` : 'authentic tempo'} on ChanceTEKone.`;
+          `"${title}" by ${creator}. Authentic ${item?.genre || 'Soul & Breakbeat'} stream engineered at ${item?.bpm ? `${item.bpm} BPM` : 'authentic tempo'} on ChanceTEK One.`;
         break;
       case 'video':
         description =
           cleanDescription(item?.description) ||
-          `Watch "${title}" (${creator}) in pristine high-definition 4K visual cinema on ChanceTEKone.`;
+          `Watch "${title}" (${creator}) in pristine high-definition 4K visual cinema on ChanceTEK One.`;
         break;
       case 'podcast':
         description =
           cleanDescription(item?.description) ||
-          `Listen to "${title}" hosted by ${creator}. Master podcast broadcast exploring sonic culture on ChanceTEKone.`;
+          `Listen to "${title}" hosted by ${creator}. Master podcast broadcast exploring sonic culture on ChanceTEK One.`;
         break;
       case 'audiobook':
       case 'book':
         description =
           cleanDescription(item?.description) ||
           cleanDescription(item?.synopsis) ||
-          `Explore "${title}" by ${creator}. Master spoken audiobook narrative and literature streaming on ChanceTEKone.`;
+          `Explore "${title}" by ${creator}. Master spoken audiobook narrative and literature streaming on ChanceTEK One.`;
         break;
       case 'merch':
         description =
           cleanDescription(item?.description) ||
-          `Official ${title}. Exclusive limited-edition street apparel and vinyl collector merchandise by ChanceTEKone.`;
+          `Official ${title}. Exclusive limited-edition street apparel and vinyl collector merchandise by ChanceTEK One.`;
         break;
       case 'producer':
         description =
           cleanDescription(item?.bio) ||
-          `${title} — ${creator}. Legendary beatmaker crates, breakbeat instrumentals, and production credits on ChanceTEKone.`;
+          `${title} — ${creator}. Legendary beatmaker crates, breakbeat instrumentals, and production credits on ChanceTEK One.`;
         break;
       case 'artist':
         description =
           cleanDescription(item?.bio) ||
-          `${title} — ${creator}. Complete discography, stream singles, albums, and master vinyl collections on ChanceTEKone.`;
+          `${title} — ${creator}. Complete discography, stream singles, albums, and master vinyl collections on ChanceTEK One.`;
         break;
       case 'album':
         description =
           cleanDescription(item?.description) ||
-          `Experience "${title}" by ${creator}. Full studio album collection with master breakbeats on ChanceTEKone.`;
+          `Experience "${title}" by ${creator}. Full studio album collection with master breakbeats on ChanceTEK One.`;
         break;
       case 'playlist':
         description =
           cleanDescription(item?.description) ||
-          `"${title}" — ${creator}. Curated playlist featuring ${item?.itemCount || 0} tracks on ChanceTEKone.`;
+          `"${title}" — ${creator}. Curated playlist featuring ${item?.itemCount || 0} tracks on ChanceTEK One.`;
         break;
       case 'project':
         description =
@@ -432,7 +432,7 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
           `The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.`;
         break;
       default:
-        description = `Stream and explore "${title}" on ChanceTEKone.`;
+        description = `Stream and explore "${title}" on ChanceTEK One.`;
     }
   }
 
@@ -497,7 +497,7 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
   if (item?.releaseYear) metadataBadges.push(String(item.releaseYear));
 
   // Text message body specifically tailored for SMS / iMessage:
-  const textMessageBody = `Listen to "${title}" by ${creator} on ChanceTEKone!
+  const textMessageBody = `Listen to "${title}" by ${creator} on ChanceTEK One!
 
 ${description}
 
@@ -505,7 +505,7 @@ Stream now:
 ${canonicalUrl}`;
 
   // General share text:
-  const shareText = `Check out "${title}" by ${creator} on ChanceTEKone: ${description}`;
+  const shareText = `Check out "${title}" by ${creator} on ChanceTEK One: ${description}`;
 
   // Social share URLs:
   const encodedUrl = encodeURIComponent(canonicalUrl);
@@ -520,8 +520,8 @@ ${canonicalUrl}`;
   const whatsAppUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`*${title}* by _${creator}_\n\n${description}\n\n${canonicalUrl}`)}`;
   const telegramUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(`*${title}* by ${creator}\n${description}`)}`;
 
-  const emailSubject = `${title} by ${creator} — ChanceTEKone`;
-  const emailBody = `Hey,\n\nI wanted to share this with you on ChanceTEKone:\n\n"${title}" by ${creator}\n\n${description}\n\nStream now: ${canonicalUrl}`;
+  const emailSubject = `${title} by ${creator} — ChanceTEK One`;
+  const emailBody = `Hey,\n\nI wanted to share this with you on ChanceTEK One:\n\n"${title}" by ${creator}\n\n${description}\n\nStream now: ${canonicalUrl}`;
   const emailUrl = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
 
   return {
@@ -569,21 +569,21 @@ export function resolveShareMetadataById(type: ShareContentType, id: string): Re
       id: id || 'item',
       type,
       typeLabel: 'Featured Media',
-      title: 'ChanceTEKone',
-      creator: 'ChanceTEKone',
-      description: 'Stream master breakbeat music, 4K videos, audiobooks, and culture on ChanceTEKone.',
+      title: 'ChanceTEK One',
+      creator: 'ChanceTEK One',
+      description: 'Stream master breakbeat music, 4K videos, audiobooks, and culture on ChanceTEK One.',
       coverUrl: '/images/genres/rnb-neo-soul.jpg',
       canonicalUrl,
       directUrl: canonicalUrl,
-      shareText: 'Check out ChanceTEKone',
-      textMessageBody: 'Check out ChanceTEKone',
+      shareText: 'Check out ChanceTEK One',
+      textMessageBody: 'Check out ChanceTEK One',
       smsUrl: '',
       facebookUrl: '',
       twitterUrl: '',
       linkedInUrl: '',
       whatsAppUrl: '',
       telegramUrl: '',
-      emailSubject: 'ChanceTEKone',
+      emailSubject: 'ChanceTEK One',
       emailBody: '',
       emailUrl: '',
       metadataBadges: [],

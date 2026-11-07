@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Autonomous Music Catalog & Cover Art Healing Agent
+ * ChanceTEK One — Autonomous Music Catalog & Cover Art Healing Agent
  * 
  * An autonomous agentic AI specialist that:
  * 1. Resolves why music in the Music Area fails to play by verifying, sanitizing,
@@ -126,11 +126,11 @@ export class MusicCatalogHealingAgent {
     { match: (a, t) => a.includes('spinners') || t.includes('could it be im falling') || t.includes('could it be i m falling') || t.includes('ill be around') || t.includes('i ll be around'), album: 'Spinners', artist: 'The Spinners' },
 
     // Platform Creators
-    { match: (a, t) => a.includes('ChanceTEKone') || t.includes('break beats') || t.includes('neon crate') || t.includes('sp-1200') || t.includes('dembow underground') || t.includes('concrete amplifier'), album: 'Genesis of the Concrete Beat', artist: 'ChanceTEKone' },
+    { match: (a, t) => a.includes('ChanceTEK One') || t.includes('break beats') || t.includes('neon crate') || t.includes('sp-1200') || t.includes('dembow underground') || t.includes('concrete amplifier'), album: 'Genesis of the Concrete Beat', artist: 'ChanceTEK One' },
     { match: (a, t) => a.includes('cipher voltage') || t.includes('cyber grid') || t.includes('sub-orbital') || t.includes('miami 808'), album: 'Quantum Break Sequence', artist: 'Cipher Voltage' },
     { match: (a, t) => a.includes('luna brass') || t.includes('soul kitchen') || t.includes('midnight crate') || t.includes('delta tape') || t.includes('bluegrass break'), album: 'Velvet Horns & Tape Saturation', artist: 'Luna Brass & The Crate Queens' },
     { match: (a, t) => a.includes('sub-zero') || t.includes('subterranean') || t.includes('lagos midnight'), album: 'Bronx Heritage Archive', artist: 'Sub-Zero Rhythm Collective' },
-    { match: (a, t) => a.includes('chancetek') || a.includes('chancellor'), album: 'ChanceTEKone PRESENTS: ChanceTEK', artist: 'Chancellor @ ChanceTEK LLC' },
+    { match: (a, t) => a.includes('chancetek') || a.includes('chancellor'), album: 'ChanceTEK One PRESENTS: ChanceTEK', artist: 'Chancellor @ ChanceTEK LLC' },
   ];
 
   /**
@@ -247,7 +247,7 @@ export class MusicCatalogHealingAgent {
     if (!a || a.toLowerCase() === 'unknown' || a.toLowerCase() === 'unknown artist') {
       const match = this.CANONICAL_ALBUM_MAP.find((m) => m.match('', t));
       if (match) return match.artist;
-      return 'ChanceTEKone';
+      return 'ChanceTEK One';
     }
 
     const low = a.toLowerCase();
@@ -281,7 +281,7 @@ export class MusicCatalogHealingAgent {
     if (low.includes('luna brass')) return 'Luna Brass & The Crate Queens';
     if (low.includes('sub-zero') || low.includes('sub zero')) return 'Sub-Zero Rhythm Collective';
     if (low.includes('chancetek') || low.includes('chancellor')) return 'Chancellor @ ChanceTEK LLC';
-    if (low.includes('8 of spades') || low.includes('chancetekone')) return 'ChanceTEKone';
+    if (low.includes('8 of spades') || low.includes('chancetekone')) return 'ChanceTEK One';
 
     return a;
   }

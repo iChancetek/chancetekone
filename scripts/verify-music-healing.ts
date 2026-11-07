@@ -14,7 +14,7 @@ import { getAuthenticAudioUrl } from '../src/lib/music/authenticAudioMap';
 
 async function main() {
   console.log('====================================================');
-  console.log('ChanceTEKone — MUSIC CATALOG & COVER ART AUDIT');
+  console.log('ChanceTEK One — MUSIC CATALOG & COVER ART AUDIT');
   console.log('====================================================\n');
 
   const publicDir = path.join(process.cwd(), 'public');

@@ -230,7 +230,7 @@ export const AccessibilityControlsModal: React.FC = () => {
                 <span>Return of the Break Beats</span>
               </div>
               <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                ChanceTEKone: Return of the Break Beats
+                ChanceTEK One: Return of the Break Beats
               </h3>
               <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
                 This is a live preview of how track lyrics, documentary essays, liner notes, and audiobook transcripts will render across the platform with your selected {fontScale}% font scale.

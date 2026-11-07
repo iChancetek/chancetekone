@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       status: 'success',
       agreementId: payload.id,
-      message: 'Agreement successfully submitted to ChanceTEKone administrative registry.',
+      message: 'Agreement successfully submitted to ChanceTEK One administrative registry.',
     });
   } catch (err: any) {
     return NextResponse.json(

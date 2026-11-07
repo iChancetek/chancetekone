@@ -532,7 +532,7 @@ export const ApprovalReviewSection: React.FC<ApprovalReviewSectionProps> = ({
         albumTracks[0]?.coverUrl;
       return {
         title,
-        artist: albumTracks[0]?.artist || 'ChanceTEKone',
+        artist: albumTracks[0]?.artist || 'ChanceTEK One',
         coverUrl: authenticCover,
         tracks: albumTracks,
         count: albumTracks.length,

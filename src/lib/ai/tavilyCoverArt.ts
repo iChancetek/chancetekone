@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Tavily Cover Art Discovery Engine
+ * ChanceTEK One — Tavily Cover Art Discovery Engine
  * Autonomous search and verification of high-resolution album and track artwork
  * using real-time internet search via Tavily.
  */
@@ -266,7 +266,7 @@ export class TavilyCoverArtService {
 
     const res = await fetch(imageUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ChanceTEKone/1.0 MusicCatalog',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ChanceTEK One/1.0 MusicCatalog',
         Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
       },
     });

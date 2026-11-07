@@ -394,7 +394,7 @@ export const CreatorHoldingSection: React.FC = () => {
           <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30">
             <div className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">Approved &amp; Published</div>
             <div className="text-2xl font-black text-white mt-1">{publishedCount}</div>
-            <div className="text-[10px] text-emerald-400/80 mt-0.5">Live on ChanceTEKone</div>
+            <div className="text-[10px] text-emerald-400/80 mt-0.5">Live on ChanceTEK One</div>
           </div>
           <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30">
             <div className="text-[10px] font-bold text-red-300 uppercase tracking-wider">Rejected with Feedback</div>

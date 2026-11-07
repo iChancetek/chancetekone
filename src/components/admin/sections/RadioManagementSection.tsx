@@ -45,7 +45,7 @@ interface UploadForm {
 
 const EMPTY_FORM: UploadForm = {
   title: '',
-  artist: 'ChanceTEKone',
+  artist: 'ChanceTEK One',
   album: '',
   genre: '',
   year: new Date().getFullYear().toString(),

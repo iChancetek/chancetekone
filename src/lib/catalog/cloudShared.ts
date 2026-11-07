@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Shared Cloud Catalog contracts
+ * ChanceTEK One — Shared Cloud Catalog contracts
  *
  * The platform catalog (music, albums, folders, crates, audiobooks, videos,
  * podcasts and removal tombstones) lives in Firestore so that EVERY admin and

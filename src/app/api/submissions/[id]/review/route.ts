@@ -141,7 +141,7 @@ export async function POST(
 
       return NextResponse.json({
         success: true,
-        message: `Submission approved and successfully published to ChanceTEKone catalog. Confirmation email dispatched to ${submission.creatorEmailSnapshot}.`,
+        message: `Submission approved and successfully published to ChanceTEK One catalog. Confirmation email dispatched to ${submission.creatorEmailSnapshot}.`,
         submission: saved,
         notification: notificationRecord,
       });

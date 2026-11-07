@@ -362,7 +362,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           name:
             fbUser.displayName ||
             adminUser?.name ||
-            (isSuper ? 'Chancellor (Admin)' : email.split('@')[0] || 'ChanceTEKone'),
+            (isSuper ? 'Chancellor (Admin)' : email.split('@')[0] || 'ChanceTEK One'),
           email: email,
           avatarUrl: fbUser.photoURL || adminUser?.avatarUrl || '/images/logo.png',
           role: adminUser?.role === 'super_admin' || isSuper ? 'admin' : (adminUser?.role as any) || 'user',
@@ -464,7 +464,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name:
           cred.user.displayName ||
           adminUser?.name ||
-          (isSuper ? 'Chancellor (Admin)' : 'ChanceTEKone'),
+          (isSuper ? 'Chancellor (Admin)' : 'ChanceTEK One'),
         email: email,
         avatarUrl: cred.user.photoURL || adminUser?.avatarUrl || '/images/logo.png',
         role: adminUser?.role === 'super_admin' || isSuper ? 'admin' : (adminUser?.role as any) || 'user',
@@ -674,7 +674,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signInAsDemo = () => {
     const userProf: UserProfile = {
       id: 'demo-user-8spades',
-      name: 'ChanceTEKone',
+      name: 'ChanceTEK One',
       email: 'fathertime4000@breakbeats.io',
       avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80',
       role: 'creator',
@@ -746,7 +746,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             </div>
             <div className="p-3 rounded-2xl bg-white/5 border border-white/5 text-[11px] text-neutral-400 font-mono text-left space-y-1">
               <p>• All active browser sessions have been logged out platform-wide.</p>
-              <p>• Action enforced by ChanceTEKone Security Authority.</p>
+              <p>• Action enforced by ChanceTEK One Security Authority.</p>
             </div>
             <button
               onClick={clearForcedLogoutReason}

@@ -36,7 +36,7 @@ export const Footer: React.FC = () => {
               <div className="relative w-10 h-10 rounded-2xl overflow-hidden border border-brand-gold/40 shadow-lg shrink-0">
                 <Image
                   src="/logo.png"
-                  alt="ChanceTEKone."
+                  alt="ChanceTEK One."
                   fill
                   sizes="40px"
                   className="object-cover"
@@ -44,7 +44,7 @@ export const Footer: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-base sm:text-lg font-black text-white tracking-wide font-display">
-                  ChanceTEKone.
+                  ChanceTEK One.
                 </h3>
               </div>
             </div>
@@ -76,7 +76,7 @@ export const Footer: React.FC = () => {
                   className="text-neutral-300 hover:text-brand-gold transition-colors flex items-center gap-1.5 group"
                 >
                   <Compass className="w-3.5 h-3.5 text-brand-gold group-hover:translate-x-0.5 transition-transform" />
-                  <span>About ChanceTEKone</span>
+                  <span>About ChanceTEK One</span>
                 </Link>
               </li>
               <li>
@@ -289,11 +289,11 @@ export const Footer: React.FC = () => {
         {/* Universal Copyright and Developer Credit */}
         <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <p className="text-xs text-neutral-300 font-medium tracking-wide">
-            © 2026 ChanceTEKone. All rights reserved. Developed by Chancellor @ ChanceTEK LLC
+            © 2026 ChanceTEK One. All rights reserved. Developed by Chancellor @ ChanceTEK LLC
           </p>
           <div className="flex items-center gap-4 text-xs text-neutral-400">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
-            <span>ChanceTEKone Platform</span>
+            <span>ChanceTEK One Platform</span>
           </div>
         </div>
       </div>

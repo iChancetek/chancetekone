@@ -38,7 +38,7 @@ export const SEED_PODCASTS: PodcastEpisode[] = [
   {
     id: 'podcast-ep-2',
     title: 'Episode 2: The SP-1200 Concrete Era & Turntable Science',
-    showTitle: 'ChanceTEKone Crate Talk',
+    showTitle: 'ChanceTEK One Crate Talk',
     host: 'The Crate Diggers & Chancellor',
     description: 'Exploring the genesis of 12-bit sampling, chop techniques, classic funk drum breaks, and the culture of unreleased acetate test pressings.',
     mediaUrl: '/audio/Fort Apache.mp3',

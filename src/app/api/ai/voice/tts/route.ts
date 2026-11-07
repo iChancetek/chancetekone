@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
             {
               role: 'system',
               content:
-                'You are a professional translator for Return of the Break Beats. Translate the following text into fluent, natural, calm Spanish for audio narration. Keep all proper nouns like ChanceTEKone, Break Beats AI, and SP-1200 intact. Return only the Spanish translation.',
+                'You are a professional translator for Return of the Break Beats. Translate the following text into fluent, natural, calm Spanish for audio narration. Keep all proper nouns like ChanceTEK One, Break Beats AI, and SP-1200 intact. Return only the Spanish translation.',
             },
             {
               role: 'user',

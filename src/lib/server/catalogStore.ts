@@ -1,5 +1,5 @@
 /**
- * ChanceTEKone — Server-side shared catalog store (Firebase Admin SDK).
+ * ChanceTEK One — Server-side shared catalog store (Firebase Admin SDK).
  * Only import from API routes / server code.
  */
 

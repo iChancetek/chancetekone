@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Music & Cover Art MCP (Model Context Protocol) Server
+ * ChanceTEK One — Music & Cover Art MCP (Model Context Protocol) Server
  * Implements MCP specification tools for autonomous cover art discovery and MP3 tagging.
  */
 

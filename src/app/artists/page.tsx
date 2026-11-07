@@ -20,8 +20,8 @@ export default function ArtistsPage() {
         map.set(t.artistId, {
           id: t.artistId,
           name: t.artistName,
-          label: t.label || 'ChanceTEKone',
-          bio: `Featured artist on ChanceTEKone.`,
+          label: t.label || 'ChanceTEK One',
+          bio: `Featured artist on ChanceTEK One.`,
           avatarUrl: t.coverUrl || '/images/logo.png',
           bannerUrl: t.coverUrl || '/images/the_lounge_ambient.jpg',
           genres: [t.genre || 'R&B / Soul'],

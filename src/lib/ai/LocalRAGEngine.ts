@@ -131,7 +131,7 @@ const LUTHER_VANDROSS_TRACK: Track = {
   title: 'Never Too Much',
   artistId: 'artist-luther-vandross',
   artistName: 'Luther Vandross',
-  label: 'Epic Records / ChanceTEKone',
+  label: 'Epic Records / ChanceTEK One',
   albumId: 'album-luther-never-too-much',
   albumTitle: 'Never Too Much',
   audioUrl:
@@ -302,7 +302,7 @@ export class LocalRAGEngine {
       return {
         content:
           `Yo! Here is the profile for **${topArtist.name}** in the Break Beats archive!\n\n` +
-          `**Label:** ${topArtist.label || 'ChanceTEKone'}\n` +
+          `**Label:** ${topArtist.label || 'ChanceTEK One'}\n` +
           `**Genres:** ${(topArtist.genres || []).join(' • ')}\n\n` +
           `> ${topArtist.bio}\n\n` +
           `I pulled verified tracks by **${topArtist.name}** below. Tap **Play** to start streaming!`,
@@ -360,7 +360,7 @@ export class LocalRAGEngine {
     const mjArtist: Artist = MOCK_ARTISTS.find((a) => a.id === 'artist-michael-jackson') || {
       id: 'artist-michael-jackson',
       name: 'Michael Jackson',
-      label: 'Epic Records / ChanceTEKone',
+      label: 'Epic Records / ChanceTEK One',
       bio: 'The King of Pop. Legendary singer, songwriter, and dancer whose ground-breaking recordings revolutionized pop music, production, and video choreography.',
       avatarUrl: '/audio/uploads/Off_The_Wall_cover.jpg',
       bannerUrl: '/audio/uploads/Thriller_cover.jpg',
@@ -701,7 +701,7 @@ export class LocalRAGEngine {
     const featuredTracks = MusicCatalogService.getAllTracks().slice(0, 5);
 
     const content =
-      `Yo! Welcome to **Return of the Break Beats** by **ChanceTEKone** — the premier entertainment operating system for timeless crate digging and audio culture.\n\n` +
+      `Yo! Welcome to **Return of the Break Beats** by **ChanceTEK One** — the premier entertainment operating system for timeless crate digging and audio culture.\n\n` +
       `### What You Can Explore:\n` +
       `- **Music Crates (/music):** High-definition 12-bit SP-1200 beats, Soul, Funk, R&B, Golden Era Hip Hop, and Latin Freestyle.\n` +
       `- **Cinema Theater (/videos):** Mini-documentaries, live performances, and 4K cultural masterworks.\n` +

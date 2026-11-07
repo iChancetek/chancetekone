@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — End-to-End Creator Upload, Moderation & Email Notification Test
+ * ChanceTEK One — End-to-End Creator Upload, Moderation & Email Notification Test
  * Tests:
  * 1. Email validation and rejection of invalid creator emails
  * 2. Multi-category submission creation (Music, Video .mov, Audiobook, Book PDF)
@@ -24,7 +24,7 @@ import { CreatorSubmission, ReviewRecord } from '../src/types/submission';
 
 async function runTests() {
   console.log('================================================================');
-  console.log('🧪 Starting ChanceTEKone Creator Moderation & Email Tests');
+  console.log('🧪 Starting ChanceTEK One Creator Moderation & Email Tests');
   console.log('================================================================\n');
 
   const testId = `test_${Date.now()}`;

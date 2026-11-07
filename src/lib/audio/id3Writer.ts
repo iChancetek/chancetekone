@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — ID3v2.3 Tag & APIC Cover Art Writer
+ * ChanceTEK One — ID3v2.3 Tag & APIC Cover Art Writer
  * Pure TypeScript implementation for attaching authentic cover art and ID3 metadata
  * directly to MP3 audio binaries across browser and Node.js environments.
  */
@@ -268,7 +268,7 @@ export async function attachCoverArtToMP3File(
 
   const taggedBuffer = writeID3v2TagToMP3(audioBuffer, {
     title: metadata?.title || fileName.replace(/\.[^/.]+$/, ''),
-    artist: metadata?.artist || 'ChanceTEKone',
+    artist: metadata?.artist || 'ChanceTEK One',
     album: metadata?.album,
     genre: metadata?.genre,
     year: metadata?.year,

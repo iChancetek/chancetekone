@@ -39,19 +39,19 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: 'ChanceTEKone — Official Merchandise',
-      description: 'Exclusive streetwear apparel, bomber jackets, and vinyl collector merchandise by ChanceTEKone.',
+      title: 'ChanceTEK One — Official Merchandise',
+      description: 'Exclusive streetwear apparel, bomber jackets, and vinyl collector merchandise by ChanceTEK One.',
       openGraph: {
-        title: 'ChanceTEKone',
-        description: 'Exclusive streetwear apparel, bomber jackets, and vinyl collector merchandise by ChanceTEKone.',
+        title: 'ChanceTEK One',
+        description: 'Exclusive streetwear apparel, bomber jackets, and vinyl collector merchandise by ChanceTEK One.',
         type: 'website',
         url: 'https://chancetekone.us',
         images: [{ url: 'https://chancetekone.us/images/return_of_the_break_beats_master.png' }],
       },
       twitter: {
         card: 'summary_large_image',
-        title: 'ChanceTEKone',
-        description: 'Exclusive streetwear apparel, bomber jackets, and vinyl collector merchandise by ChanceTEKone.',
+        title: 'ChanceTEK One',
+        description: 'Exclusive streetwear apparel, bomber jackets, and vinyl collector merchandise by ChanceTEK One.',
         images: ['https://chancetekone.us/images/return_of_the_break_beats_master.png'],
       },
     };

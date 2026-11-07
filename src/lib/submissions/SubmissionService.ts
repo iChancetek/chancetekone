@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Creator Submission & Moderation Client Service
+ * ChanceTEK One — Creator Submission & Moderation Client Service
  * Coordinates communication between Creator Studio, Administrative Holding Area,
  * and backend submission APIs.
  */

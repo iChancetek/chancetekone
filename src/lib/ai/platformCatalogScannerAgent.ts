@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Platform Catalog Cover Art Scanner Agent
+ * ChanceTEK One — Platform Catalog Cover Art Scanner Agent
  * Autonomous Agentic AI specialist that scans existing tracks, albums, and MP3
  * files across the platform that lack authentic cover art, searches the internet
  * using Tavily to find authentic artwork, and embeds/applies it across catalog
@@ -173,7 +173,7 @@ export class PlatformCatalogScannerAgent {
             id: folder.id,
             type: 'folder',
             title: folder.name,
-            artistName: folder.artistName || 'ChanceTEKone',
+            artistName: folder.artistName || 'ChanceTEK One',
             currentCoverUrl: folder.coverUrl,
             missingReason: artCheck.reason || 'no_cover',
             crateId: folder.crateId,
@@ -365,7 +365,7 @@ export class PlatformCatalogScannerAgent {
     candidate?: CoverArtCandidate;
     reasoning: string;
   }> {
-    const artist = (albumOrFolder.artistName || 'ChanceTEKone').trim();
+    const artist = (albumOrFolder.artistName || 'ChanceTEK One').trim();
     const title = (albumOrFolder.title || '').trim();
 
     // 0. Check local authentic artwork archives first

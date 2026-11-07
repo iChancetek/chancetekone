@@ -243,8 +243,8 @@ export default function AdvertisementPage() {
             </div>
             <p className="text-xs sm:text-sm font-bold text-white truncate">
               {isPlaying
-                ? 'Now Streaming: ChanceTEKone Radio Ad Bulletin'
-                : 'ChanceTEKone Radio Ad Bulletin'}
+                ? 'Now Streaming: ChanceTEK One Radio Ad Bulletin'
+                : 'ChanceTEK One Radio Ad Bulletin'}
             </p>
           </div>
         </div>
@@ -509,7 +509,7 @@ export default function AdvertisementPage() {
             href="/projects"
             className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 text-white font-bold text-xs uppercase tracking-wider transition-all"
           >
-            <span>Explore ChanceTEKone Projects</span>
+            <span>Explore ChanceTEK One Projects</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

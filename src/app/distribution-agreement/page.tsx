@@ -252,7 +252,7 @@ export default function DistributionAgreementPage() {
             Artist / Creator Distribution Agreement
           </h1>
           <p className="text-sm sm:text-base text-neutral-300 max-w-3xl leading-relaxed">
-            ChanceTEKone.US — Music, Video & Content Onboarding. Execute your distribution covenant online and submit directly to the ChanceTEKone administrative council to authorize streaming, physical merchandise distribution, and automated royalty settlements.
+            ChanceTEKone.US — Music, Video & Content Onboarding. Execute your distribution covenant online and submit directly to the ChanceTEK One administrative council to authorize streaming, physical merchandise distribution, and automated royalty settlements.
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-mono text-neutral-400">
@@ -325,7 +325,7 @@ export default function DistributionAgreementPage() {
             <h3 className="text-lg font-black text-white">Parties</h3>
           </div>
           <p className="text-sm text-neutral-300 leading-relaxed">
-            This Artist/Creator Distribution Agreement (&quot;Agreement&quot;) is entered into between ChanceTEKone (&quot;ChanceTEKone.US&quot;), and the undersigned artist/creator or rights holder (&quot;Artist/Creator&quot;), collectively the &quot;Parties.&quot;
+            This Artist/Creator Distribution Agreement (&quot;Agreement&quot;) is entered into between ChanceTEK One (&quot;ChanceTEKone.US&quot;), and the undersigned artist/creator or rights holder (&quot;Artist/Creator&quot;), collectively the &quot;Parties.&quot;
           </p>
         </section>
 
@@ -567,7 +567,7 @@ export default function DistributionAgreementPage() {
 
             <div className="space-y-3 border-t md:border-t-0 md:border-l border-white/10 md:pl-6 pt-4 md:pt-0">
               <h4 className="text-xs font-bold uppercase tracking-wider text-brand-gold">
-                ChanceTEKone Countersignature
+                ChanceTEK One Countersignature
               </h4>
               <p className="text-neutral-300">
                 <span className="text-neutral-500">Authorized Agent:</span> {submissionSuccess.countersignedBy}
@@ -586,7 +586,7 @@ export default function DistributionAgreementPage() {
                 <span className="text-neutral-500 block mb-1">Platform Institutional Seal:</span>
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-brand-gold/10 border border-brand-gold/40 text-brand-gold font-serif italic text-sm">
                   <BadgeCheck className="w-4 h-4 text-brand-gold" />
-                  <span>/s/ ChanceTEKone Institutional Master Seal</span>
+                  <span>/s/ ChanceTEK One Institutional Master Seal</span>
                 </div>
               </div>
             </div>
@@ -619,7 +619,7 @@ export default function DistributionAgreementPage() {
               Execute &amp; Submit Agreement
             </h3>
             <p className="text-xs sm:text-sm text-neutral-300">
-              Complete the signatory verification details below. Upon execution, your submission will be routed to the ChanceTEKone administration council.
+              Complete the signatory verification details below. Upon execution, your submission will be routed to the ChanceTEK One administration council.
             </p>
           </div>
 
@@ -909,7 +909,7 @@ export default function DistributionAgreementPage() {
                   className="rounded border-white/20 bg-white/5 text-brand-gold focus:ring-0 mt-0.5"
                 />
                 <span className="leading-relaxed">
-                  <strong>Execution Covenant:</strong> I have read and agree to all 12 provisions of this ChanceTEKone Artist/Creator Distribution Agreement. I warrant that I possess clear title and authority to grant the non-exclusive distribution licenses articulated herein.
+                  <strong>Execution Covenant:</strong> I have read and agree to all 12 provisions of this ChanceTEK One Artist/Creator Distribution Agreement. I warrant that I possess clear title and authority to grant the non-exclusive distribution licenses articulated herein.
                 </span>
               </label>
             </div>

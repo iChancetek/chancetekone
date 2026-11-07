@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Audio Asset Integrity
+ * ChanceTEK One — Audio Asset Integrity
  *
  * Single, isomorphic (browser + Node) home for the rules that keep every song record bound to
  * the exact audio asset that was uploaded for it:

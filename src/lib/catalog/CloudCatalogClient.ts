@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Cloud Catalog Client (browser)
+ * ChanceTEK One — Cloud Catalog Client (browser)
  *
  * Keeps every browser in sync with the shared catalog stored in Firestore/Storage:
  *  - Pull:  polls a cheap revision check + subscribes to the Firestore meta doc for

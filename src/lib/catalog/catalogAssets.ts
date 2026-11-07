@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Catalog asset externalization.
+ * ChanceTEK One — Catalog asset externalization.
  *
  * Content that only exists inside one browser (IndexedDB audio, data: / blob: artwork) is
  * invisible to every other member. Before a catalog item is published to the cloud its

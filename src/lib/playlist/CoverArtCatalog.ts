@@ -1,4 +1,4 @@
-﻿export interface CoverArtItem {
+export interface CoverArtItem {
   id: string;
   title: string;
   category: 'big_beat' | 'turntables' | 'hardware' | 'neon' | 'boombox' | 'tape_vinyl' | 'abstract';
@@ -566,7 +566,7 @@ export const COVER_ART_CATALOG: CoverArtItem[] = [
     title: 'Block Party Concrete Wall',
     category: 'boombox',
     url: 'https://images.unsplash.com/photo-1499781350541-7783f6c6a0c8?w=800&auto=format&fit=crop&q=80',
-    tags: ['graffiti', 'mural', 'street-art'],
+    tags: ['mural', 'street-art', 'urban-wall'],
   },
   {
     id: 'cover-bbx-3',
@@ -605,10 +605,10 @@ export const COVER_ART_CATALOG: CoverArtItem[] = [
   },
   {
     id: 'cover-bbx-8',
-    title: 'Graffiti Wildstyle Spray Cap',
+    title: 'Wildstyle Street Mural Cap',
     category: 'boombox',
     url: 'https://images.unsplash.com/photo-1499781350541-7783f6c6a0c8?w=800&auto=format&fit=crop&q=80',
-    tags: ['wildstyle', 'spray', 'aerosol'],
+    tags: ['wildstyle', 'mural', 'urban-art'],
   },
   {
     id: 'cover-bbx-9',
@@ -726,7 +726,7 @@ export const COVER_ART_CATALOG: CoverArtItem[] = [
   },
   {
     id: 'cover-ab-12',
-    title: 'ChanceTEKone Gold Master Vault',
+    title: 'ChanceTEK One Gold Master Vault',
     category: 'abstract',
     url: '/images/logo.png',
     tags: ['logo', '8spades', 'official', 'master'],

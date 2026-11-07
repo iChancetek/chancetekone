@@ -60,8 +60,8 @@ export const SharePlaylistModal: React.FC<SharePlaylistModalProps> = ({
   // Canonical public URL required by Facebook, LinkedIn, Twitter crawlers:
   const publicShareUrl = isLocalhost ? `https://chancetekone.us/playlists/${playlist.id}` : `${origin}/playlists/${playlist.id}`;
   const shareUrl = `${origin}/playlists/${playlist.id}`;
-  const shareText = `Listen to "${playlist.name}" on ChanceTEKone: ${playlist.description || 'Curated music and media crate.'}`;
-  const textMessageBody = `Listen to "${playlist.name}" on ChanceTEKone!
+  const shareText = `Listen to "${playlist.name}" on ChanceTEK One: ${playlist.description || 'Curated music and media crate.'}`;
+  const textMessageBody = `Listen to "${playlist.name}" on ChanceTEK One!
 
 ${playlist.description || 'Curated music and media crate.'}
 
@@ -321,7 +321,7 @@ ${publicShareUrl}`;
                 </div>
                 <h4 className="font-extrabold text-white text-sm truncate mt-1">{playlist.name}</h4>
                 <p className="text-[11px] text-neutral-400 line-clamp-1 mt-0.5">
-                  {playlist.description || 'Curated music and media crate on ChanceTEKone.'}
+                  {playlist.description || 'Curated music and media crate on ChanceTEK One.'}
                 </p>
               </div>
             </div>

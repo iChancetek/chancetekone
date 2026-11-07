@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Creator Content Submission & Moderation Data Models
+ * ChanceTEK One — Creator Content Submission & Moderation Data Models
  * Defines types for creator uploads, category metadata, review holding area,
  * human-in-the-loop decisions, and transactional email notifications.
  */

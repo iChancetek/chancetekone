@@ -69,7 +69,7 @@ export const CommentComposer: React.FC<CommentComposerProps> = ({
         contentTitle,
         text: text.trim(),
         userId: profile?.id || user?.uid || 'usr-member',
-        userName: profile?.name || user?.displayName || profile?.email?.split('@')[0] || 'ChanceTEKone MEMBER',
+        userName: profile?.name || user?.displayName || profile?.email?.split('@')[0] || 'ChanceTEK One MEMBER',
         userEmail: email,
         userHandle: handle,
         userAvatar: profile?.avatarUrl || user?.photoURL || '/images/logo.png',

@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Catalog merge & change-tracking helpers.
+ * ChanceTEK One — Catalog merge & change-tracking helpers.
  *
  * Rules:
  *  - Members (non-writers): the cloud is authoritative. Local state is replaced.

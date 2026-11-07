@@ -26,7 +26,7 @@ export async function generateMetadata({
         images: [
           {
             url: image,
-            alt: `${meta.title} on ChanceTEKone`,
+            alt: `${meta.title} on ChanceTEK One`,
           },
         ],
       },
@@ -39,7 +39,7 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: 'THE RETURN OF THE BREAK BEATS — ChanceTEKone',
+      title: 'THE RETURN OF THE BREAK BEATS — ChanceTEK One',
       description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
       openGraph: {
         title: 'THE RETURN OF THE BREAK BEATS',

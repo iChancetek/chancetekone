@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEKone — Multi-folder ingestion scanner.
+ * ChanceTEK One — Multi-folder ingestion scanner.
  *
  * Root causes this module fixes in the previous drag-and-drop / folder-picker code:
  *

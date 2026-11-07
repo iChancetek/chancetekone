@@ -8,7 +8,7 @@ export const metadata = {
   description: 'Technical assistance, crate concierge, PWA offline guide, and direct support channels.',
 };
 
-const SUPPORT_FULL_TEXT = `Support Center and Crate Concierge. Technical Assistance, Crate Navigation, and Direct Inquiries. Published by ChanceTEKone. Whether you need assistance with Progressive Web App offline caching, vinyl fulfillment, sample breakdown verification, or account synchronization, our dedicated support engineering team is available to assist you. ChanceTEKone is engineered as a modern Progressive Web App, enabling high-definition audio and audiobook playback with lock-screen controls even when offline. Break Beats AI operates a Dual-Memory architecture allowing you to inspect or clear your saved gear and genre preferences at any time. Visitors and unauthenticated guests enjoy full access to stream music tracks, watch cultural documentaries, and converse with the AI assistant without creating an account.`;
+const SUPPORT_FULL_TEXT = `Support Center and Crate Concierge. Technical Assistance, Crate Navigation, and Direct Inquiries. Published by ChanceTEK One. Whether you need assistance with Progressive Web App offline caching, vinyl fulfillment, sample breakdown verification, or account synchronization, our dedicated support engineering team is available to assist you. ChanceTEK One is engineered as a modern Progressive Web App, enabling high-definition audio and audiobook playback with lock-screen controls even when offline. Break Beats AI operates a Dual-Memory architecture allowing you to inspect or clear your saved gear and genre preferences at any time. Visitors and unauthenticated guests enjoy full access to stream music tracks, watch cultural documentaries, and converse with the AI assistant without creating an account.`;
 
 export default function SupportPage() {
   return (
@@ -33,7 +33,7 @@ export default function SupportPage() {
             Support Center
           </h1>
           <p className="text-sm sm:text-base text-neutral-300 max-w-2xl leading-relaxed">
-            Technical Assistance, Crate Navigation, and Direct Inquiries • Published by ChanceTEKone
+            Technical Assistance, Crate Navigation, and Direct Inquiries • Published by ChanceTEK One
           </p>
         </div>
       </div>
@@ -64,12 +64,12 @@ export default function SupportPage() {
                   </h3>
                 </div>
                 <VoiceNarrationButton
-                  text="ChanceTEKone is engineered as a modern Progressive Web App. By selecting Install from the navigation menu on iOS, Android, or desktop, our service worker caches the core audio engine. Audio tracks and audiobook chapters can be streamed with full lock-screen playback controls even when disconnected from cellular networks."
+                  text="ChanceTEK One is engineered as a modern Progressive Web App. By selecting Install from the navigation menu on iOS, Android, or desktop, our service worker caches the core audio engine. Audio tracks and audiobook chapters can be streamed with full lock-screen playback controls even when disconnected from cellular networks."
                   variant="icon"
                 />
               </div>
               <p className="text-sm sm:text-base text-neutral-300 leading-relaxed pl-8">
-                ChanceTEKone is engineered as a modern Progressive Web App. By selecting Install from the navigation menu on iOS, Android, or desktop, our service worker caches the core audio engine. Audio tracks and audiobook chapters can be streamed with full lock-screen playback controls even when disconnected from cellular networks.
+                ChanceTEK One is engineered as a modern Progressive Web App. By selecting Install from the navigation menu on iOS, Android, or desktop, our service worker caches the core audio engine. Audio tracks and audiobook chapters can be streamed with full lock-screen playback controls even when disconnected from cellular networks.
               </p>
             </div>
 
@@ -152,7 +152,7 @@ export default function SupportPage() {
             </div>
             <div className="p-4 rounded-2xl bg-neutral-900/60 border border-white/5 space-y-1">
               <p className="text-neutral-400 font-semibold">Founder & Curator Office</p>
-              <p className="text-brand-gold font-medium">ChanceTEKone.</p>
+              <p className="text-brand-gold font-medium">ChanceTEK One.</p>
             </div>
           </div>
         </section>
@@ -178,7 +178,7 @@ export default function SupportPage() {
           </Link>
         </div>
         <p className="text-neutral-500">
-          © 2026 ChanceTEKone. All rights reserved.
+          © 2026 ChanceTEK One. All rights reserved.
         </p>
       </div>
     </div>

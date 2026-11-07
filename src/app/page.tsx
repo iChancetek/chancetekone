@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -50,7 +50,7 @@ export default function HomePage() {
           playsInline
           preload="metadata"
           className="w-full h-full object-cover opacity-50 brightness-95 saturate-125 transition-opacity duration-1000"
-          src="/videos/8ofSW1.mp4"
+          src="/videos/chancetekone1.mp4"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/45 via-neutral-950/55 to-neutral-950/65" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-transparent via-neutral-950/20 to-neutral-950/55" />
@@ -153,7 +153,7 @@ export default function HomePage() {
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
               Platform & Editorial Pages
             </h2>
-            <span className="text-xs text-brand-gold font-medium">ChanceTEKone</span>
+            <span className="text-xs text-brand-gold font-medium">ChanceTEK One</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -168,7 +168,7 @@ export default function HomePage() {
                 About Platform
               </h3>
               <p className="text-xs text-neutral-300 leading-relaxed">
-                The Story of ChanceTEKone. Analog ethos, hardware grain, and cultural mission.
+                The Story of ChanceTEK One. Analog ethos, hardware grain, and cultural mission.
               </p>
               <span className="text-xs font-semibold text-brand-gold flex items-center gap-1 pt-1">
                 Explore Story <ChevronRight className="w-3 h-3" />

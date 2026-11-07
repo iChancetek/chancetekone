@@ -2,8 +2,8 @@
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'ChanceTEKone',
-    short_name: 'ChanceTEKone',
+    name: 'ChanceTEK One',
+    short_name: 'ChanceTEK One',
     description:
       'Agentic AI Breakbeat Streaming, 4K Video Sessions, Cultural Audiobooks, Exclusive Vinyl & Merchandise Operating System.',
     start_url: '/',

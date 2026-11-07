@@ -95,7 +95,7 @@ const sampleJpegBytes = new Uint8Array([
 
   const taggedBuffer = writeID3v2TagToMP3(mockMp3.buffer, {
     title: 'Autonomous AI Test Track',
-    artist: 'ChanceTEKone',
+    artist: 'ChanceTEK One',
     album: 'Crate Intelligence Vault',
     coverImageBytes: sampleJpegBytes,
     coverMimeType: 'image/jpeg',

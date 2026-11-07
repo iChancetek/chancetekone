@@ -795,7 +795,7 @@ export function DistributionAgreementsSection() {
                       Platform Countersigned By:
                     </span>
                     <span className="font-bold text-white">
-                      {selectedAgreement.countersignedBy || 'Chancellor @ ChanceTEKone'}
+                      {selectedAgreement.countersignedBy || 'Chancellor @ ChanceTEK One'}
                     </span>
                     <span className="text-neutral-400 text-[11px] block">
                       {selectedAgreement.countersignedTitle || 'Executive Director & Rights Curator'}

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
@@ -50,22 +50,6 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
 
   const slides: ProjectBannerSlide[] = [
     {
-      id: 'return-of-the-break-beats',
-      badge: 'Featured Upcoming Works',
-      narrationText:
-        'Featured Upcoming Works. The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
-      heading: 'Featured Upcoming Works',
-      description:
-        'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artist and A Documentary Film.',
-      bannerImage: '/images/chancetekone_banner.png',
-      bannerAlt: 'ChanceTEKone PRESENTS THE RETURN OF THE BREAK BEATS',
-      aspectRatio: { width: 1024, height: 562 },
-      track: track,
-      videoHref: '/videos/video-1',
-      aiPrompt: `Tell me about the breakbeat anthem "${track.title}" by ${track.artistName}, its BPM pocket, and sample origins!`,
-      projectHref: '/projects#project-1',
-    },
-    {
       id: 'saturday-night-sunday-morning',
       badge: 'Featured Upcoming Works',
       narrationText: 'Featured Upcoming Works. Saturday Night, Sunday Morning... By Author, Kwame Thompson.',
@@ -97,12 +81,12 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
       id: 'chancetek-graph-banner',
       badge: 'Featured Upcoming Works',
       narrationText:
-        'Featured Upcoming Works. ChanceTEKone PRESENTS ChanceTEK: Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio by Chancellor @ ChanceTEK LLC.',
+        'Featured Upcoming Works. ChanceTEK One PRESENTS ChanceTEK: Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio by Chancellor @ ChanceTEK LLC.',
       heading: 'ChanceTEK: The Master Series',
       description:
-        'ChanceTEKone PRESENTS: ChanceTEK — The Master Series. Featuring Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio by Chancellor @ ChanceTEK LLC.',
+        'ChanceTEK One PRESENTS: ChanceTEK — The Master Series. Featuring Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio by Chancellor @ ChanceTEK LLC.',
       bannerImage: '/images/chancetek_banner.png',
-      bannerAlt: 'ChanceTEKone PRESENTS CHANCETEK THE SOUND THE SCIENCE THE FUTURE',
+      bannerAlt: 'ChanceTEK One PRESENTS CHANCETEK THE SOUND THE SCIENCE THE FUTURE',
       aspectRatio: { width: 1024, height: 576 },
       track: track,
       videoHref: '/videos',
@@ -114,12 +98,12 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
       id: 'the-bronx-heritage-archive',
       badge: 'Featured Upcoming Works',
       narrationText:
-        'Featured Upcoming Works. ChanceTEKone PRESENTS The Bronx Heritage Archive: Oral History and The Four Pillars of Hip-Hop. Documenting park jam sound systems and the golden era.',
+        'Featured Upcoming Works. ChanceTEK One PRESENTS The Bronx Heritage Archive: Oral History and The Four Pillars of Hip-Hop. Documenting park jam sound systems and the golden era.',
       heading: 'The Bronx Heritage Archive',
       description:
         'A comprehensive historical preservation documenting The Bronx, park jam sound systems, and the genesis of hip-hop.',
       bannerImage: '/images/bronx_heritage_archive_banner.jpg',
-      bannerAlt: 'ChanceTEKone PRESENTS THE BRONX HERITAGE ARCHIVE',
+      bannerAlt: 'ChanceTEK One PRESENTS THE BRONX HERITAGE ARCHIVE',
       aspectRatio: { width: 1024, height: 576 },
       track: MusicCatalogService.getTrackById('track-2') || track,
       videoHref: '/videos/video-6',
@@ -131,12 +115,12 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
       id: 'quantum-break-sequence',
       badge: 'Featured Upcoming Works',
       narrationText:
-        'Featured Upcoming Works. ChanceTEKone PRESENTS Quantum Break Sequence: Synthetic Syncopation for Cyber Undergrounds, engineered with modular synthesis and accelerated breaks.',
+        'Featured Upcoming Works. ChanceTEK One PRESENTS Quantum Break Sequence: Synthetic Syncopation for Cyber Undergrounds, engineered with modular synthesis and accelerated breaks.',
       heading: 'Quantum Break Sequence',
       description:
         'High-speed synthetic syncopation designed for underground cyber-arenas, electronic festivals, and late-night highway cruising.',
       bannerImage: '/images/quantum_break_sequence_banner.jpg',
-      bannerAlt: 'ChanceTEKone PRESENTS QUANTUM BREAK SEQUENCE',
+      bannerAlt: 'ChanceTEK One PRESENTS QUANTUM BREAK SEQUENCE',
       aspectRatio: { width: 1024, height: 576 },
       track: MusicCatalogService.getTrackById('track-3') || track,
       videoHref: '/videos/video-3',
@@ -148,12 +132,12 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
       id: 'velvet-horns-tape-saturation',
       badge: 'Featured Upcoming Works',
       narrationText:
-        'Featured Upcoming Works. ChanceTEKone PRESENTS Velvet Horns & Tape Saturation: Warm Tube Masters and 1970s Funk Grooves, recorded directly to reel-to-reel tape.',
+        'Featured Upcoming Works. ChanceTEK One PRESENTS Velvet Horns & Tape Saturation: Warm Tube Masters and 1970s Funk Grooves, recorded directly to reel-to-reel tape.',
       heading: 'Velvet Horns & Tape Saturation',
       description:
         'Warm reel-to-reel master tapes, dynamic brass solos, and undeniable pocket grooves from the heart of the vinyl revolution.',
       bannerImage: '/images/velvet_horns_tape_saturation_banner.jpg',
-      bannerAlt: 'ChanceTEKone PRESENTS VELVET HORNS & TAPE SATURATION',
+      bannerAlt: 'ChanceTEK One PRESENTS VELVET HORNS & TAPE SATURATION',
       aspectRatio: { width: 1024, height: 576 },
       track: MusicCatalogService.getTrackById('track-4') || track,
       videoHref: '/videos/video-4',
@@ -186,14 +170,11 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
     if (slide.id === 'saturday-night-sunday-morning') {
       return buildCanonicalContentKey('project', 'Saturday Night, Sunday Morning', 'Kwame Thompson');
     }
-    if (slide.id === 'return-of-the-break-beats') {
-      return buildCanonicalContentKey('project', 'The Return Of The Break Beats', 'ChanceTEKone');
-    }
     if (slide.id === 'chancetek-graph-banner') {
       return buildCanonicalContentKey('project', 'ChanceTEK The Master Series', 'Chancellor');
     }
     if (slide.id === 'the-bronx-heritage-archive') {
-      return buildCanonicalContentKey('project', 'The Bronx Heritage Archive', 'ChanceTEKone');
+      return buildCanonicalContentKey('project', 'The Bronx Heritage Archive', 'ChanceTEK One');
     }
     if (slide.id === 'quantum-break-sequence') {
       return buildCanonicalContentKey('project', 'Quantum Break Sequence', 'Cipher Voltage');
@@ -201,7 +182,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
     if (slide.id === 'velvet-horns-tape-saturation') {
       return buildCanonicalContentKey('project', 'Velvet Horns & Tape Saturation', 'Luna Brass & The Crate Queens');
     }
-    return buildCanonicalContentKey('project', slide.heading, 'ChanceTEKone');
+    return buildCanonicalContentKey('project', slide.heading, 'ChanceTEK One');
   }, []);
 
   const currentSlide = slides[currentIndex];
@@ -561,16 +542,6 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
           isOpen={showShareModal}
           onClose={() => setShowShareModal(false)}
           entity={(() => {
-            if (currentSlide.id === 'return-of-the-break-beats') {
-              return {
-                type: 'project',
-                id: 'project-1',
-                customTitle: 'The Return of the Break Beats',
-                customCreator: 'ChanceTEKone',
-                customDescription: currentSlide.description || currentSlide.narrationText,
-                customCoverUrl: '/images/return_of_the_break_beats_master.png',
-              };
-            }
             if (currentSlide.id === 'mi-vida-loca') {
               return {
                 type: 'audiobook',
@@ -605,9 +576,9 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
               type: 'project',
               id: currentSlide.id,
               customTitle: currentSlide.heading,
-              customCreator: 'ChanceTEKone',
+              customCreator: 'ChanceTEK One',
               customDescription: currentSlide.description || currentSlide.narrationText,
-              customCoverUrl: currentSlide.bannerImage || '/images/return_of_the_break_beats_master.png',
+              customCoverUrl: currentSlide.bannerImage || '/images/chancetek_banner.png',
             };
           })()}
         />

@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       id: `folder-${Date.now()}`,
       crateId,
       name,
-      artistName: artistName || 'ChanceTEKone',
+      artistName: artistName || 'ChanceTEK One',
       description: description || '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

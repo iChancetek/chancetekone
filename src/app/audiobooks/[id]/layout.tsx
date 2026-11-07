@@ -39,19 +39,19 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: 'ChanceTEKone — Spoken Literature & Audiobooks',
-      description: 'Stream author literature, master audiobooks, and chapter narratives on ChanceTEKone.',
+      title: 'ChanceTEK One — Spoken Literature & Audiobooks',
+      description: 'Stream author literature, master audiobooks, and chapter narratives on ChanceTEK One.',
       openGraph: {
-        title: 'ChanceTEKone',
-        description: 'Stream author literature, master audiobooks, and chapter narratives on ChanceTEKone.',
+        title: 'ChanceTEK One',
+        description: 'Stream author literature, master audiobooks, and chapter narratives on ChanceTEK One.',
         type: 'website',
         url: 'https://chancetekone.us',
         images: [{ url: 'https://chancetekone.us/images/return_of_the_break_beats_master.png' }],
       },
       twitter: {
         card: 'summary_large_image',
-        title: 'ChanceTEKone',
-        description: 'Stream author literature, master audiobooks, and chapter narratives on ChanceTEKone.',
+        title: 'ChanceTEK One',
+        description: 'Stream author literature, master audiobooks, and chapter narratives on ChanceTEK One.',
         images: ['https://chancetekone.us/images/return_of_the_break_beats_master.png'],
       },
     };

@@ -222,7 +222,7 @@ export const CrateManagementSection: React.FC = () => {
               Master Crate & Track Management
             </h2>
             <p className="text-xs sm:text-sm text-neutral-300 max-w-2xl leading-relaxed">
-              Explore and govern the eight official ChanceTEKone crates. Manage artists, songs, release artwork, BPM tempo, and master track audio across all crates.
+              Explore and govern the eight official ChanceTEK One crates. Manage artists, songs, release artwork, BPM tempo, and master track audio across all crates.
             </p>
           </div>
 

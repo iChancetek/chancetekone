@@ -13,7 +13,7 @@ async function runTests() {
   console.log('  ✓ Agreement ID generation conforms to specification');
 
   console.log('\n--- Test 2: Institutional Execution & Countersignature ---');
-  assert.strictEqual(DistributionAgreementService.COUNTERSIGNED_BY, 'Chancellor @ ChanceTEKone');
+  assert.strictEqual(DistributionAgreementService.COUNTERSIGNED_BY, 'Chancellor @ ChanceTEK One');
   assert.strictEqual(DistributionAgreementService.COUNTERSIGNED_TITLE, 'Executive Director & Rights Curator');
   assert.strictEqual(DistributionAgreementService.VERSION, '1.0.0');
   console.log('  ✓ Institutional countersignatory credentials verified');

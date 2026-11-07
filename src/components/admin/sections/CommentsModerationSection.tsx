@@ -768,7 +768,7 @@ export const CommentsModerationSection: React.FC = () => {
                   <FileText className="w-3.5 h-3.5" />
                   Executive Community Telemetry Report
                 </div>
-                <h3 className="text-xl font-black text-white">ChanceTEKone Discussion Intelligence</h3>
+                <h3 className="text-xl font-black text-white">ChanceTEK One Discussion Intelligence</h3>
                 <p className="text-xs text-neutral-400">Generated on {formatExactDateTime(new Date().toISOString())}</p>
               </div>
 

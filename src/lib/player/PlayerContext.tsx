@@ -593,7 +593,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       try {
         navigator.mediaSession.metadata = new MediaMetadata({
           title: currentTrack.title,
-          artist: currentTrack.artistName || 'ChanceTEKone',
+          artist: currentTrack.artistName || 'ChanceTEK One',
           album: currentTrack.albumTitle || (currentTrack.genre ? `${currentTrack.genre} · Return of the Break Beats` : 'Return of the Break Beats'),
           artwork: [
             { src: coverUrl, sizes: '96x96', type: 'image/png' },
@@ -612,7 +612,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       try {
         navigator.mediaSession.metadata = new MediaMetadata({
           title: currentChapter.title,
-          artist: currentAudiobook.narrator || currentAudiobook.author || 'ChanceTEKone',
+          artist: currentAudiobook.narrator || currentAudiobook.author || 'ChanceTEK One',
           album: currentAudiobook.title,
           artwork: [
             { src: coverUrl, sizes: '192x192', type: 'image/png' },
@@ -785,7 +785,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         mediaId: resolvedTrack.id,
         mediaType: 'music',
         title: resolvedTrack.title,
-        subtitle: resolvedTrack.artistName || 'ChanceTEKone',
+        subtitle: resolvedTrack.artistName || 'ChanceTEK One',
         coverUrl: resolvedTrack.coverUrl || '/images/logo.png',
         duration: resolvedTrack.duration || 0,
         audioUrl: resolvedTrack.audioUrl,
@@ -1511,7 +1511,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       <AuthModal
         isOpen={isAuthGateModalOpen}
         onClose={() => setIsAuthGateModalOpen(false)}
-        title="Sign Up to Stream on ChanceTEKone"
+        title="Sign Up to Stream on ChanceTEK One"
         description="You must sign up for an account in order to stream music and video on the platform. Create your free account or sign in to continue."
         initialTab="signup"
         onSuccess={() => {
