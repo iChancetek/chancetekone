@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Server-Side Admin Authorization Utility
+﻿/**
+ * ChanceTEKone — Server-Side Admin Authorization Utility
  * Validates request authorization tokens, headers, and admin identities server-side.
  */
 
@@ -87,7 +87,7 @@ export async function verifyServerAdmin(request: NextRequest): Promise<ServerAut
       if (token.startsWith('admin-') || token === 'authorized-admin') {
         return {
           authorized: true,
-          email: 'antgreene@8ofspadesworks.com',
+          email: 'antgreene@chancetekone.com',
           role: 'admin',
         };
       }
@@ -98,7 +98,7 @@ export async function verifyServerAdmin(request: NextRequest): Promise<ServerAut
     if (process.env.NODE_ENV !== 'production' || host.includes('localhost') || host.includes('127.0.0.1')) {
       return {
         authorized: true,
-        email: adminEmailHeader || 'antgreene@8ofspadesworks.com',
+        email: adminEmailHeader || 'antgreene@chancetekone.com',
         role: 'admin',
       };
     }
@@ -191,7 +191,7 @@ export async function verifyServerUser(request: NextRequest): Promise<ServerUser
     // 4. In development or local environment, fallback gracefully for active sessions
     const host = request.headers.get('host') || '';
     if (process.env.NODE_ENV !== 'production' || host.includes('localhost') || host.includes('127.0.0.1')) {
-      const email = userEmailHeader || adminEmailHeader || 'creator@8ofspadesworks.us';
+      const email = userEmailHeader || adminEmailHeader || 'creator@chancetekone.us';
       return {
         authenticated: true,
         userId: userIdHeader || 'usr-creator-local',

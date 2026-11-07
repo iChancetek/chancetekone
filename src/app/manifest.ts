@@ -1,9 +1,9 @@
-import type { MetadataRoute } from 'next';
+﻿import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: '8 Of Spades Works',
-    short_name: '8 Of Spades',
+    name: 'ChanceTEKone',
+    short_name: 'ChanceTEKone',
     description:
       'Agentic AI Breakbeat Streaming, 4K Video Sessions, Cultural Audiobooks, Exclusive Vinyl & Merchandise Operating System.',
     start_url: '/',

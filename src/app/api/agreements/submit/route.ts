@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       status: 'success',
       agreementId: payload.id,
-      message: 'Agreement successfully submitted to 8 Of Spades Works LLC administrative registry.',
+      message: 'Agreement successfully submitted to ChanceTEKone administrative registry.',
     });
   } catch (err: any) {
     return NextResponse.json(

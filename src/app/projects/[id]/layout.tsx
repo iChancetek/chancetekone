@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import { resolveShareMetadataById } from '@/lib/sharing/shareMetadataService';
 
 export async function generateMetadata({
@@ -13,7 +13,7 @@ export async function generateMetadata({
     const rawCover = meta?.coverUrl || '/images/return_of_the_break_beats_master.png';
     const image = rawCover.startsWith('http')
       ? rawCover
-      : `https://8ofspadesworks.us${rawCover}`;
+      : `https://chancetekone.us${rawCover}`;
 
     return {
       title: `${meta.title} — ${meta.creator}`,
@@ -22,11 +22,11 @@ export async function generateMetadata({
         title: `${meta.title} — ${meta.creator}`,
         description: meta.description,
         type: 'website',
-        url: meta.canonicalUrl || `https://8ofspadesworks.us/projects#${id}`,
+        url: meta.canonicalUrl || `https://chancetekone.us/projects#${id}`,
         images: [
           {
             url: image,
-            alt: `${meta.title} on 8 OF SPADES WORKS`,
+            alt: `${meta.title} on ChanceTEKone`,
           },
         ],
       },
@@ -39,20 +39,20 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: 'THE RETURN OF THE BREAK BEATS — 8 OF SPADES WORKS',
+      title: 'THE RETURN OF THE BREAK BEATS — ChanceTEKone',
       description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
       openGraph: {
         title: 'THE RETURN OF THE BREAK BEATS',
         description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
         type: 'website',
-        url: 'https://8ofspadesworks.us/projects#project-1',
-        images: [{ url: 'https://8ofspadesworks.us/images/return_of_the_break_beats_master.png' }],
+        url: 'https://chancetekone.us/projects#project-1',
+        images: [{ url: 'https://chancetekone.us/images/return_of_the_break_beats_master.png' }],
       },
       twitter: {
         card: 'summary_large_image',
         title: 'THE RETURN OF THE BREAK BEATS',
         description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
-        images: ['https://8ofspadesworks.us/images/return_of_the_break_beats_master.png'],
+        images: ['https://chancetekone.us/images/return_of_the_break_beats_master.png'],
       },
     };
   }

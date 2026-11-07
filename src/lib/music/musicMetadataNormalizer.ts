@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Music Metadata & Stream Normalizer
+﻿/**
+ * ChanceTEKone — Music Metadata & Stream Normalizer
  * 
  * Centralized, authoritative normalizer for:
  * 1. Resolving full track titles (fixing track numbers like '01', '08', raw filenames, and OneDrive artifacts).
@@ -382,14 +382,14 @@ export const CANONICAL_ALBUM_REGISTRY: CanonicalMetadataMatch[] = [
   // Platform Originals & Creators
   {
     match: (a, t) =>
-      a.includes('8 of spades works') ||
+      a.includes('ChanceTEKone') ||
       t.includes('break beats') ||
       t.includes('neon crate') ||
       t.includes('sp-1200') ||
       t.includes('dembow underground') ||
       t.includes('concrete amplifier'),
     album: 'Genesis of the Concrete Beat',
-    artist: '8 OF SPADES WORKS',
+    artist: 'ChanceTEKone',
   },
   {
     match: (a, t) =>
@@ -421,7 +421,7 @@ export const CANONICAL_ALBUM_REGISTRY: CanonicalMetadataMatch[] = [
   },
   {
     match: (a) => a.includes('chancetek') || a.includes('chancellor'),
-    album: '8 OF SPADES WORKS PRESENTS: ChanceTEK',
+    album: 'ChanceTEKone PRESENTS: ChanceTEK',
     artist: 'Chancellor @ ChanceTEK LLC',
   },
 ];
@@ -547,7 +547,7 @@ export function normalizeArtistName(rawArtist?: string, title?: string): string 
   if (!a || a.toLowerCase() === 'unknown' || a.toLowerCase() === 'unknown artist') {
     const match = CANONICAL_ALBUM_REGISTRY.find((m) => m.match('', t));
     if (match) return match.artist;
-    return '8 OF SPADES WORKS';
+    return 'ChanceTEKone';
   }
 
   const low = a.toLowerCase();
@@ -588,7 +588,7 @@ export function normalizeArtistName(rawArtist?: string, title?: string): string 
   if (low.includes('luna brass')) return 'Luna Brass & The Crate Queens';
   if (low.includes('sub-zero') || low.includes('sub zero')) return 'Sub-Zero Rhythm Collective';
   if (low.includes('chancetek') || low.includes('chancellor')) return 'Chancellor @ ChanceTEK LLC';
-  if (low.includes('8 of spades')) return '8 OF SPADES WORKS';
+  if (low.includes('8 of spades') || low.includes('chancetekone')) return 'ChanceTEKone';
 
   return a;
 }
@@ -616,7 +616,7 @@ export function normalizeAlbumTitle(rawAlbum?: string, artistName?: string, titl
   const match = CANONICAL_ALBUM_REGISTRY.find((m) => m.match(a, t));
   if (match) return match.album;
 
-  if (a.includes('8 of spades')) return 'Genesis of the Concrete Beat';
+  if (a.includes('8 of spades') || a.includes('chancetekone')) return 'Genesis of the Concrete Beat';
   if (a.includes('cipher voltage')) return 'Quantum Break Sequence';
   if (a.includes('luna brass')) return 'Velvet Horns & Tape Saturation';
   if (a.includes('sub-zero') || a.includes('sub zero')) return 'Bronx Heritage Archive';
@@ -688,7 +688,7 @@ export function isMissingOrGenericCover(url?: string | null): boolean {
     lower.includes('folder.jpg') ||
     lower.includes('default-track') ||
     lower.includes('default-cover') ||
-    lower.includes('8_of_spades_works_banner.png')
+    lower.includes('chancetekone_banner.png')
   ) {
     return true;
   }

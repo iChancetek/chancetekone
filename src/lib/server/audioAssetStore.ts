@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — server-side audio asset store helpers.
+﻿/**
+ * ChanceTEKone — server-side audio asset store helpers.
  * Only import from API routes / server code (uses Node fs + crypto).
  */
 

@@ -20,7 +20,7 @@ export const getFirebaseAdmin = async () => {
     const projectId =
       process.env.FIREBASE_ADMIN_PROJECT_ID ||
       process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
-      'spadesworks8';
+      'nestobanks-221';
     const storageBucket =
       process.env.FIREBASE_STORAGE_BUCKET ||
       process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||

@@ -1,4 +1,4 @@
-import { ShortTermMemory, LongTermMemory, TasteProfile, MemoryFact } from '@/types/memory';
+﻿import { ShortTermMemory, LongTermMemory, TasteProfile, MemoryFact } from '@/types/memory';
 import { db, auth } from '@/lib/firebase/client';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
@@ -44,7 +44,7 @@ export const DEFAULT_INITIAL_FACTS: MemoryFact[] = [
 
 export const createDefaultLongTermMemory = (userId: string = 'default-user', userName?: string): LongTermMemory => ({
   userId,
-  userName: userName || '8 OF SPADES WORKS',
+  userName: userName || 'ChanceTEKone',
   tasteProfile: { ...DEFAULT_TASTE_PROFILE },
   explicitFacts: [...DEFAULT_INITIAL_FACTS],
   historicalSummary: 'Passionate breakbeat explorer, crate digger, and hip-hop culture enthusiast.',

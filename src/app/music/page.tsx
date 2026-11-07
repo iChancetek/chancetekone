@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import Image from 'next/image';
@@ -61,7 +61,7 @@ const GENRE_ARTWORKS: Record<string, GenreArtworkInfo> = {
   Genre: {
     name: 'The Crates & Diggin Vault',
     artwork: '/images/genres/all-genres.jpg',
-    tagline: '8 OF SPADES WORKS Master Audio Vault',
+    tagline: 'ChanceTEKone Master Audio Vault',
     description:
       'Explore authentic vinyl chops, heavyweight breakbeats, soulful chord progressions, and modern club anthems across the entire multi-genre sound spectrum.',
     accent: '#ffd700',

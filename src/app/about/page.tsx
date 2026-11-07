@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   Compass,
   Sparkles,
@@ -20,12 +20,12 @@ import Link from 'next/link';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 
 export const metadata = {
-  title: 'About 8 OF SPADES WORKS · A Cultural & Sonic Platform',
+  title: 'About ChanceTEKone · A Cultural & Sonic Platform',
   description:
     'A Cultural & Sonic Platform for Independent Artists and Creators. Direct distribution, streaming, and monetization without gatekeepers.',
 };
 
-const ABOUT_FULL_TEXT = `8 OF SPADES WORKS. A Cultural and Sonic Platform for Independent Artists and Creators.
+const ABOUT_FULL_TEXT = `ChanceTEKone. A Cultural and Sonic Platform for Independent Artists and Creators.
 
 Introducing an advanced cultural and sonic system for Independent Artists and Creators — a platform built on Digital Arts, Entertainment, Music and Video, Streaming 4K Cultural Documentaries, Narrated Audiobooks and Podcasts. The platform also delivers DJ Playlists, Online Radio, A.I. Crate Digging, Music Downloads, Apps, Merchandise, and more. The platform is also in connection with its own Social Media Platform "The FAM" Famio.US, which will serve as a companion for Social and Business Connections. The two platforms are linked for extra curriculum and ease of access.
 
@@ -45,8 +45,8 @@ For Creators of All Kinds: Whether you're producing 4K cultural documentaries, n
 We are more than a streaming service. We are a cultural infrastructure — a place where music, story, and identity converge, and where the people creating culture are the ones who profit from it, control it, and shape where it goes next. We Are The Future Of Independent Entertainment.
 
 The Operating System:
-Platform Architecture and Accessibility: Engineered as a modern Progressive Web App, 8 OF SPADES WORKS offers instantaneous access to unauthenticated guests and verified collectors alike. You are never required to pass through registration gates to stream music, explore the archive, or watch cultural mini-documentaries. The platform incorporates a universal text and font scaling accessibility engine, allowing listeners to increase typeface sizing up to one hundred and forty-five percent, engage high-contrast visual modes, and activate spoken audio narration in English and Spanish across all editorial sections.
-Leadership and Engineering Stewardship: 8 OF SPADES WORKS is developed and maintained by Chancellor at ChanceTEK LLC. Every software component, audio processing pipeline, neural recommendation graph, and visual canvas is crafted with exacting precision to deliver a transcendent cultural experience. For technical inquiries, crate additions, master tape preservation collaborations, or physical vinyl fulfillment support, our engineering team and crate concierge can be reached directly through the Support Center.`;
+Platform Architecture and Accessibility: Engineered as a modern Progressive Web App, ChanceTEKone offers instantaneous access to unauthenticated guests and verified collectors alike. You are never required to pass through registration gates to stream music, explore the archive, or watch cultural mini-documentaries. The platform incorporates a universal text and font scaling accessibility engine, allowing listeners to increase typeface sizing up to one hundred and forty-five percent, engage high-contrast visual modes, and activate spoken audio narration in English and Spanish across all editorial sections.
+Leadership and Engineering Stewardship: ChanceTEKone is developed and maintained by Chancellor at ChanceTEK LLC. Every software component, audio processing pipeline, neural recommendation graph, and visual canvas is crafted with exacting precision to deliver a transcendent cultural experience. For technical inquiries, crate additions, master tape preservation collaborations, or physical vinyl fulfillment support, our engineering team and crate concierge can be reached directly through the Support Center.`;
 
 export default function AboutPage() {
   return (
@@ -69,7 +69,7 @@ export default function AboutPage() {
 
           <div className="space-y-2">
             <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-display">
-              8 Of Spades Works
+              ChanceTEKone
             </h1>
             <p className="text-lg sm:text-xl font-bold bg-gradient-to-r from-amber-300 via-brand-gold to-brand-neon bg-clip-text text-transparent">
               A Cultural & Sonic Platform for Independent Artists and Creators
@@ -301,7 +301,7 @@ export default function AboutPage() {
                 <span>Platform Architecture and Accessibility</span>
               </h3>
               <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-                Engineered as a modern Progressive Web App, 8 OF SPADES WORKS offers instantaneous access 
+                Engineered as a modern Progressive Web App, ChanceTEKone offers instantaneous access 
                 to unauthenticated guests and verified collectors alike. You are never required to pass 
                 through registration gates to stream music, explore the archive, or watch cultural mini-documentaries.
                 The platform incorporates a universal text and font scaling accessibility engine, allowing listeners 
@@ -317,7 +317,7 @@ export default function AboutPage() {
                 <span>Leadership and Engineering Stewardship</span>
               </h3>
               <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-                8 OF SPADES WORKS is developed and maintained by Chancellor at ChanceTEK LLC. Every software component, 
+                ChanceTEKone is developed and maintained by Chancellor at ChanceTEK LLC. Every software component, 
                 audio processing pipeline, neural recommendation graph, and visual canvas is crafted with exacting 
                 precision to deliver a transcendent cultural experience.
               </p>
@@ -350,7 +350,7 @@ export default function AboutPage() {
           </Link>
         </div>
         <p className="text-neutral-500">
-          © 2026 8 OF SPADES WORKS. All rights reserved. Developed by Chancellor @ ChanceTEK LLC
+          © 2026 ChanceTEKone. All rights reserved. Developed by Chancellor @ ChanceTEK LLC
         </p>
       </div>
     </div>

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { AdminUserRecord, UserAccountStatus, AdminRole, UserActivityTimelineItem } from '@/types/admin';
 import { AuditLogger } from './AuditLogger';
@@ -43,7 +43,7 @@ const INITIAL_USERS: AdminUserRecord[] = [
   {
     id: 'usr-antgreene',
     name: 'Ant Greene',
-    email: 'antgreene@8ofspadesworks.com',
+    email: 'antgreene@chancetekone.com',
     avatarUrl: '/images/logo.png',
     role: 'admin',
     status: 'active',
@@ -106,7 +106,7 @@ class AdminUserManagerClass {
           if (realUsers.length > 0) {
             this.users = realUsers;
             // Guarantee Ant Greene is present
-            if (!this.users.some((u) => u.email.toLowerCase() === 'antgreene@8ofspadesworks.com')) {
+            if (!this.users.some((u) => u.email.toLowerCase() === 'antgreene@chancetekone.com')) {
               this.users.push(INITIAL_USERS[1]);
             }
             this.persistUsers();

@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Catalog asset externalization.
+﻿/**
+ * ChanceTEKone — Catalog asset externalization.
  *
  * Content that only exists inside one browser (IndexedDB audio, data: / blob: artwork) is
  * invisible to every other member. Before a catalog item is published to the cloud its

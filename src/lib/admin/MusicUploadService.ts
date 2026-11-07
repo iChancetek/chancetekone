@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Mass Music Upload & Resumable Batch Processing Service
+﻿/**
+ * ChanceTEKone — Mass Music Upload & Resumable Batch Processing Service
  * Supports up to 1,000 MP3 files per batch.
  * Features:
  * - Resumable, independently tracked jobs with SHA-256 checksums
@@ -320,7 +320,7 @@ class MusicUploadServiceClass {
     crateId: string,
     folderId?: string,
     batchName?: string,
-    actorEmail: string = 'antgreene@8ofspadesworks.com',
+    actorEmail: string = 'antgreene@chancetekone.com',
     actorId: string = 'usr-antgreene',
     options?: {
       destinationType?: 'crate' | 'artist' | 'producer';
@@ -400,7 +400,7 @@ class MusicUploadServiceClass {
    */
   public archiveBatch(
     batchId: string,
-    actorEmail: string = 'antgreene@8ofspadesworks.com',
+    actorEmail: string = 'antgreene@chancetekone.com',
     actorId: string = 'usr-antgreene'
   ): boolean {
     const batchIndex = this.batches.findIndex((b) => b.id === batchId);
@@ -444,7 +444,7 @@ class MusicUploadServiceClass {
    * Clears all fully published batches from the staging workspace.
    */
   public clearCompletedBatches(
-    actorEmail: string = 'antgreene@8ofspadesworks.com',
+    actorEmail: string = 'antgreene@chancetekone.com',
     actorId: string = 'usr-antgreene'
   ): number {
     const completed = this.batches.filter(
@@ -497,7 +497,7 @@ class MusicUploadServiceClass {
       let hasEmbeddedArtwork = Boolean(specificCover);
       let artworkStatus: 'extracted' | 'missing' = specificCover ? 'extracted' : 'missing';
       let title = file.name.replace(/\.[a-zA-Z0-9]+$/i, '');
-      let artist = '8 OF SPADES WORKS';
+      let artist = 'ChanceTEKone';
       let album = '';
       let genre = classifyGenre({ artist, title, crateId: batch.crateId, crateName: crate.name });
       let durationSeconds = 180;
@@ -716,7 +716,7 @@ class MusicUploadServiceClass {
       this.registerFile(sf.name, file);
 
       let title = sf.name.replace(/\.[a-zA-Z0-9]+$/i, '');
-      let artist = '8 OF SPADES WORKS';
+      let artist = 'ChanceTEKone';
       let album = '';
       let albumArtist = '';
       let genre = classifyGenre({ artist, title, crateId: batch.crateId, crateName: crate.name });
@@ -1006,7 +1006,7 @@ class MusicUploadServiceClass {
           const uploadRes = await fetch('/api/admin/upload', {
             method: 'POST',
             headers: {
-              'x-admin-email': batch.actorEmail || 'antgreene@8ofspadesworks.com',
+              'x-admin-email': batch.actorEmail || 'antgreene@chancetekone.com',
             },
             body: formData,
           });
@@ -2258,7 +2258,7 @@ class MusicUploadServiceClass {
 
         // Dynamically resolve artistId
         let effectiveArtistId = it.artistId || batch.artistId;
-        const normalizedArtistName = it.artist || batch.artistName || '8 OF SPADES WORKS';
+        const normalizedArtistName = it.artist || batch.artistName || 'ChanceTEKone';
         if (!effectiveArtistId || effectiveArtistId === 'artist-1') {
           const matchArtist = MOCK_ARTISTS.find(
             (a) => a.name.toLowerCase().trim() === normalizedArtistName.toLowerCase().trim()
@@ -2293,7 +2293,7 @@ class MusicUploadServiceClass {
           artistName: normalizedArtistName,
           producer: effectiveProducer,
           producerId: effectiveProducerId,
-          label: '8 OF SPADES WORKS',
+          label: 'ChanceTEKone',
           albumId: targetAlbumId,
           albumTitle: albTitle,
           albumCoverUrl: it.albumCoverUrl,
@@ -2470,7 +2470,7 @@ class MusicUploadServiceClass {
           title: it.title,
           artistId: 'artist-1',
           artistName: it.artist,
-          label: '8 OF SPADES WORKS',
+          label: 'ChanceTEKone',
           albumId: targetAlbumId,
           albumTitle: albTitle,
           albumCoverUrl: it.albumCoverUrl,
@@ -2594,7 +2594,7 @@ class MusicUploadServiceClass {
         const uploadRes = await fetch('/api/admin/upload', {
           method: 'POST',
           headers: {
-            'x-admin-email': batch?.actorEmail || 'antgreene@8ofspadesworks.com',
+            'x-admin-email': batch?.actorEmail || 'antgreene@chancetekone.com',
           },
           body: formData,
         });
@@ -2717,7 +2717,7 @@ class MusicUploadServiceClass {
     ];
 
     const artists = [
-      '8 OF SPADES WORKS', 'The Drum Architects', 'Luna Brass & The Crate Queens',
+      'ChanceTEKone', 'The Drum Architects', 'Luna Brass & The Crate Queens',
       'Cipher Voltage', 'Marcus Drumhead', 'Manhattan Vinyl Syndicate', 'The SP-1200 Kings',
     ];
 
@@ -2779,7 +2779,7 @@ class MusicUploadServiceClass {
   private generateSimulatedMetadata(fileName: string, crateId: string, existingCoverUrl?: string): ExtractedMP3Metadata {
     const cleanName = fileName.replace(/\.[a-zA-Z0-9]+$/i, '');
     const parts = cleanName.split(' - ');
-    const artist = parts[0] || '8 OF SPADES WORKS';
+    const artist = parts[0] || 'ChanceTEKone';
     const title = parts[1] || cleanName;
     const crate =
       MusicCatalogService.getCrateById(crateId) ||
@@ -2800,9 +2800,9 @@ class MusicUploadServiceClass {
       trackNumber: 1,
       discNumber: 1,
       composer: artist,
-      producer: '8 OF SPADES WORKS',
-      copyright: '© 2026 8 OF SPADES WORKS',
-      publisher: '8 OF SPADES WORKS Publishing',
+      producer: 'ChanceTEKone',
+      copyright: '© 2026 ChanceTEKone',
+      publisher: 'ChanceTEKone Publishing',
       durationSeconds: 215,
       bitrateKbps: 320,
       sampleRateHz: 44100,

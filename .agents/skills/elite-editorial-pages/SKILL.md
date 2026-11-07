@@ -1,4 +1,4 @@
----
+﻿---
 name: elite-editorial-pages
 description: Production blueprint and Times magazine editorial copywriting for Terms of Service, Privacy Policy, Support Center, and Learn More pages with cutting-edge visual layouts.
 ---
@@ -33,20 +33,20 @@ When implementing these pages in Next.js and React, adhere to the following arti
 <strong>Effective Date</strong>: January 1, 2026
 </p>
 <p>
-<strong>Published By</strong>: 8 of Spades Works LLC and Father Time 4000
+<strong>Published By</strong>: ChanceTEKone LLC and Father Time 4000
 </p>
 
 <h3>Preamble and Scope of Agreement</h3>
 <p>
-Welcome to Return of the Break Beats, an advanced cultural and sonic operating system curated and maintained by 8 of Spades Works LLC in direct collaboration with Father Time 4000. By accessing, browsing, streaming, or purchasing through this platform, you enter into a legally binding covenant governed by these Terms of Service. If you do not consent to every provision articulated herein, your privilege to navigate or utilize this platform is immediately revoked.
+Welcome to Return of the Break Beats, an advanced cultural and sonic operating system curated and maintained by ChanceTEKone LLC in direct collaboration with Father Time 4000. By accessing, browsing, streaming, or purchasing through this platform, you enter into a legally binding covenant governed by these Terms of Service. If you do not consent to every provision articulated herein, your privilege to navigate or utilize this platform is immediately revoked.
 </p>
 
 <h3>Intellectual Property, Master Lineage, and Crate Rights</h3>
 <p>
-Every sound recording, drum loop composition, synchronized visual master, narrated audiobook chapter, typography design, digital artifact, and proprietary algorithm hosted across this ecosystem constitutes protected intellectual property owned by 8 of Spades Works LLC, Father Time 4000, or licensed copyright holders.
+Every sound recording, drum loop composition, synchronized visual master, narrated audiobook chapter, typography design, digital artifact, and proprietary algorithm hosted across this ecosystem constitutes protected intellectual property owned by ChanceTEKone LLC, Father Time 4000, or licensed copyright holders.
 </p>
 <p>
-You are granted an individual, revocable, non-exclusive, non-transferable license to stream audio and audiovisual media for personal, non-commercial enjoyment. Any unauthorized reproduction, reverse engineering, public broadcast, algorithmic scraping, or commercial exploitation without prior written consent from 8 of Spades Works LLC is strictly prohibited.
+You are granted an individual, revocable, non-exclusive, non-transferable license to stream audio and audiovisual media for personal, non-commercial enjoyment. Any unauthorized reproduction, reverse engineering, public broadcast, algorithmic scraping, or commercial exploitation without prior written consent from ChanceTEKone LLC is strictly prohibited.
 </p>
 
 <h3>Autonomous AI and Memory Interaction</h3>
@@ -61,7 +61,7 @@ All purchases of limited-edition vinyl pressings, apparel, slipmats, and analog 
 
 <h3>Account Conduct, Termination, and Governing Law</h3>
 <p>
-Users are responsible for maintaining the confidentiality of their credentials. 8 of Spades Works LLC reserves the right to suspend or permanently terminate access for conduct that violates these covenants or degrades platform integrity. These terms are construed in accordance with the laws of the State of Delaware, United States of America.
+Users are responsible for maintaining the confidentiality of their credentials. ChanceTEKone LLC reserves the right to suspend or permanently terminate access for conduct that violates these covenants or degrades platform integrity. These terms are construed in accordance with the laws of the State of Delaware, United States of America.
 </p>
 
 <hr />
@@ -75,7 +75,7 @@ Users are responsible for maintaining the confidentiality of their credentials. 
 <strong>Effective Date</strong>: January 1, 2026
 </p>
 <p>
-<strong>Published By</strong>: 8 of Spades Works LLC
+<strong>Published By</strong>: ChanceTEKone LLC
 </p>
 
 <h3>Our Fundamental Commitment to Privacy</h3>
@@ -111,7 +111,7 @@ You retain full sovereignty over your digital footprint. At any moment, you may 
 <strong>Title</strong>: Support Center, Technical Assistance, and Crate Concierge
 </p>
 <p>
-<strong>Published By</strong>: 8 of Spades Works LLC
+<strong>Published By</strong>: ChanceTEKone LLC
 </p>
 
 <h3>Welcome to the Crate Concierge</h3>
@@ -146,8 +146,8 @@ No. Visitors and unauthenticated guests enjoy full access to stream music tracks
 For specialized inquiries, rights management, or enterprise assistance, communicate directly with our desk:
 </p>
 
-• <strong>General Inquiries</strong>: support@8ofspadesworks.com
-• <strong>Editorial and Licensing</strong>: licensing@8ofspadesworks.com
+• <strong>General Inquiries</strong>: support@chancetekone.com
+• <strong>Editorial and Licensing</strong>: licensing@chancetekone.com
 • <strong>Founder and Curator Office</strong>: Chancellor at ChanceTEK LLC
 
 <hr />
@@ -158,7 +158,7 @@ For specialized inquiries, rights management, or enterprise assistance, communic
 <strong>Title</strong>: The Manifesto of the Break: Lineage, Samplers, and the New Era
 </p>
 <p>
-<strong>Curated By</strong>: Father Time 4000 and 8 of Spades Works LLC
+<strong>Curated By</strong>: Father Time 4000 and ChanceTEKone LLC
 </p>
 
 <h3>The Golden Architecture of the Break</h3>

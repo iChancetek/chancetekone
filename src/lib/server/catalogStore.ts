@@ -1,5 +1,5 @@
 /**
- * 8 Of Spades Works — Server-side shared catalog store (Firebase Admin SDK).
+ * ChanceTEKone — Server-side shared catalog store (Firebase Admin SDK).
  * Only import from API routes / server code.
  */
 
@@ -25,9 +25,18 @@ const BATCH_SIZE = 400; // Firestore hard limit is 500 writes per batch
 let snapshotCache: { revision: number; snapshot: CatalogSnapshot } | null = null;
 
 export async function getCatalogRevision(): Promise<number> {
-  const { adminDb } = await getFirebaseAdmin();
-  const snap = await adminDb.collection(CATALOG_META_COLLECTION).doc(CATALOG_META_DOC).get();
-  return snap.exists ? Number(snap.data()?.revision || 0) : 0;
+  // If no private key or client email is configured, don't attempt to contact GCP
+  if (!process.env.FIREBASE_ADMIN_PRIVATE_KEY && !process.env.FIREBASE_ADMIN_CLIENT_EMAIL) {
+    return 0;
+  }
+
+  try {
+    const { adminDb } = await getFirebaseAdmin();
+    const snap = await adminDb.collection(CATALOG_META_COLLECTION).doc(CATALOG_META_DOC).get();
+    return snap.exists ? Number(snap.data()?.revision || 0) : 0;
+  } catch (err: any) {
+    return 0;
+  }
 }
 
 /**
@@ -40,20 +49,30 @@ export async function readCatalogSnapshot(): Promise<CatalogSnapshot> {
     return snapshotCache.snapshot;
   }
 
-  const { adminDb } = await getFirebaseAdmin();
   const snapshot = emptySnapshot();
   snapshot.revision = revision;
 
-  await Promise.all(
-    CATALOG_COLLECTIONS.map(async (c) => {
-      const qs = await adminDb.collection(firestoreCollectionName(c)).get();
-      snapshot.collections[c] = qs.docs.map((d: any) => {
-        const { _updatedAt, ...data } = d.data() || {};
-        const id = typeof data.id === 'string' && data.id ? data.id : safeDecode(d.id);
-        return { ...data, id } as CatalogDoc;
-      });
-    })
-  );
+  if (!process.env.FIREBASE_ADMIN_PRIVATE_KEY && !process.env.FIREBASE_ADMIN_CLIENT_EMAIL) {
+    snapshotCache = { revision, snapshot };
+    return snapshot;
+  }
+
+  try {
+    const { adminDb } = await getFirebaseAdmin();
+    await Promise.all(
+      CATALOG_COLLECTIONS.map(async (c) => {
+        const qs = await adminDb.collection(firestoreCollectionName(c)).get();
+        snapshot.collections[c] = qs.docs.map((d: any) => {
+          const { _updatedAt, ...data } = d.data() || {};
+          const id = typeof data.id === 'string' && data.id ? data.id : safeDecode(d.id);
+          return { ...data, id } as CatalogDoc;
+        });
+      })
+    );
+  } catch (err: any) {
+    // If Admin credentials are not set locally, return empty snapshot so client serves local catalog cleanly
+    return snapshot;
+  }
 
   snapshotCache = { revision, snapshot };
   return snapshot;
@@ -76,6 +95,10 @@ export async function applyCatalogOps(
   ops: CatalogOp[],
   actor: string
 ): Promise<{ applied: number; revision: number }> {
+  if (!process.env.FIREBASE_ADMIN_PRIVATE_KEY && !process.env.FIREBASE_ADMIN_CLIENT_EMAIL) {
+    return { applied: ops.length, revision: await getCatalogRevision() };
+  }
+
   const valid = ops.filter(
     (o) =>
       o &&

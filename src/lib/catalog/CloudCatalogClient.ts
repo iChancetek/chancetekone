@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Cloud Catalog Client (browser)
+﻿/**
+ * ChanceTEKone — Cloud Catalog Client (browser)
  *
  * Keeps every browser in sync with the shared catalog stored in Firestore/Storage:
  *  - Pull:  polls a cheap revision check + subscribes to the Firestore meta doc for
@@ -157,7 +157,7 @@ class CloudCatalogClientClass {
 
   public isWriter(): boolean {
     if (isAdminEmail(this.email)) return true;
-    if (this.email && (this.email.endsWith('@8ofspadesworks.com') || this.email.endsWith('@8ofspadesworks.us') || this.email.endsWith('@ichancetek.com'))) return true;
+    if (this.email && (this.email.endsWith('@chancetekone.com') || this.email.endsWith('@chancetekone.us') || this.email.endsWith('@ichancetek.com'))) return true;
     try {
       if (typeof window !== 'undefined') {
         const raw = localStorage.getItem(AUTH_SESSION_KEY);
@@ -330,7 +330,7 @@ class CloudCatalogClientClass {
   private async authHeaders(json = true): Promise<Record<string, string>> {
     const headers: Record<string, string> = {};
     if (json) headers['Content-Type'] = 'application/json';
-    const effectiveEmail = this.email || this.readSessionEmail() || 'admin@8ofspadesworks.com';
+    const effectiveEmail = this.email || this.readSessionEmail() || 'admin@chancetekone.com';
     if (effectiveEmail) headers['x-admin-email'] = effectiveEmail;
     try {
       const user = auth.currentUser;

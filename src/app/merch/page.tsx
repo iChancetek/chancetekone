@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/image';
@@ -49,7 +49,7 @@ export default function MerchPage() {
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-amber/20 border border-brand-amber/40 text-brand-amber text-xs font-semibold uppercase tracking-wider mb-2">
             <ShoppingBag className="w-3.5 h-3.5" />
-            Official 8 of Spades Works Store
+            Official ChanceTEKone Store
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white">Official Streetwear Collection</h1>
           <p className="text-sm text-neutral-400 mt-1">

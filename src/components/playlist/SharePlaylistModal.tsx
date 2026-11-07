@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -51,17 +51,17 @@ export const SharePlaylistModal: React.FC<SharePlaylistModalProps> = ({
 
   if (!isOpen) return null;
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://8ofspadesworks.us';
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://chancetekone.us';
   const isLocalhost = typeof window !== 'undefined' && (
     window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1' ||
     window.location.hostname.endsWith('.local')
   );
   // Canonical public URL required by Facebook, LinkedIn, Twitter crawlers:
-  const publicShareUrl = isLocalhost ? `https://8ofspadesworks.us/playlists/${playlist.id}` : `${origin}/playlists/${playlist.id}`;
+  const publicShareUrl = isLocalhost ? `https://chancetekone.us/playlists/${playlist.id}` : `${origin}/playlists/${playlist.id}`;
   const shareUrl = `${origin}/playlists/${playlist.id}`;
-  const shareText = `Listen to "${playlist.name}" on 8 OF SPADES WORKS: ${playlist.description || 'Curated music and media crate.'}`;
-  const textMessageBody = `Listen to "${playlist.name}" on 8 OF SPADES WORKS!
+  const shareText = `Listen to "${playlist.name}" on ChanceTEKone: ${playlist.description || 'Curated music and media crate.'}`;
+  const textMessageBody = `Listen to "${playlist.name}" on ChanceTEKone!
 
 ${playlist.description || 'Curated music and media crate.'}
 
@@ -301,7 +301,7 @@ ${publicShareUrl}`;
               <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-brand-purple/40 shrink-0 bg-neutral-900 shadow-md">
                 <Image
                   src={
-                    playlist.coverUrl && !playlist.coverUrl.includes('8_of_spades_works_banner.png') && !playlist.coverUrl.includes('logo.png')
+                    playlist.coverUrl && !playlist.coverUrl.includes('chancetekone_banner.png') && !playlist.coverUrl.includes('logo.png')
                       ? playlist.coverUrl
                       : '/images/genres/rnb-neo-soul.jpg'
                   }
@@ -321,7 +321,7 @@ ${publicShareUrl}`;
                 </div>
                 <h4 className="font-extrabold text-white text-sm truncate mt-1">{playlist.name}</h4>
                 <p className="text-[11px] text-neutral-400 line-clamp-1 mt-0.5">
-                  {playlist.description || 'Curated music and media crate on 8 OF SPADES WORKS.'}
+                  {playlist.description || 'Curated music and media crate on ChanceTEKone.'}
                 </p>
               </div>
             </div>

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
@@ -192,13 +192,13 @@ export const Sidebar: React.FC = () => {
           >
             {isCollapsed ? (
               <div className="relative w-9 h-9 rounded-xl overflow-hidden border border-brand-gold/40 shadow-lg">
-                <Image src="/logo.png" alt="8 Of Spades Works" fill sizes="36px" className="object-cover" priority />
+                <Image src="/logo.png" alt="ChanceTEKone" fill sizes="36px" className="object-cover" priority />
               </div>
             ) : (
               <div className="relative w-40 h-11">
                 <Image
                   src="/logo.png"
-                  alt="8 Of Spades Works"
+                  alt="ChanceTEKone"
                   fill
                   sizes="160px"
                   className="object-contain drop-shadow-[0_0_15px_rgba(245,195,68,0.4)]"
@@ -444,7 +444,7 @@ export const Sidebar: React.FC = () => {
               <button
                 onClick={() => openAI()}
                 className="group relative p-2.5 rounded-2xl bg-gradient-to-tr from-brand-purple to-brand-gold text-white shadow-lg hover:scale-110 transition-transform cursor-pointer"
-                title="Open 8 Of Spades Works AI Assistant"
+                title="Open ChanceTEKone AI Assistant"
               >
                 <Sparkles className="w-4 h-4 text-brand-gold animate-spin-slow" />
                 <div className="absolute left-full ml-2 px-2.5 py-1 rounded-lg bg-[#141224] border border-brand-purple/40 text-white text-[11px] font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
@@ -490,7 +490,7 @@ export const Sidebar: React.FC = () => {
               </p>
               <button
                 onClick={installPWA}
-                aria-label="Install 8 Of Spades Works App"
+                aria-label="Install ChanceTEKone App"
                 className="w-full py-1.5 px-2 rounded-lg bg-gradient-to-r from-[#f5c344] via-[#ff9f1c] to-[#f5c344] text-[#08080c] text-[11px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(245,195,68,0.5)] hover:shadow-[0_0_22px_rgba(245,195,68,0.8)] border border-amber-200/60 hover:scale-[1.03] active:scale-95 cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5 stroke-[3] text-[#08080c]" />
@@ -583,7 +583,7 @@ export const Sidebar: React.FC = () => {
             <div className="relative w-36 h-10">
               <Image
                 src="/logo.png"
-                alt="8 Of Spades Works"
+                alt="ChanceTEKone"
                 fill
                 sizes="144px"
                 className="object-contain drop-shadow-[0_0_15px_rgba(245,195,68,0.4)]"
@@ -808,7 +808,7 @@ export const Sidebar: React.FC = () => {
                 className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-[#f5c344] via-[#ff9f1c] to-[#f5c344] text-[#08080c] text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(245,195,68,0.5)] active:scale-98 cursor-pointer"
               >
                 <Download className="w-4 h-4 stroke-[3] text-[#08080c]" />
-                <span>Install 8 Of Spades Works</span>
+                <span>Install ChanceTEKone</span>
               </button>
             </div>
           )}

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { AuditLogItem } from '@/types/admin';
@@ -51,7 +51,7 @@ export const AuditLogsSection: React.FC<AuditLogsSectionProps> = ({ logs, onRefr
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `8ofspades_audit_logs_${Date.now()}.csv`);
+    link.setAttribute('download', `chancetekone_audit_logs_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -63,7 +63,7 @@ export const AuditLogsSection: React.FC<AuditLogsSectionProps> = ({ logs, onRefr
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `8ofspades_audit_logs_${Date.now()}.json`);
+    link.setAttribute('download', `chancetekone_audit_logs_${Date.now()}.json`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

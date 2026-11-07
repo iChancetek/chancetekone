@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -267,7 +267,7 @@ export const ConfirmDeletionModal: React.FC<ConfirmDeletionModalProps> = ({
           />
           <span className="font-semibold text-white select-none">
             I confirm that I want to delete{' '}
-            <span className="text-red-300 font-bold">&ldquo;{item.title}&rdquo;</span> from the 8 Of Spades platform.
+            <span className="text-red-300 font-bold">&ldquo;{item.title}&rdquo;</span> from the ChanceTEKone platform.
           </span>
         </label>
 

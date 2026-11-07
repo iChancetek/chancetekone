@@ -1,4 +1,4 @@
-import fs from 'fs';
+﻿import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {
@@ -291,7 +291,7 @@ async function run() {
 
   console.log('\n=== 9. IndexedDB Scheme Preservation & Corrupted indexeddb%3A// Auto-Healing ===');
   const rawIdbUrl = 'indexeddb://up-1793227031638-29-1u2owlchcau';
-  const corruptedIdbUrl = 'https://8ofspadesworks.us/music/indexeddb%3A//up-1793227031638-29-1u2owlchcau';
+  const corruptedIdbUrl = 'https://chancetekone.us/music/indexeddb%3A//up-1793227031638-29-1u2owlchcau';
   assert(
     normalizePlayableUrl(rawIdbUrl) === rawIdbUrl,
     'normalizePlayableUrl preserves indexeddb:// scheme without encoding colon as %3A'

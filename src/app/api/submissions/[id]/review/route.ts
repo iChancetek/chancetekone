@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { verifyServerAdmin } from '@/lib/auth/serverAuth';
 import { getSubmissionById, saveSubmission, recordReview } from '@/lib/server/submissionStore';
 import { EmailNotificationService } from '@/lib/server/emailService';
@@ -6,7 +6,7 @@ import { ReviewRecord } from '@/types/submission';
 
 export const runtime = 'nodejs';
 
-const PRODUCTION_DOMAIN = process.env.NEXT_PUBLIC_APP_URL || 'https://8ofspadesworks.us';
+const PRODUCTION_DOMAIN = process.env.NEXT_PUBLIC_APP_URL || 'https://chancetekone.us';
 
 /**
  * POST /api/submissions/[id]/review
@@ -52,7 +52,7 @@ export async function POST(
       });
     }
 
-    const adminEmail = auth.email || 'antgreene@8ofspadesworks.com';
+    const adminEmail = auth.email || 'antgreene@chancetekone.com';
     const adminUserId = auth.role === 'super_admin' ? 'usr-chancellor' : 'usr-admin';
     const internalNotes = (body.internalNotes || '').trim();
 
@@ -141,7 +141,7 @@ export async function POST(
 
       return NextResponse.json({
         success: true,
-        message: `Submission approved and successfully published to 8 Of Spades Works catalog. Confirmation email dispatched to ${submission.creatorEmailSnapshot}.`,
+        message: `Submission approved and successfully published to ChanceTEKone catalog. Confirmation email dispatched to ${submission.creatorEmailSnapshot}.`,
         submission: saved,
         notification: notificationRecord,
       });

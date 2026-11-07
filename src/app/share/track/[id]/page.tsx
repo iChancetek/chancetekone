@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import { ShareRedirect } from './ShareRedirect';
 import { resolveShareMetadataById, isDefaultOrInvalidCover } from '@/lib/sharing/shareMetadataService';
 
@@ -20,11 +20,11 @@ export async function generateMetadata({
   const title = first(sp.t) || resolved.title;
   const artist = first(sp.a) || resolved.creator;
   const paramCover = first(sp.c);
-  const origin = first(sp.o) || 'https://8ofspadesworks.us';
+  const origin = first(sp.o) || 'https://chancetekone.us';
 
   const cover = paramCover && !isDefaultOrInvalidCover(paramCover) ? paramCover : resolved.coverUrl;
   const fullTitle = artist ? `${title} — ${artist}` : title;
-  const description = resolved.description || `Listen to ${fullTitle} on 8 OF SPADES WORKS.`;
+  const description = resolved.description || `Listen to ${fullTitle} on ChanceTEKone.`;
   const image = cover.startsWith('http') ? cover : `${origin}${cover}`;
   const url = `${origin}/music/${id}`;
 

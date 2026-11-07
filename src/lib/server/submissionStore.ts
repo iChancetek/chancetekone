@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Server-Side Creator Submission Persistence
+﻿/**
+ * ChanceTEKone — Server-Side Creator Submission Persistence
  * Stores creator uploads, review holding items, review audit history,
  * and maintains atomic status transitions.
  */

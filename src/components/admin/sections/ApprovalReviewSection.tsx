@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -299,7 +299,7 @@ export const ApprovalReviewSection: React.FC<ApprovalReviewSectionProps> = ({
     await MusicUploadService.resolveArtwork(selectedBatchId, itemId, {
       action,
       newCoverUrl,
-      actorEmail: profile?.email || 'antgreene@8ofspadesworks.com',
+      actorEmail: profile?.email || 'antgreene@chancetekone.com',
       actorId: profile?.id || 'usr-antgreene',
     });
     setItems(MusicUploadService.getBatchItems(selectedBatchId));
@@ -393,7 +393,7 @@ export const ApprovalReviewSection: React.FC<ApprovalReviewSectionProps> = ({
     const actor = {
       id: profile?.id || 'usr-admin',
       name: profile?.name || profile?.email || 'Administrator',
-      email: profile?.email || 'admin@8ofspadesworks.com',
+      email: profile?.email || 'admin@chancetekone.com',
     };
     await MusicUploadService.denyAndRemoveTrack(
       selectedBatchId,
@@ -412,7 +412,7 @@ export const ApprovalReviewSection: React.FC<ApprovalReviewSectionProps> = ({
     const actor = {
       id: profile?.id || 'usr-admin',
       name: profile?.name || profile?.email || 'Administrator',
-      email: profile?.email || 'admin@8ofspadesworks.com',
+      email: profile?.email || 'admin@chancetekone.com',
     };
     const count = await MusicUploadService.denyAndRemoveAlbum(
       selectedBatchId,
@@ -431,7 +431,7 @@ export const ApprovalReviewSection: React.FC<ApprovalReviewSectionProps> = ({
     const actor = {
       id: profile?.id || 'usr-admin',
       name: profile?.name || profile?.email || 'Administrator',
-      email: profile?.email || 'admin@8ofspadesworks.com',
+      email: profile?.email || 'admin@chancetekone.com',
     };
     const count = await MusicUploadService.denyAndRemoveSelected(
       selectedBatchId,
@@ -484,7 +484,7 @@ export const ApprovalReviewSection: React.FC<ApprovalReviewSectionProps> = ({
       item.id,
       {
         id: profile?.id || 'usr-admin',
-        email: profile?.email || 'admin@8ofspadesworks.com',
+        email: profile?.email || 'admin@chancetekone.com',
         name: profile?.name || profile?.email || 'Administrator',
       },
       'Retracted and unpublished from live platform by Administrator'
@@ -532,7 +532,7 @@ export const ApprovalReviewSection: React.FC<ApprovalReviewSectionProps> = ({
         albumTracks[0]?.coverUrl;
       return {
         title,
-        artist: albumTracks[0]?.artist || '8 OF SPADES WORKS',
+        artist: albumTracks[0]?.artist || 'ChanceTEKone',
         coverUrl: authenticCover,
         tracks: albumTracks,
         count: albumTracks.length,

@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Unified Genre Classification & Normalization Engine
+﻿/**
+ * ChanceTEKone — Unified Genre Classification & Normalization Engine
  * 
  * Provides:
  * 1. PLATFORM_STANDARD_GENRES: The canonical platform music genres matching /music views & crates.
@@ -326,7 +326,7 @@ const ARTIST_GENRE_REGISTRY: ArtistGenreMapping[] = [
   // Break Beats & Turntablism
   {
     match: (a) =>
-      a.includes('8 of spades') ||
+      a.includes('8 of spades') || a.includes('chancetekone') ||
       a.includes('breakbeat') ||
       a.includes('turntablist'),
     genre: 'Break Beats & Turntablism',
@@ -1000,7 +1000,7 @@ export function classifyGenre(metadata: {
   }
 
   // 5. Default authentic fallback
-  // R&B / Neo-Soul is the core ambient soundscape of 8 OF SPADES WORKS The Lounge
+  // R&B / Neo-Soul is the core ambient soundscape of ChanceTEKone The Lounge
   return 'R&B / Neo-Soul';
 }
 

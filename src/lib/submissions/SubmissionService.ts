@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Creator Submission & Moderation Client Service
+﻿/**
+ * ChanceTEKone — Creator Submission & Moderation Client Service
  * Coordinates communication between Creator Studio, Administrative Holding Area,
  * and backend submission APIs.
  */

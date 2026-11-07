@@ -1,7 +1,7 @@
 {
-  "name": "8ofspadesworks",
+  "name": "chancetekone",
   "version": "1.0.0",
-  "description": "8ofspadesworks",
+  "description": "chancetekone",
   "main": "firebase.js",
   "scripts": {
     "dev": "next dev",
@@ -11,16 +11,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iChancetek/8ofspadesworks.git"
+    "url": "git+https://github.com/iChancetek/chancetekone.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "bugs": {
-    "url": "https://github.com/iChancetek/8ofspadesworks/issues"
+    "url": "https://github.com/iChancetek/chancetekone/issues"
   },
-  "homepage": "https://github.com/iChancetek/8ofspadesworks#readme",
+  "homepage": "https://github.com/iChancetek/chancetekone#readme",
   "dependencies": {
     "clsx": "^2.1.1",
     "firebase": "^12.18.0",

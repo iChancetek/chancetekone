@@ -1,4 +1,4 @@
-import { Audiobook, Video, PodcastEpisode } from '@/types/media';
+﻿import { Audiobook, Video, PodcastEpisode } from '@/types/media';
 import { MOCK_AUDIOBOOKS, MOCK_VIDEOS } from '@/lib/mockData';
 import { AuditLogger } from '@/lib/admin/AuditLogger';
 import { EngagementMetricsService } from '@/lib/analytics/EngagementMetricsService';
@@ -38,7 +38,7 @@ export const SEED_PODCASTS: PodcastEpisode[] = [
   {
     id: 'podcast-ep-2',
     title: 'Episode 2: The SP-1200 Concrete Era & Turntable Science',
-    showTitle: '8 Of Spades Crate Talk',
+    showTitle: 'ChanceTEKone Crate Talk',
     host: 'The Crate Diggers & Chancellor',
     description: 'Exploring the genesis of 12-bit sampling, chop techniques, classic funk drum breaks, and the culture of unreleased acetate test pressings.',
     mediaUrl: '/audio/Fort Apache.mp3',

@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Catalog merge & change-tracking helpers.
+﻿/**
+ * ChanceTEKone — Catalog merge & change-tracking helpers.
  *
  * Rules:
  *  - Members (non-writers): the cloud is authoritative. Local state is replaced.

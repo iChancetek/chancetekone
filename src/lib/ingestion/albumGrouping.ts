@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Agentic album identification.
+﻿/**
+ * ChanceTEKone — Agentic album identification.
  *
  * Metadata-first album grouping. Folder names are only SUPPLEMENTARY evidence and are never
  * used to invent an album title: an unresolved track keeps an empty album and receives a

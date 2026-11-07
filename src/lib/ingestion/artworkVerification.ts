@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Authentic artwork verification & album/track association.
+﻿/**
+ * ChanceTEKone — Authentic artwork verification & album/track association.
  *
  * Priority order (spec §4):
  *   1. Verified embedded artwork from the MP3 (APIC) — validated as a decodable image and

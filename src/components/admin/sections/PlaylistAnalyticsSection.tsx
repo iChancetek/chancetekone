@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
@@ -126,7 +126,7 @@ export const PlaylistAnalyticsSection: React.FC<PlaylistAnalyticsSectionProps> =
         playlistToDelete.id,
         profile?.id || 'usr-admin',
         true,
-        profile?.email || 'admin@8ofspadesworks.com',
+        profile?.email || 'admin@chancetekone.com',
         deleteReason
       );
 

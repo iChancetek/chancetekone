@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import { resolveShareMetadataById } from '@/lib/sharing/shareMetadataService';
 
 export async function generateMetadata({
@@ -13,7 +13,7 @@ export async function generateMetadata({
     const rawCover = meta?.coverUrl || '/images/merch/bomber_jacket.jpg';
     const image = rawCover.startsWith('http')
       ? rawCover
-      : `https://8ofspadesworks.us${rawCover}`;
+      : `https://chancetekone.us${rawCover}`;
 
     return {
       title: `${meta.title} — ${meta.creator}`,
@@ -22,7 +22,7 @@ export async function generateMetadata({
         title: `${meta.title} — ${meta.creator}`,
         description: meta.description,
         type: 'website',
-        url: meta.canonicalUrl || `https://8ofspadesworks.us/merch/${id}`,
+        url: meta.canonicalUrl || `https://chancetekone.us/merch/${id}`,
         images: [
           {
             url: image,
@@ -39,20 +39,20 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: '8 Of Spades Works — Official Merchandise',
-      description: 'Exclusive streetwear apparel, bomber jackets, and vinyl collector merchandise by 8 OF SPADES WORKS.',
+      title: 'ChanceTEKone — Official Merchandise',
+      description: 'Exclusive streetwear apparel, bomber jackets, and vinyl collector merchandise by ChanceTEKone.',
       openGraph: {
-        title: '8 Of Spades Works',
-        description: 'Exclusive streetwear apparel, bomber jackets, and vinyl collector merchandise by 8 OF SPADES WORKS.',
+        title: 'ChanceTEKone',
+        description: 'Exclusive streetwear apparel, bomber jackets, and vinyl collector merchandise by ChanceTEKone.',
         type: 'website',
-        url: 'https://8ofspadesworks.us',
-        images: [{ url: 'https://8ofspadesworks.us/images/return_of_the_break_beats_master.png' }],
+        url: 'https://chancetekone.us',
+        images: [{ url: 'https://chancetekone.us/images/return_of_the_break_beats_master.png' }],
       },
       twitter: {
         card: 'summary_large_image',
-        title: '8 Of Spades Works',
-        description: 'Exclusive streetwear apparel, bomber jackets, and vinyl collector merchandise by 8 OF SPADES WORKS.',
-        images: ['https://8ofspadesworks.us/images/return_of_the_break_beats_master.png'],
+        title: 'ChanceTEKone',
+        description: 'Exclusive streetwear apparel, bomber jackets, and vinyl collector merchandise by ChanceTEKone.',
+        images: ['https://chancetekone.us/images/return_of_the_break_beats_master.png'],
       },
     };
   }

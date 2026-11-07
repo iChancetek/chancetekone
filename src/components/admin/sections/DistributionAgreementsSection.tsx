@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
@@ -795,7 +795,7 @@ export function DistributionAgreementsSection() {
                       Platform Countersigned By:
                     </span>
                     <span className="font-bold text-white">
-                      {selectedAgreement.countersignedBy || 'Chancellor @ 8 OF SPADES WORKS LLC'}
+                      {selectedAgreement.countersignedBy || 'Chancellor @ ChanceTEKone'}
                     </span>
                     <span className="text-neutral-400 text-[11px] block">
                       {selectedAgreement.countersignedTitle || 'Executive Director & Rights Curator'}

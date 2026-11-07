@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -66,14 +66,14 @@ export default function ArtistDetailPage() {
   const artist: Artist = matchingMock || {
     id: artistId,
     name: fallbackName,
-    label: artistTracks[0]?.label || '8 OF SPADES WORKS',
-    bio: `Official artist profile and discography on 8 OF SPADES WORKS.`,
+    label: artistTracks[0]?.label || 'ChanceTEKone',
+    bio: `Official artist profile and discography on ChanceTEKone.`,
     avatarUrl:
-      artistTracks[0]?.coverUrl && !artistTracks[0].coverUrl.includes('logo.png') && !artistTracks[0].coverUrl.includes('8_of_spades_works_banner.png')
+      artistTracks[0]?.coverUrl && !artistTracks[0].coverUrl.includes('logo.png') && !artistTracks[0].coverUrl.includes('chancetekone_banner.png')
         ? artistTracks[0].coverUrl
         : '/images/genres/rnb-neo-soul.jpg',
     bannerUrl:
-      artistTracks[0]?.coverUrl && !artistTracks[0].coverUrl.includes('logo.png') && !artistTracks[0].coverUrl.includes('8_of_spades_works_banner.png')
+      artistTracks[0]?.coverUrl && !artistTracks[0].coverUrl.includes('logo.png') && !artistTracks[0].coverUrl.includes('chancetekone_banner.png')
         ? artistTracks[0].coverUrl
         : '/images/genres/rnb-neo-soul.jpg',
     genres: [artistTracks[0]?.genre || 'R&B / Soul'],

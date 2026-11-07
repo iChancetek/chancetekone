@@ -1,4 +1,4 @@
-export interface CoverArtItem {
+﻿export interface CoverArtItem {
   id: string;
   title: string;
   category: 'big_beat' | 'turntables' | 'hardware' | 'neon' | 'boombox' | 'tape_vinyl' | 'abstract';
@@ -726,7 +726,7 @@ export const COVER_ART_CATALOG: CoverArtItem[] = [
   },
   {
     id: 'cover-ab-12',
-    title: '8 OF SPADES WORKS Gold Master Vault',
+    title: 'ChanceTEKone Gold Master Vault',
     category: 'abstract',
     url: '/images/logo.png',
     tags: ['logo', '8spades', 'official', 'master'],

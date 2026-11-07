@@ -24,13 +24,13 @@ const getEnv = (key) => {
 
 // Your web app's Firebase configuration loaded from environment variables
 const firebaseConfig = {
-  apiKey: getEnv("FIREBASE_API_KEY") || "AIzaSyBWgrrXBPjSiuTKcTeCddiWpJ-bKYUmxH4",
-  authDomain: getEnv("FIREBASE_AUTH_DOMAIN") || "spadesworks8.firebaseapp.com",
-  projectId: getEnv("FIREBASE_PROJECT_ID") || "spadesworks8",
-  storageBucket: getEnv("FIREBASE_STORAGE_BUCKET") || "spadesworks8.firebasestorage.app",
-  messagingSenderId: getEnv("FIREBASE_MESSAGING_SENDER_ID") || "597001560664",
-  appId: getEnv("FIREBASE_APP_ID") || "1:597001560664:web:dfd6e7198ea6a981b2a02d",
-  measurementId: getEnv("FIREBASE_MEASUREMENT_ID") || "G-YW0FP68FQK"
+  apiKey: getEnv("FIREBASE_API_KEY") || "AIzaSyB8b8iun4tCAhyUiqaJFLfTErgCue2qMVw",
+  authDomain: getEnv("FIREBASE_AUTH_DOMAIN") || "nestobanks-221.firebaseapp.com",
+  projectId: getEnv("FIREBASE_PROJECT_ID") || "nestobanks-221",
+  storageBucket: getEnv("FIREBASE_STORAGE_BUCKET") || "nestobanks-221.firebasestorage.app",
+  messagingSenderId: getEnv("FIREBASE_MESSAGING_SENDER_ID") || "825324148932",
+  appId: getEnv("FIREBASE_APP_ID") || "1:825324148932:web:dfe071751bb04c505ad191",
+  measurementId: getEnv("FIREBASE_MEASUREMENT_ID") || "G-Z65KBQ67SC"
 };
 
 // Initialize Firebase (singleton pattern prevents re-initialization)

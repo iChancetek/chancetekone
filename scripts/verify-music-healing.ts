@@ -1,4 +1,4 @@
-import fs from 'fs';
+﻿import fs from 'fs';
 import path from 'path';
 import { MOCK_TRACKS, MOCK_ALBUMS } from '../src/lib/mockData';
 import { MusicCatalogService } from '../src/lib/music/MusicCatalogService';
@@ -14,7 +14,7 @@ import { getAuthenticAudioUrl } from '../src/lib/music/authenticAudioMap';
 
 async function main() {
   console.log('====================================================');
-  console.log('8 OF SPADES WORKS — MUSIC CATALOG & COVER ART AUDIT');
+  console.log('ChanceTEKone — MUSIC CATALOG & COVER ART AUDIT');
   console.log('====================================================\n');
 
   const publicDir = path.join(process.cwd(), 'public');
@@ -41,7 +41,7 @@ async function main() {
 
   // 3. Run Autonomous Healing Agent
   console.log('\n3. Running MusicCatalogHealingAgent.healCatalog()...');
-  const healing = await MusicCatalogHealingAgent.healCatalog({ dryRun: false, actorEmail: 'verification-agent@8ofspadesworks.com' });
+  const healing = await MusicCatalogHealingAgent.healCatalog({ dryRun: false, actorEmail: 'verification-agent@chancetekone.com' });
   console.log(`  Tracks Processed: ${healing.totalTracksProcessed}`);
   console.log(`  Audio Streams Repaired: ${healing.audioRepairedCount}`);
   console.log(`  Cover Art Files Repaired: ${healing.coversRepairedCount}`);

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useRef, useState } from 'react';
 import Image from 'next/image';
@@ -129,7 +129,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, type }) => {
     (resolvedCover.includes('banner') ||
       resolvedCover.includes('chancetek') ||
       resolvedCover.includes('genres') ||
-      resolvedCover.includes('8_of_spades_works'));
+      resolvedCover.includes('chancetekone'));
 
   const getHref = () => {
     switch (type) {

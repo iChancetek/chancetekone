@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 export default function RootLoading() {
   return (
@@ -9,7 +9,7 @@ export default function RootLoading() {
         <div className="w-3 h-3 rounded-full bg-brand-gold animate-pulse" />
       </div>
       <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
-        Loading 8 Of Spades Works...
+        Loading ChanceTEKone...
       </p>
     </div>
   );

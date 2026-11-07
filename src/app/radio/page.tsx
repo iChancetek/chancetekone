@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 // ============================================================
-// Radio Page — 8 Of Spades Works Agentic AI Radio
+// Radio Page — ChanceTEKone Agentic AI Radio
 // Consistent with existing design: glass-panel, brand-gold, brand-purple
 // ============================================================
 
@@ -308,7 +308,7 @@ function RadioPageInner() {
           Agentic AI Radio
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
-          8 Of Spades Radio
+          ChanceTEKone Radio
         </h1>
         <p className="text-sm text-neutral-400 mt-1 max-w-xl">
           Two stations powered by a coordinated team of AI agents — autonomously programming,
@@ -350,7 +350,7 @@ function RadioPageInner() {
           <span className="text-white font-medium">Analytics</span> tracks all listener behavior in real time.
         </p>
         <p className="text-xs text-neutral-600">
-          All music is owned and produced by 8 Of Spades Works. Only admin-approved tracks enter the rotation.
+          All music is owned and produced by ChanceTEKone. Only admin-approved tracks enter the rotation.
         </p>
       </div>
     </div>

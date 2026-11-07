@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -889,7 +889,7 @@ function LibraryContent() {
                 >
                   <div className="relative aspect-video rounded-xl overflow-hidden bg-neutral-900">
                     <Image
-                      src={proj.coverUrl || '/images/8_of_spades_works_banner.png'}
+                      src={proj.coverUrl || '/images/chancetekone_banner.png'}
                       alt={proj.title}
                       fill
                       className="object-cover"

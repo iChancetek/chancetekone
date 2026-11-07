@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo, useRef, useDeferredValue } from 'react';
 import Image from 'next/image';
@@ -225,7 +225,7 @@ export const PlatformMusicCatalogSection: React.FC<PlatformMusicCatalogSectionPr
         const firstTrack = albumTracks[0];
         albums.push({
           albumTitle,
-          coverUrl: firstTrack?.coverUrl || '/images/8_of_spades_works_banner.png',
+          coverUrl: firstTrack?.coverUrl || '/images/chancetekone_banner.png',
           releaseYear: Number(firstTrack?.releaseYear) || 2026,
           genre: String(firstTrack?.genre || 'R&B / Soul'),
           tracks: albumTracks,
@@ -240,7 +240,7 @@ export const PlatformMusicCatalogSection: React.FC<PlatformMusicCatalogSectionPr
       });
 
       // Pick avatar from first album
-      const avatarUrl = albums[0]?.coverUrl || '/images/8_of_spades_works_banner.png';
+      const avatarUrl = albums[0]?.coverUrl || '/images/chancetekone_banner.png';
 
       groups.push({
         artistName,
@@ -722,7 +722,7 @@ export const PlatformMusicCatalogSection: React.FC<PlatformMusicCatalogSectionPr
                           className="object-cover"
                           unoptimized={Boolean(artist.avatarUrl && (artist.avatarUrl.startsWith('data:') || artist.avatarUrl.startsWith('blob:')))}
                           onError={(e) => {
-                            (e.target as any).src = '/images/8_of_spades_works_banner.png';
+                            (e.target as any).src = '/images/chancetekone_banner.png';
                           }}
                         />
                       </div>
@@ -790,7 +790,7 @@ export const PlatformMusicCatalogSection: React.FC<PlatformMusicCatalogSectionPr
                                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                                     unoptimized={Boolean(album.coverUrl && (album.coverUrl.startsWith('data:') || album.coverUrl.startsWith('blob:')))}
                                     onError={(e) => {
-                                      (e.target as any).src = '/images/8_of_spades_works_banner.png';
+                                      (e.target as any).src = '/images/chancetekone_banner.png';
                                     }}
                                   />
                                   <button
@@ -988,7 +988,7 @@ export const PlatformMusicCatalogSection: React.FC<PlatformMusicCatalogSectionPr
                                                   className="object-cover"
                                                   unoptimized={Boolean(track.coverUrl && (track.coverUrl.startsWith('data:') || track.coverUrl.startsWith('blob:')))}
                                                   onError={(e) => {
-                                                    (e.target as any).src = '/images/8_of_spades_works_banner.png';
+                                                    (e.target as any).src = '/images/chancetekone_banner.png';
                                                   }}
                                                 />
                                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/art:opacity-100 transition-opacity flex items-center justify-center">
@@ -1251,7 +1251,7 @@ export const PlatformMusicCatalogSection: React.FC<PlatformMusicCatalogSectionPr
                               className="object-cover"
                               unoptimized={Boolean(t.coverUrl && (t.coverUrl.startsWith('data:') || t.coverUrl.startsWith('blob:')))}
                               onError={(e) => {
-                                (e.target as any).src = '/images/8_of_spades_works_banner.png';
+                                (e.target as any).src = '/images/chancetekone_banner.png';
                               }}
                             />
                           </div>
@@ -1412,7 +1412,7 @@ export const PlatformMusicCatalogSection: React.FC<PlatformMusicCatalogSectionPr
                   className="object-cover"
                   unoptimized={Boolean(currentTrack.coverUrl && (currentTrack.coverUrl.startsWith('data:') || currentTrack.coverUrl.startsWith('blob:')))}
                   onError={(e) => {
-                    (e.target as any).src = '/images/8_of_spades_works_banner.png';
+                    (e.target as any).src = '/images/chancetekone_banner.png';
                   }}
                 />
               </div>

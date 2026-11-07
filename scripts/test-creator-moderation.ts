@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — End-to-End Creator Upload, Moderation & Email Notification Test
+﻿/**
+ * ChanceTEKone — End-to-End Creator Upload, Moderation & Email Notification Test
  * Tests:
  * 1. Email validation and rejection of invalid creator emails
  * 2. Multi-category submission creation (Music, Video .mov, Audiobook, Book PDF)
@@ -24,11 +24,11 @@ import { CreatorSubmission, ReviewRecord } from '../src/types/submission';
 
 async function runTests() {
   console.log('================================================================');
-  console.log('🧪 Starting 8 Of Spades Works Creator Moderation & Email Tests');
+  console.log('🧪 Starting ChanceTEKone Creator Moderation & Email Tests');
   console.log('================================================================\n');
 
   const testId = `test_${Date.now()}`;
-  const creatorEmail = 'test.creator@8ofspadesworks.us';
+  const creatorEmail = 'test.creator@chancetekone.us';
   const creatorName = 'Chancellor Test Creator';
   const testTitle = 'Midnight Waves (4K Cinema MOV)';
 
@@ -147,7 +147,7 @@ async function runTests() {
 
   // TEST 5: Human-in-the-Loop Approval & Catalog Publication
   console.log('Test 5: Human-in-the-Loop Approval & Catalog Publication');
-  const publishedUrl = `https://8ofspadesworks.us/videos`;
+  const publishedUrl = `https://chancetekone.us/videos`;
   const approvalNotif = await EmailNotificationService.sendApprovalEmail({
     submissionId: testId,
     creatorUserId: resubmitted.creatorUserId,

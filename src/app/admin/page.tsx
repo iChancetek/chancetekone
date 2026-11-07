@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
@@ -367,7 +367,7 @@ export default function AdminPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `8ofspades_analytics_report_${timeRange}_${Date.now()}.json`;
+    a.download = `chancetekone_analytics_report_${timeRange}_${Date.now()}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -430,7 +430,7 @@ export default function AdminPage() {
                   required
                   value={adminEmailInput}
                   onChange={(e) => setAdminEmailInput(e.target.value)}
-                  placeholder="admin@8ofspadesworks.com"
+                  placeholder="admin@chancetekone.com"
                   className="w-full px-4 py-3 rounded-2xl bg-black/50 border border-white/10 text-white text-xs placeholder:text-neutral-500 focus:border-brand-gold focus:outline-none transition-colors"
                 />
               </div>

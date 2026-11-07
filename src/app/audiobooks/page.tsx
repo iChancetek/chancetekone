@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { BookOpen, UploadCloud, Share2 } from 'lucide-react';
@@ -54,7 +54,7 @@ export default function AudiobooksPage() {
               <span>Upload Audiobook & PDF Book (MP3, MP4, .MOV, .PDF)</span>
             </button>
             <VoiceNarrationButton
-              text="Explore immersive master audiobooks and spoken narratives by Chancellor at ChanceTEK LLC and 8 OF SPADES WORKS. Featuring Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio."
+              text="Explore immersive master audiobooks and spoken narratives by Chancellor at ChanceTEK LLC and ChanceTEKone. Featuring Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio."
               variant="dual"
             />
           </div>

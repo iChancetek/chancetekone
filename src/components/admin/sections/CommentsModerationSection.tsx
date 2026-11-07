@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
@@ -232,7 +232,7 @@ export const CommentsModerationSection: React.FC = () => {
     link.setAttribute('href', encodedUri);
     link.setAttribute(
       'download',
-      `8_of_spades_community_comments_report_${timeframe}_${Date.now()}.csv`
+      `chancetekone_community_comments_report_${timeframe}_${Date.now()}.csv`
     );
     document.body.appendChild(link);
     link.click();
@@ -768,7 +768,7 @@ export const CommentsModerationSection: React.FC = () => {
                   <FileText className="w-3.5 h-3.5" />
                   Executive Community Telemetry Report
                 </div>
-                <h3 className="text-xl font-black text-white">8 OF SPADES WORKS Discussion Intelligence</h3>
+                <h3 className="text-xl font-black text-white">ChanceTEKone Discussion Intelligence</h3>
                 <p className="text-xs text-neutral-400">Generated on {formatExactDateTime(new Date().toISOString())}</p>
               </div>
 

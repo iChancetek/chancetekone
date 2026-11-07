@@ -1,5 +1,5 @@
-// ============================================================
-// Radio Domain Types — 8 Of Spades Works Agentic AI Radio
+﻿// ============================================================
+// Radio Domain Types — ChanceTEKone Agentic AI Radio
 // ============================================================
 
 export type RadioStationId = 'hip-hop' | 'neo-soul';

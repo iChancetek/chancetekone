@@ -1,4 +1,4 @@
-import { Track, Video, Audiobook, PodcastEpisode, Producer, Artist, Album, Project } from '@/types/media';
+﻿import { Track, Video, Audiobook, PodcastEpisode, Producer, Artist, Album, Project } from '@/types/media';
 import { Product } from '@/types/commerce';
 import { Playlist } from '@/types/playlist';
 import { MusicCatalogService, getDefaultCoverForTrack } from '@/lib/music/MusicCatalogService';
@@ -30,7 +30,7 @@ export interface ResolvedShareMetadata {
   creator: string;
   description: string;
   coverUrl: string;
-  canonicalUrl: string; // Always https://8ofspadesworks.us/...
+  canonicalUrl: string; // Always https://chancetekone.us/...
   directUrl: string;    // Current window origin if in browser, or canonical
   shareText: string;
   textMessageBody: string;
@@ -56,7 +56,7 @@ export interface ShareableInput {
   customCoverUrl?: string;
 }
 
-const PRODUCTION_ORIGIN = process.env.NEXT_PUBLIC_APP_URL || 'https://8ofspadesworks.us';
+const PRODUCTION_ORIGIN = process.env.NEXT_PUBLIC_APP_URL || 'https://chancetekone.us';
 
 /**
  * Returns true if the cover image is missing or is the default master banner / generic platform logo
@@ -68,7 +68,7 @@ export function isDefaultOrInvalidCover(url?: string | null): boolean {
     lower === '' ||
     lower === 'null' ||
     lower === 'undefined' ||
-    lower.includes('8_of_spades_works_banner.png') ||
+    lower.includes('chancetekone_banner.png') ||
     lower.includes('the_lounge_ambient.jpg') ||
     lower.includes('/images/logo') ||
     lower.endsWith('/logo.png') ||
@@ -93,7 +93,7 @@ export function cleanDescription(desc?: string, fallback: string = ''): string {
 
 /**
  * Resolves the authentic cover art for any platform entity, guaranteeing
- * it never falls back to the default 8 of spades works banner.
+ * it never falls back to the default ChanceTEKone banner.
  */
 export function resolveAuthenticCover(type: ShareContentType, item: any): string {
   // If custom or item has a non-default cover, verify it:
@@ -337,20 +337,20 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
     switch (type) {
       case 'song':
       case 'beat':
-        creator = item?.artistName || '8 OF SPADES WORKS';
+        creator = item?.artistName || 'ChanceTEKone';
         break;
       case 'video':
         creator = item?.artist || item?.creator || 'Visual Cinema';
         break;
       case 'podcast':
-        creator = item?.host || item?.showTitle || 'ChanceTEK & 8 OF SPADES';
+        creator = item?.host || item?.showTitle || 'ChanceTEKone';
         break;
       case 'audiobook':
       case 'book':
         creator = item?.author ? `Author ${item.author}` : (item?.narrator ? `Narrated by ${item.narrator}` : 'Master Author');
         break;
       case 'merch':
-        creator = item?.artistName || '8 OF SPADES Official Merch';
+        creator = item?.artistName || 'ChanceTEKone Official Merch';
         break;
       case 'producer':
         creator = item?.role || 'Master Producer & Beatmaker';
@@ -362,13 +362,13 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
         creator = item?.artistName || (item as any)?.artist || 'Master Recording Artist';
         break;
       case 'playlist':
-        creator = item?.ownerName ? `Curated by ${item.ownerName}` : '8 OF SPADES WORKS Crate';
+        creator = item?.ownerName ? `Curated by ${item.ownerName}` : 'ChanceTEKone Crate';
         break;
       case 'project':
-        creator = item?.producerName || item?.presenter || item?.label || '8 OF SPADES WORKS';
+        creator = item?.producerName || item?.presenter || item?.label || 'ChanceTEKone';
         break;
       default:
-        creator = '8 OF SPADES WORKS';
+        creator = 'ChanceTEKone';
     }
   }
 
@@ -381,49 +381,49 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
         description =
           cleanDescription(item?.lyrics) ||
           cleanDescription(item?.description) ||
-          `"${title}" by ${creator}. Authentic ${item?.genre || 'Soul & Breakbeat'} stream engineered at ${item?.bpm ? `${item.bpm} BPM` : 'authentic tempo'} on 8 OF SPADES WORKS.`;
+          `"${title}" by ${creator}. Authentic ${item?.genre || 'Soul & Breakbeat'} stream engineered at ${item?.bpm ? `${item.bpm} BPM` : 'authentic tempo'} on ChanceTEKone.`;
         break;
       case 'video':
         description =
           cleanDescription(item?.description) ||
-          `Watch "${title}" (${creator}) in pristine high-definition 4K visual cinema on 8 OF SPADES WORKS.`;
+          `Watch "${title}" (${creator}) in pristine high-definition 4K visual cinema on ChanceTEKone.`;
         break;
       case 'podcast':
         description =
           cleanDescription(item?.description) ||
-          `Listen to "${title}" hosted by ${creator}. Master podcast broadcast exploring sonic culture on 8 OF SPADES WORKS.`;
+          `Listen to "${title}" hosted by ${creator}. Master podcast broadcast exploring sonic culture on ChanceTEKone.`;
         break;
       case 'audiobook':
       case 'book':
         description =
           cleanDescription(item?.description) ||
           cleanDescription(item?.synopsis) ||
-          `Explore "${title}" by ${creator}. Master spoken audiobook narrative and literature streaming on 8 OF SPADES WORKS.`;
+          `Explore "${title}" by ${creator}. Master spoken audiobook narrative and literature streaming on ChanceTEKone.`;
         break;
       case 'merch':
         description =
           cleanDescription(item?.description) ||
-          `Official ${title}. Exclusive limited-edition street apparel and vinyl collector merchandise by 8 OF SPADES WORKS.`;
+          `Official ${title}. Exclusive limited-edition street apparel and vinyl collector merchandise by ChanceTEKone.`;
         break;
       case 'producer':
         description =
           cleanDescription(item?.bio) ||
-          `${title} — ${creator}. Legendary beatmaker crates, breakbeat instrumentals, and production credits on 8 OF SPADES WORKS.`;
+          `${title} — ${creator}. Legendary beatmaker crates, breakbeat instrumentals, and production credits on ChanceTEKone.`;
         break;
       case 'artist':
         description =
           cleanDescription(item?.bio) ||
-          `${title} — ${creator}. Complete discography, stream singles, albums, and master vinyl collections on 8 OF SPADES WORKS.`;
+          `${title} — ${creator}. Complete discography, stream singles, albums, and master vinyl collections on ChanceTEKone.`;
         break;
       case 'album':
         description =
           cleanDescription(item?.description) ||
-          `Experience "${title}" by ${creator}. Full studio album collection with master breakbeats on 8 OF SPADES WORKS.`;
+          `Experience "${title}" by ${creator}. Full studio album collection with master breakbeats on ChanceTEKone.`;
         break;
       case 'playlist':
         description =
           cleanDescription(item?.description) ||
-          `"${title}" — ${creator}. Curated playlist featuring ${item?.itemCount || 0} tracks on 8 OF SPADES WORKS.`;
+          `"${title}" — ${creator}. Curated playlist featuring ${item?.itemCount || 0} tracks on ChanceTEKone.`;
         break;
       case 'project':
         description =
@@ -432,7 +432,7 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
           `The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.`;
         break;
       default:
-        description = `Stream and explore "${title}" on 8 OF SPADES WORKS.`;
+        description = `Stream and explore "${title}" on ChanceTEKone.`;
     }
   }
 
@@ -497,7 +497,7 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
   if (item?.releaseYear) metadataBadges.push(String(item.releaseYear));
 
   // Text message body specifically tailored for SMS / iMessage:
-  const textMessageBody = `Listen to "${title}" by ${creator} on 8 OF SPADES WORKS!
+  const textMessageBody = `Listen to "${title}" by ${creator} on ChanceTEKone!
 
 ${description}
 
@@ -505,7 +505,7 @@ Stream now:
 ${canonicalUrl}`;
 
   // General share text:
-  const shareText = `Check out "${title}" by ${creator} on 8 OF SPADES WORKS: ${description}`;
+  const shareText = `Check out "${title}" by ${creator} on ChanceTEKone: ${description}`;
 
   // Social share URLs:
   const encodedUrl = encodeURIComponent(canonicalUrl);
@@ -515,13 +515,13 @@ ${canonicalUrl}`;
 
   const smsUrl = `sms:?&body=${encodedSms}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
-  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out "${title}" by ${creator} on @8ofspadesworks\n\n${description.slice(0, 130)}`)}&url=${encodedUrl}`;
+  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out "${title}" by ${creator} on @chancetekone\n\n${description.slice(0, 130)}`)}&url=${encodedUrl}`;
   const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
   const whatsAppUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`*${title}* by _${creator}_\n\n${description}\n\n${canonicalUrl}`)}`;
   const telegramUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(`*${title}* by ${creator}\n${description}`)}`;
 
-  const emailSubject = `${title} by ${creator} — 8 OF SPADES WORKS`;
-  const emailBody = `Hey,\n\nI wanted to share this with you on 8 OF SPADES WORKS:\n\n"${title}" by ${creator}\n\n${description}\n\nStream now: ${canonicalUrl}`;
+  const emailSubject = `${title} by ${creator} — ChanceTEKone`;
+  const emailBody = `Hey,\n\nI wanted to share this with you on ChanceTEKone:\n\n"${title}" by ${creator}\n\n${description}\n\nStream now: ${canonicalUrl}`;
   const emailUrl = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
 
   return {
@@ -564,26 +564,26 @@ export function resolveShareMetadataById(type: ShareContentType, id: string): Re
         : type === 'merch'
         ? `/merch/${id}`
         : `/${type}s/${id}`;
-    const canonicalUrl = `https://8ofspadesworks.us${relPath}`;
+    const canonicalUrl = `https://chancetekone.us${relPath}`;
     return {
       id: id || 'item',
       type,
       typeLabel: 'Featured Media',
-      title: '8 OF SPADES WORKS',
-      creator: '8 OF SPADES WORKS',
-      description: 'Stream master breakbeat music, 4K videos, audiobooks, and culture on 8 OF SPADES WORKS.',
+      title: 'ChanceTEKone',
+      creator: 'ChanceTEKone',
+      description: 'Stream master breakbeat music, 4K videos, audiobooks, and culture on ChanceTEKone.',
       coverUrl: '/images/genres/rnb-neo-soul.jpg',
       canonicalUrl,
       directUrl: canonicalUrl,
-      shareText: 'Check out 8 OF SPADES WORKS',
-      textMessageBody: 'Check out 8 OF SPADES WORKS',
+      shareText: 'Check out ChanceTEKone',
+      textMessageBody: 'Check out ChanceTEKone',
       smsUrl: '',
       facebookUrl: '',
       twitterUrl: '',
       linkedInUrl: '',
       whatsAppUrl: '',
       telegramUrl: '',
-      emailSubject: '8 OF SPADES WORKS',
+      emailSubject: 'ChanceTEKone',
       emailBody: '',
       emailUrl: '',
       metadataBadges: [],

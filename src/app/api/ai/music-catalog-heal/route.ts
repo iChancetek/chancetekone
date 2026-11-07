@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { MusicCatalogHealingAgent } from '@/lib/ai/MusicCatalogHealingAgent';
 
 export const runtime = 'nodejs';
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     } catch {}
 
     const dryRun = Boolean(body?.dryRun);
-    const actorEmail = body?.actorEmail || 'chancellor@8ofspadesworks.com';
+    const actorEmail = body?.actorEmail || 'chancellor@chancetekone.com';
 
     const healingReport = await MusicCatalogHealingAgent.healCatalog({
       dryRun,

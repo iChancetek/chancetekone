@@ -1,4 +1,4 @@
-// Pure OpenAI Tool Definitions — No heavy imports.
+﻿// Pure OpenAI Tool Definitions — No heavy imports.
 // Safe for use in Next.js API routes (server-side).
 // Execution logic lives in tools.ts which is only called dynamically.
 
@@ -261,7 +261,7 @@ export const AGENT_TOOLS_DEFINITIONS = [
     type: 'function' as const,
     function: {
       name: 'searchProducers',
-      description: 'Find sonic architects, master beatmakers, and hardware sampler engineers (e.g. 8 OF SPADES WORKS, Chancellor @ ChanceTEK LLC, Cipher Voltage, Luna Brass & The Crate Queens).',
+      description: 'Find sonic architects, master beatmakers, and hardware sampler engineers (e.g. ChanceTEKone, Chancellor @ ChanceTEK LLC, Cipher Voltage, Luna Brass & The Crate Queens).',
       parameters: {
         type: 'object',
         properties: {

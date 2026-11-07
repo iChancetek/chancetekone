@@ -1,4 +1,4 @@
-<!-- BEGIN:nextjs-agent-rules -->
+﻿<!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
 
@@ -31,7 +31,7 @@ Always persist and save significant workflow context, user preferences, operatio
 - **Verified Server Uploads Registry**: `VERIFIED_SERVER_UPLOADS` in `src/lib/music/authenticAudioMap.ts` enumerates the exact 32 studio MP3s present in `public/audio/uploads/`.
 - **Guard Function**: `isVerifiedServerUpload(url)` verifies that any `/audio/uploads/` path actually points to an existing file. If not verified, it falls through to authentic artist/title mapping (`Janet Jackson` -> `/audio/uploads/Janet_Jackson_Got_Til_Its_Gone.mp3`, `Luther Vandross` -> `/audio/uploads/Luther_Vandross_Never_Too_Much.mp3`, etc.).
 - **PlayerContext Auto-Recovery**: The HTML5 Audio `onError` listener in `PlayerContext.tsx` uses `currentTrackRef` to immediately catch broken sources and auto-recover by loading the authentic studio stream and resuming playback.
-- **NEVER use Fort Apache fallback**: As strictly mandated by user directive, tracks must NEVER be replaced with Fort Apache unless the track is specifically the 8 OF SPADES WORKS Breakbeat anthem.
+- **NEVER use Fort Apache fallback**: As strictly mandated by user directive, tracks must NEVER be replaced with Fort Apache unless the track is specifically the ChanceTEKone Breakbeat anthem.
 
 ### 2. The Lounge Background & 100% Transparent Cards
 - **Background Visibility**: In `src/app/music/page.tsx`, `/images/the_lounge_ambient.jpg` is set to `opacity-100` with softened dark gradients (`from-black/60 via-transparent to-black/30`) to ensure the background atmosphere is completely visible.
@@ -39,13 +39,13 @@ Always persist and save significant workflow context, user preferences, operatio
 - **Crates & Diggin Section**: Background remains completely transparent with drop shadows on text for high contrast and readability over the background photo.
 
 ### 3. Shared Cloud Catalog Authorization
-- **Server Authorization**: `src/lib/auth/serverAuth.ts` now uses `isAdminEmail(adminEmailHeader)` instead of strict array equality, accepting all authorized admin emails and domain patterns (`@8ofspadesworks.com`, `@ichancetek.com`). In `CloudCatalogClient.ts`, `authHeaders()` guarantees an authorized admin email is attached so outbox operations never encounter 403 Forbidden.
+- **Server Authorization**: `src/lib/auth/serverAuth.ts` now uses `isAdminEmail(adminEmailHeader)` instead of strict array equality, accepting all authorized admin emails and domain patterns (`@chancetekone.com`, `@ichancetek.com`). In `CloudCatalogClient.ts`, `authHeaders()` guarantees an authorized admin email is attached so outbox operations never encounter 403 Forbidden.
 
 ### 4. Break Beats Banner Elimination & Authentic Cover Art Healing
-- **Root Cause Identified**: When user-uploaded tracks had dead 404 cover images (e.g. `cover_1792...`), `MusicCatalogService.ts`, `MusicCatalogHealingAgent.ts`, `TrackRow.tsx`, and `MediaCard.tsx` defaulted to `/images/8_of_spades_works_banner.png`. This caused smooth R&B classics (Avant, 112, Ashanti, Chris Brown, Brownstone) to incorrectly display the Break Beats anthem master banner as their artwork.
+- **Root Cause Identified**: When user-uploaded tracks had dead 404 cover images (e.g. `cover_1792...`), `MusicCatalogService.ts`, `MusicCatalogHealingAgent.ts`, `TrackRow.tsx`, and `MediaCard.tsx` defaulted to `/images/chancetekone_banner.png`. This caused smooth R&B classics (Avant, 112, Ashanti, Chris Brown, Brownstone) to incorrectly display the Break Beats anthem master banner as their artwork.
 - **Genre-Aware Default Resolver**: `getDefaultCoverForTrack()` routes missing/generic covers according to genre and crate (`/images/genres/rnb-neo-soul.jpg` for R&B/Soul, `/images/genres/hip-hop.jpg` for Hip-Hop, `/images/genres/house-club.jpg` for Dance/Club).
 - **Explicit Authentic Cover Registry**: Added verified covers for Avant, 112, Ashanti, Chris Brown, Jermaine Dupri, and Brownstone in `KNOWN_ALBUM_COVERS` and `getAuthenticCoverForTrack()`.
-- **Generic Cover Flagging**: `isMissingOrGenericCover()` flags `/images/8_of_spades_works_banner.png` and `cover_1792...` so existing cached/healed items are automatically refreshed to authentic R&B artwork.
+- **Generic Cover Flagging**: `isMissingOrGenericCover()` flags `/images/chancetekone_banner.png` and `cover_1792...` so existing cached/healed items are automatically refreshed to authentic R&B artwork.
 
 ### 5. Playback Resilience for Avant, 112, Ashanti, Chris Brown & Upload Catalog
 - **Root Cause Identified**: Tracks uploaded in earlier sessions with timestamped URLs (`/audio/uploads/1792551233672_Avant_-_Sailing.mp3`, `1792551217382_Ashanti_-_Only_You_Remix.mp3`, `1792551232264_Avant_-_Read_Your_Mind.mp3`) did not physically exist on disk and lacked artist mappings in `getAuthenticAudioUrl()`. They defaulted back to dead 404 URLs, throwing `NotSupportedError: Failed to load because no supported source was found`.
@@ -145,7 +145,7 @@ Always persist and save significant workflow context, user preferences, operatio
      - **Telegram**: `https://t.me/share/url?url=${encodeURIComponent(publicShareUrl)}&text=${encodeURIComponent(shareText)}`
      - **Email**: Pre-filled `mailto:` client trigger with playlist title and link.
      - **Native Share Sheet**: `navigator.share` fallback to `navigator.clipboard`.
-     - **Localhost Crawler Guard**: Social platforms (Facebook, LinkedIn, X) reject `http://localhost:3000` URLs with crawler errors. `SharePlaylistModal` detects localhost/private network environments and maps social share links to the canonical public production domain (`https://8ofspadesworks.com/playlists/${playlist.id}`), guaranteeing zero crawler rejection.
+     - **Localhost Crawler Guard**: Social platforms (Facebook, LinkedIn, X) reject `http://localhost:3000` URLs with crawler errors. `SharePlaylistModal` detects localhost/private network environments and maps social share links to the canonical public production domain (`https://chancetekone.com/playlists/${playlist.id}`), guaranteeing zero crawler rejection.
 
 
 
@@ -205,7 +205,7 @@ Always persist and save significant workflow context, user preferences, operatio
   3. Add PDF format support to upload and read PDF Books directly on the platform.
 - **Architectural Implementation**:
   1. **Strict Zero Forced Default Covers Policy**:
-     - Removed automatic assignment of default cover art (`the_lounge_ambient.jpg`, `rnb-neo-soul.jpg`, `8_of_spades_works_banner.png`, `logo.png`) across `MediaUploadModal.tsx`, `VideoPlayer.tsx`, `AudiobookPlayer.tsx`, and `MediaCard.tsx`.
+     - Removed automatic assignment of default cover art (`the_lounge_ambient.jpg`, `rnb-neo-soul.jpg`, `chancetekone_banner.png`, `logo.png`) across `MediaUploadModal.tsx`, `VideoPlayer.tsx`, `AudiobookPlayer.tsx`, and `MediaCard.tsx`.
      - `MediaUploadModal.tsx` provides a dedicated segment selector: "No Cover Art (Native Video / Slate)" vs "Custom Cover Image". When "No Cover Art" is selected or no cover is uploaded, `coverUrl` and `thumbnailUrl` are stored as empty strings (`""`), guaranteeing no unwanted images are attached.
   2. **Native Video Look & Cinema Frame Display**:
      - In `VideoPlayer.tsx` and `AudiobookPlayer.tsx`, the `poster` attribute is strictly omitted (`undefined`) when no custom cover exists, allowing HTML5 `<video>` to natively render the first video frame or clean cinema slate without poster overlays.
@@ -231,7 +231,7 @@ Always persist and save significant workflow context, user preferences, operatio
      - Defined `CreatorSubmission`, `SubmissionCategory` (11 categories), `SubmissionStatus` (`draft`, `pending_review`, `in_review`, `changes_requested`, `approved`, `rejected`, `publishing`, `published`, `withdrawn`), `ReviewRecord`, and `NotificationRecord`.
      - Preserves snapshots of creator user ID, registered email, display name, copyright declaration, version, and email delivery status.
   2. **Transactional Email Notification Service (`src/lib/server/emailService.ts`)**:
-     - Branded HTML and plain-text templates for Approvals ("Your Content Has Been Approved — 8 Of Spades Works") and Rejections ("An Update on Your Submission — 8 Of Spades Works").
+     - Branded HTML and plain-text templates for Approvals ("Your Content Has Been Approved — ChanceTEKone") and Rejections ("An Update on Your Submission — ChanceTEKone").
      - Rejection emails strictly inject the actual administrator reason: `[Actual Administrator Rejection Reason]`.
      - Multi-provider support (Resend API, SendGrid API, Postmark, Firebase Mail extension) with durable logging in `.data/notification-logs.json` and Firestore `notification_logs`.
      - Idempotent tracking and safe notification retry capability.
@@ -302,8 +302,8 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
 
 ### 18. IndexedDB Scheme Preservation, Production Firebase Storage Bucket Initialization & SSR Hydration Integrity
 - **Root Causes Identified from Production Diagnostics**:
-  1. **`indexeddb://` $\rightarrow$ `indexeddb%3A//` Percent-Encoding Corruption**: `normalizePlayableUrl()` in `src/lib/music/audioAssetIntegrity.ts` previously matched `/^(https?:|blob:|data:)/i` and omitted `indexeddb:`. When `resolveSafeAudioUrl()` processed an `indexeddb://up-...` reference, `encodeURI()` converted the colon to `%3A`, producing `indexeddb%3A//up-...`. As a result, `AudioStorageService.isIndexedDBUrl` and `isEphemeralUrl` returned `false`, `<audio>` requested `https://8ofspadesworks.us/music/indexeddb%3A//up-...` (HTTP 404), and `CloudCatalogClient` wrote `indexeddb%3A//...` directly to Firestore without externalizing the binary to Firebase Storage.
-  2. **Production ADC `firebaseAdmin.js` Missing `storageBucket`**: On Firebase App Hosting / Cloud Run (`https://8ofspadesworks.us`), `firebaseAdmin.js` initialized the Admin SDK via the Application Default Credentials (`else`) branch (`initializeApp({ projectId })`) without `storageBucket`, causing `adminStorage.bucket()` in `uploadCatalogAsset()` to fail with `Bucket name not specified` during `/api/admin/upload` and `/api/catalog/asset`.
+  1. **`indexeddb://` $\rightarrow$ `indexeddb%3A//` Percent-Encoding Corruption**: `normalizePlayableUrl()` in `src/lib/music/audioAssetIntegrity.ts` previously matched `/^(https?:|blob:|data:)/i` and omitted `indexeddb:`. When `resolveSafeAudioUrl()` processed an `indexeddb://up-...` reference, `encodeURI()` converted the colon to `%3A`, producing `indexeddb%3A//up-...`. As a result, `AudioStorageService.isIndexedDBUrl` and `isEphemeralUrl` returned `false`, `<audio>` requested `https://chancetekone.us/music/indexeddb%3A//up-...` (HTTP 404), and `CloudCatalogClient` wrote `indexeddb%3A//...` directly to Firestore without externalizing the binary to Firebase Storage.
+  2. **Production ADC `firebaseAdmin.js` Missing `storageBucket`**: On Firebase App Hosting / Cloud Run (`https://chancetekone.us`), `firebaseAdmin.js` initialized the Admin SDK via the Application Default Credentials (`else`) branch (`initializeApp({ projectId })`) without `storageBucket`, causing `adminStorage.bucket()` in `uploadCatalogAsset()` to fail with `Bucket name not specified` during `/api/admin/upload` and `/api/catalog/asset`.
   3. **`PlayerContext.resume()` Bypassing `playTrack()`**: Clicking Play on the initial track or transport bar invoked `togglePlay()` $\rightarrow$ `resume()`, which assigned `audioRef.current.src = currentTrack.audioUrl` directly without resolving `indexeddb://` blobs and without updating `loadedTrackIdRef.current`, causing `onError` to classify the event as `"source":"stale"` and throw `NotSupportedError`.
   4. **React Error #418 Hydration Mismatch**: `PlayerContext.tsx`, `src/app/music/page.tsx`, `src/app/page.tsx`, and `src/app/artists/page.tsx` initialized `useState` with `MusicCatalogService.getAllTracks()`, which returned 29 canonical tracks on the server (no `localStorage`) vs 59+ tracks on the client during initial hydration when user-uploaded tracks existed in `localStorage`.
 - **Architectural Implementation**:
@@ -366,7 +366,7 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
 ### 21. Complete Luther Vandross Audio Playback Restoration & Mandatory Account Gate for Media Streaming
 - **Directives & Issues Addressed**:
   1. **Luther Vandross Mobile/PWA Playback Failure**: Even after removing client-side catalog tombstones, pressing play on Luther Vandross tracks on mobile phones and PWAs resulted in no audio output.
-  2. **Mandatory Platform Sign Up Requirement**: To play or stream any content on the 8 Of Spades Works platform (music, 4K video, audiobooks, spoken literature), visiting users must be signed up and authenticated.
+  2. **Mandatory Platform Sign Up Requirement**: To play or stream any content on the ChanceTEKone platform (music, 4K video, audiobooks, spoken literature), visiting users must be signed up and authenticated.
 - **Root Causes Identified & Eliminated**:
   1. **`isCrossArtistAudioMismatch` Blocking Luther Audio**: In `src/lib/music/authenticAudioMap.ts`, line 140 explicitly returned `true` for any audio path or artist matching `luther` or `never_too_much`. In `PlayerContext.tsx`, whenever `isCrossArtistAudioMismatch` returned `true`, the resolved audio URL was wiped to empty (`resolvedAudioUrl = ''`), permanently aborting playback before touching HTML5 audio.
   2. **Ephemeral Route 404 Interceptor**: In `src/app/audio/uploads/[...file]/route.ts`, lines 37-40 rejected any file path matching `luther` or `never_too_much` with HTTP 404 "content permanently removed".
@@ -428,7 +428,7 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
      - In `AudiobookPlayer.tsx`, added dynamic `isPortraitVideo` detection and `aspect-[9/16]` container styling, along with an interactive Theater Mode toggle button.
   2. **Universal Audiobook Sharing Suite (`src/components/audiobook/ShareAudiobookModal.tsx`)**:
      - Created `ShareAudiobookModal` supporting 1-click Copy Link, Native Share Sheet (`navigator.share`), Facebook, X / Twitter, LinkedIn, WhatsApp, Telegram, Instagram, and pre-filled Email.
-     - Localhost crawler guard: Automatically maps localhost links to canonical public production URLs (`https://8ofspadesworks.com/audiobooks/${audiobook.id}`).
+     - Localhost crawler guard: Automatically maps localhost links to canonical public production URLs (`https://chancetekone.com/audiobooks/${audiobook.id}`).
      - Wired into `src/app/audiobooks/page.tsx` (featured banners), `src/app/audiobooks/[id]/page.tsx` (main action toolbar), `AudiobookPlayer.tsx` (player controls), `MediaCard.tsx` (card hover button), and `ReactionButtons.tsx`.
 
 ### 25. Guest Home Video Streaming, Direct Player Display & Full-Box Video Expansion Architecture
@@ -599,7 +599,7 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
     - Accordion expand/collapse state with global "Expand All" and "Collapse All" controls.
   - **Universal Track Sharing Modal (`src/components/media/ShareTrackModal.tsx`)**:
     - Provides 1-click clipboard copy, native device share sheet trigger, and social sharing links.
-    - Features Localhost Crawler Guard mapping `http://localhost:3000` to canonical public production domain `https://8ofspadesworks.com/music?track=${track.id}`, preventing crawler rejections.
+    - Features Localhost Crawler Guard mapping `http://localhost:3000` to canonical public production domain `https://chancetekone.com/music?track=${track.id}`, preventing crawler rejections.
   - **Add to Playlist Integration (`AddToPlaylistModal.tsx`)**:
     - Seamlessly opens playlist picker for authenticated members with dynamic playlist creation and auth prompts for visitors.
   - **Public Music Page Integration (`src/app/music/page.tsx`)**:
@@ -843,7 +843,7 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
 
 ### 38. Admin Security Breach Elimination (Mandatory Password Authentication) & Music Player Forward/Next Transport Architecture
 - **User Directives**:
-  1. Immediately eliminate the security breach displaying the Authorized Administrator Directory (`antgreene@8ofspadesworks.com`, `chancellor@ichancetek.com`) and Direct Admin Authentication 1-click bypass buttons.
+  1. Immediately eliminate the security breach displaying the Authorized Administrator Directory (`antgreene@chancetekone.com`, `chancellor@ichancetek.com`) and Direct Admin Authentication 1-click bypass buttons.
   2. Mandate that platform administrators must ALWAYS type in their passwords for authentication.
   3. Resolve the issue where clicking the next/forward button on the music player does not start playing the next song.
 - **Architectural Implementation**:
@@ -851,7 +851,7 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
      - **Complete Removal of Directory & Bypass Buttons**: Permanently purged the "Authorized Administrator Directory" and "Direct Admin Authentication" buttons from the admin gate (`!isAdmin`). No administrator email addresses are ever leaked or printed to the DOM.
      - **Mandatory Password Form**: Built an inline, executive-tier Administrator Authentication Gate requiring both Administrator Email and Password (`type="password"` with show/hide toggle).
      - **Strict Authentication Pipeline**: Directly invokes `signInWithEmail(adminEmailInput, adminPasswordInput)`. Access to the admin dashboard is granted ONLY upon successful verification of credentials against Firebase / super-user vault.
-     - **Removal of Hardcoded Fallbacks**: Replaced hardcoded fallback email references (`antgreene@8ofspadesworks.com`) in the administrator status banner with authenticated user profile values (`profile?.email || 'Platform Administrator'`).
+     - **Removal of Hardcoded Fallbacks**: Replaced hardcoded fallback email references (`antgreene@chancetekone.com`) in the administrator status banner with authenticated user profile values (`profile?.email || 'Platform Administrator'`).
   2. **Music Player Forward / Next Dynamic Transport Architecture (`src/lib/player/PlayerContext.tsx`)**:
      - **Root Cause Identified**: `playNext()` called `pause()` whenever `queue.length === 0`. Because songs initiated without an explicit queue (e.g., from search, vinyl console, catalog tables, or single track rows) had empty upcoming queues, clicking "Next" abruptly paused playback instead of advancing to the next song.
      - **Dynamic Context Discovery (`playTrack`)**: When `newQueue` is omitted, `playTrack` automatically discovers upcoming and preceding queues from the song's album, crate, or general catalog by matching both track ID and composite title + artist keys.
@@ -910,7 +910,7 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
 
 ### 41. Authentication Resilience & Member Streaming Access (Visitor-Only Sign-Up Gate Architecture)
 - **User Directives**:
-  1. When an admin or platform member selects the Next or Forward arrows on the Music Player, they must NEVER be redirected to the "Sign Up to Stream on 8 Of Spades Works" role selection modal.
+  1. When an admin or platform member selects the Next or Forward arrows on the Music Player, they must NEVER be redirected to the "Sign Up to Stream on ChanceTEKone" role selection modal.
   2. ONLY visitors who do not have an account should be gated and prompted to create an account or sign in to stream.
 - **Root Cause Identified**:
   - `PlayerContext.tsx` had defined `playNext` and `playPrev` inside `useCallback` with narrow dependencies (`[isShuffled]` and `[]`). They closed over the initial instance of `playTrack` and `requireStreamAuth` where `profile` and `user` were `null` prior to auth hydration.
@@ -1021,7 +1021,7 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
   1. **Universal Reaction Engine & Multi-Emoji Support (`ReactionService.ts` & `ReactionButtons.tsx`)**:
      - Upgraded `ReactionService` with full multi-emoji support: Fire 🔥, Heart ❤️, Thumbs Up 👍, Thumbs Down 👎, Black Thumbs Up 👍🏿, Black Thumbs Down 👎🏿, Clap 👏, and Hundred 💯.
      - Extended `ContentReactions` interface with distinct counts and boolean active flags for all emoji types.
-     - Cross-Platform Canonical Key Synchronization: `ReactionService.getReactions`, `toggleReaction`, and `subscribe` now accept `contentKey?: string`. Both direct item IDs and canonical composite keys (e.g. `project:thereturnofthebreakbeats:::8ofspadesworks`) are synchronized, and cross-prefix matching (e.g. `project:` vs `audiobook:`) guarantees reactions follow projects and literature everywhere.
+     - Cross-Platform Canonical Key Synchronization: `ReactionService.getReactions`, `toggleReaction`, and `subscribe` now accept `contentKey?: string`. Both direct item IDs and canonical composite keys (e.g. `project:thereturnofthebreakbeats:::chancetekone`) are synchronized, and cross-prefix matching (e.g. `project:` vs `audiobook:`) guarantees reactions follow projects and literature everywhere.
      - Multi-tab synchronization via `BroadcastChannel('spades_emoji_reactions_channel')` and storage listeners.
   2. **The Lounge Discography Suite (`PublicMusicCatalogSection.tsx`)**:
      - **Album Header**: Mounted `<ReactionButtons variant="compact">` alongside the album discussion trigger on every album header.
@@ -1048,7 +1048,7 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
   2. **Podcasts Page Integration (`src/app/podcasts/page.tsx`)**:
      - **Featured Spotlight**: Added `<ReactionButtons variant="compact">` with Fire 🔥, Love ❤️, Black Thumbs Up 👍🏿, Black Thumbs Down 👎🏿, and full emoji popover, plus a `💬 {count} Comments & Threads` button opening `UniversalDiscussionModal`.
      - **Episode Cards Grid**: Added top-left comment count badge overlay on card artwork (`💬 {count}`), footer emoji reactions (`ReactionButtons`), and dedicated `💬 {count} Discuss` button opening `UniversalDiscussionModal`.
-     - Pre-seeded community discussion threads in `SocialCommentService.ts` for ChanceTEK Masterminds Podcast and 8 Of Spades Crate Talk.
+     - Pre-seeded community discussion threads in `SocialCommentService.ts` for ChanceTEK Masterminds Podcast and ChanceTEKone Crate Talk
   3. **Dedicated Podcast Deep Dive & Discussion Page (`src/app/podcasts/[id]/page.tsx`)**:
      - Created dedicated page with breadcrumb navigation, format badges (HQ Audio vs 4K Video), playback controls, integrated video cinema viewport for video podcasts, voice narration, playlist modal, and share link.
      - Mounted `<ReactionButtons>` and full embedded `<CommentSection>` with multi-emoji reactions (🔥, ❤️, 👍🏿, 👎🏿, 👍, 👎, 👏, 💯), threaded replies, exact timestamps, and author/admin edit and delete capabilities.
@@ -1059,10 +1059,10 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
 ### 47. Universal Social Media & Text Message Sharing Engine with Authentic Cover Art, Names & Descriptions
 - **User Directives**:
   1. Using the cover art, name, and description associated with the song, video, podcast, audiobook, book, merch, beats, producer, artist, etc., when sharing to social media posts and text messages.
-  2. Do NOT use the default 8 of spades works cover art (`/images/8_of_spades_works_banner.png` or generic logo).
+  2. Do NOT use the default ChanceTEKone cover art (`/images/chancetekone_banner.png` or generic logo).
 - **Architectural Implementation**:
   1. **Universal Share Metadata Engine (`src/lib/sharing/shareMetadataService.ts`)**:
-     - Strict Cover Art Sanitization (`isDefaultOrInvalidCover`): Explicitly rejects `/images/8_of_spades_works_banner.png`, `/images/logo.png`, `the_lounge_ambient.jpg`, and dead upload cover hashes (`cover_1792`).
+     - Strict Cover Art Sanitization (`isDefaultOrInvalidCover`): Explicitly rejects `/images/chancetekone_banner.png`, `/images/logo.png`, `the_lounge_ambient.jpg`, and dead upload cover hashes (`cover_1792`).
      - Content-Aware Authentic Cover Art Resolution (`resolveAuthenticCover`): Resolves authentic studio covers for Songs/Beats via `MusicCatalogService.getAuthenticCoverForTrack` and genre defaults (`/images/genres/rnb-neo-soul.jpg`, `/images/genres/hip-hop.jpg`), Videos (`video.thumbnailUrl` or cinema artwork), Podcasts (`podcast.coverUrl`), Audiobooks/Books (`audiobook.coverUrl`), Merch (`product.images[0]`), Producers (`producer.avatarUrl`), Artists (`artist.avatarUrl`), Albums (`album.coverUrl`), and Playlists.
      - Accurate Name & Description Synthesis: Extracts clean descriptions, liner notes, and synopses without HTML tags or truncated text, paired with authentic creator attributions (Artist, Author, Narrator, Host, Beatmaker, Curator).
      - Dedicated Text Message Payload & Protocol: Generates cross-compatible SMS scheme (`sms:?&body=${encodeURIComponent(textMessageBody)}`) with pre-formatted title, creator, rich description, and canonical link, along with clipboard fallback.
@@ -1094,31 +1094,31 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
 ### 48. Featured Upcoming Works Social Suite, Project 1 Authentic Master Artwork & Canonical Domain Alignment
 - **User Directives**:
   1. Complete integration of social sharing, text messaging (SMS/iMessage), emoji reactions, and discussion threads across **"Featured Upcoming Works"** (Home Page carousel slides and `/projects#project-1`).
-  2. Ensure the canonical production domain is accurately aligned to `https://8ofspadesworks.us` across all sharing metadata and layouts.
-  3. Ensure that when sharing or viewing Project 1 (*The Return of the Break Beats*), it displays the authentic master artwork (`/images/return_of_the_break_beats_master.png`), authentic title (*The Return of the Break Beats*), producer (*8 OF SPADES WORKS*), and narrative description—strictly avoiding `/images/8_of_spades_works_banner.png`.
+  2. Ensure the canonical production domain is accurately aligned to `https://chancetekone.us` across all sharing metadata and layouts.
+  3. Ensure that when sharing or viewing Project 1 (*The Return of the Break Beats*), it displays the authentic master artwork (`/images/return_of_the_break_beats_master.png`), authentic title (*The Return of the Break Beats*), producer (*ChanceTEKone*), and narrative description—strictly avoiding `/images/chancetekone_banner.png`.
   4. Ensure every slide on the Home Page carousel (`HeroBanner.tsx`) and every project card on `/projects` (including `#project-1`, `#project-chancetek`, `#project-2`, `#project-3`, `#project-4`) has full universal sharing and discussion support.
 - **Architectural Implementation**:
   1. **Universal Share Metadata Service Extension (`src/lib/sharing/shareMetadataService.ts`)**:
      - Extended `ShareContentType` with `'project'`.
-     - Canonical origin updated to `https://8ofspadesworks.us`.
-     - Integrated `project` resolver: maps Project 1 (`project-1` or `return-of-the-break-beats`) to authentic master artwork `/images/return_of_the_break_beats_master.png`, title "The Return of the Break Beats", creator "8 OF SPADES WORKS", description, and relative path `/projects#project-1`.
+     - Canonical origin updated to `https://chancetekone.us`.
+     - Integrated `project` resolver: maps Project 1 (`project-1` or `return-of-the-break-beats`) to authentic master artwork `/images/return_of_the_break_beats_master.png`, title "The Return of the Break Beats", creator "ChanceTEKone", description, and relative path `/projects#project-1`.
      - General project resolver matching mock project entries, cinema posters, and masterworks.
      - Multi-channel URL generation: SMS/iMessage with preformatted title, description, and link (`sms:?&body=...`), Facebook, X, LinkedIn, WhatsApp, Telegram, Email.
   2. **Project 1 Authentic Master Artwork & Mock Data Normalization (`src/lib/mockData.ts`)**:
-     - Updated `project-1`'s `coverUrl` and `bannerUrl` from generic `/images/8_of_spades_works_banner.png` to `/images/return_of_the_break_beats_master.png`.
+     - Updated `project-1`'s `coverUrl` and `bannerUrl` from generic `/images/chancetekone_banner.png` to `/images/return_of_the_break_beats_master.png`.
   3. **Home Page Featured Upcoming Works Carousel (`HeroBanner.tsx`)**:
      - Mounted `UniversalShareModal` with authentic project metadata.
      - Added dedicated universal Share button (`Share2`) alongside the existing Discussion trigger and `ReactionButtons` on all carousel slides.
-     - Slide 1 links directly to `https://8ofspadesworks.us/projects#project-1` with authentic artwork and narrative text.
+     - Slide 1 links directly to `https://chancetekone.us/projects#project-1` with authentic artwork and narrative text.
   4. **Projects & Masterworks Hub (`src/app/projects/page.tsx`)**:
      - Added dedicated Share button next to Discuss on every project card (`#project-1`, `#project-chancetek`, `#project-2`, `#project-3`, `#project-4`).
      - Mounted `UniversalShareModal` configured with project entity fallback to `/images/return_of_the_break_beats_master.png`, preventing any fallback to generic banner.
   5. **Dynamic Server Open Graph & Twitter Layout for Projects (`src/app/projects/[id]/layout.tsx`)**:
      - Server Component with `generateMetadata` delivering rich Open Graph and Twitter Card tags.
-     - When crawlers (Facebook, X, LinkedIn) or messaging apps (SMS, WhatsApp, iMessage) fetch `/projects/project-1`, the server emits authentic Open Graph title, creator, description, and master cover art (`https://8ofspadesworks.us/images/return_of_the_break_beats_master.png`).
-  6. **Comprehensive Canonical Production Domain Alignment (`https://8ofspadesworks.us`)**:
+     - When crawlers (Facebook, X, LinkedIn) or messaging apps (SMS, WhatsApp, iMessage) fetch `/projects/project-1`, the server emits authentic Open Graph title, creator, description, and master cover art (`https://chancetekone.us/images/return_of_the_break_beats_master.png`).
+  6. **Comprehensive Canonical Production Domain Alignment (`https://chancetekone.us`)**:
      - Replaced outdated `.com` domains in all dynamic server layouts: `src/app/music/[id]/layout.tsx`, `src/app/albums/[id]/layout.tsx`, `src/app/artists/[id]/layout.tsx`, `src/app/audiobooks/[id]/layout.tsx`, `src/app/merch/[id]/layout.tsx`, `src/app/playlists/[id]/layout.tsx`, `src/app/podcasts/[id]/layout.tsx`, `src/app/videos/[id]/layout.tsx`, `src/app/share/track/[id]/page.tsx`, and `src/components/playlist/SharePlaylistModal.tsx`.
-     - Added `@8ofspadesworks.us` to `AUTHORIZED_ADMIN_EMAILS`, `isAdminEmail`, and `SUPER_USER_EMAILS` across `adminIdentity.ts`, `CloudCatalogClient.ts`, and `AuthContext.tsx`.
+     - Added `@chancetekone.us` to `AUTHORIZED_ADMIN_EMAILS`, `isAdminEmail`, and `SUPER_USER_EMAILS` across `adminIdentity.ts`, `CloudCatalogClient.ts`, and `AuthContext.tsx`.
 
 
 ### 49. Next.js 14 MetadataOutlet Serialization Resilience & OpenGraph Fault-Tolerance Architecture
@@ -1150,9 +1150,9 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
 
 - **Architectural Implementation**:
   1. **Purge of Synthetic Mock Music, Albums, Producers & Projects (`src/lib/mockData.ts`)**:
-     - **Mock Tracks**: Permanently purged synthetic placeholder tracks (`track-2` through `track-24` including "Neon Crate Philosophy", "Cyber Grid Overdrive", "Soul Kitchen 1974", "Ghost In The SP-1200", etc.) which pointed to Fort Apache. Retained strictly `track-1` (`8 OF SPADES WORKS Presents: The Return of the Break Beats`) per strict user mandate that the breakbeat anthem must NEVER be removed.
+     - **Mock Tracks**: Permanently purged synthetic placeholder tracks (`track-2` through `track-24` including "Neon Crate Philosophy", "Cyber Grid Overdrive", "Soul Kitchen 1974", "Ghost In The SP-1200", etc.) which pointed to Fort Apache. Retained strictly `track-1` (`ChanceTEKone Presents: The Return of the Break Beats`) per strict user mandate that the breakbeat anthem must NEVER be removed.
      - **Mock Albums**: Purged synthetic albums (`album-2` "Quantum Break Sequence", `album-3` "Velvet Horns & Tape Saturation", `album-bronx-heritage` "Bronx Heritage Archive"). Retained strictly authentic albums (`album-1` "The Return of the Break Beats", `album-chancetek` "ChanceTEK", `album-off-the-wall`, `album-thriller`) with all play/like counts reset to 0.
-     - **Mock Producers**: Purged synthetic producers (`producer-3` "Cipher Voltage", `producer-4` "Luna Brass"). Retained strictly authentic master producers (`producer-1` 8 OF SPADES WORKS, `producer-2` Chancellor @ ChanceTEK LLC).
+     - **Mock Producers**: Purged synthetic producers (`producer-3` "Cipher Voltage", `producer-4` "Luna Brass"). Retained strictly authentic master producers (`producer-1` ChanceTEKone, `producer-2` Chancellor @ ChanceTEK LLC).
      - **Mock Projects**: Purged synthetic projects (`project-2`, `project-3`, `project-4`). Retained authentic masterworks (`project-1` "THE RETURN OF THE BREAK BEATS", `project-chancetek` "ChanceTEK Project").
      - **Mock Comments**: Cleansed to an empty array (`MOCK_COMMENTS = []`).
 
@@ -1224,7 +1224,7 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
      - The play button in `TrackRow.tsx` had `className="hidden group-hover:flex"`. Because mobile and tablet touchscreens lack mouse hover, `group-hover` is never active, keeping the play button 100% hidden.
      - The track number span, the cover art thumbnail, and the row `<div>` container all lacked `onClick` play handlers. Tapping the title navigated away to the detail page instead of starting playback, making it impossible for touch users to play songs from the list.
   2. **Canonical Breakbeat Anthem Omission (`track-1`)**:
-     - `BREAKBEAT_ANTHEM_TRACK` (`track-1`, "8 OF SPADES WORKS Presents: The Return of the Break Beats", audio: `/audio/Fort_Apache.mp3`) was omitted from `PLATFORM_CANONICAL_TRACKS`, meaning `tracks[0]` and `trendingTracks` on the home page did not feature the anthem.
+     - `BREAKBEAT_ANTHEM_TRACK` (`track-1`, "ChanceTEKone Presents: The Return of the Break Beats", audio: `/audio/Fort_Apache.mp3`) was omitted from `PLATFORM_CANONICAL_TRACKS`, meaning `tracks[0]` and `trendingTracks` on the home page did not feature the anthem.
   3. **Docked Player & TrackRow Mobile Horizontal Viewport Overflows**:
      - In `GlobalMusicPlayer.tsx`, the bottom docked player rendered 3 wide flex columns containing 12 controls simultaneously. On small mobile screens (< 768px), the buttons overflowed past 520px in a 375px viewport.
      - In `TrackRow.tsx`, the right action column contained 7 buttons (VoiceNarration, 4 separate reaction emoji chips, discussion button, share button, duration), expanding the row to 520px.
@@ -1255,7 +1255,7 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
 
 ### 53. PWA Background & Lock-Screen Audio Architecture (Apple Music & Spotify Parity)
 - **User Directive**:
-  `When music is playing on pwa on mobie devices (iphones, andriods, and tablet). The music stops playing when the iphone, mobile devices screen goes dark. the music on 8 of spades works pwa mobile app should continue play like Apple Music and Spotify does. Please resolve. I should not have to set the display to never turn off in order for the music to continue to play uninterupted.`
+  `When music is playing on pwa on mobie devices (iphones, andriods, and tablet). The music stops playing when the iphone, mobile devices screen goes dark. the music on ChanceTEKone pwa mobile app should continue play like Apple Music and Spotify does. Please resolve. I should not have to set the display to never turn off in order for the music to continue to play uninterupted.`
 - **Root Causes Identified**:
   1. **Detached In-Memory `<audio>` Element**:
      - `PlayerContext.tsx` previously created the player instance with `new Audio()` inside a React `useEffect`, which was never mounted or attached to the DOM document tree (`audio.isConnected === false`).
@@ -1263,7 +1263,7 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
   2. **Insufficient Preload Policy (`preload="metadata"`)**:
      - `audio.preload` was set to `'metadata'`. When the device locked, network buffering was throttled by the OS; once the initial few seconds in the audio buffer depleted, WebKit stalled and suspended playback.
   3. **Lock-Screen Artwork Dropped due to Relative URLs**:
-     - `navigator.mediaSession.metadata` passed relative artwork paths (`/images/...`, `/logo.png`). iOS Lock Screen (`MPNowPlayingInfoCenter`) and Android MediaSession require fully qualified absolute URLs (`https://8ofspadesworks.us/...`). Passing relative paths caused iOS to fail resolving album artwork and drop the media session widget.
+     - `navigator.mediaSession.metadata` passed relative artwork paths (`/images/...`, `/logo.png`). iOS Lock Screen (`MPNowPlayingInfoCenter`) and Android MediaSession require fully qualified absolute URLs (`https://chancetekone.us/...`). Passing relative paths caused iOS to fail resolving album artwork and drop the media session widget.
   4. **MediaSession Event Loop Thrashing**:
      - The MediaSession setup `useEffect` included `[currentTime, duration, isPlaying]` in its dependency array. Because `currentTime` updated 4 times per second via `timeupdate`, React was continuously instantiating new `MediaMetadata` instances and re-registering action handlers on every tick. This flooded the OS media session daemon (`mediaserverd` on iOS / `MediaSessionService` on Android), causing lock-screen controls to lag, flicker, or drop.
   5. **Background Pause Gap in `playTrack` & `ended`**:
@@ -1273,7 +1273,7 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
      - Mounted `<audio ref={audioRef} id="spades-global-audio" playsInline preload="auto" crossOrigin="anonymous" aria-hidden="true" className="sr-only pointer-events-none" />` directly in the JSX of `PlayerProvider`, which is housed permanently in `RootLayout`.
      - In WebKit and Chromium, DOM-connected elements with `playsInline`, `webkit-playsinline`, `x-webkit-airplay="allow"`, and `preload="auto"` maintain an unbroken `AVAudioSessionCategoryPlayback` session, allowing continuous background audio playback while the display is powered down or locked.
   2. **Absolute Media URLs for MediaSession Metadata**:
-     - Implemented `toAbsoluteMediaUrl()` helper mapping all album art and logos to fully qualified canonical URLs (`window.location.origin + path` / `https://8ofspadesworks.us/...`) across 96x96, 128x128, 192x192, 256x256, 384x384, and 512x512 resolutions.
+     - Implemented `toAbsoluteMediaUrl()` helper mapping all album art and logos to fully qualified canonical URLs (`window.location.origin + path` / `https://chancetekone.us/...`) across 96x96, 128x128, 192x192, 256x256, 384x384, and 512x512 resolutions.
   3. **Decoupled MediaSession Architecture**:
      - **Metadata Effect**: Updates exclusively on `[currentTrack, currentAudiobook, currentChapter]` changes.
      - **PlaybackState Effect**: Updates on `[isPlaying]` changes.
@@ -1374,7 +1374,7 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
 
 ### 57. The Lounge Header Streamlining & Banner Clutter Elimination
 - **User Directive**:
-  `Remove the following cards from the Lounge area: Music Catalog, 8 The Lounge Vinyl Relaxed Mellow Vinyl Grooves Michael Jackson • Soul • Chill Beats Play Cool Music, Run Healing Agent, The Crates & Diggin Run Healing Agent Discover great music, emerging artists, and fresh sounds. Explore a growing music catalog with new music uploaded daily. 8 Of Spades Works is committed to celebrating independent artists, producers, podcasters, audiobook creators, and the culture of music.`
+  `Remove the following cards from the Lounge area: Music Catalog, 8 The Lounge Vinyl Relaxed Mellow Vinyl Grooves Michael Jackson • Soul • Chill Beats Play Cool Music, Run Healing Agent, The Crates & Diggin Run Healing Agent Discover great music, emerging artists, and fresh sounds. Explore a growing music catalog with new music uploaded daily. ChanceTEKone is committed to celebrating independent artists, producers, podcasters, audiobook creators, and the culture of music.`
 - **Implementation**:
   - In `src/app/music/page.tsx`, stripped the crowded overlays and cards from the top Lounge hero container:
     1. Removed the `"Music Catalog"` badge.
@@ -1489,7 +1489,7 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
      - Dispatches live notifications via `this.notifySubscribers()`.
   3. **Strict Custom Cover Priority Across All UI & Player Components**:
      - In `MediaCard.tsx`, `TrackRow.tsx`, `PlayerContext.tsx`, `src/app/albums/[id]/page.tsx`, `src/app/music/[id]/page.tsx`, `PublicMusicCatalogSection.tsx`, `MusicCatalogHealingAgent.ts`, and `shareMetadataService.ts`:
-       `getAuthenticCoverForTrack` is strictly relegated to a missing/generic fallback. If `coverUrl` is provided and is not a generic placeholder (`/images/8_of_spades_works_banner.png` or empty), the custom/admin-updated cover takes absolute precedence.
+       `getAuthenticCoverForTrack` is strictly relegated to a missing/generic fallback. If `coverUrl` is provided and is not a generic placeholder (`/images/chancetekone_banner.png` or empty), the custom/admin-updated cover takes absolute precedence.
   4. **Dual Track & Album Coverage in `PlatformChangeCoverArtModal.tsx`**:
      - When an admin selects or uploads cover art in the admin dashboard, the modal updates both the target item (`updateTrack` or `updateAlbumCover`) and calls `updateAlbumCover` whenever an album title is present, guaranteeing simultaneous album jacket and track row propagation across Luther Vandross, Janet Jackson, The Jacksons, and all catalog entries.
 

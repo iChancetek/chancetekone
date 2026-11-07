@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — IndexedDB Audio Blob Storage Service
+﻿/**
+ * ChanceTEKone — IndexedDB Audio Blob Storage Service
  * Provides client-side binary persistence for uploaded MP3 files up to several gigabytes.
  * Ensures zero-latency instant playback and offline reliability.
  */
@@ -195,7 +195,7 @@ class AudioStorageServiceClass {
             const recFile = norm(rec.fileName ? rec.fileName.replace(/\.[a-z0-9]+$/i, '') : '');
             const artistMatches =
               recArtist === targetArtist ||
-              recArtist === '8ofspadesworks' ||
+              recArtist === 'chancetekone' ||
               recFile.includes(targetArtist);
             const titleMatches =
               recTitle === targetTitle ||

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -104,7 +104,7 @@ function MembershipContent() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('8ofspades_subscription_tier');
+      const saved = localStorage.getItem('chancetekone_subscription_tier');
       if (saved) setCurrentTier(saved);
     }
   }, []);
@@ -128,7 +128,7 @@ function MembershipContent() {
 
     // Activate subscription
     if (typeof window !== 'undefined') {
-      localStorage.setItem('8ofspades_subscription_tier', planId);
+      localStorage.setItem('chancetekone_subscription_tier', planId);
     }
     setCurrentTier(planId);
     setSubscribedMessage(
@@ -379,7 +379,7 @@ function MembershipContent() {
         onSuccess={() => {
           setShowAuthModal(false);
           if (typeof window !== 'undefined') {
-            localStorage.setItem('8ofspades_subscription_tier', 'member');
+            localStorage.setItem('chancetekone_subscription_tier', 'member');
           }
           setCurrentTier('member');
           setSubscribedMessage('Welcome to Crate Club! Your membership is active.');

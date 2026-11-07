@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useRef } from 'react';
 import {
@@ -147,7 +147,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
       let mediaUrl = '';
       let coverUrl = !noCoverArt && coverFile ? coverPreview || '' : '';
 
-      const adminEmail = profile?.email || user?.email || 'antgreene@8ofspadesworks.com';
+      const adminEmail = profile?.email || user?.email || 'antgreene@chancetekone.com';
       const headers: Record<string, string> = {
         'x-admin-role': 'admin',
         'x-admin-email': adminEmail,
@@ -240,7 +240,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
         const newPodcast: PodcastEpisode = {
           id: generatedId,
           title: title.trim(),
-          showTitle: creatorOrAuthor.trim() || '8 Of Spades Podcasts',
+          showTitle: creatorOrAuthor.trim() || 'ChanceTEKone Podcasts',
           host: narratorOrHost.trim() || 'Chancellor @ ChanceTEK LLC',
           description: description.trim() || 'Exclusive podcast episode release.',
           mediaUrl: mediaUrl,
@@ -261,7 +261,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
           title: title.trim(),
           artistId: 'producer-chancellor',
           artistName: creatorOrAuthor.trim() || 'Chancellor @ ChanceTEK LLC',
-          label: 'ChanceTEK LLC & 8 OF SPADES WORKS',
+          label: 'ChanceTEK LLC & ChanceTEKone',
           videoUrl: mediaUrl,
           thumbnailUrl: finalCover,
           duration: 120,

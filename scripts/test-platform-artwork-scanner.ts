@@ -1,4 +1,4 @@
-import fs from 'fs';
+﻿import fs from 'fs';
 import path from 'path';
 
 // Load .env.local for local script execution
@@ -95,7 +95,7 @@ const sampleJpegBytes = new Uint8Array([
 
   const taggedBuffer = writeID3v2TagToMP3(mockMp3.buffer, {
     title: 'Autonomous AI Test Track',
-    artist: '8 OF SPADES WORKS',
+    artist: 'ChanceTEKone',
     album: 'Crate Intelligence Vault',
     coverImageBytes: sampleJpegBytes,
     coverMimeType: 'image/jpeg',

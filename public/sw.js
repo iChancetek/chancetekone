@@ -1,6 +1,6 @@
-// 8 OF SPADES WORKS - 2026 Progressive Web App Service Worker (Real-Time Platform Sync)
-const CACHE_NAME = '8ofspades-pwa-v2.4.0';
-const RUNTIME_CACHE = '8ofspades-runtime-v2.4.0';
+﻿// ChanceTEKone - 2026 Progressive Web App Service Worker (Real-Time Platform Sync)
+const CACHE_NAME = 'chancetekone-pwa-v2.4.0';
+const RUNTIME_CACHE = 'chancetekone-runtime-v2.4.0';
 // Audio files are never cached by the SW — browser handles native Range-request streaming directly
 
 // Pre-cache only offline fallback shell assets; dynamic pages are fetched network-first to ensure real-time platform sync
@@ -144,7 +144,7 @@ self.addEventListener('fetch', (event) => {
           const offlinePage = await caches.match('/offline');
           return (
             offlinePage ||
-            new Response('Offline - 8 OF SPADES WORKS', {
+            new Response('Offline - ChanceTEKone', {
               headers: { 'Content-Type': 'text/html' },
             })
           );

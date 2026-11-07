@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
@@ -262,12 +262,12 @@ export const MusicUploadCenterSection: React.FC<MusicUploadCenterSectionProps> =
   const [selectedFolderId, setSelectedFolderId] = useState<string>('');
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
-  const [newArtistName, setNewArtistName] = useState('8 OF SPADES WORKS');
+  const [newArtistName, setNewArtistName] = useState('ChanceTEKone');
   const [newFolderDesc, setNewFolderDesc] = useState('');
 
   // Artist & Producer Targeting State
   const [selectedArtistId, setSelectedArtistId] = useState<string>('artist-1');
-  const [selectedArtistName, setSelectedArtistName] = useState<string>('8 OF SPADES WORKS');
+  const [selectedArtistName, setSelectedArtistName] = useState<string>('ChanceTEKone');
   const [artistFilterSearch, setArtistFilterSearch] = useState<string>('');
 
   const [selectedProducerId, setSelectedProducerId] = useState<string>('producer-1');
@@ -284,8 +284,8 @@ export const MusicUploadCenterSection: React.FC<MusicUploadCenterSectionProps> =
         map.set(t.artistId, {
           id: t.artistId,
           name: t.artistName,
-          label: t.label || '8 OF SPADES WORKS',
-          bio: `Featured artist on 8 OF SPADES WORKS.`,
+          label: t.label || 'ChanceTEKone',
+          bio: `Featured artist on ChanceTEKone.`,
           avatarUrl: t.coverUrl || '/images/logo.png',
           bannerUrl: t.coverUrl || '/images/the_lounge_ambient.jpg',
           genres: [t.genre || 'R&B / Soul'],
@@ -393,7 +393,7 @@ export const MusicUploadCenterSection: React.FC<MusicUploadCenterSectionProps> =
       selectedCrateId,
       selectedFolderId || undefined,
       batchName,
-      profile?.email || 'antgreene@8ofspadesworks.com',
+      profile?.email || 'antgreene@chancetekone.com',
       profile?.id || 'usr-antgreene',
       {
         destinationType: destinationMode,
@@ -458,7 +458,7 @@ export const MusicUploadCenterSection: React.FC<MusicUploadCenterSectionProps> =
         selectedCrateId,
         selectedFolderId || undefined,
         batchName,
-        profile?.email || 'antgreene@8ofspadesworks.com',
+        profile?.email || 'antgreene@chancetekone.com',
         profile?.id || 'usr-antgreene',
         {
           destinationType: destinationMode,
@@ -592,7 +592,7 @@ export const MusicUploadCenterSection: React.FC<MusicUploadCenterSectionProps> =
         selectedCrateId,
         selectedFolderId || undefined,
         batchName,
-        profile?.email || 'antgreene@8ofspadesworks.com',
+        profile?.email || 'antgreene@chancetekone.com',
         profile?.id || 'usr-antgreene',
         {
           destinationType: destinationMode,
@@ -1914,7 +1914,7 @@ export const MusicUploadCenterSection: React.FC<MusicUploadCenterSectionProps> =
                 <input
                   type="text"
                   required
-                  placeholder="e.g. 8 OF SPADES WORKS"
+                  placeholder="e.g. ChanceTEKone"
                   value={newArtistName}
                   onChange={(e) => setNewArtistName(e.target.value)}
                   className="w-full p-2.5 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none"

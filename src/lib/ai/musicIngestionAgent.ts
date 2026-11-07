@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Agentic AI Music Ingestion Engine
+﻿/**
+ * ChanceTEKone — Agentic AI Music Ingestion Engine
  * Autonomous AI agent responsible for metadata normalization, crate & folder recommendations,
  * duplicate detection across all signals, and human-in-the-loop review staging.
  */
@@ -288,7 +288,7 @@ export class AgenticAIMusicIngestionAgent {
 
     // 1. Normalization
     const normalizedTitle = this.normalizeString(raw.title || fileName);
-    const normalizedArtist = this.normalizeString(raw.artist || '8 OF SPADES WORKS');
+    const normalizedArtist = this.normalizeString(raw.artist || 'ChanceTEKone');
     const normalizedAlbum = this.normalizeString(raw.album || 'Master Crate Collection');
     const normalizedGenre = classifyGenre({
       artist: normalizedArtist,
@@ -300,7 +300,7 @@ export class AgenticAIMusicIngestionAgent {
 
     // 2. Validate essential fields
     if (!raw.artist || raw.artist === 'Unknown Artist') {
-      flaggedIssues.push('Artist Missing (Defaulted to 8 OF SPADES WORKS)');
+      flaggedIssues.push('Artist Missing (Defaulted to ChanceTEKone)');
     }
     if (raw.artworkStatus === 'missing') {
       flaggedIssues.push('Artwork Missing');

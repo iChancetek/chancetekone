@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Bulk content deletion planner & executor.
+﻿/**
+ * ChanceTEKone — Bulk content deletion planner & executor.
  *
  * Pure planning logic (dependency resolution, overlap detection, shared-asset protection) is
  * separated from execution so it can be unit-tested and so the confirmation dialog can show the

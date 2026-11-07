@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
@@ -208,7 +208,7 @@ export const DuplicateDetectionSection: React.FC<DuplicateDetectionSectionProps>
     const adminActor = {
       id: profile?.id || 'usr-admin',
       name: profile?.name || profile?.email || 'Platform Administrator',
-      email: profile?.email || 'admin@8ofspadesworks.com',
+      email: profile?.email || 'admin@chancetekone.com',
       role: (profile?.role as AdminRole) || 'admin',
     };
 
@@ -256,7 +256,7 @@ export const DuplicateDetectionSection: React.FC<DuplicateDetectionSectionProps>
     const adminActor = {
       id: profile?.id || 'usr-admin',
       name: profile?.name || profile?.email || 'Platform Administrator',
-      email: profile?.email || 'admin@8ofspadesworks.com',
+      email: profile?.email || 'admin@chancetekone.com',
       role: (profile?.role as AdminRole) || 'admin',
     };
 
@@ -349,7 +349,7 @@ export const DuplicateDetectionSection: React.FC<DuplicateDetectionSectionProps>
     const adminActor = {
       id: profile?.id || 'usr-admin',
       name: profile?.name || profile?.email || 'Platform Administrator',
-      email: profile?.email || 'admin@8ofspadesworks.com',
+      email: profile?.email || 'admin@chancetekone.com',
       role: (profile?.role as AdminRole) || 'admin',
     };
 
@@ -433,7 +433,7 @@ export const DuplicateDetectionSection: React.FC<DuplicateDetectionSectionProps>
     const adminActor = {
       id: profile?.id || 'usr-admin',
       name: profile?.name || profile?.email || 'Platform Administrator',
-      email: profile?.email || 'admin@8ofspadesworks.com',
+      email: profile?.email || 'admin@chancetekone.com',
       role: (profile?.role as AdminRole) || 'admin',
     };
 
@@ -468,7 +468,7 @@ export const DuplicateDetectionSection: React.FC<DuplicateDetectionSectionProps>
     const adminActor = {
       id: profile?.id || 'usr-admin',
       name: profile?.name || profile?.email || 'Platform Administrator',
-      email: profile?.email || 'admin@8ofspadesworks.com',
+      email: profile?.email || 'admin@chancetekone.com',
       role: (profile?.role as AdminRole) || 'admin',
     };
 
@@ -496,7 +496,7 @@ export const DuplicateDetectionSection: React.FC<DuplicateDetectionSectionProps>
     const adminActor = {
       id: profile?.id || 'usr-admin',
       name: profile?.name || profile?.email || 'Platform Administrator',
-      email: profile?.email || 'admin@8ofspadesworks.com',
+      email: profile?.email || 'admin@chancetekone.com',
       role: (profile?.role as AdminRole) || 'admin',
     };
 
@@ -534,7 +534,7 @@ export const DuplicateDetectionSection: React.FC<DuplicateDetectionSectionProps>
     const adminActor = {
       id: profile?.id || 'usr-admin',
       name: profile?.name || profile?.email || 'Platform Administrator',
-      email: profile?.email || 'admin@8ofspadesworks.com',
+      email: profile?.email || 'admin@chancetekone.com',
       role: (profile?.role as AdminRole) || 'admin',
     };
 
@@ -558,7 +558,7 @@ export const DuplicateDetectionSection: React.FC<DuplicateDetectionSectionProps>
     const adminActor = {
       id: profile?.id || 'usr-admin',
       name: profile?.name || profile?.email || 'Platform Administrator',
-      email: profile?.email || 'admin@8ofspadesworks.com',
+      email: profile?.email || 'admin@chancetekone.com',
       role: (profile?.role as AdminRole) || 'admin',
     };
 

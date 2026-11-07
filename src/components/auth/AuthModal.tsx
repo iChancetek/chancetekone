@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
@@ -47,7 +47,7 @@ export type CreatorPersonaType = 'artist' | 'producer' | 'creator' | 'streamer';
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
-  title = 'Sign in to 8 Of Spades Works Platform',
+  title = 'Sign in to ChanceTEKone Platform',
   description = 'Access custom crates, AI memory sync, exclusive vinyl, and high-fidelity streaming.',
   initialTab = 'signin',
   onSuccess,
@@ -245,7 +245,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
     if (!agreedToTerms) {
-      setError('You must read and agree to all terms of the 8OfSpadesWorks.US Distribution Agreement.');
+      setError('You must read and agree to all terms of the ChanceTEKone.US Distribution Agreement.');
       return;
     }
 
@@ -257,7 +257,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         setError('Please enter your typed digital signature.');
         return;
       }
-      finalSigData = `/// ${typedSignature.trim()} [CRYPTOGRAPHIC ONBOARDING STAMP 8OFSPADES-${Date.now().toString(36).toUpperCase()}] ///`;
+      finalSigData = `/// ${typedSignature.trim()} [CRYPTOGRAPHIC ONBOARDING STAMP CHANCETEKONE-${Date.now().toString(36).toUpperCase()}] ///`;
       finalSigType = 'crypto_typed';
     } else {
       const canvas = canvasRef.current;
@@ -353,7 +353,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div className="relative w-36 h-10">
             <Image
               src="/logo.png"
-              alt="8 Of Spades Works"
+              alt="ChanceTEKone"
               fill
               sizes="144px"
               className="object-contain"
@@ -510,7 +510,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     Are you an Artist, Producer, Creator, or Listener/Streamer?
                   </h4>
                   <p className="text-xs text-neutral-400">
-                    Select how you will participate on the 8 Of Spades Works platform.
+                    Select how you will participate on the ChanceTEKone platform.
                   </p>
                 </div>
 
@@ -664,7 +664,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         required
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
-                        placeholder="e.g. Chancellor @ 8 Of Spades"
+                        placeholder="e.g. Chancellor @ ChanceTEKone"
                         className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-brand-purple"
                       />
                     </div>
@@ -756,10 +756,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <FileSignature className="w-5 h-5 text-brand-gold shrink-0 mt-0.5" />
                   <div className="space-y-1 text-xs">
                     <p className="font-extrabold text-white">
-                      8OfSpadesWorks.US — Music, Video &amp; Content Onboarding Agreement
+                      ChanceTEKone.US — Music, Video &amp; Content Onboarding Agreement
                     </p>
                     <p className="text-neutral-300 text-[11px] leading-relaxed">
-                      Please review the agreement below. You retain 100% of your copyright. 8 Of Spades Works provides distribution, high-fidelity streaming, and monthly 80/20 royalty payouts. Once signed, your agreement is submitted to admin for Human-in-the-Loop review.
+                      Please review the agreement below. You retain 100% of your copyright. ChanceTEKone provides distribution, high-fidelity streaming, and monthly 80/20 royalty payouts. Once signed, your agreement is submitted to admin for Human-in-the-Loop review.
                     </p>
                   </div>
                 </div>
@@ -771,7 +771,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       Artist/Creator Distribution Agreement
                     </h5>
                     <p className="text-[11px] text-neutral-400 font-mono">
-                      8 OF SPADES WORKS LLC • VERSION 1.0.0 • TEXAS JURISDICTION
+                      ChanceTEKone • VERSION 1.0.0 • TEXAS JURISDICTION
                     </p>
                   </div>
 
@@ -780,7 +780,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       1. Parties
                     </h6>
                     <p>
-                      This Artist/Creator Distribution Agreement (&quot;Agreement&quot;) is entered into between 8 Of Spades Works LLC (&quot;8ofSpadesWorks.US&quot; or &quot;Platform&quot;), and the undersigned artist, producer, creator, or rights holder (&quot;Artist/Creator&quot;), collectively the &quot;Parties.&quot;
+                      This Artist/Creator Distribution Agreement (&quot;Agreement&quot;) is entered into between ChanceTEKone (&quot;ChanceTEKone.US&quot; or &quot;Platform&quot;), and the undersigned artist, producer, creator, or rights holder (&quot;Artist/Creator&quot;), collectively the &quot;Parties.&quot;
                     </p>
                   </div>
 
@@ -879,7 +879,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       required
                       value={artistMoniker}
                       onChange={(e) => setArtistMoniker(e.target.value)}
-                      placeholder="e.g. Chancellor @ 8 Of Spades"
+                      placeholder="e.g. Chancellor @ ChanceTEKone"
                       className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-brand-purple"
                     />
                   </div>
@@ -1023,7 +1023,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         className="mt-0.5 rounded border-white/20 bg-white/5 text-brand-gold focus:ring-brand-gold"
                       />
                       <span>
-                        I have read, understood, and accept all 8 sections of the <strong className="text-brand-gold">8OfSpadesWorks.US Distribution Agreement</strong> and submit this document for administrative review.
+                        I have read, understood, and accept all 8 sections of the <strong className="text-brand-gold">ChanceTEKone.US Distribution Agreement</strong> and submit this document for administrative review.
                       </span>
                     </label>
                   </div>
@@ -1059,7 +1059,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     Agreement Submitted • Human Review Active
                   </span>
                   <h4 className="text-xl font-black text-white">
-                    Welcome to 8 Of Spades Works, {artistMoniker || displayName}!
+                    Welcome to ChanceTEKone, {artistMoniker || displayName}!
                   </h4>
                   <p className="text-xs text-neutral-300 max-w-md mx-auto leading-relaxed">
                     Your {selectedRole} Distribution Agreement has been digitally signed and routed to our administrative queue for Human-in-the-Loop review.
@@ -1093,7 +1093,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       {submittedAgreementId}
                     </p>
                     <p className="text-[10px] text-neutral-400 leading-tight">
-                      A copy of this agreement has been filed in the 8OfSpadesWorks.US tamper-evident vault.
+                      A copy of this agreement has been filed in the ChanceTEKone.US tamper-evident vault.
                     </p>
                   </div>
                 )}

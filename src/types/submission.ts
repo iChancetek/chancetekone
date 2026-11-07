@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Creator Content Submission & Moderation Data Models
+﻿/**
+ * ChanceTEKone — Creator Content Submission & Moderation Data Models
  * Defines types for creator uploads, category metadata, review holding area,
  * human-in-the-loop decisions, and transactional email notifications.
  */

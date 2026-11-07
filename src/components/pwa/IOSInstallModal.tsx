@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import Image from 'next/image';
@@ -19,10 +19,10 @@ export const IOSInstallModal: React.FC<IOSInstallModalProps> = ({ isOpen, onClos
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-3">
             <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-brand-gold/40 shrink-0">
-              <Image src="/logo.png" alt="8 Of Spades Works" fill sizes="40px" className="object-cover" />
+              <Image src="/logo.png" alt="ChanceTEKone" fill sizes="40px" className="object-cover" />
             </div>
             <div>
-              <p className="text-[11px] font-bold text-brand-gold tracking-tight">8 Of Spades Works</p>
+              <p className="text-[11px] font-bold text-brand-gold tracking-tight">ChanceTEKone</p>
               <h3 className="text-base font-bold text-white tracking-tight">
                 Install on iOS / iPadOS
               </h3>

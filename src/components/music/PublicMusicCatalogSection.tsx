@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
@@ -206,7 +206,7 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
         return String(a.albumTitle || '').localeCompare(String(b.albumTitle || ''));
       });
 
-      const avatarUrl = albums[0]?.coverUrl || '/images/8_of_spades_works_banner.png';
+      const avatarUrl = albums[0]?.coverUrl || '/images/chancetekone_banner.png';
 
       groups.push({
         artistName,
@@ -1032,7 +1032,7 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
               mediaType: 'music',
               title: playlistTrackTarget.title,
               artistName: playlistTrackTarget.artistName,
-              coverUrl: playlistTrackTarget.coverUrl || '/images/8_of_spades_works_banner.png',
+              coverUrl: playlistTrackTarget.coverUrl || '/images/chancetekone_banner.png',
               duration: playlistTrackTarget.duration,
             }}
           />

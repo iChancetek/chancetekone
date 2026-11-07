@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAIClient, AI_CONFIG } from '@/lib/openai/config';
 import { MOCK_TRACKS, MOCK_VIDEOS, MOCK_AUDIOBOOKS, MOCK_PRODUCTS } from '@/lib/mockData';
 import { PLATFORM_CANONICAL_TRACKS } from '@/lib/music/MusicCatalogService';
@@ -98,7 +98,7 @@ You must output STRICT JSON matching this schema:
 - BPM: ${currentMedia.bpm || 'Unknown'}
 
 User Profile / Memory:
-- User: ${userContext?.name || '8 OF SPADES WORKS'}
+- User: ${userContext?.name || 'ChanceTEKone'}
 - Known Facts: ${JSON.stringify(userContext?.explicitFacts || [])}
 - Musical DNA: ${JSON.stringify(userContext?.tasteProfile || {})}
 

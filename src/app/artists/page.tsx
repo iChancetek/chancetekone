@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -20,8 +20,8 @@ export default function ArtistsPage() {
         map.set(t.artistId, {
           id: t.artistId,
           name: t.artistName,
-          label: t.label || '8 OF SPADES WORKS',
-          bio: `Featured artist on 8 OF SPADES WORKS.`,
+          label: t.label || 'ChanceTEKone',
+          bio: `Featured artist on ChanceTEKone.`,
           avatarUrl: t.coverUrl || '/images/logo.png',
           bannerUrl: t.coverUrl || '/images/the_lounge_ambient.jpg',
           genres: [t.genre || 'R&B / Soul'],

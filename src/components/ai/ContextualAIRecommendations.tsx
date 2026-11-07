@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
@@ -71,7 +71,7 @@ export const ContextualAIRecommendations: React.FC<ContextualAIRecommendationsPr
         body: JSON.stringify({
           currentMedia,
           userContext: {
-            name: profile?.name || '8 OF SPADES WORKS',
+            name: profile?.name || 'ChanceTEKone',
             explicitFacts: memory.explicitFacts,
             tasteProfile: memory.tasteProfile,
           },

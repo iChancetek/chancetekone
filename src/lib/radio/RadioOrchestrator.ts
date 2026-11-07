@@ -1,5 +1,5 @@
-// ============================================================
-// Radio Orchestrator — 8 Of Spades Works
+﻿// ============================================================
+// Radio Orchestrator — ChanceTEKone
 // Central coordinator for all 6 AI radio agents.
 // Manages dual-station lifecycle, queue automation, and telemetry.
 // ============================================================

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import Image from 'next/image';
@@ -32,7 +32,7 @@ import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussio
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
 
-const PRODUCERS_PAGE_NARRATION = `Producers and Sonic Architects Directory for 8 OF SPADES WORKS and Return of the Break Beats. Featuring master beatmakers, hardware sampler specialists, analog tape engineers, and sound designers shaping the breakbeat renaissance with E-mu SP-1200 and Akai MPC60 hardware crunch.`;
+const PRODUCERS_PAGE_NARRATION = `Producers and Sonic Architects Directory for ChanceTEKone and Return of the Break Beats. Featuring master beatmakers, hardware sampler specialists, analog tape engineers, and sound designers shaping the breakbeat renaissance with E-mu SP-1200 and Akai MPC60 hardware crunch.`;
 
 export default function ProducersPage() {
   const { playTrack, currentTrack, isPlaying } = usePlayer();
@@ -85,12 +85,12 @@ export default function ProducersPage() {
             DJs, Master Producers & Beat-Makers
           </h1>
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            The sonic engineers, hardware samplers, and analog tape purists driving the sound of 8 OF SPADES WORKS. Explore their hardware rigs, signature BPM pockets, and legendary break selections.
+            The sonic engineers, hardware samplers, and analog tape purists driving the sound of ChanceTEKone. Explore their hardware rigs, signature BPM pockets, and legendary break selections.
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-2">
             <button
-              onClick={() => openAI('Tell me about the producers behind 8 OF SPADES WORKS, their hardware setups, and break choices!')}
+              onClick={() => openAI('Tell me about the producers behind ChanceTEKone, their hardware setups, and break choices!')}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-brand-purple/30 hover:bg-brand-purple/50 border border-brand-purple/50 text-white text-xs font-bold shadow-md hover:scale-105 transition-all cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-brand-gold animate-spin-slow" />
@@ -306,7 +306,7 @@ export default function ProducersPage() {
                   </button>
                   <button
                     onClick={() =>
-                      openAI(`Tell me about producer ${producer.name}, their workflow, and their work on 8 OF SPADES WORKS!`)
+                      openAI(`Tell me about producer ${producer.name}, their workflow, and their work on ChanceTEKone!`)
                     }
                     className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-brand-gold hover:text-white text-xs font-semibold border border-white/5 transition-all cursor-pointer"
                   >

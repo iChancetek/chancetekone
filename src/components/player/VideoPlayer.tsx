@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
 import {
@@ -167,7 +167,7 @@ export const VideoPlayer: React.FC<{ video: Video }> = ({ video }) => {
           poster={
             video.thumbnailUrl &&
             video.thumbnailUrl !== '/images/logo.png' &&
-            video.thumbnailUrl !== '/images/8_of_spades_works_banner.png' &&
+            video.thumbnailUrl !== '/images/chancetekone_banner.png' &&
             video.thumbnailUrl !== '/images/the_lounge_ambient.jpg'
               ? video.thumbnailUrl
               : undefined

@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Music Recovery Vault & 45-Day Quarantine Service
+﻿/**
+ * ChanceTEKone — Music Recovery Vault & 45-Day Quarantine Service
  * Admin authority governance for soft-deleting music, songs, and albums.
  * Enforces a strict 45-day rolling recovery window before permanent destruction.
  * Integrates with Agentic AI Audit Trail to log all uploads, removals, and restorations.

@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Multi-folder ingestion scanner.
+﻿/**
+ * ChanceTEKone — Multi-folder ingestion scanner.
  *
  * Root causes this module fixes in the previous drag-and-drop / folder-picker code:
  *

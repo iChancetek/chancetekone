@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import {
@@ -85,7 +85,7 @@ export const MembershipAnalyticsSection: React.FC = () => {
               Membership & Crate Engagement Analytics
             </h2>
             <p className="text-xs sm:text-sm text-neutral-300 max-w-2xl leading-relaxed">
-              Real-time subscription metrics connecting directly to the established 8 Of Spades membership architecture. Members receive complete, all-inclusive streaming across all eight crates without separate micro-purchases.
+              Real-time subscription metrics connecting directly to the established ChanceTEKone membership architecture. Members receive complete, all-inclusive streaming across all eight crates without separate micro-purchases.
             </p>
           </div>
 

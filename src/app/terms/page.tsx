@@ -1,14 +1,14 @@
-import React from 'react';
+﻿import React from 'react';
 import { Scale, ShieldCheck, Cpu, ShoppingBag, Landmark, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 
 export const metadata = {
   title: 'Terms of Service',
-  description: 'Terms of service, licensing covenants, and platform guidelines for 8 Of Spades Works.',
+  description: 'Terms of service, licensing covenants, and platform guidelines for ChanceTEKone.',
 };
 
-const TERMS_FULL_TEXT = `Terms of Service and Platform Covenant. Effective Date: January 1, 2026. Published by 8 OF SPADES WORKS. Welcome to the 8 OF SPADES WORKS Streaming Platform, an advanced cultural and sonic operating system curated and maintained by 8 OF SPADES WORKS LLC and ChanceTEK LLC. Every sound recording, drum loop composition, synchronized visual master, narrated audiobook chapter, and proprietary algorithm hosted across this ecosystem constitutes protected intellectual property. You are granted an individual license to stream media for personal enjoyment. The Break Beats AI assistant operates as an interactive cultural curator processing requests in real time. All vinyl and merchandise orders are fulfilled on a verified first-come, first-served basis.`;
+const TERMS_FULL_TEXT = `Terms of Service and Platform Covenant. Effective Date: January 1, 2026. Published by ChanceTEKone. Welcome to the ChanceTEKone Streaming Platform, an advanced cultural and sonic operating system curated and maintained by ChanceTEKone and ChanceTEK LLC. Every sound recording, drum loop composition, synchronized visual master, narrated audiobook chapter, and proprietary algorithm hosted across this ecosystem constitutes protected intellectual property. You are granted an individual license to stream media for personal enjoyment. The Break Beats AI assistant operates as an interactive cultural curator processing requests in real time. All vinyl and merchandise orders are fulfilled on a verified first-come, first-served basis.`;
 
 export default function TermsPage() {
   return (
@@ -33,7 +33,7 @@ export default function TermsPage() {
             Terms of Service
           </h1>
           <p className="text-sm sm:text-base text-neutral-300 max-w-2xl leading-relaxed">
-            Effective Date: January 1, 2026 • Published by 8 OF SPADES WORKS
+            Effective Date: January 1, 2026 • Published by ChanceTEKone
           </p>
         </div>
       </div>
@@ -50,12 +50,12 @@ export default function TermsPage() {
               </h2>
             </div>
             <VoiceNarrationButton
-              text="Welcome to the 8 OF SPADES WORKS Streaming Platform, an advanced cultural and sonic operating system curated and maintained by 8 OF SPADES WORKS LLC and ChanceTEK LLC. By accessing, browsing, streaming, or purchasing through this platform, you enter into a legally binding covenant governed by these Terms of Service."
+              text="Welcome to the ChanceTEKone Streaming Platform, an advanced cultural and sonic operating system curated and maintained by ChanceTEKone and ChanceTEK LLC. By accessing, browsing, streaming, or purchasing through this platform, you enter into a legally binding covenant governed by these Terms of Service."
               variant="icon"
             />
           </div>
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            Welcome to the 8 OF SPADES WORKS Streaming Platform, an advanced cultural and sonic operating system curated and maintained by 8 OF SPADES WORKS LLC and ChanceTEK LLC. By accessing, browsing, streaming, or purchasing through this platform, you enter into a legally binding covenant governed by these Terms of Service. If you do not consent to every provision articulated herein, your privilege to navigate or utilize this platform is immediately revoked.
+            Welcome to the ChanceTEKone Streaming Platform, an advanced cultural and sonic operating system curated and maintained by ChanceTEKone and ChanceTEK LLC. By accessing, browsing, streaming, or purchasing through this platform, you enter into a legally binding covenant governed by these Terms of Service. If you do not consent to every provision articulated herein, your privilege to navigate or utilize this platform is immediately revoked.
           </p>
         </section>
 
@@ -70,15 +70,15 @@ export default function TermsPage() {
               </h2>
             </div>
             <VoiceNarrationButton
-              text="Every sound recording, drum loop composition, synchronized visual master, narrated audiobook chapter, typography design, digital artifact, and proprietary algorithm hosted across this ecosystem constitutes protected intellectual property owned by 8 OF SPADES WORKS or licensed copyright holders. You are granted an individual license to stream media for personal enjoyment."
+              text="Every sound recording, drum loop composition, synchronized visual master, narrated audiobook chapter, typography design, digital artifact, and proprietary algorithm hosted across this ecosystem constitutes protected intellectual property owned by ChanceTEKone or licensed copyright holders. You are granted an individual license to stream media for personal enjoyment."
               variant="icon"
             />
           </div>
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            Every sound recording, drum loop composition, synchronized visual master, narrated audiobook chapter, typography design, digital artifact, and proprietary algorithm hosted across this ecosystem constitutes protected intellectual property owned by 8 OF SPADES WORKS or licensed copyright holders.
+            Every sound recording, drum loop composition, synchronized visual master, narrated audiobook chapter, typography design, digital artifact, and proprietary algorithm hosted across this ecosystem constitutes protected intellectual property owned by ChanceTEKone or licensed copyright holders.
           </p>
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            You are granted an individual, revocable, non-exclusive, non-transferable license to stream audio and audiovisual media for personal, non-commercial enjoyment. Any unauthorized reproduction, reverse engineering, public broadcast, algorithmic scraping, or commercial exploitation without prior written consent from 8 OF SPADES WORKS is strictly prohibited.
+            You are granted an individual, revocable, non-exclusive, non-transferable license to stream audio and audiovisual media for personal, non-commercial enjoyment. Any unauthorized reproduction, reverse engineering, public broadcast, algorithmic scraping, or commercial exploitation without prior written consent from ChanceTEKone is strictly prohibited.
           </p>
         </section>
 
@@ -133,12 +133,12 @@ export default function TermsPage() {
               </h2>
             </div>
             <VoiceNarrationButton
-              text="Users are responsible for maintaining the confidentiality of their credentials. 8 OF SPADES WORKS reserves the right to suspend or permanently terminate access for conduct that violates these covenants or degrades platform integrity. These terms are construed in accordance with the laws of the State of Delaware."
+              text="Users are responsible for maintaining the confidentiality of their credentials. ChanceTEKone reserves the right to suspend or permanently terminate access for conduct that violates these covenants or degrades platform integrity. These terms are construed in accordance with the laws of the State of Delaware."
               variant="icon"
             />
           </div>
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            Users are responsible for maintaining the confidentiality of their credentials. 8 OF SPADES WORKS reserves the right to suspend or permanently terminate access for conduct that violates these covenants or degrades platform integrity. These terms are construed in accordance with the laws of the State of Delaware, United States of America.
+            Users are responsible for maintaining the confidentiality of their credentials. ChanceTEKone reserves the right to suspend or permanently terminate access for conduct that violates these covenants or degrades platform integrity. These terms are construed in accordance with the laws of the State of Delaware, United States of America.
           </p>
         </section>
       </div>
@@ -163,7 +163,7 @@ export default function TermsPage() {
           </Link>
         </div>
         <p className="text-neutral-500">
-          © 2026 8 OF SPADES WORKS. All rights reserved.
+          © 2026 ChanceTEKone. All rights reserved.
         </p>
       </div>
     </div>

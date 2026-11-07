@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 // ============================================================
 // Radio Management Section — Admin Panel
@@ -45,7 +45,7 @@ interface UploadForm {
 
 const EMPTY_FORM: UploadForm = {
   title: '',
-  artist: '8 Of Spades Works',
+  artist: 'ChanceTEKone',
   album: '',
   genre: '',
   year: new Date().getFullYear().toString(),
@@ -142,7 +142,7 @@ export function RadioManagementSection() {
       fd.append('isExplicit', String(form.isExplicit));
       fd.append('stations', form.stations.join(','));
       if (form.coverUrl) fd.append('coverUrl', form.coverUrl);
-      fd.append('uploadedBy', 'admin@8ofspades.com');
+      fd.append('uploadedBy', 'admin@chancetekone.com');
 
       const resp = await fetch('/api/radio/upload', { method: 'POST', body: fd });
       const data = await resp.json();

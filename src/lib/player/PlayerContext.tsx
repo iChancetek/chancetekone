@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { Track, Audiobook, AudiobookChapter, Video } from '@/types/media';
@@ -100,13 +100,13 @@ const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
  */
 function toAbsoluteMediaUrl(url?: string | null): string {
   if (!url) {
-    return typeof window !== 'undefined' ? `${window.location.origin}/logo.png` : 'https://8ofspadesworks.us/logo.png';
+    return typeof window !== 'undefined' ? `${window.location.origin}/logo.png` : 'https://chancetekone.us/logo.png';
   }
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
   const clean = url.startsWith('/') ? url : `/${url}`;
-  return typeof window !== 'undefined' ? `${window.location.origin}${clean}` : `https://8ofspadesworks.us${clean}`;
+  return typeof window !== 'undefined' ? `${window.location.origin}${clean}` : `https://chancetekone.us${clean}`;
 }
 
 export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -593,7 +593,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       try {
         navigator.mediaSession.metadata = new MediaMetadata({
           title: currentTrack.title,
-          artist: currentTrack.artistName || '8 Of Spades Works',
+          artist: currentTrack.artistName || 'ChanceTEKone',
           album: currentTrack.albumTitle || (currentTrack.genre ? `${currentTrack.genre} · Return of the Break Beats` : 'Return of the Break Beats'),
           artwork: [
             { src: coverUrl, sizes: '96x96', type: 'image/png' },
@@ -612,7 +612,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       try {
         navigator.mediaSession.metadata = new MediaMetadata({
           title: currentChapter.title,
-          artist: currentAudiobook.narrator || currentAudiobook.author || '8 Of Spades Works',
+          artist: currentAudiobook.narrator || currentAudiobook.author || 'ChanceTEKone',
           album: currentAudiobook.title,
           artwork: [
             { src: coverUrl, sizes: '192x192', type: 'image/png' },
@@ -785,7 +785,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         mediaId: resolvedTrack.id,
         mediaType: 'music',
         title: resolvedTrack.title,
-        subtitle: resolvedTrack.artistName || '8 OF SPADES WORKS',
+        subtitle: resolvedTrack.artistName || 'ChanceTEKone',
         coverUrl: resolvedTrack.coverUrl || '/images/logo.png',
         duration: resolvedTrack.duration || 0,
         audioUrl: resolvedTrack.audioUrl,
@@ -1511,7 +1511,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       <AuthModal
         isOpen={isAuthGateModalOpen}
         onClose={() => setIsAuthGateModalOpen(false)}
-        title="Sign Up to Stream on 8 Of Spades Works"
+        title="Sign Up to Stream on ChanceTEKone"
         description="You must sign up for an account in order to stream music and video on the platform. Create your free account or sign in to continue."
         initialTab="signup"
         onSuccess={() => {

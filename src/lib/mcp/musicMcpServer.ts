@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Music & Cover Art MCP (Model Context Protocol) Server
+﻿/**
+ * ChanceTEKone — Music & Cover Art MCP (Model Context Protocol) Server
  * Implements MCP specification tools for autonomous cover art discovery and MP3 tagging.
  */
 
@@ -92,7 +92,7 @@ export const MUSIC_MCP_TOOLS: McpToolDefinition[] = [
 
 export class MusicMcpServer {
   public static readonly SERVER_INFO = {
-    name: '8ofspades-music-mcp',
+    name: 'chancetekone-music-mcp',
     version: '1.0.0',
     protocolVersion: '2024-11-05',
     description: 'Model Context Protocol server for MP3 metadata, cover art extraction, and Tavily internet discovery',

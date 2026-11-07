@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // Agent 4: AI DJ Agent
 // On-air personality generating station-appropriate introductions.
 // Music is the primary experience — DJ speaks selectively.
@@ -12,20 +12,20 @@ const MAX_INTRO_LENGTH = 200;      // characters — shorter scripts = lower TTS
 export const STATION_ID_EVERY_N_SONGS = 3;
 
 const STATION_PERSONALITIES: Record<RadioStationId, string> = {
-  'hip-hop': `You are the AI DJ for Hip Hop Radio on 8 Of Spades Works. Your voice is authentic, knowledgeable, and energetic. You know hip-hop culture deeply — boom bap, breakbeats, the golden era, and the underground scene. Keep intros concise, sharp, and never corny. You may mention the station name, artist, album, or a relevant cultural note. Never speak more than 2-3 sentences.`,
-  'neo-soul': `You are the AI DJ for Neo Soul Radio on 8 Of Spades Works. Your voice is smooth, warm, and soulful. You understand neo soul, R&B, funk, and jazz influences. Keep intros brief, elegant, and intimate. You may mention the station name, artist, album, or an emotional note about the music. Never speak more than 2-3 sentences.`,
+  'hip-hop': `You are the AI DJ for Hip Hop Radio on ChanceTEKone. Your voice is authentic, knowledgeable, and energetic. You know hip-hop culture deeply — boom bap, breakbeats, the golden era, and the underground scene. Keep intros concise, sharp, and never corny. You may mention the station name, artist, album, or a relevant cultural note. Never speak more than 2-3 sentences.`,
+  'neo-soul': `You are the AI DJ for Neo Soul Radio on ChanceTEKone. Your voice is smooth, warm, and soulful. You understand neo soul, R&B, funk, and jazz influences. Keep intros brief, elegant, and intimate. You may mention the station name, artist, album, or an emotional note about the music. Never speak more than 2-3 sentences.`,
 };
 
 const STATION_ID_LINES: Record<RadioStationId, string[]> = {
   'hip-hop': [
-    `You're locked in to Hip Hop Radio on 8 Of Spades Works.`,
-    `Hip Hop Radio — 8 Of Spades Works. We keep it authentic.`,
-    `This is Hip Hop Radio, powered by 8 Of Spades Works. Real beats. Real culture.`,
+    `You're locked in to Hip Hop Radio on ChanceTEKone.`,
+    `Hip Hop Radio — ChanceTEKone. We keep it authentic.`,
+    `This is Hip Hop Radio, powered by ChanceTEKone. Real beats. Real culture.`,
   ],
   'neo-soul': [
-    `You're riding with Neo Soul Radio on 8 Of Spades Works.`,
-    `Neo Soul Radio — soulful vibrations, courtesy of 8 Of Spades Works.`,
-    `This is Neo Soul Radio on 8 Of Spades Works. Let the groove take you.`,
+    `You're riding with Neo Soul Radio on ChanceTEKone.`,
+    `Neo Soul Radio — soulful vibrations, courtesy of ChanceTEKone.`,
+    `This is Neo Soul Radio on ChanceTEKone. Let the groove take you.`,
   ],
 };
 
@@ -35,21 +35,21 @@ const STATION_ID_LINES: Record<RadioStationId, string[]> = {
  * Additional entries are kept for potential future A/B testing only.
  */
 const WELCOME_SCRIPTS: Record<RadioStationId, string> = {
-  'hip-hop': `Welcome to the 8 Of Spades Works Hip Hop AI Radio Station.`,
-  'neo-soul': `Welcome to the 8 Of Spades Works Neo Soul AI Radio Station.`,
+  'hip-hop': `Welcome to the ChanceTEKone Hip Hop AI Radio Station.`,
+  'neo-soul': `Welcome to the ChanceTEKone Neo Soul AI Radio Station.`,
 };
 
 /** Periodic station ID bumps played every few songs so listeners always know where they are. */
 const STATION_BUMP_LINES: Record<RadioStationId, string[]> = {
   'hip-hop': [
-    `You are listening to 8 Of Spades Works AI Radio — Hip Hop all day.`,
-    `Still here with you — this is 8 Of Spades Works Hip Hop Radio.`,
-    `8 Of Spades Works AI Radio, keeping the culture alive.`,
+    `You are listening to ChanceTEKone AI Radio — Hip Hop all day.`,
+    `Still here with you — this is ChanceTEKone Hip Hop Radio.`,
+    `ChanceTEKone AI Radio, keeping the culture alive.`,
   ],
   'neo-soul': [
-    `You are listening to 8 Of Spades Works AI Radio — Neo Soul for the soul.`,
-    `Still vibing with you — this is 8 Of Spades Works Neo Soul Radio.`,
-    `8 Of Spades Works AI Radio. The soul never stops.`,
+    `You are listening to ChanceTEKone AI Radio — Neo Soul for the soul.`,
+    `Still vibing with you — this is ChanceTEKone Neo Soul Radio.`,
+    `ChanceTEKone AI Radio. The soul never stops.`,
   ],
 };
 
@@ -112,8 +112,8 @@ export class AIDjAgent {
   /**
    * Generates the canonical welcome greeting for when a listener first tunes in.
    * Always returns the exact station-specific phrase — no randomization.
-   * Hip Hop → "Welcome to the 8 Of Spades Works Hip Hop Station."
-   * Neo Soul → "Welcome to the 8 Of Spades Works Neo Soul Station."
+   * Hip Hop → "Welcome to the ChanceTEKone Hip Hop Station."
+   * Neo Soul → "Welcome to the ChanceTEKone Neo Soul Station."
    */
   static generateWelcomeScript(station: RadioStation): DJIntroResult {
     const script = WELCOME_SCRIPTS[station.id];

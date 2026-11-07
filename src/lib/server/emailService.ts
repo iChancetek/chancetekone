@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Transactional Email Notification Service
+﻿/**
+ * ChanceTEKone — Transactional Email Notification Service
  * Dispatches automated, branded notification emails to creators upon approval,
  * publication, or rejection of creative submissions.
  *
@@ -18,9 +18,9 @@ import { getFirebaseAdmin } from '../../../firebaseAdmin.js';
 const DATA_DIR = path.join(process.cwd(), '.data');
 const NOTIFICATIONS_FILE = path.join(DATA_DIR, 'notification-logs.json');
 
-const PRODUCTION_DOMAIN = process.env.NEXT_PUBLIC_APP_URL || 'https://8ofspadesworks.us';
-const FROM_EMAIL = process.env.EMAIL_FROM || 'support@8ofspadesworks.us';
-const FROM_NAME = '8 Of Spades Works Team';
+const PRODUCTION_DOMAIN = process.env.NEXT_PUBLIC_APP_URL || 'https://chancetekone.us';
+const FROM_EMAIL = process.env.EMAIL_FROM || 'support@chancetekone.us';
+const FROM_NAME = 'ChanceTEKone Team';
 
 function ensureNotificationFile() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -89,7 +89,7 @@ export function buildApprovalEmailHtml(args: {
 
   const text = `Hello ${args.creatorName},
 
-Great news! Your submission, “${args.contentTitle},” has been approved and successfully published on 8 Of Spades Works.
+Great news! Your submission, “${args.contentTitle},” has been approved and successfully published on ChanceTEKone.
 
 Category: ${args.contentCategory}
 Your content is now available through the platform in accordance with its publication settings.
@@ -97,9 +97,9 @@ Your content is now available through the platform in accordance with its public
 View your published work: ${publishedUrl}
 Manage your submissions in Creator Studio: ${studioUrl}
 
-Thank you for sharing your creative work with 8 Of Spades Works.
+Thank you for sharing your creative work with ChanceTEKone.
 
-The 8 Of Spades Works Team
+The ChanceTEKone Team
 ${PRODUCTION_DOMAIN}`;
 
   const html = `<!DOCTYPE html>
@@ -107,7 +107,7 @@ ${PRODUCTION_DOMAIN}`;
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Content Has Been Approved — 8 Of Spades Works</title>
+  <title>Your Content Has Been Approved — ChanceTEKone</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #08080c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f3f4f6;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #08080c; padding: 40px 20px;">
@@ -118,7 +118,7 @@ ${PRODUCTION_DOMAIN}`;
           <tr>
             <td style="padding: 30px; text-align: center; background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(139,92,246,0.1)); border-bottom: 1px solid rgba(255,255,255,0.08);">
               <div style="font-size: 20px; font-weight: 900; letter-spacing: 2px; color: #f59e0b; text-transform: uppercase;">
-                8 OF SPADES WORKS
+                ChanceTEKone
               </div>
               <div style="font-size: 11px; letter-spacing: 1px; color: #9ca3af; margin-top: 4px; text-transform: uppercase;">
                 Creator Studio &amp; Publishing Authority
@@ -142,7 +142,7 @@ ${PRODUCTION_DOMAIN}`;
               </p>
 
               <p style="font-size: 15px; color: #e5e7eb; line-height: 1.6; margin: 0 0 16px 0;">
-                Great news! Your submission, “<strong style="color: #f59e0b;">${escapeHtml(args.contentTitle)}</strong>,” has been approved and successfully published on 8 Of Spades Works.
+                Great news! Your submission, “<strong style="color: #f59e0b;">${escapeHtml(args.contentTitle)}</strong>,” has been approved and successfully published on ChanceTEKone.
               </p>
 
               <div style="background-color: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px 20px; margin: 24px 0;">
@@ -185,11 +185,11 @@ ${PRODUCTION_DOMAIN}`;
               </table>
 
               <p style="font-size: 14px; color: #e5e7eb; line-height: 1.6; margin: 28px 0 6px 0;">
-                Thank you for sharing your creative work with 8 Of Spades Works.
+                Thank you for sharing your creative work with ChanceTEKone.
               </p>
 
               <p style="font-size: 14px; font-weight: 700; color: #f59e0b; margin: 0;">
-                The 8 Of Spades Works Team
+                The ChanceTEKone Team
               </p>
             </td>
           </tr>
@@ -197,7 +197,7 @@ ${PRODUCTION_DOMAIN}`;
           <!-- Footer -->
           <tr>
             <td style="padding: 20px 30px; text-align: center; background-color: #0b0a14; border-top: 1px solid rgba(255,255,255,0.05); font-size: 11px; color: #6b7280; line-height: 1.5;">
-              This transactional message was sent to your registered creator account by 8 Of Spades Works LLC.<br>
+              This transactional message was sent to your registered creator account by ChanceTEKone.<br>
               Direct questions to <a href="mailto:${FROM_EMAIL}" style="color: #f59e0b; text-decoration: none;">${FROM_EMAIL}</a>.
             </td>
           </tr>
@@ -225,7 +225,7 @@ export function buildRejectionEmailHtml(args: {
 
   const text = `Hello ${args.creatorName},
 
-Thank you for submitting “${args.contentTitle}” to 8 Of Spades Works.
+Thank you for submitting “${args.contentTitle}” to ChanceTEKone.
 
 After reviewing your submission, our team has determined that it cannot be approved at this time.
 
@@ -234,9 +234,9 @@ ${args.rejectionReason}
 
 Please review the feedback in Creator Studio. If resubmission is available, you may correct the identified issue and submit an updated version for review: ${studioUrl}
 
-We appreciate your interest in publishing your creative work on 8 Of Spades Works.
+We appreciate your interest in publishing your creative work on ChanceTEKone.
 
-The 8 Of Spades Works Team
+The ChanceTEKone Team
 ${PRODUCTION_DOMAIN}`;
 
   const html = `<!DOCTYPE html>
@@ -244,7 +244,7 @@ ${PRODUCTION_DOMAIN}`;
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>An Update on Your Submission — 8 Of Spades Works</title>
+  <title>An Update on Your Submission — ChanceTEKone</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #08080c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f3f4f6;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #08080c; padding: 40px 20px;">
@@ -255,7 +255,7 @@ ${PRODUCTION_DOMAIN}`;
           <tr>
             <td style="padding: 30px; text-align: center; background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(139,92,246,0.1)); border-bottom: 1px solid rgba(255,255,255,0.08);">
               <div style="font-size: 20px; font-weight: 900; letter-spacing: 2px; color: #f59e0b; text-transform: uppercase;">
-                8 OF SPADES WORKS
+                ChanceTEKone
               </div>
               <div style="font-size: 11px; letter-spacing: 1px; color: #9ca3af; margin-top: 4px; text-transform: uppercase;">
                 Creator Studio &amp; Editorial Review
@@ -279,7 +279,7 @@ ${PRODUCTION_DOMAIN}`;
               </p>
 
               <p style="font-size: 15px; color: #e5e7eb; line-height: 1.6; margin: 0 0 16px 0;">
-                Thank you for submitting “<strong style="color: #f59e0b;">${escapeHtml(args.contentTitle)}</strong>” to 8 Of Spades Works.
+                Thank you for submitting “<strong style="color: #f59e0b;">${escapeHtml(args.contentTitle)}</strong>” to ChanceTEKone.
               </p>
 
               <p style="font-size: 15px; color: #e5e7eb; line-height: 1.6; margin: 0 0 20px 0;">
@@ -312,11 +312,11 @@ ${PRODUCTION_DOMAIN}`;
               </table>
 
               <p style="font-size: 14px; color: #e5e7eb; line-height: 1.6; margin: 28px 0 6px 0;">
-                We appreciate your interest in publishing your creative work on 8 Of Spades Works.
+                We appreciate your interest in publishing your creative work on ChanceTEKone.
               </p>
 
               <p style="font-size: 14px; font-weight: 700; color: #f59e0b; margin: 0;">
-                The 8 Of Spades Works Team
+                The ChanceTEKone Team
               </p>
             </td>
           </tr>
@@ -324,7 +324,7 @@ ${PRODUCTION_DOMAIN}`;
           <!-- Footer -->
           <tr>
             <td style="padding: 20px 30px; text-align: center; background-color: #0b0a14; border-top: 1px solid rgba(255,255,255,0.05); font-size: 11px; color: #6b7280; line-height: 1.5;">
-              This review notice was generated by 8 Of Spades Works LLC.<br>
+              This review notice was generated by ChanceTEKone.<br>
               Direct questions to <a href="mailto:${FROM_EMAIL}" style="color: #f59e0b; text-decoration: none;">${FROM_EMAIL}</a>.
             </td>
           </tr>
@@ -466,7 +466,7 @@ export const EmailNotificationService = {
   }): Promise<NotificationRecord> {
     const notificationId = `notif_appr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const eventId = `evt_appr_${params.submissionId}_${Date.now()}`;
-    const subject = 'Your Content Has Been Approved — 8 Of Spades Works';
+    const subject = 'Your Content Has Been Approved — ChanceTEKone';
 
     const { html, text } = buildApprovalEmailHtml({
       creatorName: params.creatorName,
@@ -534,7 +534,7 @@ export const EmailNotificationService = {
   }): Promise<NotificationRecord> {
     const notificationId = `notif_rej_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const eventId = `evt_rej_${params.submissionId}_${Date.now()}`;
-    const subject = 'An Update on Your Submission — 8 Of Spades Works';
+    const subject = 'An Update on Your Submission — ChanceTEKone';
 
     const cleanReason = (params.rejectionReason || '').trim();
     if (!cleanReason) {

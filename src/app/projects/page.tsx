@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -34,7 +34,7 @@ import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussio
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
 
-const PROJECTS_PAGE_NARRATION = `The multi-format production masterworks of 8 OF SPADES WORKS: Explore New & Upcoming Projects by Artists & Creators such as Studio Albums, EPs, Music Videos, Documentaries And More.`;
+const PROJECTS_PAGE_NARRATION = `The multi-format production masterworks of ChanceTEKone: Explore New & Upcoming Projects by Artists & Creators such as Studio Albums, EPs, Music Videos, Documentaries And More.`;
 
 export default function ProjectsPage() {
   const { playTrack, currentTrack, isPlaying } = usePlayer();
@@ -53,7 +53,7 @@ export default function ProjectsPage() {
 
   const getProjectCanonicalKey = (p: Project) => {
     if (p.id === 'project-1') {
-      return buildCanonicalContentKey('project', 'The Return Of The Break Beats', '8 Of Spades Works');
+      return buildCanonicalContentKey('project', 'The Return Of The Break Beats', 'ChanceTEKone');
     }
     if (p.id === 'project-chancetek') {
       return buildCanonicalContentKey('project', 'ChanceTEK The Master Series', 'Chancellor');
@@ -104,14 +104,14 @@ export default function ProjectsPage() {
             Projects & Masterworks
           </h1>
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            The multi-format production masterworks of 8 OF SPADES WORKS:
+            The multi-format production masterworks of ChanceTEKone:
             <br />
             Explore New & Upcoming Projects by Artists & Creators such as Studio Albums, EPs, Music Videos, Documentaries And More.
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-2">
             <button
-              onClick={() => openAI('Tell me about the production projects in 8 OF SPADES WORKS, how they were recorded, and the sample sources used!')}
+              onClick={() => openAI('Tell me about the production projects in ChanceTEKone, how they were recorded, and the sample sources used!')}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-brand-purple/30 hover:bg-brand-purple/50 border border-brand-purple/50 text-white text-xs font-bold shadow-md hover:scale-105 transition-all cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-brand-gold animate-spin-slow" />
@@ -243,7 +243,7 @@ export default function ProjectsPage() {
                     <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight group-hover:text-brand-gold transition-colors">
                       {isChanceTEK ? (
                         <>
-                          8 OF SPADES WORKS PRESENTS:{' '}
+                          ChanceTEKone PRESENTS:{' '}
                           <a
                             href="https://ichancetek.com"
                             target="_blank"

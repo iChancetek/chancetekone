@@ -1,5 +1,5 @@
-// ============================================================
-// Radio Initial Catalog — 8 Of Spades Works Agentic AI Radio
+﻿// ============================================================
+// Radio Initial Catalog — ChanceTEKone Agentic AI Radio
 // Pre-seeded authentic test tracks for both stations.
 // All audio references point to platform-owned audio files.
 // ============================================================
@@ -12,7 +12,7 @@ export const RADIO_STATIONS: RadioStation[] = [
     name: 'Hip Hop Radio',
     tagline: 'Breaks, Bars & Culture — Non-Stop',
     description:
-      'Authentic drum breaks, boom bap, underground lyricism, and modern syncopated anthems powered by 8 Of Spades Works Agentic AI.',
+      'Authentic drum breaks, boom bap, underground lyricism, and modern syncopated anthems powered by ChanceTEKone Agentic AI.',
     genre: 'Hip-Hop',
     artworkUrl: '/images/radio-hiphop.jpg',
     accentColor: '#f5c344',
@@ -25,7 +25,7 @@ export const RADIO_STATIONS: RadioStation[] = [
     name: 'Neo Soul Radio',
     tagline: 'Rhodes, Groove & Soul — Always Vibrating',
     description:
-      'Syncopated soul rhythms, deep basslines, melodic grooves, and modern R&B — curated and broadcast by 8 Of Spades Works Agentic AI.',
+      'Syncopated soul rhythms, deep basslines, melodic grooves, and modern R&B — curated and broadcast by ChanceTEKone Agentic AI.',
     genre: 'Neo Soul',
     artworkUrl: '/images/radio-neosoul.jpg',
     accentColor: '#a855f7',
@@ -42,7 +42,7 @@ export const RADIO_INITIAL_CATALOG: RadioSong[] = [
   {
     id: 'radio-hh-001',
     title: 'Fort Apache (Break Mix)',
-    artist: '8 Of Spades Works',
+    artist: 'ChanceTEKone',
     album: 'The Break Beat Sessions',
     genre: 'Hip-Hop',
     subgenre: 'Boom Bap',
@@ -66,7 +66,7 @@ export const RADIO_INITIAL_CATALOG: RadioSong[] = [
   {
     id: 'radio-hh-002',
     title: 'Spades & Breaks (Demo Cut)',
-    artist: '8 Of Spades Works',
+    artist: 'ChanceTEKone',
     album: 'The Break Beat Sessions',
     genre: 'Hip-Hop',
     subgenre: 'Electro Breaks',
@@ -90,7 +90,7 @@ export const RADIO_INITIAL_CATALOG: RadioSong[] = [
   {
     id: 'radio-hh-003',
     title: 'Crate Science (Interlude)',
-    artist: '8 Of Spades Works',
+    artist: 'ChanceTEKone',
     album: 'Crate Digger Odyssey',
     genre: 'Hip-Hop',
     subgenre: 'Jazz Breaks',
@@ -114,7 +114,7 @@ export const RADIO_INITIAL_CATALOG: RadioSong[] = [
   {
     id: 'radio-ns-001',
     title: 'Soul Continuum (Rhodes Version)',
-    artist: '8 Of Spades Works',
+    artist: 'ChanceTEKone',
     album: 'Neo Soul Sessions Vol. 1',
     genre: 'Neo Soul',
     subgenre: 'Smooth Soul',
@@ -138,7 +138,7 @@ export const RADIO_INITIAL_CATALOG: RadioSong[] = [
   {
     id: 'radio-ns-002',
     title: 'Velvet Underground (Soul Mix)',
-    artist: '8 Of Spades Works',
+    artist: 'ChanceTEKone',
     album: 'Neo Soul Sessions Vol. 1',
     genre: 'Neo Soul',
     subgenre: 'Funk Soul',
@@ -162,7 +162,7 @@ export const RADIO_INITIAL_CATALOG: RadioSong[] = [
   {
     id: 'radio-ns-003',
     title: 'Midnight Frequency (Ambient Soul)',
-    artist: '8 Of Spades Works',
+    artist: 'ChanceTEKone',
     album: 'Midnight Frequencies',
     genre: 'Neo Soul',
     subgenre: 'Ambient R&B',
@@ -187,7 +187,7 @@ export const RADIO_INITIAL_CATALOG: RadioSong[] = [
   {
     id: 'radio-both-001',
     title: 'Break & Soul Fusion (Extended)',
-    artist: '8 Of Spades Works',
+    artist: 'ChanceTEKone',
     album: 'The Fusion Crates',
     genre: 'Hip-Hop / Neo Soul',
     subgenre: 'Crossover',

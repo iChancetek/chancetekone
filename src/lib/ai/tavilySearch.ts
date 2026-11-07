@@ -1,5 +1,5 @@
-/**
- * 8 Of Spades Works — Tavily Search Client
+﻿/**
+ * ChanceTEKone — Tavily Search Client
  * Real-time web search and multimedia discovery engine.
  */
 

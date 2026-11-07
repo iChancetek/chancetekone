@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { verifyServerAdmin } from '@/lib/auth/serverAuth';
 import { OFFICIAL_CRATES } from '@/types/catalog';
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       id: `folder-${Date.now()}`,
       crateId,
       name,
-      artistName: artistName || '8 OF SPADES WORKS',
+      artistName: artistName || 'ChanceTEKone',
       description: description || '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

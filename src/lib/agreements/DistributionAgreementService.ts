@@ -1,5 +1,5 @@
 /**
- * 8 Of Spades Works — Creator Distribution Agreement Service
+ * ChanceTEKone — Creator Distribution Agreement Service
  * Real-time legal agreement onboarding, digital signature verification,
  * and immutable submission tracking for platform artists, producers, and creators.
  *
@@ -11,7 +11,7 @@ import { db } from '@/lib/firebase/client';
 import { AuditLogger } from '@/lib/admin/AuditLogger';
 
 export interface SignedDistributionAgreement {
-  id: string; // e.g. AGR-8SP-2026-XXXXX
+  id: string; // e.g. AGR-CT1-2026-XXXXX
   creatorType?: 'artist' | 'producer' | 'creator' | 'streamer';
   artistLegalName: string;
   artistMoniker: string;
@@ -69,7 +69,7 @@ function isMockRecord(a: any): boolean {
 
 export class DistributionAgreementService {
   public static readonly VERSION = '1.0.0';
-  public static readonly COUNTERSIGNED_BY = 'Chancellor @ 8 OF SPADES WORKS LLC';
+  public static readonly COUNTERSIGNED_BY = 'Chancellor @ ChanceTEKone';
   public static readonly COUNTERSIGNED_TITLE = 'Executive Director & Rights Curator';
 
   private static inMemoryAgreements: SignedDistributionAgreement[] = [];
@@ -183,7 +183,7 @@ export class DistributionAgreementService {
   public static generateAgreementId(): string {
     const year = new Date().getFullYear();
     const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase();
-    return `AGR-8SP-${year}-${randomHex}`;
+    return `AGR-CT1-${year}-${randomHex}`;
   }
 
   /**

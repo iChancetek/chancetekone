@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   BookOpen,
   Radio,
@@ -23,10 +23,10 @@ import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 
 export const metadata = {
   title: 'Learn More · The Bronx and The Breakbeat Manifesto',
-  description: 'The Bronx history, the breakbeat legacy, analog sampler lore, and the 8 Of Spades Works cultural ecosystem.',
+  description: 'The Bronx history, the breakbeat legacy, analog sampler lore, and the ChanceTEKone cultural ecosystem.',
 };
 
-const MANIFESTO_FULL_TEXT = `The Bronx: Where Hip-Hop Found a Home. Curated by 8 OF SPADES WORKS. Long before hip-hop became a global cultural force, it was a neighborhood phenomenon born in the streets, courtyards, community rooms, parks, and housing projects of the Bronx. Among the places that helped shape that emerging movement was The Bronx, a community that became an important gathering point for young people searching for something beyond the violence, economic hardship, and social pressures surrounding them. In the 1970s, The Bronx became more than a residential development. It became a cultural laboratory where music became a language, dance became expression, art became identity, and block parties became spaces where young people could compete, collaborate, create, and belong.`;
+const MANIFESTO_FULL_TEXT = `The Bronx: Where Hip-Hop Found a Home. Curated by ChanceTEKone. Long before hip-hop became a global cultural force, it was a neighborhood phenomenon born in the streets, courtyards, community rooms, parks, and housing projects of the Bronx. Among the places that helped shape that emerging movement was The Bronx, a community that became an important gathering point for young people searching for something beyond the violence, economic hardship, and social pressures surrounding them. In the 1970s, The Bronx became more than a residential development. It became a cultural laboratory where music became a language, dance became expression, art became identity, and block parties became spaces where young people could compete, collaborate, create, and belong.`;
 
 export default function LearnMorePage() {
   return (
@@ -51,7 +51,7 @@ export default function LearnMorePage() {
             The Manifesto of the Break
           </h1>
           <p className="text-sm sm:text-base text-neutral-300 max-w-2xl leading-relaxed">
-            The Bronx, Samplers, and the New Era • Curated by 8 OF SPADES WORKS
+            The Bronx, Samplers, and the New Era • Curated by ChanceTEKone
           </p>
         </div>
       </div>
@@ -539,7 +539,7 @@ export default function LearnMorePage() {
               </h2>
             </div>
             <VoiceNarrationButton
-              text="When the E-mu SP-1200 arrived in 1987, followed closely by Roger Linns Akai MPC60, producers gained the power to capture twelve-bit analog slices of vinyl history. By pitching records up to forty-five RPM during recording and tuning them down inside the sampler, pioneers unlocked a crunchy, saturated transient snap that defined golden-era hip-hop and transatlantic rave music. 8 Of Spades Works is dedicated to honoring this uninterrupted legacy."
+              text="When the E-mu SP-1200 arrived in 1987, followed closely by Roger Linns Akai MPC60, producers gained the power to capture twelve-bit analog slices of vinyl history. By pitching records up to forty-five RPM during recording and tuning them down inside the sampler, pioneers unlocked a crunchy, saturated transient snap that defined golden-era hip-hop and transatlantic rave music. ChanceTEKone is dedicated to honoring this uninterrupted legacy."
               variant="icon"
             />
           </div>
@@ -547,7 +547,7 @@ export default function LearnMorePage() {
             When the E-mu SP-1200 arrived in 1987, followed closely by Roger Linns Akai MPC60, producers gained the power to capture twelve-bit analog slices of vinyl history. By pitching records up to forty-five RPM during recording and tuning them down inside the sampler, pioneers unlocked a crunchy, saturated transient snap that defined golden-era hip-hop and transatlantic rave music.
           </p>
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            8 Of Spades Works is dedicated to honoring this uninterrupted legacy. We reject sterile algorithms that flatten sonic nuance. Instead, we combine authentic crate-digging reverence with next-generation agentic intelligence to celebrate the musicians, the diggers, the producers, and the timeless magic of the break.
+            ChanceTEKone is dedicated to honoring this uninterrupted legacy. We reject sterile algorithms that flatten sonic nuance. Instead, we combine authentic crate-digging reverence with next-generation agentic intelligence to celebrate the musicians, the diggers, the producers, and the timeless magic of the break.
           </p>
         </section>
 
@@ -563,12 +563,12 @@ export default function LearnMorePage() {
               </h2>
             </div>
             <VoiceNarrationButton
-              text="8 Of Spades Works unites all dimensions of the culture under a single operating system: High-Definition Streaming with dynamic tempo matching, Cultural Documentaries and archival park jam footage, Narrated Audiobooks tracking sampling history, and Limited Heavyweight Vinyl artifacts."
+              text="ChanceTEKone unites all dimensions of the culture under a single operating system: High-Definition Streaming with dynamic tempo matching, Cultural Documentaries and archival park jam footage, Narrated Audiobooks tracking sampling history, and Limited Heavyweight Vinyl artifacts."
               variant="icon"
             />
           </div>
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            8 Of Spades Works unites all dimensions of the culture under a single operating system:
+            ChanceTEKone unites all dimensions of the culture under a single operating system:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-4 rounded-2xl bg-neutral-950/60 border border-white/5 space-y-1.5">
@@ -634,7 +634,7 @@ export default function LearnMorePage() {
           </Link>
         </div>
         <p className="text-neutral-500">
-          © 2026 8 OF SPADES WORKS. All rights reserved.
+          © 2026 ChanceTEKone. All rights reserved.
         </p>
       </div>
     </div>

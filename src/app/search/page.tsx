@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -46,7 +46,7 @@ function SearchContent() {
         artistMap.set(lower, {
           id: `artist-${lower.replace(/[^a-z0-9]/g, '-')}`,
           name,
-          bio: `Artist on 8 OF SPADES WORKS`,
+          bio: `Artist on ChanceTEKone`,
           avatarUrl: t.coverUrl || t.albumCoverUrl || '/images/logo.png',
           bannerUrl: t.albumCoverUrl || t.coverUrl || '/images/logo.png',
           genres: [t.genre || 'Music'],

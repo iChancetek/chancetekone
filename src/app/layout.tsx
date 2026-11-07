@@ -20,23 +20,23 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  applicationName: '8 Of Spades Works',
+  applicationName: 'ChanceTEKone',
   title: {
-    default: '8 Of Spades Works — Agentic AI Entertainment Platform',
-    template: '%s · 8 Of Spades Works',
+    default: 'ChanceTEKone — Agentic AI Entertainment Platform',
+    template: '%s · ChanceTEKone',
   },
   description:
-    'Experience next-generation breakbeat music, 4K videos, audiobooks, exclusive vinyl merch, and Agentic AI curation with 8 Of Spades Works.',
+    'Experience next-generation breakbeat music, 4K videos, audiobooks, exclusive vinyl merch, and Agentic AI curation with ChanceTEKone.',
   openGraph: {
-    title: '8 Of Spades Works — Agentic AI Entertainment Platform',
+    title: 'ChanceTEKone — Agentic AI Entertainment Platform',
     description:
       'Experience next-generation breakbeat music, 4K videos, audiobooks, exclusive vinyl merch, and Agentic AI curation.',
-    siteName: '8 Of Spades Works',
+    siteName: 'ChanceTEKone',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: '8 Of Spades Works — Agentic AI Entertainment Platform',
+    title: 'ChanceTEKone — Agentic AI Entertainment Platform',
     description:
       'Experience next-generation breakbeat music, 4K videos, audiobooks, exclusive vinyl merch, and Agentic AI curation.',
   },
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: '8 Of Spades Works',
+    title: 'ChanceTEKone',
   },
   formatDetection: {
     telephone: false,
@@ -62,8 +62,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-[#08080c] text-neutral-100 min-h-screen antialiased selection:bg-brand-purple selection:text-white">
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body
+        suppressHydrationWarning
+        className="bg-[#08080c] text-neutral-100 min-h-screen antialiased selection:bg-brand-purple selection:text-white"
+      >
         <PWAProvider>
           <AuthProvider>
             <CatalogSyncBootstrap />
