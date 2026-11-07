@@ -253,7 +253,7 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
               className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-purple/30 hover:bg-brand-purple/50 border border-brand-neon/40 text-brand-neon hover:text-white text-xs font-semibold shadow-lg transition-all hover:scale-105"
             >
               <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
-              Ask Break Beats AI
+              Ask ChanceTEK One AI
             </button>
 
             <VoiceNarrationButton

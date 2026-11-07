@@ -8,7 +8,7 @@ export const metadata = {
   description: 'Terms of service, licensing covenants, and platform guidelines for ChanceTEK One.',
 };
 
-const TERMS_FULL_TEXT = `Terms of Service and Platform Covenant. Effective Date: January 1, 2026. Published by ChanceTEK One. Welcome to the ChanceTEK One Streaming Platform, an advanced cultural and sonic operating system curated and maintained by ChanceTEK One and ChanceTEK LLC. Every sound recording, drum loop composition, synchronized visual master, narrated audiobook chapter, and proprietary algorithm hosted across this ecosystem constitutes protected intellectual property. You are granted an individual license to stream media for personal enjoyment. The Break Beats AI assistant operates as an interactive cultural curator processing requests in real time. All vinyl and merchandise orders are fulfilled on a verified first-come, first-served basis.`;
+const TERMS_FULL_TEXT = `Terms of Service and Platform Covenant. Effective Date: January 1, 2026. Published by ChanceTEK One. Welcome to the ChanceTEK One Streaming Platform, an advanced cultural and sonic operating system curated and maintained by ChanceTEK One and ChanceTEK LLC. Every sound recording, drum loop composition, synchronized visual master, narrated audiobook chapter, and proprietary algorithm hosted across this ecosystem constitutes protected intellectual property. You are granted an individual license to stream media for personal enjoyment. The ChanceTEK One AI assistant operates as an interactive cultural curator processing requests in real time. All vinyl and merchandise orders are fulfilled on a verified first-come, first-served basis.`;
 
 export default function TermsPage() {
   return (
@@ -93,12 +93,12 @@ export default function TermsPage() {
               </h2>
             </div>
             <VoiceNarrationButton
-              text="The Break Beats AI assistant operates as an interactive cultural curator. Queries submitted to the agent are processed in real time to provide personalized crate curation, tempo matching, and historical sample genealogy. You agree not to submit malicious prompts, attempt model extraction, or inject hostile instructions into the assistant interface."
+              text="The ChanceTEK One AI assistant operates as an interactive cultural curator. Queries submitted to the agent are processed in real time to provide personalized crate curation, tempo matching, and historical sample genealogy. You agree not to submit malicious prompts, attempt model extraction, or inject hostile instructions into the assistant interface."
               variant="icon"
             />
           </div>
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            The Break Beats AI assistant operates as an interactive cultural curator. Queries submitted to the agent are processed in real time to provide personalized crate curation, tempo matching, and historical sample genealogy. You agree not to submit malicious prompts, attempt model extraction, or inject hostile instructions into the assistant interface.
+            The ChanceTEK One AI assistant operates as an interactive cultural curator. Queries submitted to the agent are processed in real time to provide personalized crate curation, tempo matching, and historical sample genealogy. You agree not to submit malicious prompts, attempt model extraction, or inject hostile instructions into the assistant interface.
           </p>
         </section>
 

@@ -448,7 +448,7 @@ export const Sidebar: React.FC = () => {
               >
                 <Sparkles className="w-4 h-4 text-brand-gold animate-spin-slow" />
                 <div className="absolute left-full ml-2 px-2.5 py-1 rounded-lg bg-[#141224] border border-brand-purple/40 text-white text-[11px] font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
-                  Break Beats AI
+                  ChanceTEK One AI
                 </div>
               </button>
             </div>
@@ -459,7 +459,7 @@ export const Sidebar: React.FC = () => {
                   <Sparkles className="w-3.5 h-3.5 fill-current" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">Break Beats AI</p>
+                  <p className="text-xs font-bold text-white">ChanceTEK One AI</p>
                   <p className="text-[10px] text-brand-neon font-medium">Agentic Assistant</p>
                 </div>
               </div>
@@ -762,14 +762,14 @@ export const Sidebar: React.FC = () => {
             </nav>
           </div>
 
-          {/* Break Beats AI Assistant Interactive Card */}
+          {/* ChanceTEK One AI Assistant Interactive Card */}
           <div className="p-3.5 rounded-2xl bg-gradient-to-br from-brand-purple/30 via-brand-dark to-brand-gold/10 border border-brand-purple/40 space-y-2 shadow-lg">
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-full bg-brand-gold flex items-center justify-center text-black">
                 <Sparkles className="w-4 h-4 fill-current" />
               </div>
               <div>
-                <p className="text-xs font-bold text-white">Break Beats AI</p>
+                <p className="text-xs font-bold text-white">ChanceTEK One AI</p>
                 <p className="text-[10px] text-brand-neon font-medium">Agentic Assistant</p>
               </div>
             </div>

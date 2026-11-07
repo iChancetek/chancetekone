@@ -8,7 +8,7 @@ export const metadata = {
   description: 'Technical assistance, crate concierge, PWA offline guide, and direct support channels.',
 };
 
-const SUPPORT_FULL_TEXT = `Support Center and Crate Concierge. Technical Assistance, Crate Navigation, and Direct Inquiries. Published by ChanceTEK One. Whether you need assistance with Progressive Web App offline caching, vinyl fulfillment, sample breakdown verification, or account synchronization, our dedicated support engineering team is available to assist you. ChanceTEK One is engineered as a modern Progressive Web App, enabling high-definition audio and audiobook playback with lock-screen controls even when offline. Break Beats AI operates a Dual-Memory architecture allowing you to inspect or clear your saved gear and genre preferences at any time. Visitors and unauthenticated guests enjoy full access to stream music tracks, watch cultural documentaries, and converse with the AI assistant without creating an account.`;
+const SUPPORT_FULL_TEXT = `Support Center and Crate Concierge. Technical Assistance, Crate Navigation, and Direct Inquiries. Published by ChanceTEK One. Whether you need assistance with Progressive Web App offline caching, vinyl fulfillment, sample breakdown verification, or account synchronization, our dedicated support engineering team is available to assist you. ChanceTEK One is engineered as a modern Progressive Web App, enabling high-definition audio and audiobook playback with lock-screen controls even when offline. ChanceTEK One AI operates a Dual-Memory architecture allowing you to inspect or clear your saved gear and genre preferences at any time. Visitors and unauthenticated guests enjoy full access to stream music tracks, watch cultural documentaries, and converse with the AI assistant without creating an account.`;
 
 export default function SupportPage() {
   return (
@@ -78,16 +78,16 @@ export default function SupportPage() {
                 <div className="flex items-center gap-3 text-brand-neon">
                   <Brain className="w-5 h-5" />
                   <h3 className="text-base sm:text-lg font-bold text-white">
-                    How does the Break Beats AI assistant utilize my taste memory?
+                    How does the ChanceTEK One AI assistant utilize my taste memory?
                   </h3>
                 </div>
                 <VoiceNarrationButton
-                  text="Break Beats AI operates a Dual-Memory architecture. Short-Term Working Memory tracks your live session route, playing BPM, and active track. Long-Term Memory records your equipment preferences and genre favorites. You can inspect or clear this data at any time via the Memory button in the assistant header."
+                  text="ChanceTEK One AI operates a Dual-Memory architecture. Short-Term Working Memory tracks your live session route, playing BPM, and active track. Long-Term Memory records your equipment preferences and genre favorites. You can inspect or clear this data at any time via the Memory button in the assistant header."
                   variant="icon"
                 />
               </div>
               <p className="text-sm sm:text-base text-neutral-300 leading-relaxed pl-8">
-                Break Beats AI operates a Dual-Memory architecture. Short-Term Working Memory tracks your live session route, playing BPM, and active track. Long-Term Memory records your equipment preferences and genre favorites. You can inspect or clear this data at any time via the Memory button in the assistant header.
+                ChanceTEK One AI operates a Dual-Memory architecture. Short-Term Working Memory tracks your live session route, playing BPM, and active track. Long-Term Memory records your equipment preferences and genre favorites. You can inspect or clear this data at any time via the Memory button in the assistant header.
               </p>
             </div>
 

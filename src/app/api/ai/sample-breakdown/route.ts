@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     const openai = getOpenAIClient();
 
-    const systemPrompt = `You are the Master Sample Detective & Break Genealogist Agent for 'Return of the Break Beats'.
+    const systemPrompt = `You are the Master Sample Detective & Break Genealogist Agent for 'ChanceTEK One'.
 You possess exhaustive, world-class knowledge of 1960s/70s funk & soul drum breaks, vintage sampler hardware (E-mu SP-1200, Akai MPC60, Ensoniq ASR-10, Akai S950), chopping techniques, and the cultural lineage of hip-hop and breakbeat sampling.
 
 Given a track title, artist, genre, and BPM, you must analyze its drum breaks and return a structured JSON genealogy:

@@ -271,7 +271,8 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
      - In uthenticAudioMap.ts, getAuthenticAudioUrl routes all Janet Jackson catalog tracks to authentic studio audio (/audio/uploads/Janet_Jackson_Got_Til_Its_Gone.mp3).
      - In [...file]/route.ts, requests matching Janet Jackson stream authentic Janet Jackson studio audio.
   4. **Strict Zero Cross-Artist Tolerance in PlayerContext & Admin Audition**:
-     - PlayerContext.tsx: When isCrossArtistAudioMismatch is detected, if no authentic same-artist stream or local blob is available, esolvedAudioUrl is reset to '' (zero tolerance).
+     - PlayerContext.tsx: When isCrossArtistAudioMismatch is detected, if no authentic same-artist stream or local blob is available, 
+esolvedAudioUrl is reset to '' (zero tolerance).
      - getResilientAudioFallback(track) strictly scopes to same artist or breakbeat anthem (	rack-1), returning '' instead of an unrelated artist.
      - ApprovalReviewSection.tsx and MusicUploadCenterSection.tsx: Re-ordered audition resolution so upload filenames (/audio/uploads/) take precedence, and fallbacks are strictly passed artist/title context.
 
@@ -1638,6 +1639,25 @@ ull for other songs ("Together Again", "I Get Lonely", etc.), triggering the Lut
      - Updated `cover-bbx-3` in `CoverArtCatalog.ts` from subway mural / cypher to `Studio Tape Breakbeat Session` with authentic analog studio visuals.
      - Re-routed all catalog default cover assignments in `MusicCatalogService.ts` (`getDefaultCoverForTrack`, `getAuthenticCoverForTrack`) and `mockData.ts` (`track-1`, `album-1`, `project-1`) to `/images/chancetek_banner.png`.
      - Replaced all fallback image references in `src/app/projects/page.tsx`, `shareMetadataService.ts`, and all 9 dynamic server layouts (`/albums/[id]`, `/artists/[id]`, `/audiobooks/[id]`, `/merch/[id]`, `/music/[id]`, `/playlists/[id]`, `/podcasts/[id]`, `/projects/[id]`, `/videos/[id]`) to `/images/chancetek_banner.png`.
+
+### 69. Total Elimination of "Return of the Break Beats", "8 of Spades Works Presents", and Transition to "ChanceTEK One AI"
+- **User Directives**:
+  1. Remove anything that says "Return of the break beats" across the entire platform.
+  2. Replace "Break Beat AI" / "Break Beats AI" with "ChanceTEK One AI".
+  3. Remove all graffiti and Return of the break beats placeholders.
+  4. Remove all images and references with "8 of Spades Works Presents" across the platform.
+- **Architectural Implementation**:
+  1. **Platform-Wide Transition to ChanceTEK One AI**:
+     - Systematically replaced all occurrences of `Break Beats AI` and `Break Beat AI` with `ChanceTEK One AI` across navigation headers (`TopNav.tsx`), sidebars (`Sidebar.tsx`, `MobileNav.tsx`), assistants (`BreakBeatsAssistant.tsx`, `GlobalVoiceSearchModal.tsx`), full-screen players (`FullScreenPlayer.tsx`, `GlobalMusicPlayer.tsx`, `VideoPlayer.tsx`), editorial terms/privacy/support documents, agent system prompts (`prompts.ts`), and tool definitions (`tools.ts`, `tool-definitions.ts`).
+  2. **Comprehensive Elimination of "Return of the Break Beats"**:
+     - Replaced all product titles, album titles, track titles, and project titles referencing "Return of the Break Beats" across `mockData.ts`, `MusicCatalogService.ts`, `PlaylistService.ts`, `projects/page.tsx`, `AuditLogger.ts`, and AI engines (`LocalRAGEngine.ts`).
+     - Renamed anthem track `track-1` to `ChanceTEK One Break Beats` on album `Genesis of the Concrete Beat`.
+     - Renamed Project 1 to `CHANCETEK ONE: THE FOUNDATION BEATS`.
+  3. **Permanent Removal of Legacy Media Assets**:
+     - Deleted physical files `public/images/return_of_the_break_beats_master.png`, `public/videos/8ofSW.mp4`, and `public/videos/8ofSW1.mp4`.
+     - Removed all tags and references to `8spades` in `CoverArtCatalog.ts` and `manifest.ts` (`id: 'chancetek-one-pwa'`).
+     - Replaced default admin producer from `DJ Spades` to `Chancellor`.
+
 
 
 

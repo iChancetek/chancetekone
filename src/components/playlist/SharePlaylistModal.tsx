@@ -260,7 +260,7 @@ ${publicShareUrl}`;
                 <p className="text-neutral-400 text-[11px]">
                   {playlist.visibility === 'private'
                     ? 'Only you and explicitly invited members can access and play this playlist.'
-                    : 'Public to all platform members and guests across Return of the Break Beats.'}
+                    : 'Public to all platform members and guests across ChanceTEK One.'}
                 </p>
               </div>
             </div>

@@ -86,7 +86,7 @@ export const MobileNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => 
           onOpenAI?.();
         }}
         className="flex flex-col items-center gap-1 py-1 px-2 text-brand-neon cursor-pointer touch-manipulation min-w-[44px] min-h-[44px] justify-center"
-        title="Break Beats AI"
+        title="ChanceTEK One AI"
       >
         <Sparkles className="w-4 h-4 text-brand-gold animate-pulse" />
         <span className="text-[10px] font-semibold">AI</span>

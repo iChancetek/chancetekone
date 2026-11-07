@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
         {
           content:
             followUpContent ||
-            'Here are the matching selections from the Return of the Break Beats catalog:',
+            'Here are the matching selections from the ChanceTEK One catalog:',
           toolCalls: executedToolCalls,
           recommendations: mergedRecommendations,
           memoryUpdates: mergedMemoryUpdates,
@@ -216,7 +216,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           content:
-            'Yo! Break Beats AI is active. You can stream tracks from /music, watch documentaries in /videos, or explore vinyl in /merch!',
+            'Yo! ChanceTEK One AI is active. You can stream tracks from /music, watch documentaries in /videos, or explore vinyl in /merch!',
           toolCalls: [],
           recommendations: {},
         },

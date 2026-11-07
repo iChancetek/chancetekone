@@ -90,7 +90,7 @@ const INITIAL_AUDIT_LOGS: AuditLogItem[] = [
     adminName: 'Chancellor (Admin)',
     adminRole: 'super_admin',
     eventType: 'MERCH_MODIFIED',
-    action: 'Updated inventory count for "Return of the Break Beats Heavyweight Hoodie"',
+    action: 'Updated inventory count for "ChanceTEK One Heavyweight Hoodie"',
     resource: 'Merchandise Store',
     resourceId: 'prod-hoodie-1',
     previousValue: { inventory: 80 },

@@ -46,7 +46,7 @@ const PLANS: Plan[] = [
       'Stream public music catalog (320 kbps)',
       'Watch 4K community video sessions',
       'Create up to 3 custom playlists',
-      'Basic Break Beats AI chat assistance',
+      'Basic ChanceTEK One AI chat assistance',
       'Standard vinyl & merchandise purchasing',
     ],
     cta: 'Start Free Account',

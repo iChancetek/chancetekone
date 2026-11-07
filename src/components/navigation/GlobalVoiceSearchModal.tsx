@@ -60,7 +60,7 @@ export const GlobalVoiceSearchModal: React.FC<GlobalVoiceSearchModalProps> = ({
         lower.includes('history of') ||
         lower.includes('how to')
       ) {
-        // Route to Break Beats AI Assistant
+        // Route to ChanceTEK One AI Assistant
         openAI(text);
       } else if (lower.includes('video') || lower.includes('documentary')) {
         router.push(`/videos?q=${encodeURIComponent(text)}`);
@@ -124,7 +124,7 @@ export const GlobalVoiceSearchModal: React.FC<GlobalVoiceSearchModalProps> = ({
             {isProcessing && (
               <div className="pt-2 flex items-center gap-2 text-xs text-brand-neon font-mono font-bold">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                Routing intent to Break Beats AI & Crate Search...
+                Routing intent to ChanceTEK One AI & Crate Search...
               </div>
             )}
           </div>

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ChanceTEK One — Authentic Audio Stream Registry & Integrity Guard
  * 
  * Maps platform music tracks (Michael Jackson, Janet Jackson, Aaliyah, etc.)
@@ -10,7 +10,7 @@
  *    (e.g., Janet Jackson MP3s must NEVER play Lauryn Hill; Avant must NEVER play Tevin Campbell).
  * 3. User uploads are the inviolable source of truth.
  * 4. NEVER overwrite or replace a track's audio with Fort_Apache.mp3 unless the track
- *    is explicitly the ChanceTEK One "Return of the Break Beats" anthem.
+ *    is explicitly the ChanceTEK One "ChanceTEK One" anthem.
  */
 
 export interface TrackIdentifier {
@@ -534,7 +534,8 @@ export function getAuthenticAudioUrl(track: TrackIdentifier): string | null {
   // 28. ChanceTEK One Original Breakbeat Anthem
   if (
     id === 'track-1' ||
-    title.includes('return of the break beats')
+    title.includes('chancetek one break') ||
+    title.includes('breakbeat anthem')
   ) {
     return '/audio/Fort_Apache.mp3';
   }
@@ -555,7 +556,7 @@ export function getResilientAudioFallback(track?: TrackIdentifier): string {
   const file = (track.fileName || '').toLowerCase();
 
   // ONLY return Fort Apache for actual ChanceTEK One breakbeat anthems!
-  if (track.id === 'track-1' || title.includes('return of the break beats') || title.includes('breakbeat anthem')) {
+  if (track.id === 'track-1' || title.includes('chancetek one break') || title.includes('breakbeat anthem')) {
     return '/audio/Fort_Apache.mp3';
   }
 
@@ -584,7 +585,7 @@ export function getSameArtistEmergencyFallback(track?: TrackIdentifier): string 
   const artist = (track.artistName || '').toLowerCase().trim();
   const title = (track.title || '').toLowerCase().trim();
   if (!artist) return '';
-  if (track.id === 'track-1' || title.includes('return of the break beats')) {
+  if (track.id === 'track-1' || title.includes('chancetek one break') || title.includes('breakbeat anthem')) {
     return '/audio/Fort_Apache.mp3';
   }
   if (artist.includes('luther')) {

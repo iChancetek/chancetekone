@@ -2712,7 +2712,7 @@ class MusicUploadServiceClass {
       'Bronx Subway Boom Bap', 'Amen Brother Clean Cut', 'Stax Records 1972 Acetate',
       'Rhodes Chords In Twilight', 'Mirrorball 12-Inch Extended', 'Crate Digger Holy Grail',
       'Tape Saturation Funky Loops', 'Multitrack Snare & Kick Stems', 'White Label Promo Master',
-      'The Return of the Break Beats', 'Neon Crate Philosophy', 'Cyber Grid Overdrive',
+      'The ChanceTEK One', 'Neon Crate Philosophy', 'Cyber Grid Overdrive',
       'Soul Brother SP Chop', 'Vintage Turntable Needle Scratch',
     ];
 

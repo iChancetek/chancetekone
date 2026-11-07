@@ -6,7 +6,7 @@ description: Production blueprint and Times magazine editorial copywriting for T
 <h1>Elite Editorial Pages Blueprint: Terms, Privacy, Support Center, and Learn More</h1>
 
 <p>
-This skill provides complete editorial copy, architecture, and visual design specifications for the four foundational publication pages of Return of the Break Beats: Terms of Service, Privacy Policy, Support Center, and Learn More. Written with the journalistic prestige, intellectual vigor, and narrative eloquence of a senior editor at Time Magazine, this document serves as a master blueprint for building cutting-edge web interfaces.
+This skill provides complete editorial copy, architecture, and visual design specifications for the four foundational publication pages of ChanceTEK One: Terms of Service, Privacy Policy, Support Center, and Learn More. Written with the journalistic prestige, intellectual vigor, and narrative eloquence of a senior editor at Time Magazine, this document serves as a master blueprint for building cutting-edge web interfaces.
 </p>
 
 <hr />
@@ -38,7 +38,7 @@ When implementing these pages in Next.js and React, adhere to the following arti
 
 <h3>Preamble and Scope of Agreement</h3>
 <p>
-Welcome to Return of the Break Beats, an advanced cultural and sonic operating system curated and maintained by ChanceTEK One LLC in direct collaboration with Father Time 4000. By accessing, browsing, streaming, or purchasing through this platform, you enter into a legally binding covenant governed by these Terms of Service. If you do not consent to every provision articulated herein, your privilege to navigate or utilize this platform is immediately revoked.
+Welcome to ChanceTEK One, an advanced cultural and sonic operating system curated and maintained by ChanceTEK One LLC in direct collaboration with Father Time 4000. By accessing, browsing, streaming, or purchasing through this platform, you enter into a legally binding covenant governed by these Terms of Service. If you do not consent to every provision articulated herein, your privilege to navigate or utilize this platform is immediately revoked.
 </p>
 
 <h3>Intellectual Property, Master Lineage, and Crate Rights</h3>
@@ -51,7 +51,7 @@ You are granted an individual, revocable, non-exclusive, non-transferable licens
 
 <h3>Autonomous AI and Memory Interaction</h3>
 <p>
-The Break Beats AI assistant operates as an interactive cultural curator. Queries submitted to the agent are processed in real time to provide personalized crate curation, tempo matching, and historical sample genealogy. You agree not to submit malicious prompts, attempt model extraction, or inject hostile instructions into the assistant interface.
+The ChanceTEK One AI assistant operates as an interactive cultural curator. Queries submitted to the agent are processed in real time to provide personalized crate curation, tempo matching, and historical sample genealogy. You agree not to submit malicious prompts, attempt model extraction, or inject hostile instructions into the assistant interface.
 </p>
 
 <h3>Commerce, Vinyl Orders, and Physical Merchandise</h3>
@@ -80,7 +80,7 @@ Users are responsible for maintaining the confidentiality of their credentials. 
 
 <h3>Our Fundamental Commitment to Privacy</h3>
 <p>
-At Return of the Break Beats, we regard user privacy as an essential civil liberty rather than an afterthought. We design our technology to minimize data footprint while delivering a transcendent, personalized listening experience. We never monetize, rent, or sell your personal identifiers to third-party data brokers.
+At ChanceTEK One, we regard user privacy as an essential civil liberty rather than an afterthought. We design our technology to minimize data footprint while delivering a transcendent, personalized listening experience. We never monetize, rent, or sell your personal identifiers to third-party data brokers.
 </p>
 
 <h3>Information We Collect and How It Is Handled</h3>
@@ -89,7 +89,7 @@ We collect only the telemetry and profile attributes required to power platform 
 </p>
 
 • <strong>Identity and Authentication</strong>: Email addresses, display names, and authentication tokens managed securely through Firebase Authentication.
-• <strong>Musical DNA and Memory Vault</strong>: Preferred tempos, favorite drum break lineages, and explicit taste facts provided to Break Beats AI, stored with client-side isolation and user-controlled deletion.
+• <strong>Musical DNA and Memory Vault</strong>: Preferred tempos, favorite drum break lineages, and explicit taste facts provided to ChanceTEK One AI, stored with client-side isolation and user-controlled deletion.
 • <strong>Commerce and Billing Records</strong>: Shipping addresses and transaction receipts stored with industry-standard cryptographic encryption. Raw payment card data is processed directly by PCI-DSS compliant gateways and is never stored on our local servers.
 • <strong>Device and Offline Telemetry</strong>: Progressive Web App cache status and playback position cached locally on your device to facilitate uninterrupted offline streaming.
 
@@ -123,12 +123,12 @@ Whether you need assistance with Progressive Web App offline caching, vinyl fulf
 
 <p>
 <strong>How does offline playback operate on mobile devices?</strong><br />
-Return of the Break Beats is engineered as a modern Progressive Web App. By selecting Install from the navigation menu on iOS, Android, or desktop, our service worker caches the core audio engine. Audio tracks and audiobook chapters can be streamed with full lock-screen playback controls even when disconnected from cellular networks.
+ChanceTEK One is engineered as a modern Progressive Web App. By selecting Install from the navigation menu on iOS, Android, or desktop, our service worker caches the core audio engine. Audio tracks and audiobook chapters can be streamed with full lock-screen playback controls even when disconnected from cellular networks.
 </p>
 
 <p>
-<strong>How does the Break Beats AI assistant utilize my taste memory?</strong><br />
-Break Beats AI operates a Dual-Memory architecture. Short-Term Working Memory tracks your live session route, playing BPM, and active track. Long-Term Memory records your equipment preferences and genre favorites. You can inspect or clear this data at any time via the Memory button in the assistant header.
+<strong>How does the ChanceTEK One AI assistant utilize my taste memory?</strong><br />
+ChanceTEK One AI operates a Dual-Memory architecture. Short-Term Working Memory tracks your live session route, playing BPM, and active track. Long-Term Memory records your equipment preferences and genre favorites. You can inspect or clear this data at any time via the Memory button in the assistant header.
 </p>
 
 <p>
@@ -174,12 +174,12 @@ From the kinetic urgency of The Winstons Amen, Brother to the deep pocket of Cly
 When the E-mu SP-1200 arrived in 1987, followed closely by Roger Linns Akai MPC60, producers gained the power to capture twelve-bit analog slices of vinyl history. By pitching records up to forty-five RPM during recording and tuning them down inside the sampler, pioneers unlocked a crunchy, saturated transient snap that defined golden-era hip-hop and transatlantic rave music.
 </p>
 <p>
-Return of the Break Beats is dedicated to honoring this uninterrupted legacy. We reject sterile algorithms that flatten sonic nuance. Instead, we combine authentic crate-digging reverence with next-generation agentic intelligence to celebrate the musicians, the diggers, the producers, and the timeless magic of the break.
+ChanceTEK One is dedicated to honoring this uninterrupted legacy. We reject sterile algorithms that flatten sonic nuance. Instead, we combine authentic crate-digging reverence with next-generation agentic intelligence to celebrate the musicians, the diggers, the producers, and the timeless magic of the break.
 </p>
 
 <h3>The Living Ecosystem</h3>
 <p>
-Return of the Break Beats unites all dimensions of the culture under a single operating system:
+ChanceTEK One unites all dimensions of the culture under a single operating system:
 </p>
 
 • <strong>High-Definition Streaming</strong>: Master-quality audio with dynamic tempo and BPM matching.
@@ -197,7 +197,7 @@ To build these four pages in the Next.js application, execute the following step
 </p>
 
 • <strong>Step 1</strong>: Create the page routes at src/app/terms/page.tsx, src/app/privacy/page.tsx, src/app/support/page.tsx, and src/app/learn-more/page.tsx.
-• <strong>Step 2</strong>: Wrap content in responsive container layouts matching the existing glass-panel styling of Return of the Break Beats.
+• <strong>Step 2</strong>: Wrap content in responsive container layouts matching the existing glass-panel styling of ChanceTEK One.
 • <strong>Step 3</strong>: Embed clean vector illustration badges and category icon headers for each section.
 • <strong>Step 4</strong>: Add navigation links in the Sidebar and Footer components to ensure seamless accessibility across all viewports.
 • <strong>Step 5</strong>: Verify that no forbidden hash or asterisk characters are rendered in the production bundle.

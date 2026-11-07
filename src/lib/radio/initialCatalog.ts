@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // Radio Initial Catalog — ChanceTEK One Agentic AI Radio
 // Pre-seeded authentic test tracks for both stations.
 // All audio references point to platform-owned audio files.
@@ -65,7 +65,7 @@ export const RADIO_INITIAL_CATALOG: RadioSong[] = [
   },
   {
     id: 'radio-hh-002',
-    title: 'Spades & Breaks (Demo Cut)',
+    title: 'ChanceTEK Beats (Demo Cut)',
     artist: 'ChanceTEK One',
     album: 'The Break Beat Sessions',
     genre: 'Hip-Hop',

@@ -664,7 +664,7 @@ export const GlobalMusicPlayer: React.FC = () => {
               )
             }
             className="hidden sm:flex p-1.5 sm:p-2 rounded-full bg-brand-purple/20 hover:bg-brand-purple/40 text-brand-neon hover:text-white transition-all border border-brand-purple/40"
-            title="Ask Break Beats AI about this track"
+            title="Ask ChanceTEK One AI about this track"
           >
             <Sparkles className="w-4 h-4 text-brand-gold animate-spin-slow" />
           </button>

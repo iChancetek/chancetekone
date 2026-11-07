@@ -53,7 +53,7 @@ export default function ProjectsPage() {
 
   const getProjectCanonicalKey = (p: Project) => {
     if (p.id === 'project-1') {
-      return buildCanonicalContentKey('project', 'The Return Of The Break Beats', 'ChanceTEK One');
+      return buildCanonicalContentKey('project', 'ChanceTEK One: The Foundation Beats', 'ChanceTEK One');
     }
     if (p.id === 'project-chancetek') {
       return buildCanonicalContentKey('project', 'ChanceTEK The Master Series', 'Chancellor');

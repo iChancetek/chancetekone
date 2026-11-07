@@ -1,4 +1,4 @@
-﻿import type { MetadataRoute } from 'next';
+import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -12,7 +12,7 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#08080c',
     orientation: 'any',
     scope: '/',
-    id: '8-of-spades-works-pwa',
+    id: 'chancetek-one-pwa',
     categories: ['music', 'entertainment', 'audio'],
     lang: 'en',
     dir: 'ltr',

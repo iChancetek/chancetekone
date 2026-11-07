@@ -132,13 +132,13 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
           {/* Text & Font Visibility Accessibility Trigger */}
           <AccessibilityButton variant="nav" />
 
-          {/* Break Beats AI Assistant Button */}
+          {/* ChanceTEK One AI Assistant Button */}
           <button
             onClick={onOpenAI}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-brand-purple/80 to-brand-violet hover:from-brand-purple hover:to-brand-gold text-white text-xs font-semibold shadow-sm transition-all border border-brand-neon/40 hover:scale-105"
           >
             <Sparkles className="w-3.5 h-3.5 text-brand-gold animate-spin-slow" />
-            <span className="hidden sm:inline">Break Beats AI</span>
+            <span className="hidden sm:inline">ChanceTEK One AI</span>
           </button>
 
           {/* Shopping Cart Trigger */}

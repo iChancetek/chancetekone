@@ -392,7 +392,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
             <button
               onClick={handleAskAI}
               className="flex items-center gap-2 px-4 py-3.5 rounded-full bg-brand-purple/20 hover:bg-brand-purple/40 border border-brand-purple/50 text-brand-neon hover:text-white font-semibold text-xs transition-all shadow-md hover:scale-105 active:scale-95 cursor-pointer"
-              title="Ask Break Beats AI about this project"
+              title="Ask ChanceTEK One AI about this project"
             >
               <Sparkles className="w-4 h-4 text-brand-gold animate-spin-slow" />
               Ask AI

@@ -75,7 +75,7 @@ export interface AnalyticsEvent {
   isAuthenticated: boolean;
   platformArea: string; // e.g., 'Music', 'Albums', 'Videos', 'Audiobooks', 'Playlists', 'Merch', 'Search', 'Profile', 'Admin'
   action: string; // human readable action e.g. "Started playing Fort Apache"
-  resource: string; // e.g. "Fort Apache", "Return of the Break Beats Hoodie"
+  resource: string; // e.g. "Fort Apache", "ChanceTEK One Hoodie"
   resourceId?: string;
   metadata?: Record<string, any>;
   geo: GeoLocationInfo;

@@ -607,8 +607,8 @@ export function getDefaultCoverForTrack(track?: {
 
   if (
     g.includes('breakbeat') ||
-    t.includes('return of the break beats') ||
-    (a.includes('8 of spades') || a.includes('chancetekone') && (t.includes('break') || t.includes('anthem')))
+    t.includes('break') ||
+    (a.includes('chancetek') && (t.includes('break') || t.includes('anthem')))
   ) {
     return '/images/chancetek_banner.png';
   }
@@ -2561,7 +2561,7 @@ export const JERMAINE_DUPRI_TRACKS: Track[] = [
 
 export const BREAKBEAT_ANTHEM_TRACK: Track = {
   id: 'track-1',
-  title: 'ChanceTEK One Presents: The Return of the Break Beats',
+  title: 'ChanceTEK One Break Beats',
   artistId: 'artist-1',
   artistName: 'ChanceTEK One',
   label: 'ChanceTEK One',
@@ -2573,7 +2573,7 @@ export const BREAKBEAT_ANTHEM_TRACK: Track = {
   genre: 'Hip Hop / Big Beat',
   bpm: 130,
   releaseYear: 2026,
-  lyrics: `[Intro - Scratching]\nYeah... ChanceTEK One in the session.\nChanceTEK One on the master deck.\nDropping the needle on the concrete floor.\n\n[Verse 1]\nWatch the fader flip, double-time rhythm kick,\nVinyl spinning steady with the needle on the tip.\nFrom the legendary roots to the future, hear the snare drum hit,\nThe Return of the Break Beats, you can't fake this shit.\n\n[Chorus]\nBack to the groove, make the speakers move,\nNothing to hide and everything to prove.\nThe Return of the Break Beats, authentic and raw,\nChanceTEK One laying down the law.`,
+  lyrics: `[Intro - Scratching]\nYeah... ChanceTEK One in the session.\nChanceTEK One on the master deck.\nDropping the needle on the concrete floor.\n\n[Verse 1]\nWatch the fader flip, double-time rhythm kick,\nVinyl spinning steady with the needle on the tip.\nFrom the legendary roots to the future, hear the snare drum hit,\nChanceTEK One Break Beats, you can't fake this shit.\n\n[Chorus]\nBack to the groove, make the speakers move,\nNothing to hide and everything to prove.\nChanceTEK One Break Beats, authentic and raw,\nChanceTEK One laying down the law.`,
   playCount: 0,
   likeCount: 0,
   dislikeCount: 0,

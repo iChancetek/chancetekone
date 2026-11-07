@@ -1,4 +1,4 @@
-﻿import { MOCK_TRACKS, MOCK_ARTISTS, MOCK_VIDEOS, MOCK_AUDIOBOOKS, MOCK_PRODUCTS, MOCK_ALBUMS, MOCK_PROJECTS, MOCK_PRODUCERS } from '@/lib/mockData';
+import { MOCK_TRACKS, MOCK_ARTISTS, MOCK_VIDEOS, MOCK_AUDIOBOOKS, MOCK_PRODUCTS, MOCK_ALBUMS, MOCK_PROJECTS, MOCK_PRODUCERS } from '@/lib/mockData';
 import { Track, Artist, Video, Audiobook, Project, Producer } from '@/types/media';
 import { Product } from '@/types/commerce';
 import { MemoryFact, TasteProfile } from '@/types/memory';
@@ -143,7 +143,7 @@ export const executeAgentTool = async (
       } else if (topic.includes('support') || topic.includes('contact') || topic.includes('help') || topic.includes('concierge')) {
         details = `Support Center (/support): Crate Concierge and technical assistance for PWA offline playback, vinyl order tracking, and memory vault reset. Contact us directly at support@chancetekone.us or concierge@chancetekone.us.`;
       } else if (topic.includes('project') || topic.includes('masterwork')) {
-        details = `Projects (/projects): Explore production masterworks: 1) The Return of the Break Beats (12-bit SP-1200), 2) ChanceTEK (Agentic AI, iSkylar, Famio), 3) The Bronx Heritage Archive (oral history & park jams), 4) Quantum Break Sequence (cyber electro breaks), and 5) Velvet Horns & Tape Saturation (2-inch analog tape funk).`;
+        details = `Projects (/projects): Explore production masterworks: 1) Genesis of the Concrete Beat (12-bit SP-1200), 2) ChanceTEK (Agentic AI, iSkylar, Famio), 3) The Bronx Heritage Archive (oral history & park jams), 4) Quantum Break Sequence (cyber electro breaks), and 5) Velvet Horns & Tape Saturation (2-inch analog tape funk).`;
       } else if (topic.includes('producer') || topic.includes('gear') || topic.includes('sp-1200') || topic.includes('mpc')) {
         details = `Producers (/producers): Discover sonic architects shaping the breakbeat renaissance: ChanceTEK One, Chancellor @ ChanceTEK LLC, Cipher Voltage, and Luna Brass & The Crate Queens.`;
       } else if (topic.includes('music') || topic.includes('stream') || topic.includes('track') || topic.includes('bpm')) {
@@ -155,19 +155,19 @@ export const executeAgentTool = async (
       } else if (topic.includes('merch') || topic.includes('vinyl') || topic.includes('shop') || topic.includes('store')) {
         details = `Merchandise & Vinyl: Browse /merch for limited-edition heavyweight vinyl records, slipmats, SP-1200 / MPC apparel, and crate accessories.`;
       } else if (topic.includes('pwa') || topic.includes('install') || topic.includes('offline') || topic.includes('app')) {
-        details = `PWA & Offline Playback: Install Return of the Break Beats directly onto your iOS, Android, or desktop device. Enjoy background playback, lock-screen controls, and offline crate streaming.`;
+        details = `PWA & Offline Playback: Install ChanceTEK One directly onto your iOS, Android, or desktop device. Enjoy background playback, lock-screen controls, and offline crate streaming.`;
       } else if (topic.includes('sample') || topic.includes('detective') || topic.includes('genealogy') || topic.includes('break')) {
         details = `Sample Detective: Tap the 'Sample DNA' button on any track to reveal its 1960s/70s funk drum origins, vintage sampler lore (E-mu SP-1200 / Akai MPC60), famous flips, and DJ EQ mixing tips.`;
       } else if (topic.includes('account') || topic.includes('auth') || topic.includes('login') || topic.includes('visitor') || topic.includes('guest')) {
-        details = `Visitor Access & Membership: Visitors can immediately explore the catalog, stream breakbeats, watch videos, listen to audiobooks, shop vinyl, and chat with Break Beats AI without signing in. Creating a free account lets you sync your AI memories, save customized playlists, and track order history.`;
+        details = `Visitor Access & Membership: Visitors can immediately explore the catalog, stream breakbeats, watch videos, listen to audiobooks, shop vinyl, and chat with ChanceTEK One AI without signing in. Creating a free account lets you sync your AI memories, save customized playlists, and track order history.`;
       } else {
-        details = `Return of the Break Beats is an entertainment operating system uniting breakbeat music streaming, culture videos, audiobooks, vinyl merchandise, projects, producers, and autonomous AI crate digging. Linked with The Fam... Famio (https://famio.us) social media companion. Visitors can freely stream and explore without an account!`;
+        details = `ChanceTEK One is an entertainment operating system uniting breakbeat music streaming, culture videos, audiobooks, vinyl merchandise, projects, producers, and autonomous AI crate digging. Linked with The Fam... Famio (https://famio.us) social media companion. Visitors can freely stream and explore without an account!`;
       }
 
       return {
         result: {
           info: details,
-          platformOverview: `Return of the Break Beats features: 1) High-Definition Music Streaming & BPM Crate Digging, 2) Videos & Documentaries, 3) Production Projects & Masterworks, 4) Master Producers Directory, 5) Narrated Audiobooks, 6) Limited Vinyl & Merch Store, 7) PWA Offline Mode & Background Playback, 8) Sample Detective Break Genealogy, 9) The Fam... Famio Social Platform (https://famio.us), and 10) Break Beats AI Assistant.`,
+          platformOverview: `ChanceTEK One features: 1) High-Definition Music Streaming & BPM Crate Digging, 2) Videos & Documentaries, 3) Production Projects & Masterworks, 4) Master Producers Directory, 5) Narrated Audiobooks, 6) Limited Vinyl & Merch Store, 7) PWA Offline Mode & Background Playback, 8) Sample Detective Break Genealogy, 9) The Fam... Famio Social Platform (https://famio.us), and 10) ChanceTEK One AI Assistant.`,
           visitorAccess: 'Visitors and guests have full access to browse, stream, watch videos, read audiobooks, and ask the AI assistant questions at any time.',
         },
       };
@@ -509,7 +509,7 @@ export const executeAgentTool = async (
           keyPoints: [
             'Intellectual Property: All master recordings, stems, 4K video footage, liner notes, and visual artwork remain the exclusive intellectual property of ChanceTEK One and respective creators.',
             'License: Account holders receive a revocable, non-exclusive, non-transferable personal license to stream and download for personal non-commercial listening.',
-            'AI Integrity & Provenance: Break Beats AI provides curatorial and educational insights only. Scraping or unauthorized AI model training on audio stems is prohibited.',
+            'AI Integrity & Provenance: ChanceTEK One AI provides curatorial and educational insights only. Scraping or unauthorized AI model training on audio stems is prohibited.',
             'Physical Goods & Vinyl: Limited edition vinyl pressings are fulfilled on a first-come, first-served basis with certified proof of inspection.',
             'Jurisdiction: Governed under the commercial laws of the State of Delaware.',
           ],
@@ -537,7 +537,7 @@ export const executeAgentTool = async (
           commonResolutions: [
             'PWA Offline Playback: Use the "Save to Crate" button while online to cache lossless audio in IndexedDB.',
             'Vinyl Pressing Tracking: Direct batch tracking provided via email upon physical dispatch from the pressing plant.',
-            'Memory Vault Reset: Navigate to AI settings or ask Break Beats AI directly to clear short-term and long-term memory logs.',
+            'Memory Vault Reset: Navigate to AI settings or ask ChanceTEK One AI directly to clear short-term and long-term memory logs.',
           ],
         },
         membership: {
@@ -545,7 +545,7 @@ export const executeAgentTool = async (
           tiers: [
             {
               tier: 'Account Holder (Free)',
-              benefits: ['Standard audio streaming', 'Create up to 3 custom crates', 'Standard Break Beats AI access'],
+              benefits: ['Standard audio streaming', 'Create up to 3 custom crates', 'Standard ChanceTEK One AI access'],
             },
             {
               tier: 'Member / Crate Club ($9.99/mo)',

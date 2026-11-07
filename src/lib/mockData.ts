@@ -46,7 +46,7 @@ export const MOCK_ARTISTS: Artist[] = [
 export const MOCK_TRACKS: Track[] = [
   {
     id: 'track-1',
-    title: 'ChanceTEK One Presents: The Return of the Break Beats',
+    title: 'ChanceTEK One Break Beats',
     artistId: 'artist-1',
     artistName: 'ChanceTEK One',
     label: 'ChanceTEK One',
@@ -58,7 +58,7 @@ export const MOCK_TRACKS: Track[] = [
     genre: 'Hip Hop / Big Beat',
     bpm: 130,
     releaseYear: 2026,
-    lyrics: `[Intro - Scratching]\nYeah... ChanceTEK One in the session.\nChanceTEK One on the master deck.\nDropping the needle on the concrete floor.\n\n[Verse 1]\nWatch the fader flip, double-time rhythm kick,\nVinyl spinning steady with the needle on the tip.\nFrom the legendary roots to the future, hear the snare drum hit,\nThe Return of the Break Beats, you can't fake this shit.\n\n[Chorus]\nBack to the groove, make the speakers move,\nNothing to hide and everything to prove.\nThe Return of the Break Beats, feel the earth shake!\n`,
+    lyrics: `[Intro - Scratching]\nYeah... ChanceTEK One in the session.\nChanceTEK One on the master deck.\nDropping the needle on the concrete floor.\n\n[Verse 1]\nWatch the fader flip, double-time rhythm kick,\nVinyl spinning steady with the needle on the tip.\nFrom the legendary roots to the future, hear the snare drum hit,\nChanceTEK One Break Beats, you can't fake this shit.\n\n[Chorus]\nBack to the groove, make the speakers move,\nNothing to hide and everything to prove.\nChanceTEK One Break Beats, feel the earth shake!\n`,
     playCount: 0,
     likeCount: 0,
     dislikeCount: 0,
@@ -70,7 +70,7 @@ export const MOCK_TRACKS: Track[] = [
 export const MOCK_ALBUMS: Album[] = [
   {
     id: 'album-1',
-    title: 'ChanceTEK One Presents: The Return of the Break Beats',
+    title: 'ChanceTEK One Presents: Genesis of the Concrete Beat',
     artistId: 'artist-1',
     artistName: 'ChanceTEK One',
     label: 'ChanceTEK One',
@@ -877,7 +877,7 @@ export const MOCK_PRODUCERS: Producer[] = [
     handle: '@chancetekone',
     role: 'Principal Sonic Architect & Crate Master',
     label: 'ChanceTEK One',
-    bio: 'Founder and chief visionary behind Return of the Break Beats. Specializing in 12-bit SP-1200 hardware sampling, Fort Apache drum reconstruction, and heavyweight vinyl soundscapes.',
+    bio: 'Founder and chief visionary behind ChanceTEK One. Specializing in 12-bit SP-1200 hardware sampling, Fort Apache drum reconstruction, and heavyweight vinyl soundscapes.',
     avatarUrl: '/images/logo.png',
     bannerUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1600&auto=format&fit=crop&q=80',
     gearSetup: [
@@ -891,7 +891,7 @@ export const MOCK_PRODUCERS: Producer[] = [
     favoriteBreaks: ['The Incredible Bongo Band — Apache', 'The Winstons — Amen, Brother', 'James Brown — Funky Drummer', 'The Honey Drippers — Impeach The President'],
     featuredTrackIds: ['track-1'],
     projectCount: 2,
-    credits: ['The Return of the Break Beats (Album)', 'Genesis of the Concrete Beat (LP)'],
+    credits: ['Genesis of the Concrete Beat (LP)', 'ChanceTEK One Break Beats (Single)'],
     verified: true,
     socialLinks: {
       twitter: 'https://twitter.com/chancetekone',
@@ -939,7 +939,7 @@ export const MOCK_PROJECTS: Project[] = [
   {
     id: 'project-1',
     presenter: 'ChanceTEK One Presents',
-    title: 'THE RETURN OF THE BREAK BEATS',
+    title: 'CHANCETEK ONE: THE FOUNDATION BEATS',
     subtitle: 'The Beats The Culture The History',
     producerId: 'producer-1',
     producerName: 'ChanceTEK One',
@@ -956,7 +956,7 @@ export const MOCK_PROJECTS: Project[] = [
     genre: 'Hip Hop / Break Beats / Documentary',
     bpm: 130,
     description: 'A full-length documentary film & series and first-of-its-kind compilation Double Album Soundtrack built entirely from the original & classic Hip Hop breakbeat samples.',
-    narrativeOverview: 'The Return Of The Break Beats is a full-length documentary film & series based on the early evolution of Hip Hop Music & Culture, with a deep focus on the musical foundation that started it all: The Break Beats.\n\nAlongside the documentary, THE RETURN OF THE BREAK BEATS - “The Reset Button” will release a first-of-its-kind compilation Double Album Soundtrack, a collector\'s edition project that has never been attempted in Hip Hop\'s history. The album will feature original recordings by both legendary and upcoming rappers performing over newly produced tracks built entirely from the original & classic Hip Hop breakbeat samples.',
+    narrativeOverview: 'ChanceTEK One: The Foundation Beats is a full-length documentary film & series based on the early evolution of Hip Hop Music & Culture, with a deep focus on the musical foundation that started it all: The Break Beats.\n\nAlongside the documentary, ChanceTEK One will release a first-of-its-kind compilation Double Album Soundtrack, a collector\'s edition project that has never been attempted in Hip Hop\'s history. The album will feature original recordings by both legendary and upcoming rappers performing over newly produced tracks built entirely from the original & classic Hip Hop breakbeat samples.',
     trackIds: ['track-1'],
     videoIds: ['video-1', 'video-2'],
     audiobookIds: ['audiobook-1'],

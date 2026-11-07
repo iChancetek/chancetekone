@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
@@ -271,7 +271,7 @@ export const MusicUploadCenterSection: React.FC<MusicUploadCenterSectionProps> =
   const [artistFilterSearch, setArtistFilterSearch] = useState<string>('');
 
   const [selectedProducerId, setSelectedProducerId] = useState<string>('producer-1');
-  const [selectedProducerName, setSelectedProducerName] = useState<string>('DJ Spades');
+  const [selectedProducerName, setSelectedProducerName] = useState<string>('Chancellor');
   const [producerFilterSearch, setProducerFilterSearch] = useState<string>('');
 
   const [allProducers, setAllProducers] = useState<Producer[]>(() => ProducerCatalogService.getAllProducers());

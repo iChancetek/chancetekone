@@ -242,7 +242,7 @@ export const SampleGenealogyCard: React.FC<SampleGenealogyCardProps> = ({
               }
               className="text-xs text-brand-gold hover:text-white font-bold flex items-center gap-1 hover:gap-1.5 transition-all"
             >
-              <span>Ask Break Beats AI for Deep Crate History</span>
+              <span>Ask ChanceTEK One AI for Deep Crate History</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

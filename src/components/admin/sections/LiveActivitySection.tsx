@@ -128,7 +128,7 @@ export const LiveActivitySection: React.FC<LiveActivitySectionProps> = ({
           <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
             Real-Time Activity Velocity Stream
           </h3>
-          <span className="text-xs text-brand-gold font-mono">Status: Connected to spadesworks8 socket</span>
+          <span className="text-xs text-brand-gold font-mono">Status: Connected to ChanceTEK One socket</span>
         </div>
 
         <div className="space-y-2.5 max-h-[600px] overflow-y-auto no-scrollbar pr-1">

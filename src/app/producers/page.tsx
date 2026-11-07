@@ -32,7 +32,7 @@ import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussio
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
 
-const PRODUCERS_PAGE_NARRATION = `Producers and Sonic Architects Directory for ChanceTEK One and Return of the Break Beats. Featuring master beatmakers, hardware sampler specialists, analog tape engineers, and sound designers shaping the breakbeat renaissance with E-mu SP-1200 and Akai MPC60 hardware crunch.`;
+const PRODUCERS_PAGE_NARRATION = `Producers and Sonic Architects Directory for ChanceTEK One and ChanceTEK One. Featuring master beatmakers, hardware sampler specialists, analog tape engineers, and sound designers shaping the breakbeat renaissance with E-mu SP-1200 and Akai MPC60 hardware crunch.`;
 
 export default function ProducersPage() {
   const { playTrack, currentTrack, isPlaying } = usePlayer();
@@ -94,7 +94,7 @@ export default function ProducersPage() {
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-brand-purple/30 hover:bg-brand-purple/50 border border-brand-purple/50 text-white text-xs font-bold shadow-md hover:scale-105 transition-all cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-brand-gold animate-spin-slow" />
-              <span>Ask Break Beats AI About Producers</span>
+              <span>Ask ChanceTEK One AI About Producers</span>
             </button>
             <Link
               href="/projects"

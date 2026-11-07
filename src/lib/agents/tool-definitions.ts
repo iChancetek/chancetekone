@@ -1,4 +1,4 @@
-﻿// Pure OpenAI Tool Definitions — No heavy imports.
+// Pure OpenAI Tool Definitions — No heavy imports.
 // Safe for use in Next.js API routes (server-side).
 // Execution logic lives in tools.ts which is only called dynamically.
 
@@ -23,7 +23,7 @@ export const AGENT_TOOLS_DEFINITIONS = [
     type: 'function' as const,
     function: {
       name: 'searchArtists',
-      description: 'Find artists, DJs, and producers on Return of the Break Beats.',
+      description: 'Find artists, DJs, and producers on ChanceTEK One.',
       parameters: {
         type: 'object',
         properties: {
@@ -232,7 +232,7 @@ export const AGENT_TOOLS_DEFINITIONS = [
     type: 'function' as const,
     function: {
       name: 'searchProjects',
-      description: 'Search production projects and master releases (e.g. The Return of the Break Beats, ChanceTEK, The Bronx Heritage Archive, Quantum Break Sequence, Velvet Horns & Tape Saturation).',
+      description: 'Search production projects and master releases (e.g. Genesis of the Concrete Beat, ChanceTEK, The Bronx Heritage Archive, Quantum Break Sequence, Velvet Horns & Tape Saturation).',
       parameters: {
         type: 'object',
         properties: {

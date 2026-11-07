@@ -1,4 +1,4 @@
-﻿import { Playlist, PlaylistItem, PlaylistType, PlaylistVisibility, PlaylistFilter } from '@/types/playlist';
+import { Playlist, PlaylistItem, PlaylistType, PlaylistVisibility, PlaylistFilter } from '@/types/playlist';
 import { MediaType, Track, Video, Audiobook, AudiobookChapter } from '@/types/media';
 import { MOCK_TRACKS, MOCK_VIDEOS, MOCK_AUDIOBOOKS } from '@/lib/mockData';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
@@ -36,7 +36,7 @@ export const PRESET_COVERS = COVER_ART_CATALOG.map((c) => c.url);
 export const INITIAL_PUBLIC_PLAYLISTS: Playlist[] = [
   {
     id: 'pl-featured-master',
-    ownerId: 'creator-8spades',
+    ownerId: 'creator-chancetekone',
     ownerName: 'ChanceTEK One',
     ownerAvatarUrl: '/images/logo.png',
     name: 'ChanceTEK One: The Master Vault',
@@ -61,7 +61,7 @@ export const INITIAL_PUBLIC_PLAYLISTS: Playlist[] = [
         playlistId: 'pl-featured-master',
         mediaId: 'track-1',
         mediaType: 'music',
-        title: 'ChanceTEK One Presents: The Return of the Break Beats',
+        title: 'ChanceTEK One Break Beats',
         artistName: 'ChanceTEK One',
         coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80',
         duration: 194,
@@ -120,7 +120,7 @@ export const INITIAL_PUBLIC_PLAYLISTS: Playlist[] = [
   },
   {
     id: 'pl-mixed-experience',
-    ownerId: 'creator-8spades',
+    ownerId: 'creator-chancetekone',
     ownerName: 'ChanceTEK One',
     ownerAvatarUrl: '/images/logo.png',
     name: 'Late Night Concrete Session (Mixed Crate)',
@@ -145,7 +145,7 @@ export const INITIAL_PUBLIC_PLAYLISTS: Playlist[] = [
         playlistId: 'pl-mixed-experience',
         mediaId: 'track-1',
         mediaType: 'music',
-        title: 'ChanceTEK One Presents: The Return of the Break Beats',
+        title: 'ChanceTEK One Break Beats',
         artistName: 'ChanceTEK One',
         coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80',
         duration: 194,
@@ -203,7 +203,7 @@ export const INITIAL_PUBLIC_PLAYLISTS: Playlist[] = [
   },
   {
     id: 'pl-video-master',
-    ownerId: 'creator-8spades',
+    ownerId: 'creator-chancetekone',
     ownerName: 'ChanceTEK One',
     ownerAvatarUrl: '/images/logo.png',
     name: 'ChanceTEK One Studio Visual Masterclasses',
@@ -283,10 +283,10 @@ export const INITIAL_PUBLIC_PLAYLISTS: Playlist[] = [
   },
   {
     id: 'pl-audiobook-master',
-    ownerId: 'creator-8spades',
+    ownerId: 'creator-chancetekone',
     ownerName: 'ChanceTEK One',
     ownerAvatarUrl: '/images/logo.png',
-    name: 'The Return of the Break Beats: Audio Documentary',
+    name: 'ChanceTEK One: Audio Documentary',
     description: 'The definitive audio narrative documenting how 6 seconds of drum solo in the 1960s ignited Big Beat and modern culture.',
     type: 'audiobook',
     visibility: 'public',

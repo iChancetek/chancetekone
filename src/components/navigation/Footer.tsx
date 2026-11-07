@@ -59,7 +59,7 @@ export const Footer: React.FC = () => {
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-brand-purple/20 hover:bg-brand-purple/40 border border-brand-purple/40 text-brand-neon hover:text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5 text-brand-gold animate-spin-slow" />
-                <span>Ask Break Beats AI</span>
+                <span>Ask ChanceTEK One AI</span>
               </button>
             </div>
           </div>

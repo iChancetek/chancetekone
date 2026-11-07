@@ -313,7 +313,7 @@ export const VideoPlayer: React.FC<{ video: Video }> = ({ video }) => {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-purple/30 hover:bg-brand-purple/50 border border-brand-neon/40 text-brand-neon hover:text-white text-xs font-semibold transition-all"
           >
             <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
-            <span>Ask Break Beats AI</span>
+            <span>Ask ChanceTEK One AI</span>
           </button>
         </div>
       </div>

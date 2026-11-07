@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import {
@@ -673,7 +673,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInAsDemo = () => {
     const userProf: UserProfile = {
-      id: 'demo-user-8spades',
+      id: 'demo-user-chancetekone',
       name: 'ChanceTEK One',
       email: 'fathertime4000@breakbeats.io',
       avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80',

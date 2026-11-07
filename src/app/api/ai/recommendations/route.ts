@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       })),
     };
 
-    const systemPrompt = `You are the Elite Contextual Agentic Curator for 'Return of the Break Beats'.
+    const systemPrompt = `You are the Elite Contextual Agentic Curator for 'ChanceTEK One'.
 Your mission is to perform real-time, cross-media crate curation based on what the user is actively playing/watching right now.
 
 Given the current media context and the platform catalog, you must select:

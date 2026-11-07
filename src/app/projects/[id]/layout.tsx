@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { resolveShareMetadataById } from '@/lib/sharing/shareMetadataService';
 
 export async function generateMetadata({
@@ -39,10 +39,10 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: 'THE RETURN OF THE BREAK BEATS — ChanceTEK One',
+      title: 'CHANCETEK ONE: THE FOUNDATION BEATS — ChanceTEK One',
       description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
       openGraph: {
-        title: 'THE RETURN OF THE BREAK BEATS',
+        title: 'CHANCETEK ONE: THE FOUNDATION BEATS',
         description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
         type: 'website',
         url: 'https://chancetekone.us/projects#project-1',
@@ -50,7 +50,7 @@ export async function generateMetadata({
       },
       twitter: {
         card: 'summary_large_image',
-        title: 'THE RETURN OF THE BREAK BEATS',
+        title: 'CHANCETEK ONE: THE FOUNDATION BEATS',
         description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
         images: ['https://chancetekone.us/images/chancetek_banner.png'],
       },

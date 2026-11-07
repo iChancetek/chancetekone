@@ -371,7 +371,7 @@ export class LocalRAGEngine {
       socialLinks: { website: 'https://chancetekone.com' },
     };
 
-    let content = `Yo! Here are all **${orderedTracks.length} iconic Michael Jackson master recordings** in the **Return of the Break Beats** vault!\n\n`;
+    let content = `Yo! Here are all **${orderedTracks.length} iconic Michael Jackson master recordings** in the **ChanceTEK One** vault!\n\n`;
 
     if (offTheWallTracks.length > 0) {
       content += `### 💽 *Off The Wall* (1979 Remastered Vault Edition)\n`;
@@ -701,7 +701,7 @@ export class LocalRAGEngine {
     const featuredTracks = MusicCatalogService.getAllTracks().slice(0, 5);
 
     const content =
-      `Yo! Welcome to **Return of the Break Beats** by **ChanceTEK One** — the premier entertainment operating system for timeless crate digging and audio culture.\n\n` +
+      `Yo! Welcome to **ChanceTEK One** by **ChanceTEK One** — the premier entertainment operating system for timeless crate digging and audio culture.\n\n` +
       `### What You Can Explore:\n` +
       `- **Music Crates (/music):** High-definition 12-bit SP-1200 beats, Soul, Funk, R&B, Golden Era Hip Hop, and Latin Freestyle.\n` +
       `- **Cinema Theater (/videos):** Mini-documentaries, live performances, and 4K cultural masterworks.\n` +

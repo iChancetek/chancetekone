@@ -64,7 +64,7 @@ export const MemoryVaultModal: React.FC<MemoryVaultModalProps> = ({
   };
 
   const handleResetLTM = () => {
-    if (confirm('Reset your Break Beats AI Long-Term Memory and taste DNA back to defaults?')) {
+    if (confirm('Reset your ChanceTEK One AI Long-Term Memory and taste DNA back to defaults?')) {
       const resetLtm = MemoryManager.resetLongTermMemory(longTermMemory.userId, longTermMemory.userName);
       onMemoryUpdated(resetLtm, shortTermMemory);
     }
@@ -146,7 +146,7 @@ export const MemoryVaultModal: React.FC<MemoryVaultModalProps> = ({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-xs text-neutral-300">
-                  Explicit memories and habits Break Beats AI draws upon to personalize recommendations.
+                  Explicit memories and habits ChanceTEK One AI draws upon to personalize recommendations.
                 </p>
                 <button
                   onClick={() => setIsAddingFact(!isAddingFact)}

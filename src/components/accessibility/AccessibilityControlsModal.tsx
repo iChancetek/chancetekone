@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect } from 'react';
 import {
@@ -227,10 +227,10 @@ export const AccessibilityControlsModal: React.FC = () => {
             <div className="p-4 sm:p-5 rounded-2xl border border-white/10 bg-black/50 space-y-2.5">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-gold/15 border border-brand-gold/30 text-brand-gold text-[10px] font-bold uppercase tracking-wider">
                 <Sparkles className="w-3 h-3" />
-                <span>Return of the Break Beats</span>
+                <span>ChanceTEK One</span>
               </div>
               <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                ChanceTEK One: Return of the Break Beats
+                ChanceTEK One: Sonic & Cultural Platform
               </h3>
               <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
                 This is a live preview of how track lyrics, documentary essays, liner notes, and audiobook transcripts will render across the platform with your selected {fontScale}% font scale.

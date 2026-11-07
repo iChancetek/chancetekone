@@ -29,7 +29,7 @@ import { useAuth } from '@/lib/auth/AuthContext';
 import { useAI } from '@/lib/ai/AIContext';
 
 const INITIAL_SUGGESTIONS = [
-  'What can I explore on Return of the Break Beats?',
+  'What can I explore on ChanceTEK One?',
   'Play the freshest 90s breakbeat track',
   'Tell me the history of the Amen break',
   'How do I install this app for offline playback?',
@@ -296,7 +296,7 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
       id: 'welcome',
       role: 'assistant',
       content:
-        'Yo! I am **Break Beats AI** — your Agentic AI crate digger and culture assistant powered by **Agentic Intelligence** with **Dual Memory**. Ask me to find tracks, build custom playlists, remember your studio gear, or explore exclusive vinyl.',
+        'Yo! I am **ChanceTEK One AI** — your Agentic AI crate digger and culture assistant powered by **Agentic Intelligence** with **Dual Memory**. Ask me to find tracks, build custom playlists, remember your studio gear, or explore exclusive vinyl.',
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -431,7 +431,7 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
           role: 'assistant',
           content: err?.message && err.message !== 'Failed to fetch'
             ? `⚠️ ${err.message}`
-            : 'Break Beats AI encountered a temporary connection delay. Please tap send again.',
+            : 'ChanceTEK One AI encountered a temporary connection delay. Please tap send again.',
           timestamp: new Date().toISOString(),
         },
       ]);
@@ -505,11 +505,11 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
               handleOpen();
             }}
             className="p-3.5 pr-2 flex items-center gap-2 cursor-grab active:cursor-grabbing"
-            title="Press & drag to move Break Beats AI anywhere on screen, or tap to open"
+            title="Press & drag to move ChanceTEK One AI anywhere on screen, or tap to open"
           >
             <GripHorizontal className="w-3.5 h-3.5 text-neutral-400 group-hover:text-white" />
             <Sparkles className="w-5 h-5 text-brand-gold animate-spin-slow" />
-            <span className="hidden sm:inline text-xs font-bold tracking-wide">Break Beats AI</span>
+            <span className="hidden sm:inline text-xs font-bold tracking-wide">ChanceTEK One AI</span>
             <span className="w-2 h-2 rounded-full bg-brand-neon animate-ping" />
           </button>
 
@@ -520,7 +520,7 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
               collapseFloatingAI();
             }}
             className="p-2 mr-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/20 transition-colors cursor-pointer"
-            title="Collapse Break Beats AI from screen"
+            title="Collapse ChanceTEK One AI from screen"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -555,7 +555,7 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
             className={`p-3.5 sm:p-4 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-brand-purple/30 via-brand-dark/40 to-brand-purple/20 select-none touch-none cursor-grab active:cursor-grabbing transition-colors ${
               isDraggingPanel ? 'bg-brand-purple/50 border-brand-gold/40' : ''
             }`}
-            title="Press and drag to move Break Beats AI anywhere on platform"
+            title="Press and drag to move ChanceTEK One AI anywhere on platform"
           >
             <div className="flex items-center gap-2 min-w-0">
               {/* Drag indicator icon */}
@@ -572,7 +572,7 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
 
               <div className="min-w-0">
                 <h3 className="text-sm font-bold text-white flex items-center gap-1.5 truncate">
-                  <span>Break Beats AI</span>
+                  <span>ChanceTEK One AI</span>
                   {isMinimized && (
                     <span className="text-[10px] text-brand-gold font-normal px-1.5 py-0.5 rounded-full bg-brand-gold/15 border border-brand-gold/30">
                       Collapsed
@@ -642,7 +642,7 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
               <button
                 onClick={toggleMinimize}
                 className="p-1.5 rounded-full text-neutral-300 hover:text-brand-gold hover:bg-white/10 transition-colors cursor-pointer"
-                title={isMinimized ? 'Expand Break Beats AI (Make larger)' : 'Collapse Break Beats AI (Make smaller)'}
+                title={isMinimized ? 'Expand ChanceTEK One AI (Make larger)' : 'Collapse ChanceTEK One AI (Make smaller)'}
               >
                 {isMinimized ? <ChevronUp className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
               </button>
@@ -670,7 +670,7 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
                 {loading && (
                   <div className="flex items-center gap-2 text-xs text-brand-neon p-3 bg-white/5 rounded-2xl border border-white/5 animate-pulse">
                     <Loader2 className="w-4 h-4 animate-spin text-brand-gold" />
-                    <span>Break Beats AI is consulting crate memory & reasoning...</span>
+                    <span>ChanceTEK One AI is consulting crate memory & reasoning...</span>
                   </div>
                 )}
                 <div ref={messagesEndRef} />

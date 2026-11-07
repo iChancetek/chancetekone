@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { Track, Audiobook, AudiobookChapter, Video } from '@/types/media';
@@ -594,7 +594,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         navigator.mediaSession.metadata = new MediaMetadata({
           title: currentTrack.title,
           artist: currentTrack.artistName || 'ChanceTEK One',
-          album: currentTrack.albumTitle || (currentTrack.genre ? `${currentTrack.genre} · Return of the Break Beats` : 'Return of the Break Beats'),
+          album: currentTrack.albumTitle || (currentTrack.genre ? `${currentTrack.genre} · ChanceTEK One` : 'ChanceTEK One'),
           artwork: [
             { src: coverUrl, sizes: '96x96', type: 'image/png' },
             { src: coverUrl, sizes: '128x128', type: 'image/png' },
@@ -876,7 +876,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     // Breakbeat Anthem immediate mapping
     if (
-      track.title?.toLowerCase().includes('return of the break beats') ||
+      track.title?.toLowerCase().includes('chancetek one break') ||
       track.id === 'track-1'
     ) {
       resolvedAudioUrl = '/audio/Fort_Apache.mp3';
