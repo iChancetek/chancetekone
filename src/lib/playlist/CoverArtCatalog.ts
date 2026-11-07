@@ -563,10 +563,10 @@ export const COVER_ART_CATALOG: CoverArtItem[] = [
   },
   {
     id: 'cover-bbx-2',
-    title: 'Block Party Concrete Wall',
+    title: 'Block Party Summer Street',
     category: 'boombox',
-    url: 'https://images.unsplash.com/photo-1499781350541-7783f6c6a0c8?w=800&auto=format&fit=crop&q=80',
-    tags: ['mural', 'street-art', 'urban-wall'],
+    url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&auto=format&fit=crop&q=80',
+    tags: ['block-party', 'summer', 'street'],
   },
   {
     id: 'cover-bbx-3',
@@ -605,10 +605,10 @@ export const COVER_ART_CATALOG: CoverArtItem[] = [
   },
   {
     id: 'cover-bbx-8',
-    title: 'Wildstyle Street Mural Cap',
+    title: 'Street Style Snapback Cap',
     category: 'boombox',
-    url: 'https://images.unsplash.com/photo-1499781350541-7783f6c6a0c8?w=800&auto=format&fit=crop&q=80',
-    tags: ['wildstyle', 'mural', 'urban-art'],
+    url: 'https://images.unsplash.com/photo-1565084888279-aca607ecce0c?w=800&auto=format&fit=crop&q=80',
+    tags: ['cap', 'snapback', 'street-style'],
   },
   {
     id: 'cover-bbx-9',
