@@ -70,7 +70,7 @@ export const COVER_ART_CATALOG: CoverArtItem[] = [
   },
   {
     id: 'cover-bb-8',
-    title: 'The Return of the Beat Breaks',
+    title: 'ChanceTEK Foundation Breaks',
     category: 'big_beat',
     url: 'https://images.unsplash.com/photo-1511735111819-9a3f7709049c?w=800&auto=format&fit=crop&q=80',
     tags: ['sound', 'acoustics', 'vintage'],

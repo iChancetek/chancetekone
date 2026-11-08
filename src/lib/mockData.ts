@@ -78,7 +78,7 @@ export const MOCK_ALBUMS: Album[] = [
     releaseYear: 2026,
     genre: 'Big Beat / Epic Tracks',
     trackIds: ['track-1'],
-    description: 'The monumental return of heavy drum breaks, epic track production, 12-bit sampler crunch, and street anthems that redefine the breakbeat legacy.',
+    description: 'The monumental collection of heavy drum breaks, epic track production, 12-bit sampler crunch, and street anthems that define the ChanceTEK One sound.',
     likeCount: 0,
     playCount: 0,
   },
