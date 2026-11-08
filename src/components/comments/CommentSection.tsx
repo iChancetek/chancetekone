@@ -33,6 +33,7 @@ import {
   CommentReactionCounts,
 } from '@/types/social';
 import { CommentComposer } from './CommentComposer';
+import { UserAvatar } from '@/components/navigation/UserAvatar';
 import { SocialCommentService } from '@/lib/social/SocialCommentService';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { AuthModal } from '@/components/auth/AuthModal';
@@ -372,14 +373,13 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                 {/* Header: User Info, Date & Time Stamp, Actions */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="relative w-9 h-9 rounded-full overflow-hidden border border-brand-purple/40 bg-brand-purple/10 flex-shrink-0 shadow-sm">
-                      <Image
-                        src={comment.userAvatar || '/images/logo.png'}
-                        alt={comment.userName}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
+                    <UserAvatar
+                      avatarUrl={comment.userAvatar}
+                      videoUrl={comment.userVideoUrl}
+                      name={comment.userName}
+                      size="md"
+                      borderClassName="border border-brand-purple/40 shadow-sm"
+                    />
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs sm:text-sm font-black text-white hover:text-brand-gold transition-colors">
@@ -614,14 +614,13 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                             >
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex items-center gap-2.5 flex-wrap">
-                                  <div className="relative w-6 h-6 rounded-full overflow-hidden border border-brand-purple/30 flex-shrink-0">
-                                    <Image
-                                      src={reply.userAvatar || '/images/logo.png'}
-                                      alt={reply.userName}
-                                      fill
-                                      className="object-cover"
-                                    />
-                                  </div>
+                                  <UserAvatar
+                                    avatarUrl={reply.userAvatar}
+                                    videoUrl={reply.userVideoUrl}
+                                    name={reply.userName}
+                                    size="xs"
+                                    borderClassName="border border-brand-purple/30"
+                                  />
                                   <span className="text-xs font-bold text-white">
                                     {reply.userName}
                                   </span>

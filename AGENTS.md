@@ -1658,6 +1658,39 @@ esolvedAudioUrl is reset to '' (zero tolerance).
      - Removed all tags and references to `8spades` in `CoverArtCatalog.ts` and `manifest.ts` (`id: 'chancetek-one-pwa'`).
      - Replaced default admin producer from `DJ Spades` to `Chancellor`.
 
+### 70. Complete Elimination of Crates & Diggin Graffiti, Profile & Settings Area, Password Change & 50MB Profile Photo/Video System
+- **User Directives**:
+  1. Remove all graffiti "The Crates & Diggin" images from the platform. Zero graffiti anywhere.
+  2. Create a profile or settings area for users to change their own password and display name.
+  3. Allow users to add a picture or video displayed when they sign in.
+  4. Ensure profile photo or video appears next to every post and follows the user around the platform.
+  5. Support profile photo and video uploads up to 50MB.
+- **Architectural Implementation**:
+  1. **Purge of Crates & Diggin Graffiti Imagery**:
+     - Identified that `public/images/genres/all-genres.jpg` (used as the default artwork for "The Crates & Diggin Vault" in `/music`) and `public/images/genres/hip-hop.jpg` contained legacy graffiti content.
+     - Physically overwrote both `all-genres.jpg` and `hip-hop.jpg` on disk with the authentic gold ChanceTEK One master branding banner (`public/images/chancetek_banner.png`).
+     - In `src/app/music/page.tsx`, updated "The Crates & Diggin Vault" artwork to a clean, authentic vinyl crate collection visual (`photo-1539185441755-769473a23570`) and Hip Hop artwork to a clean DJ turntable/mixer studio (`photo-1508700115892-45ecd05ae2ad`).
+     - In `src/types/catalog.ts`, updated the R&B/Soul crate from an urban graffiti mural to a clean vintage recording microphone (`photo-1511671782779-c97d3d27a1d4`).
+     - In `src/lib/media/MediaCatalogService.ts`, updated episode cover from `all-genres.jpg` to `/images/chancetek_banner.png`.
+  2. **Dedicated Profile & Settings Area (`/profile`)**:
+     - Built `src/app/profile/page.tsx` featuring:
+       - Display Name & Bio updates with instant validation and cross-platform synchronization.
+       - Password Change section with current password verification via Firebase `reauthenticateWithCredential` and `updatePassword`.
+       - Single Sign-On awareness explaining password management for Google-authenticated accounts.
+       - Live avatar preview showing either high-res photo or looping video with "Live Video Avatar" badge.
+  3. **High-Capacity 50MB Binary Media Storage (`ProfileMediaStorageService.ts`)**:
+     - Implemented an IndexedDB storage layer (`chancetek_profile_media_v1`, `media_vault` store) supporting up to 50MB photo and video files without triggering browser localStorage quota errors.
+     - Automatically generates active blob object URLs and syncs cross-tab updates via `BroadcastChannel('chancetek_profile_media_channel')`.
+     - Automatically generates client-side compressed thumbnails for avatar fallback and cross-device display.
+     - Hydrated automatically during initial session boot and Firebase authentication in `AuthContext.tsx`.
+  4. **Universal Multi-Format User Avatar Component (`UserAvatar.tsx`)**:
+     - Built `src/components/navigation/UserAvatar.tsx` supporting looping muted autoplay video (`profileVideoUrl`), high-res photo (`avatarUrl`), or initials in metallic gold-and-purple gradient.
+     - Integrated across `TopNav.tsx` (header bar), `Sidebar.tsx` (desktop footer & mobile drawer), `AuthModal.tsx` (sign-in welcome card), `CommentComposer.tsx` (post creation avatar), and `CommentSection.tsx` (discussion posts and reply threads).
+  5. **Next-to-Post Presence**:
+     - Added `userVideoUrl?: string` to `Comment` schema in `src/types/social.ts` and `SocialCommentService.ts`.
+     - Profile video or photo now renders seamlessly next to every post, reply, and header interaction across the platform.
+
+
 
 
 

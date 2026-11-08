@@ -2,6 +2,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { UserAvatar } from '@/components/navigation/UserAvatar';
 import {
   X,
   Sparkles,
@@ -56,6 +58,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,
+    profile,
   } = useAuth();
 
   const [tab, setTab] = useState<'signin' | 'signup'>(initialTab);
@@ -363,6 +366,32 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">{title}</h3>
           <p className="text-xs text-neutral-300 max-w-sm">{description}</p>
         </div>
+
+        {/* Live Profile Presence Preview upon Sign In */}
+        {profile && (
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-brand-gold/40 shadow-inner">
+            <UserAvatar
+              avatarUrl={profile.avatarUrl}
+              videoUrl={profile.profileVideoUrl}
+              name={profile.name}
+              size="md"
+              borderClassName="border-2 border-brand-gold/70"
+            />
+            <div className="min-w-0 flex-1 text-left">
+              <p className="text-xs font-black text-white truncate">
+                Signed in as <span className="text-brand-gold">{profile.name}</span>
+              </p>
+              <p className="text-[10px] text-neutral-400 truncate">{profile.email}</p>
+            </div>
+            <Link
+              href="/profile"
+              onClick={onClose}
+              className="text-[11px] font-bold text-brand-gold hover:underline whitespace-nowrap"
+            >
+              Settings &rarr;
+            </Link>
+          </div>
+        )}
 
         {/* Auth Mode Tabs (Sign In vs Create Account) */}
         {signupStep !== 'confirmed' && (

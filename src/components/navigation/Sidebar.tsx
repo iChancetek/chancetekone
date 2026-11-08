@@ -35,9 +35,11 @@ import {
   LogOut,
   FileText,
   FileSignature,
+  User as UserIcon,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useAI } from '@/lib/ai/AIContext';
+import { UserAvatar } from '@/components/navigation/UserAvatar';
 import { usePWA } from '@/lib/pwa/PWAContext';
 import { useSidebar } from '@/lib/navigation/SidebarContext';
 import { useAccessibility } from '@/lib/accessibility/AccessibilityContext';
@@ -68,6 +70,7 @@ const NAV_ITEMS: NavItem[] = [
 
 const LIBRARY_ITEMS = [
   { label: 'Your Library', href: '/library', icon: Library },
+  { label: 'Profile & Settings', href: '/profile', icon: UserIcon },
   { label: 'Creator Studio', href: '/studio', icon: Sparkles, badge: 'Studio' },
   { label: 'Liked Tracks', href: '/library?tab=liked', icon: Heart },
   { label: 'Listening History', href: '/library?tab=history', icon: History },
@@ -506,34 +509,37 @@ export const Sidebar: React.FC = () => {
             <div
               className={`flex items-center ${
                 isCollapsed ? 'justify-center' : 'justify-between'
-              } p-1.5 rounded-xl bg-white/5 border border-white/5`}
-              title={isCollapsed ? `${profile.name} (${profile.role})` : undefined}
+              } p-1.5 rounded-xl bg-white/5 border border-white/5 hover:border-brand-gold/40 transition-all`}
+              title={isCollapsed ? `${profile.name} — Profile & Settings` : undefined}
             >
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="relative w-8 h-8 rounded-full overflow-hidden border border-brand-purple/50 shrink-0">
-                  <Image
-                    src={profile.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
-                    alt={profile.name}
-                    fill
-                    sizes="32px"
-                    className="object-cover"
-                  />
-                </div>
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 min-w-0 flex-1 hover:opacity-90 transition-opacity"
+              >
+                <UserAvatar
+                  avatarUrl={profile.avatarUrl}
+                  videoUrl={profile.profileVideoUrl}
+                  name={profile.name}
+                  size="sm"
+                  borderClassName="border border-brand-gold/50"
+                />
                 {!isCollapsed && (
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-white truncate">{profile.name}</p>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-xs font-semibold text-white truncate hover:text-brand-gold transition-colors">
+                      {profile.name}
+                    </p>
                     <p className="text-[10px] text-brand-gold truncate">
                       {profile.role === 'admin' ? 'Super Admin' : profile.role || 'Member'}
                     </p>
                   </div>
                 )}
-              </div>
+              </Link>
 
               {!isCollapsed && (
                 <button
                   onClick={signOut}
                   title="Sign Out"
-                  className="p-1.5 rounded-lg text-neutral-400 hover:text-red-400 hover:bg-white/5 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg text-neutral-400 hover:text-red-400 hover:bg-white/5 transition-colors cursor-pointer ml-1"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                 </button>
@@ -817,24 +823,28 @@ export const Sidebar: React.FC = () => {
         {/* Mobile Drawer Footer with User Profile & Sign Out */}
         <div className="p-3.5 border-t border-white/10 bg-[#08080c]/90 pb-safe">
           {profile ? (
-            <div className="flex items-center justify-between p-2 rounded-2xl bg-white/5 border border-white/10">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="relative w-9 h-9 rounded-full overflow-hidden border border-brand-purple/50 shrink-0">
-                  <Image
-                    src={profile.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
-                    alt={profile.name}
-                    fill
-                    sizes="36px"
-                    className="object-cover"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-white truncate">{profile.name}</p>
+            <div className="flex items-center justify-between p-2 rounded-2xl bg-white/5 border border-white/10 hover:border-brand-gold/40 transition-all">
+              <Link
+                href="/profile"
+                onClick={closeMobileSidebar}
+                className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-90 transition-opacity"
+              >
+                <UserAvatar
+                  avatarUrl={profile.avatarUrl}
+                  videoUrl={profile.profileVideoUrl}
+                  name={profile.name}
+                  size="sm"
+                  borderClassName="border border-brand-gold/50"
+                />
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-xs font-bold text-white truncate hover:text-brand-gold transition-colors">
+                    {profile.name}
+                  </p>
                   <p className="text-[10px] text-brand-gold truncate">
                     {profile.role === 'admin' ? 'Super Admin' : profile.role || 'Member'}
                   </p>
                 </div>
-              </div>
+              </Link>
 
               <button
                 onClick={() => {
@@ -842,7 +852,7 @@ export const Sidebar: React.FC = () => {
                   closeMobileSidebar();
                 }}
                 title="Sign Out"
-                className="p-2 rounded-xl bg-white/5 hover:bg-red-500/20 active:bg-red-500/30 text-neutral-400 hover:text-red-400 transition-colors flex items-center gap-1 text-xs cursor-pointer"
+                className="p-2 rounded-xl bg-white/5 hover:bg-red-500/20 active:bg-red-500/30 text-neutral-400 hover:text-red-400 transition-colors flex items-center gap-1 text-xs cursor-pointer ml-1"
               >
                 <LogOut className="w-4 h-4" />
                 <span className="text-[11px] font-semibold">Sign Out</span>

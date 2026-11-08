@@ -58,7 +58,7 @@ export const OFFICIAL_CRATES: CrateDefinition[] = [
     totalTracks: 210,
     totalAlbums: 18,
     totalFolders: 0,
-    artworkUrl: 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=800&auto=format&fit=crop&q=80',
+    artworkUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 'golden-era-hip-hop',

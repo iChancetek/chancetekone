@@ -60,7 +60,7 @@ interface GenreArtworkInfo {
 const GENRE_ARTWORKS: Record<string, GenreArtworkInfo> = {
   Genre: {
     name: 'The Crates & Diggin Vault',
-    artwork: '/images/genres/all-genres.jpg',
+    artwork: 'https://images.unsplash.com/photo-1539185441755-769473a23570?w=1200&auto=format&fit=crop&q=80',
     tagline: 'ChanceTEK One Master Audio Vault',
     description:
       'Explore authentic vinyl chops, heavyweight breakbeats, soulful chord progressions, and modern club anthems across the entire multi-genre sound spectrum.',
@@ -71,7 +71,7 @@ const GENRE_ARTWORKS: Record<string, GenreArtworkInfo> = {
   },
   'Hip Hop': {
     name: 'Hip Hop',
-    artwork: '/images/genres/hip-hop.jpg',
+    artwork: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1200&auto=format&fit=crop&q=80',
     tagline: 'SP-1200 Boom Bap & Street Turntablism',
     description:
       'Raw street culture, rhythmic vinyl scratching, heavy 12-bit kick drums, and unfiltered lyricism from the concrete trenches.',

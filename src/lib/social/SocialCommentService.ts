@@ -304,6 +304,7 @@ class SocialCommentServiceClass {
     userEmail?: string;
     userHandle?: string;
     userAvatar?: string;
+    userVideoUrl?: string;
     userRole?: string;
     creatorType?: string;
     parentCommentId?: string | null;
@@ -320,6 +321,7 @@ class SocialCommentServiceClass {
       userEmail: params.userEmail,
       userHandle: params.userHandle,
       userAvatar: params.userAvatar || '/images/logo.png',
+      userVideoUrl: params.userVideoUrl,
       userRole: params.userRole || 'user',
       creatorType: params.creatorType,
       text: params.text.trim(),

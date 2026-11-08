@@ -52,6 +52,7 @@ export interface Comment {
   userEmail?: string;
   userHandle?: string;
   userAvatar?: string;
+  userVideoUrl?: string;
   userRole?: 'user' | 'creator' | 'admin' | string;
   creatorType?: 'artist' | 'producer' | 'creator' | 'streamer' | string;
   text: string;
@@ -82,6 +83,7 @@ export interface UserProfile {
   name: string;
   email: string;
   avatarUrl?: string;
+  profileVideoUrl?: string;
   role: 'user' | 'creator' | 'admin';
   creatorType?: 'artist' | 'producer' | 'creator' | 'streamer';
   agreementStatus?: 'none' | 'submitted' | 'under_review' | 'verified_active' | 'denied';

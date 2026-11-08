@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth/AuthContext';
 import { UniversalContentType, Comment } from '@/types/social';
 import { SocialCommentService } from '@/lib/social/SocialCommentService';
 import { AuthModal } from '@/components/auth/AuthModal';
+import { UserAvatar } from '@/components/navigation/UserAvatar';
 
 const QUICK_EMOJIS = ['🔥', '❤️', '👍🏿', '👎🏿', '👍', '👎', '👏🏿', '👏', '💯', '👑', '🎧', '⚡'];
 
@@ -73,6 +74,7 @@ export const CommentComposer: React.FC<CommentComposerProps> = ({
         userEmail: email,
         userHandle: handle,
         userAvatar: profile?.avatarUrl || user?.photoURL || '/images/logo.png',
+        userVideoUrl: profile?.profileVideoUrl,
         userRole: isAdmin ? 'admin' : (profile?.role as any) || 'user',
         creatorType: profile?.creatorType,
         parentCommentId,
@@ -98,18 +100,13 @@ export const CommentComposer: React.FC<CommentComposerProps> = ({
         className="w-full space-y-2.5 p-3.5 rounded-2xl bg-[#120f18]/80 border border-white/10 backdrop-blur-md shadow-inner transition-all focus-within:border-brand-purple/50 focus-within:shadow-[0_0_20px_rgba(182,109,255,0.15)]"
       >
         <div className="flex items-start gap-3">
-          <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-brand-purple/40 bg-brand-purple/10">
-            <Image
-              src={
-                profile?.avatarUrl ||
-                user?.photoURL ||
-                '/images/logo.png'
-              }
-              alt="Member Avatar"
-              fill
-              className="object-cover"
-            />
-          </div>
+          <UserAvatar
+            avatarUrl={profile?.avatarUrl || user?.photoURL}
+            videoUrl={profile?.profileVideoUrl}
+            name={profile?.name || user?.displayName}
+            size="sm"
+            borderClassName="border border-brand-purple/50"
+          />
 
           <div className="flex-1 space-y-2">
             {replyToName && (

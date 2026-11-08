@@ -58,7 +58,7 @@ export const SEED_PODCASTS: PodcastEpisode[] = [
     description: 'An episodic exploration of high-definition cinema, architectural spatial rendering, and the creative vision behind CyneMora and The Famio.',
     mediaUrl: '/videos/CyneMora221.mp4',
     mediaType: 'video',
-    coverUrl: '/images/genres/all-genres.jpg',
+    coverUrl: '/images/chancetek_banner.png',
     duration: 980,
     releaseDate: '2026-03-15',
     category: 'Film & Visual Arts',

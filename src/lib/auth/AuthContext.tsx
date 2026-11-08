@@ -14,6 +14,7 @@ import { auth, googleProvider } from '@/lib/firebase/client';
 import { UserProfile } from '@/types/social';
 import { AdminUserManager } from '@/lib/admin/AdminUserManager';
 import { AnalyticsEngine } from '@/lib/analytics/AnalyticsEngine';
+import { ProfileMediaStorageService } from '@/lib/auth/ProfileMediaStorageService';
 import { ShieldAlert } from 'lucide-react';
 
 export const SUPER_USER_EMAILS = [
@@ -241,16 +242,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfile(syncedProfile);
         setIsDemo(saved.isDemo);
         setLoading(false);
+
+        // Hydrate persistent photo or video media from IndexedDB
+        ProfileMediaStorageService.getProfileMedia(syncedProfile.id).then((media) => {
+          if (media) {
+            setProfile((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    profileVideoUrl: media.type === 'video' ? media.objectUrl : prev.profileVideoUrl,
+                    avatarUrl: media.type === 'image' ? media.objectUrl : prev.avatarUrl,
+                  }
+                : prev
+            );
+          }
+        });
       }
     }
 
     // 2. Setup BroadcastChannel listener for multi-tab sync
     let channel: BroadcastChannel | null = null;
+    let mediaChannel: BroadcastChannel | null = null;
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       try {
         channel = new BroadcastChannel(AUTH_BROADCAST_CHANNEL);
         channel.onmessage = (ev) => {
           handleAuthMessage(ev.data);
+        };
+
+        mediaChannel = new BroadcastChannel('chancetek_profile_media_channel');
+        mediaChannel.onmessage = (ev) => {
+          if (ev.data?.userId) {
+            ProfileMediaStorageService.getProfileMedia(ev.data.userId).then((media) => {
+              if (media) {
+                setProfile((prev) =>
+                  prev && prev.id === ev.data.userId
+                    ? {
+                        ...prev,
+                        profileVideoUrl: media.type === 'video' ? media.objectUrl : undefined,
+                        avatarUrl: media.type === 'image' ? media.objectUrl : prev.avatarUrl,
+                      }
+                    : prev
+                );
+              }
+            });
+          }
         };
       } catch (e) {}
     }
@@ -380,6 +416,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         saveActiveSession(userProf, false, 'firebase');
         AdminUserManager.syncAuthUser(userProf);
         setLoading(false);
+
+        // Hydrate persistent photo or video media from IndexedDB
+        ProfileMediaStorageService.getProfileMedia(fbUser.uid).then((media) => {
+          if (media) {
+            setProfile((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    profileVideoUrl: media.type === 'video' ? media.objectUrl : prev.profileVideoUrl,
+                    avatarUrl: media.type === 'image' ? media.objectUrl : prev.avatarUrl,
+                  }
+                : prev
+            );
+          }
+        });
       } else {
         // Firebase returned null user.
         // Check if there is an active session in localStorage (email, superuser, demo, etc.). If valid, preserve it!

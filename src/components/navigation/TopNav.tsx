@@ -23,6 +23,7 @@ import { useSidebar } from '@/lib/navigation/SidebarContext';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { GlobalVoiceSearchModal } from '@/components/navigation/GlobalVoiceSearchModal';
 import { AccessibilityButton } from '@/components/accessibility/AccessibilityButton';
+import { UserAvatar } from '@/components/navigation/UserAvatar';
 
 export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
   const router = useRouter();
@@ -160,19 +161,22 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
             {profile ? (
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className={`flex items-center gap-2 p-1 rounded-full bg-white/5 hover:bg-white/10 border transition-all ${
-                  isAdmin ? 'border-red-500/60 ring-2 ring-red-500/20' : 'border-white/10'
+                className={`flex items-center gap-2 p-0.5 rounded-full bg-white/5 hover:bg-white/10 transition-all ${
+                  isAdmin ? 'ring-2 ring-red-500/30' : ''
                 }`}
+                title={`${profile.name} — Profile & Settings`}
               >
-                <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white ${
+                <UserAvatar
+                  avatarUrl={profile.avatarUrl}
+                  videoUrl={profile.profileVideoUrl}
+                  name={profile.name}
+                  size="sm"
+                  borderClassName={
                     isAdmin
-                      ? 'bg-gradient-to-tr from-red-600 to-brand-gold'
-                      : 'bg-brand-purple/40 border border-brand-gold'
-                  }`}
-                >
-                  {profile.name[0]}
-                </div>
+                      ? 'border border-red-500/70'
+                      : 'border border-brand-gold/70'
+                  }
+                />
               </button>
             ) : (
               <button
@@ -185,18 +189,43 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
 
             {/* Profile Dropdown Menu */}
             {showProfileMenu && profile && (
-              <div className="absolute right-0 mt-2 w-52 rounded-2xl glass-panel border border-white/10 p-2 shadow-2xl space-y-1 bg-[#12121c] z-50">
-                <div className="px-3 py-2 border-b border-white/5">
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-xs font-bold text-white truncate">{profile.name}</p>
-                    {isAdmin && (
-                      <span className="px-1.5 py-0.2 rounded bg-red-500/20 text-red-400 text-[9px] font-bold border border-red-500/30">
-                        Admin
-                      </span>
-                    )}
+              <div className="absolute right-0 mt-2 w-56 rounded-2xl glass-panel border border-white/10 p-2 shadow-2xl space-y-1 bg-[#12121c] z-50">
+                <Link
+                  href="/profile"
+                  onClick={() => setShowProfileMenu(false)}
+                  className="px-3 py-2 border-b border-white/5 block hover:bg-white/5 rounded-xl transition-colors group cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <UserAvatar
+                      avatarUrl={profile.avatarUrl}
+                      videoUrl={profile.profileVideoUrl}
+                      name={profile.name}
+                      size="xs"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-xs font-bold text-white truncate group-hover:text-brand-gold transition-colors">
+                          {profile.name}
+                        </p>
+                        {isAdmin && (
+                          <span className="px-1.5 py-0.2 rounded bg-red-500/20 text-red-400 text-[9px] font-bold border border-red-500/30">
+                            Admin
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-neutral-400 truncate">{profile.email}</p>
+                    </div>
                   </div>
-                  <p className="text-[10px] text-neutral-400 truncate">{profile.email}</p>
-                </div>
+                </Link>
+
+                <Link
+                  href="/profile"
+                  onClick={() => setShowProfileMenu(false)}
+                  className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-brand-gold hover:bg-brand-gold/10 transition-colors"
+                >
+                  <UserIcon className="w-3.5 h-3.5 text-brand-gold" />
+                  <span>Profile & Settings</span>
+                </Link>
 
                 {isAdmin && (
                   <Link
