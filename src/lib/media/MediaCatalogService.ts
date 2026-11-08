@@ -1,4 +1,4 @@
-﻿import { Audiobook, Video, PodcastEpisode } from '@/types/media';
+import { Audiobook, Video, PodcastEpisode } from '@/types/media';
 import { MOCK_AUDIOBOOKS, MOCK_VIDEOS } from '@/lib/mockData';
 import { AuditLogger } from '@/lib/admin/AuditLogger';
 import { EngagementMetricsService } from '@/lib/analytics/EngagementMetricsService';

@@ -303,21 +303,19 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
           <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5 border border-white/5 text-xs font-semibold">
             <button
               onClick={() => setSortBy('newest')}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                sortBy === 'newest'
+              className={`px-3 py-1 rounded-lg transition-all ${sortBy === 'newest'
                   ? 'bg-brand-gold text-black font-extrabold shadow-sm'
                   : 'text-neutral-400 hover:text-white'
-              }`}
+                }`}
             >
               Newest
             </button>
             <button
               onClick={() => setSortBy('top')}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                sortBy === 'top'
+              className={`px-3 py-1 rounded-lg transition-all ${sortBy === 'top'
                   ? 'bg-brand-gold text-black font-extrabold shadow-sm'
                   : 'text-neutral-400 hover:text-white'
-              }`}
+                }`}
             >
               Top Reacted 🔥
             </button>
@@ -356,11 +354,10 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
             return (
               <div
                 key={comment.id}
-                className={`relative group rounded-3xl transition-all duration-200 border p-4 sm:p-5 ${
-                  comment.isPinned
+                className={`relative group rounded-3xl transition-all duration-200 border p-4 sm:p-5 ${comment.isPinned
                     ? 'bg-gradient-to-b from-amber-500/[0.08] via-white/[0.03] to-transparent border-amber-500/30 shadow-[0_0_30px_rgba(245,195,68,0.08)]'
                     : 'bg-white/[0.03] hover:bg-white/[0.05] border-white/5 hover:border-white/10'
-                }`}
+                  }`}
               >
                 {/* Pinned Tag */}
                 {comment.isPinned && (
@@ -413,11 +410,10 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                     {isAdmin && (
                       <button
                         onClick={() => handleTogglePin(comment.id)}
-                        className={`p-1.5 rounded-lg border text-xs transition-colors cursor-pointer ${
-                          comment.isPinned
+                        className={`p-1.5 rounded-lg border text-xs transition-colors cursor-pointer ${comment.isPinned
                             ? 'text-brand-gold border-amber-500/40 bg-amber-500/10'
                             : 'text-neutral-400 hover:text-white border-transparent hover:border-white/10'
-                        }`}
+                          }`}
                         title={comment.isPinned ? 'Unpin thread' : 'Pin thread to top'}
                       >
                         <Pin className="w-3.5 h-3.5" />
@@ -505,11 +501,10 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                         <button
                           key={emoji.key}
                           onClick={(e) => handleToggleReaction(comment.id, emoji.key, e)}
-                          className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                            hasReacted
+                          className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all cursor-pointer ${hasReacted
                               ? emoji.activeColor
                               : 'bg-white/5 hover:bg-white/10 border-white/10 text-neutral-300 hover:text-white'
-                          }`}
+                            }`}
                           title={`React with ${emoji.label}`}
                         >
                           <span className="text-xs">{emoji.icon}</span>
@@ -700,11 +695,10 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                                     <button
                                       key={emoji.key}
                                       onClick={(e) => handleToggleReaction(reply.id, emoji.key, e)}
-                                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border transition-all cursor-pointer ${
-                                        hasReacted
+                                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border transition-all cursor-pointer ${hasReacted
                                           ? emoji.activeColor
                                           : 'bg-white/5 hover:bg-white/10 border-white/10 text-neutral-300'
-                                      }`}
+                                        }`}
                                     >
                                       <span>{emoji.icon}</span>
                                       {count > 0 && <span className="font-mono">{count}</span>}

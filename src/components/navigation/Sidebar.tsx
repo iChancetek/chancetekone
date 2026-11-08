@@ -177,15 +177,13 @@ export const Sidebar: React.FC = () => {
       {/* 1. DESKTOP & LANDSCAPE SIDEBAR (>= md)                                    */}
       {/* ========================================================================= */}
       <aside
-        className={`hidden md:flex flex-col h-[100dvh] fixed top-0 left-0 glass-panel border-r border-white/5 z-50 bg-[#0c0c14]/95 transition-all duration-300 ease-in-out ${
-          isCollapsed ? 'w-20' : 'w-72'
-        }`}
+        className={`hidden md:flex flex-col h-[100dvh] fixed top-0 left-0 glass-panel border-r border-white/5 z-50 bg-[#0c0c14]/95 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20' : 'w-72'
+          }`}
       >
         {/* Brand Header with Toggle */}
         <div
-          className={`p-3 border-b border-white/5 flex items-center ${
-            isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'
-          }`}
+          className={`p-3 border-b border-white/5 flex items-center ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'
+            }`}
         >
           <Link
             href="/"
@@ -251,13 +249,11 @@ export const Sidebar: React.FC = () => {
                     onTouchStart={() => handleIntentPrefetch(item.href, item.isExternal)}
                     onClick={(e) => handleMenuNavigate(e, item.href, item.isExternal, false)}
                     title={isCollapsed ? item.label : undefined}
-                    className={`group relative flex items-center touch-manipulation ${
-                      isCollapsed ? 'justify-center p-2.5' : 'justify-between gap-3 px-3 py-2'
-                    } rounded-xl text-xs font-medium transition-all ${
-                      isActive
+                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'justify-between gap-3 px-3 py-2'
+                      } rounded-xl text-xs font-medium transition-all ${isActive
                         ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
                         : 'text-neutral-300 hover:text-white hover:bg-white/5'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0 mr-1.5">
                       <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400 group-hover:text-white'}`} />
@@ -306,13 +302,11 @@ export const Sidebar: React.FC = () => {
                     onTouchStart={() => handleIntentPrefetch(item.href)}
                     onClick={(e) => handleMenuNavigate(e, item.href, false, false)}
                     title={isCollapsed ? item.label : undefined}
-                    className={`group relative flex items-center touch-manipulation ${
-                      isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2'
-                    } rounded-xl text-xs font-medium transition-all ${
-                      isActive
+                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2'
+                      } rounded-xl text-xs font-medium transition-all ${isActive
                         ? 'bg-white/10 text-white border border-white/10'
                         : 'text-neutral-300 hover:text-white hover:bg-white/5'
-                    }`}
+                      }`}
                   >
                     <Icon className="w-4 h-4 text-neutral-400 group-hover:text-white shrink-0" />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
@@ -334,9 +328,8 @@ export const Sidebar: React.FC = () => {
                 onTouchStart={() => handleIntentPrefetch('/playlists')}
                 onClick={(e) => handleMenuNavigate(e, '/playlists', false, false)}
                 title={isCollapsed ? 'Create Playlist' : undefined}
-                className={`group relative flex items-center touch-manipulation ${
-                  isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2'
-                } rounded-xl text-xs font-black bg-gradient-to-r from-[#ffd700]/15 to-[#f59e0b]/15 hover:from-[#ffd700] hover:to-[#f59e0b] text-brand-gold hover:text-black border border-brand-gold/40 hover:border-white shadow-[0_0_15px_rgba(245,158,11,0.2)] transition-all`}
+                className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2'
+                  } rounded-xl text-xs font-black bg-gradient-to-r from-[#ffd700]/15 to-[#f59e0b]/15 hover:from-[#ffd700] hover:to-[#f59e0b] text-brand-gold hover:text-black border border-brand-gold/40 hover:border-white shadow-[0_0_15px_rgba(245,158,11,0.2)] transition-all`}
               >
                 <ListMusic className="w-4 h-4 text-brand-gold group-hover:text-black shrink-0" />
                 {!isCollapsed && <span>+ Create Playlist</span>}
@@ -357,9 +350,8 @@ export const Sidebar: React.FC = () => {
                   onTouchStart={() => handleIntentPrefetch('/admin')}
                   onClick={(e) => handleMenuNavigate(e, '/admin', false, false)}
                   title={isCollapsed ? 'Operations Center (Super Admin)' : undefined}
-                  className={`group relative flex items-center touch-manipulation ${
-                    isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2'
-                  } rounded-xl text-xs font-bold text-red-400 hover:text-red-300 bg-red-950/30 border border-red-500/30 hover:border-red-500/60 transition-all`}
+                  className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2'
+                    } rounded-xl text-xs font-bold text-red-400 hover:text-red-300 bg-red-950/30 border border-red-500/30 hover:border-red-500/60 transition-all`}
                 >
                   <ShieldAlert className="w-4 h-4 text-red-400 shrink-0 animate-pulse" />
                   {!isCollapsed && <span>Admin Ops</span>}
@@ -394,13 +386,11 @@ export const Sidebar: React.FC = () => {
                     onTouchStart={() => handleIntentPrefetch(item.href)}
                     onClick={(e) => handleMenuNavigate(e, item.href, false, false)}
                     title={isCollapsed ? item.label : undefined}
-                    className={`group relative flex items-center touch-manipulation ${
-                      isCollapsed ? 'justify-center p-2.5' : 'justify-start gap-2.5 px-3 py-2'
-                    } rounded-xl text-xs font-medium transition-all ${
-                      isActive
+                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'justify-start gap-2.5 px-3 py-2'
+                      } rounded-xl text-xs font-medium transition-all ${isActive
                         ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
                         : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                    }`}
+                      }`}
                   >
                     <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400 group-hover:text-white'}`} />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
@@ -418,9 +408,8 @@ export const Sidebar: React.FC = () => {
               <button
                 onClick={openAccessibilityModal}
                 title={isCollapsed ? `Text Size (${fontScale}%)` : undefined}
-                className={`group relative flex items-center ${
-                  isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'
-                } rounded-xl text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-all w-full cursor-pointer`}
+                className={`group relative flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'
+                  } rounded-xl text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-all w-full cursor-pointer`}
               >
                 <div className="flex items-center gap-2.5">
                   <Type className="w-4 h-4 shrink-0 text-brand-gold" />
@@ -507,9 +496,8 @@ export const Sidebar: React.FC = () => {
         <div className="p-2.5 border-t border-white/5 bg-[#08080c]/60">
           {profile ? (
             <div
-              className={`flex items-center ${
-                isCollapsed ? 'justify-center' : 'justify-between'
-              } p-1.5 rounded-xl bg-white/5 border border-white/5 hover:border-brand-gold/40 transition-all`}
+              className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'
+                } p-1.5 rounded-xl bg-white/5 border border-white/5 hover:border-brand-gold/40 transition-all`}
               title={isCollapsed ? `${profile.name} — Profile & Settings` : undefined}
             >
               <Link
@@ -565,17 +553,15 @@ export const Sidebar: React.FC = () => {
       {/* Backdrop */}
       <div
         onClick={closeMobileSidebar}
-        className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] transition-opacity duration-200 touch-manipulation ${
-          isMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] transition-opacity duration-200 touch-manipulation ${isMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
         aria-hidden={!isMobileOpen}
       />
 
       {/* Slide Drawer Panel */}
       <aside
-        className={`fixed inset-y-0 left-0 w-[88vw] sm:w-96 max-w-sm glass-panel border-r border-white/10 z-[80] bg-[#0c0c16]/98 flex flex-col h-[100dvh] shadow-[0_0_50px_rgba(0,0,0,0.9)] transition-transform duration-200 ease-out ${
-          isMobileOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'
-        }`}
+        className={`fixed inset-y-0 left-0 w-[88vw] sm:w-96 max-w-sm glass-panel border-r border-white/10 z-[80] bg-[#0c0c16]/98 flex flex-col h-[100dvh] shadow-[0_0_50px_rgba(0,0,0,0.9)] transition-transform duration-200 ease-out ${isMobileOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'
+          }`}
         aria-label="Mobile Navigation Menu"
       >
         {/* Mobile Drawer Header */}
@@ -633,11 +619,10 @@ export const Sidebar: React.FC = () => {
                     onMouseEnter={() => handleIntentPrefetch(item.href, item.isExternal)}
                     onTouchStart={() => handleIntentPrefetch(item.href, item.isExternal)}
                     onClick={(e) => handleMenuNavigate(e, item.href, item.isExternal, true)}
-                    className={`flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all touch-manipulation ${
-                      isActive
+                    className={`flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all touch-manipulation ${isActive
                         ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
                         : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3 min-w-0 mr-1.5">
                       <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400'}`} />
@@ -677,11 +662,10 @@ export const Sidebar: React.FC = () => {
                     onMouseEnter={() => handleIntentPrefetch(item.href)}
                     onTouchStart={() => handleIntentPrefetch(item.href)}
                     onClick={(e) => handleMenuNavigate(e, item.href, false, true)}
-                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all touch-manipulation ${
-                      isActive
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all touch-manipulation ${isActive
                         ? 'bg-white/10 text-white border border-white/15'
                         : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
-                    }`}
+                      }`}
                   >
                     <Icon className="w-4 h-4 text-neutral-400 shrink-0" />
                     <span className="truncate">{item.label}</span>
@@ -737,11 +721,10 @@ export const Sidebar: React.FC = () => {
                     onMouseEnter={() => handleIntentPrefetch(item.href)}
                     onTouchStart={() => handleIntentPrefetch(item.href)}
                     onClick={(e) => handleMenuNavigate(e, item.href, false, true)}
-                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all touch-manipulation ${
-                      isActive
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all touch-manipulation ${isActive
                         ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
                         : 'text-neutral-300 hover:text-white hover:bg-white/5 active:bg-white/10'
-                    }`}
+                      }`}
                   >
                     <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400'}`} />
                     <span className="truncate">{item.label}</span>

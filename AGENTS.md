@@ -1690,6 +1690,25 @@ esolvedAudioUrl is reset to '' (zero tolerance).
      - Added `userVideoUrl?: string` to `Comment` schema in `src/types/social.ts` and `SocialCommentService.ts`.
      - Profile video or photo now renders seamlessly next to every post, reply, and header interaction across the platform.
 
+### 71. Total Overhaul of Merch Apparel Photos & Sanitization to 100% ChanceTEK One
+- **User Directives**:
+  1. The merch area photos still have the return of the beats and 8 of spades works apparel. Remove them.
+  2. All apparel should have ChanceTEK One on them.
+- **Architectural Implementation**:
+  1. **Physical Image Replacement Across All 12 Merch Assets (`public/images/merch/`)**:
+     - Overwrote all 12 physical product images in `public/images/merch/` with clean, luxury commercial studio apparel product photography strictly featuring the official **ChanceTEK One** gold medallion and metallic typography:
+       - `signature_bomber.jpg` & `bomber_jacket.jpg`: ChanceTEK One Luxury Satin Flight Bomber Jacket (midnight black, gold zipper hardware, metallic gold/purple ChanceTEK One embroidery).
+       - `signature_cap.jpg` & `baseball_hat.jpg`: Structured 6-panel snapback cap with 3D puff metallic gold embroidery of "ChanceTEK One".
+       - `signature_hoodie.jpg`: Heavyweight black French Terry streetwear hoodie with 3D metallic gold medallion displaying "ChanceTEK One".
+       - `bucket_hat.jpg`, `signature_bucket_hat.jpg`, `signature_bucket_hat_fitted.jpg`: Midnight dark blue cotton twill bucket hat with high-density gold "ChanceTEK One" embroidery.
+       - `tshirt.jpg`: Heavyweight washed luxury cotton t-shirt with sharp metallic gold and purple "ChanceTEK One" typography.
+       - `basketball_jersey.jpg` & `signature_jersey.jpg`: Luxury athletic flat lay with metallic gold "ChanceTEK One" chest branding and number 1.
+       - `backpack.jpg`: Ballistic nylon streetwear backpack with ChanceTEK One gold hardware insignia.
+  2. **UI & Cart Sanitization**:
+     - In `CartDrawer.tsx`, updated the drawer title from `Break Beats Merch Cart` to `ChanceTEK One Merch Cart`.
+     - In `MerchCatalogService.ts`, added automated cache sanitization in `loadState` to intercept and cleanse any legacy `8 of spades` or `return of the break beats` references from user browser `localStorage`.
+
+
 
 
 

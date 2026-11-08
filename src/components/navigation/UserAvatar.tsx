@@ -102,3 +102,4 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     </div>
   );
 };
+

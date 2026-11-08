@@ -30,7 +30,17 @@ class MerchCatalogServiceClass {
     try {
       const savedCustom = localStorage.getItem(CUSTOM_MERCH_KEY);
       if (savedCustom) {
-        this.customProducts = JSON.parse(savedCustom);
+        let items: Product[] = JSON.parse(savedCustom);
+        // Sanitize any legacy 8 of spades or break beats references in user cache
+        items = items.map((p) => {
+          let updated = { ...p };
+          if (/8\s*of\s*spades|return\s*of\s*the\s*break|break\s*beats/i.test(updated.title) || /8\s*of\s*spades|return\s*of\s*the\s*break/i.test(updated.description)) {
+            const canonical = MOCK_PRODUCTS.find((m) => m.id === updated.id);
+            if (canonical) updated = { ...canonical };
+          }
+          return updated;
+        });
+        this.customProducts = items;
       }
       const savedRemoved = localStorage.getItem(REMOVED_MERCH_KEY);
       if (savedRemoved) {

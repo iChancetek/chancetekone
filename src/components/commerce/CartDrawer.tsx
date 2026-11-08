@@ -48,7 +48,7 @@ export const CartDrawer: React.FC = () => {
           <div className="flex items-center justify-between border-b border-white/10 pb-4">
             <div className="flex items-center gap-2">
               <ShoppingBag className="w-5 h-5 text-brand-gold" />
-              <h2 className="text-base font-bold text-white">Break Beats Merch Cart</h2>
+              <h2 className="text-base font-bold text-white">ChanceTEK One Merch Cart</h2>
             </div>
             <button
               onClick={closeCart}
