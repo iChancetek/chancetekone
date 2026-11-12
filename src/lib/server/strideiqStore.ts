@@ -457,10 +457,14 @@ export async function verifyStrideIqPartnerRequest(
     }
   }
 
-  // 2. Extract API key or Bearer token
+  // 2. Extract API key or Bearer token (supports headers and query parameters)
   const apiKeyHeader =
     request.headers.get('x-strideiq-api-key')?.trim() ||
     request.headers.get('x-api-key')?.trim() ||
+    request.nextUrl.searchParams.get('x-strideiq-api-key')?.trim() ||
+    request.nextUrl.searchParams.get('api_key')?.trim() ||
+    request.nextUrl.searchParams.get('apiKey')?.trim() ||
+    request.nextUrl.searchParams.get('key')?.trim() ||
     '';
   const authHeader = request.headers.get('authorization')?.trim() || '';
   const bearer = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7).trim() : '';

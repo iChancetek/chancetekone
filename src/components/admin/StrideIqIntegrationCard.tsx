@@ -81,6 +81,8 @@ export const StrideIqIntegrationCard: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [isSyncingLive, setIsSyncingLive] = useState(false);
+  const [syncSuccessMsg, setSyncSuccessMsg] = useState<string | null>(null);
   const [keyLabel, setKeyLabel] = useState('StrideIQ.fit Production App');
   const [revealedKey, setRevealedKey] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -244,6 +246,31 @@ export const StrideIqIntegrationCard: React.FC = () => {
     }
   };
 
+  const handleSyncLiveCatalog = async () => {
+    setIsSyncingLive(true);
+    setErrorMsg(null);
+    setSyncSuccessMsg(null);
+    try {
+      const res = await fetch('/api/admin/catalog/sync', {
+        method: 'POST',
+        headers: await buildAdminHeaders(),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || 'Live synchronization failed.');
+      }
+      setSyncSuccessMsg(
+        `Synchronized ${data.synced?.tracks || 0} tracks, ${data.synced?.audiobooks || 0} books, and ${data.synced?.podcasts || 0} podcasts in real time!`
+      );
+      setTimeout(() => setSyncSuccessMsg(null), 5000);
+      await loadIntegrationState();
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Sync failed.');
+    } finally {
+      setIsSyncingLive(false);
+    }
+  };
+
   const togglePreviewTrack = (track: TestMixTrack) => {
     if (!track.streamUrl) return;
     if (previewTrackId === track.id && audioEl) {
@@ -314,6 +341,16 @@ await audio.play();`;
         <div className="flex items-center gap-2">
           <button
             type="button"
+            onClick={handleSyncLiveCatalog}
+            disabled={isSyncingLive}
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:scale-105 text-black font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-md disabled:opacity-50 cursor-pointer"
+            title="Push all canonical music, uploads, audiobooks, and podcasts to live partner store"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncingLive ? 'animate-spin' : ''}`} />
+            <span>{isSyncingLive ? 'Syncing...' : 'Sync Live Catalog'}</span>
+          </button>
+          <button
+            type="button"
             onClick={() => setShowSnippet((s) => !s)}
             className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 text-xs font-medium flex items-center gap-1.5 transition-all"
           >
@@ -364,6 +401,7 @@ await audio.play();`;
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
         {[
           { id: 'base', label: 'Base Partner URL', val: baseUrl },
+          { id: 'sync', label: 'Live Catalog Sync (Full Music & Spoken)', val: `${baseUrl}/sync` },
           { id: 'mix', label: 'Workout Mix (Music / Spoken)', val: `${baseUrl}/workout-mix` },
           { id: 'audiobooks', label: 'Audiobooks & Chapters', val: `${baseUrl}/audiobooks` },
           { id: 'podcasts', label: 'Podcasts Feed', val: `${baseUrl}/podcasts` },
@@ -412,6 +450,13 @@ await audio.play();`;
           <pre className="text-[11px] font-mono text-zinc-300 overflow-x-auto leading-relaxed">
             {snippetCode}
           </pre>
+        </div>
+      )}
+
+      {syncSuccessMsg && (
+        <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-xs text-emerald-300 font-medium flex items-center gap-2">
+          <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{syncSuccessMsg}</span>
         </div>
       )}
 

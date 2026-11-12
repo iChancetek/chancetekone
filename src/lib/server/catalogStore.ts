@@ -74,13 +74,30 @@ export function invalidateCatalogSnapshotCache(): void {
   snapshotCache = null;
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  let timer: NodeJS.Timeout;
+  const timeoutPromise = new Promise<T>((resolve) => {
+    timer = setTimeout(() => resolve(fallback), ms);
+    if (typeof timer.unref === 'function') timer.unref();
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timer) clearTimeout(timer);
+  });
+}
+
 export async function getCatalogRevision(): Promise<number> {
   let cloudRev = 0;
   if (canUseFirebaseAdmin()) {
     try {
-      const { adminDb } = await getFirebaseAdmin();
-      const snap = await adminDb.collection(CATALOG_META_COLLECTION).doc(CATALOG_META_DOC).get();
-      cloudRev = snap.exists ? Number(snap.data()?.revision || 0) : 0;
+      cloudRev = await withTimeout(
+        (async () => {
+          const { adminDb } = await getFirebaseAdmin();
+          const snap = await adminDb.collection(CATALOG_META_COLLECTION).doc(CATALOG_META_DOC).get();
+          return snap.exists ? Number(snap.data()?.revision || 0) : 0;
+        })(),
+        1500,
+        0,
+      );
     } catch {
       cloudRev = 0;
     }
@@ -105,19 +122,25 @@ export async function readCatalogSnapshot(): Promise<CatalogSnapshot> {
   const snapshot = emptySnapshot();
   snapshot.revision = revision;
 
-  // 1. Load cloud snapshot if Firebase Admin is available
+  // 1. Load cloud snapshot if Firebase Admin is available (capped with 2000ms timeout for ultra-fast API response)
   if (canUseFirebaseAdmin()) {
     try {
-      const { adminDb } = await getFirebaseAdmin();
-      await Promise.all(
-        CATALOG_COLLECTIONS.map(async (c) => {
-          const qs = await adminDb.collection(firestoreCollectionName(c)).get();
-          snapshot.collections[c] = qs.docs.map((d: any) => {
-            const { _updatedAt, ...data } = d.data() || {};
-            const id = typeof data.id === 'string' && data.id ? data.id : safeDecode(d.id);
-            return { ...data, id } as CatalogDoc;
-          });
-        })
+      await withTimeout(
+        (async () => {
+          const { adminDb } = await getFirebaseAdmin();
+          await Promise.all(
+            CATALOG_COLLECTIONS.map(async (c) => {
+              const qs = await adminDb.collection(firestoreCollectionName(c)).get();
+              snapshot.collections[c] = qs.docs.map((d: any) => {
+                const { _updatedAt, ...data } = d.data() || {};
+                const id = typeof data.id === 'string' && data.id ? data.id : safeDecode(d.id);
+                return { ...data, id } as CatalogDoc;
+              });
+            })
+          );
+        })(),
+        2000,
+        undefined,
       );
     } catch (err: any) {
       // Fallback gracefully to local snapshot

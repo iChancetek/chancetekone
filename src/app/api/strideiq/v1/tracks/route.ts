@@ -33,6 +33,12 @@ export async function GET(request: NextRequest) {
         ? (energyRaw as EnergyLevel)
         : undefined;
 
+    const isSyncMode =
+      sp.get('limit') === 'all' ||
+      sp.get('all') === 'true' ||
+      sp.get('sync') === 'true' ||
+      sp.get('sync') === 'live';
+
     const result = await queryStrideIqTracks({
       publicOrigin,
       q: sp.get('q') || undefined,
@@ -42,7 +48,7 @@ export async function GET(request: NextRequest) {
       bpmMin: parseIntOpt('bpmMin'),
       bpmMax: parseIntOpt('bpmMax'),
       energy,
-      limit: parseIntOpt('limit'),
+      limit: isSyncMode ? 1000 : parseIntOpt('limit'),
       offset: parseIntOpt('offset'),
       includeUnplayable: sp.get('playableOnly') === 'false',
     });

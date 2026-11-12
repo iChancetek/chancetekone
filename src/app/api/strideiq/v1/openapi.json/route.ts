@@ -36,6 +36,16 @@ export async function GET(request: NextRequest) {
           responses: { '200': { description: 'Service operational status' } },
         },
       },
+      '/sync': {
+        get: {
+          summary: 'Live synchronous catalog pull across music, audiobooks, and podcasts with zero pagination limit',
+          responses: { '200': { description: 'Full synchronized catalog with tracks, audiobooks, podcasts, and crates' } },
+        },
+        post: {
+          summary: 'Live synchronous catalog pull across music, audiobooks, and podcasts with zero pagination limit',
+          responses: { '200': { description: 'Full synchronized catalog with tracks, audiobooks, podcasts, and crates' } },
+        },
+      },
       '/tracks': {
         get: {
           summary: 'Search and filter playable workout tracks',

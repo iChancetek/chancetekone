@@ -931,7 +931,7 @@ export async function queryStrideIqTracks(params: {
     return true;
   });
 
-  const limit = Math.min(100, Math.max(1, params.limit ?? 40));
+  const limit = Math.min(1000, Math.max(1, params.limit ?? 250));
   const offset = Math.max(0, params.offset ?? 0);
   const sliced = filtered.slice(offset, offset + limit);
   const tracks = await Promise.all(sliced.map((t) => toStrideIqTrackDto(t, params.publicOrigin)));

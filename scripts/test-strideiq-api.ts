@@ -65,6 +65,31 @@ async function runTest() {
   const podcasts = await resolveServerPodcasts();
   console.log('Total Podcasts returned:', podcasts.length);
 
+  console.log('\n=== Step 7: Verify Live Sync Route (/api/strideiq/v1/sync) ===');
+  const { GET: syncGet } = await import('../src/app/api/strideiq/v1/sync/route');
+  const syncReq = new NextRequest(`https://chancetekone.us/api/strideiq/v1/sync`, {
+    headers: {
+      'x-strideiq-api-key': apiKey,
+    },
+  });
+  const syncRes = await syncGet(syncReq);
+  const syncData = await syncRes.json();
+  console.log('Sync Response Status:', syncRes.status);
+  console.log('Sync Response OK:', syncData.ok);
+  console.log('Sync Response Mode:', syncData.syncMode);
+  console.log('Sync Counts:', JSON.stringify(syncData.counts));
+  if (!syncData.ok || syncData.counts.totalMusicTracks < 50) {
+    throw new Error(`FAILED: Live Sync returned ${syncData.counts?.totalMusicTracks} tracks!`);
+  }
+
+  console.log('\n=== Step 8: Verify Query Parameter API Key Auth (?api_key=...) ===');
+  const queryAuthReq = new NextRequest(`https://chancetekone.us/api/strideiq/v1/sync?api_key=${encodeURIComponent(apiKey)}`);
+  const queryAuth = await verifyStrideIqPartnerRequest(queryAuthReq);
+  console.log('Query auth passed:', queryAuth.authorized, 'Auth type:', queryAuth.authType);
+  if (!queryAuth.authorized) {
+    throw new Error('FAILED: Query parameter API key auth failed!');
+  }
+
   console.log('\n=== ALL REAL-TIME API KEY & NAS CHECKS PASSED WITH 100% SUCCESS ===');
 }
 

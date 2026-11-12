@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
@@ -46,6 +46,8 @@ import { DistributionAgreementService } from '@/lib/agreements/DistributionAgree
 import { DuplicateDetectionService } from '@/lib/admin/DuplicateDetectionService';
 import { UnplayableAudioDetectionService } from '@/lib/admin/UnplayableAudioDetectionService';
 import { CloudCatalogSyncBanner } from '@/components/admin/CloudCatalogSyncBanner';
+import { CloudCatalogClient } from '@/lib/catalog/CloudCatalogClient';
+import { auth } from '@/lib/firebase/client';
 
 // Modals
 import { UserDetailModal } from '@/components/admin/modals/UserDetailModal';
@@ -119,7 +121,7 @@ type AdminTab =
   | 'radio';
 
 export default function AdminPage() {
-  const { profile, isAdmin, signInWithEmail } = useAuth();
+  const { profile, user, isAdmin, signInWithEmail } = useAuth();
   const [adminEmailInput, setAdminEmailInput] = useState('');
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [authError, setAuthError] = useState<string | null>(null);
@@ -373,22 +375,46 @@ export default function AdminPage() {
     document.body.removeChild(a);
   };
 
-  const handleSyncCatalog = () => {
+  const handleSyncCatalog = async () => {
     setIsSeeding(true);
-    setTimeout(() => {
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      const email = profile?.email || user?.email || 'admin@chancetekone.com';
+      if (email) headers['x-admin-email'] = email;
+      try {
+        const token = await auth?.currentUser?.getIdToken();
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+      } catch {}
+
+      const res = await fetch('/api/admin/catalog/sync', {
+        method: 'POST',
+        headers,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || 'Catalog sync failed.');
+      }
+
+      await CloudCatalogClient.syncNow().catch(() => {});
+
       setIsSeeding(false);
       setSeededMessage(true);
-      setTimeout(() => setSeededMessage(false), 3000);
+      setTimeout(() => setSeededMessage(false), 4000);
       AuditLogger.logAction({
-        adminId: 'usr-chancellor',
-        adminName: 'Chancellor (Admin)',
+        adminId: profile?.id || 'usr-chancellor',
+        adminName: profile?.name || 'Chancellor (Admin)',
         adminRole: 'super_admin',
         eventType: 'CATALOG_SYNCED',
-        action: 'Synchronized live breakbeat master catalog with Firestore',
+        action: `Synchronized live platform catalog with Firestore & partner store (${data.synced?.tracks || 0} tracks, ${data.synced?.audiobooks || 0} books, ${data.synced?.podcasts || 0} podcasts)`,
         resource: 'Catalog Database',
         status: 'SUCCESS',
       });
-    }, 1200);
+    } catch (err: any) {
+      console.error('Catalog sync error:', err);
+      setIsSeeding(false);
+    }
   };
 
   if (!isAdmin) {
