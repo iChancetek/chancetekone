@@ -52,6 +52,7 @@ interface SavedProfilePrefs {
   name?: string;
   bio?: string;
   avatarUrl?: string;
+  profileVideoUrl?: string;
   updatedAt?: number;
 }
 
@@ -64,6 +65,10 @@ function saveProfilePrefs(profile: UserProfile): void {
       name: profile.name,
       bio: profile.bio,
       avatarUrl: profile.avatarUrl && !profile.avatarUrl.startsWith('blob:') ? profile.avatarUrl : undefined,
+      profileVideoUrl:
+        profile.profileVideoUrl && !profile.profileVideoUrl.startsWith('blob:')
+          ? profile.profileVideoUrl
+          : undefined,
       updatedAt: Date.now(),
     };
     if (profile.id) map[profile.id] = entry;
@@ -78,12 +83,12 @@ function getProfilePrefs(userId?: string, email?: string): SavedProfilePrefs | n
     const raw = localStorage.getItem(PROFILE_PREFS_KEY);
     if (!raw) return null;
     const map: Record<string, SavedProfilePrefs> = JSON.parse(raw);
-    if (userId && map[userId]) return map[userId];
-    if (email) {
-      const key = `email:${email.trim().toLowerCase()}`;
-      if (map[key]) return map[key];
+    const byId = userId ? map[userId] : undefined;
+    const byEmail = email ? map[`email:${email.trim().toLowerCase()}`] : undefined;
+    if (byId && byEmail) {
+      return (byEmail.updatedAt || 0) > (byId.updatedAt || 0) ? byEmail : byId;
     }
-    return null;
+    return byId || byEmail || null;
   } catch {
     return null;
   }
@@ -225,6 +230,273 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setForcedLogoutReason(null);
   }, []);
 
+  const lastLocalMutationAtRef = useRef<number>(0);
+
+  const buildApiAuthHeaders = useCallback(async (userId?: string, email?: string) => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (userId) headers['x-user-id'] = userId;
+    if (email?.trim()) {
+      headers['x-user-email'] = email.trim();
+      headers['x-admin-email'] = email.trim();
+    }
+    try {
+      const fbUser = auth?.currentUser;
+      if (fbUser) {
+        const token = await fbUser.getIdToken().catch(() => null);
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (fbUser.email && !headers['x-user-email']) {
+          headers['x-user-email'] = fbUser.email;
+          headers['x-admin-email'] = fbUser.email;
+        }
+      }
+    } catch {}
+    return headers;
+  }, []);
+
+  const syncProfileToCloud = useCallback(
+    async (nextProfile: UserProfile, explicitUpdates?: Partial<UserProfile>) => {
+      if (!nextProfile?.id) return;
+      const isDurable = (url?: string) =>
+        Boolean(url && typeof url === 'string' && !url.startsWith('blob:'));
+
+      const bioCleared = Boolean(
+        explicitUpdates && 'bio' in explicitUpdates && !explicitUpdates.bio
+      );
+      const avatarCleared = Boolean(
+        explicitUpdates && 'avatarUrl' in explicitUpdates && !explicitUpdates.avatarUrl
+      );
+      const videoCleared = Boolean(
+        explicitUpdates &&
+          'profileVideoUrl' in explicitUpdates &&
+          !explicitUpdates.profileVideoUrl
+      );
+
+      const durableAvatar = avatarCleared
+        ? null
+        : isDurable(nextProfile.avatarUrl)
+        ? nextProfile.avatarUrl
+        : undefined;
+      const durableVideo = videoCleared
+        ? null
+        : isDurable(nextProfile.profileVideoUrl)
+        ? nextProfile.profileVideoUrl
+        : undefined;
+      const mediaType =
+        durableVideo && durableVideo !== null
+          ? 'video'
+          : durableAvatar && durableAvatar !== null && durableAvatar !== '/images/logo.png'
+          ? 'image'
+          : avatarCleared && (videoCleared || !durableVideo)
+          ? null
+          : undefined;
+
+      // 1. Direct Client Firestore sync (durable in production Firebase Hosting / App Hosting)
+      try {
+        const fbUser = auth?.currentUser;
+        if (
+          fbUser &&
+          (fbUser.uid === nextProfile.id ||
+            nextProfile.email?.toLowerCase() === fbUser.email?.toLowerCase())
+        ) {
+          const [{ doc, setDoc, deleteField, serverTimestamp }, { db }] = await Promise.all([
+            import('firebase/firestore'),
+            import('@/lib/firebase/client'),
+          ]);
+          const payload: Record<string, any> = {
+            id: fbUser.uid,
+            name: nextProfile.name,
+            updatedAt: new Date().toISOString(),
+            _updatedAt: serverTimestamp(),
+          };
+          if (nextProfile.email) {
+            payload.email = nextProfile.email;
+            payload.emailLower = nextProfile.email.toLowerCase();
+          }
+          if (bioCleared) payload.bio = deleteField();
+          else if (nextProfile.bio !== undefined) payload.bio = nextProfile.bio;
+
+          if (durableAvatar === null) payload.avatarUrl = deleteField();
+          else if (durableAvatar !== undefined) payload.avatarUrl = durableAvatar;
+
+          if (durableVideo === null) payload.profileVideoUrl = deleteField();
+          else if (durableVideo !== undefined) payload.profileVideoUrl = durableVideo;
+
+          if (mediaType === null) payload.mediaType = deleteField();
+          else if (mediaType) payload.mediaType = mediaType;
+
+          await setDoc(doc(db, 'users', fbUser.uid), payload, { merge: true });
+        }
+      } catch (err) {
+        console.warn('[AuthContext] Client Firestore profile sync warn:', err);
+      }
+
+      // 2. Server Profile API sync (.data locally + Firebase Admin Firestore/Storage on server)
+      try {
+        const headers = await buildApiAuthHeaders(nextProfile.id, nextProfile.email);
+        const body: Record<string, any> = {
+          userId: nextProfile.id,
+          email: nextProfile.email,
+          name: nextProfile.name,
+        };
+        if (bioCleared) body.bio = null;
+        else if (nextProfile.bio !== undefined) body.bio = nextProfile.bio;
+
+        if (durableAvatar === null) body.avatarUrl = null;
+        else if (durableAvatar !== undefined) body.avatarUrl = durableAvatar;
+
+        if (durableVideo === null) body.profileVideoUrl = null;
+        else if (durableVideo !== undefined) body.profileVideoUrl = durableVideo;
+
+        if (mediaType === null) body.mediaType = null;
+        else if (mediaType) body.mediaType = mediaType;
+
+        await fetch('/api/profile', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(body),
+        });
+      } catch (err) {
+        console.warn('[AuthContext] Server /api/profile sync warn:', err);
+      }
+    },
+    [buildApiAuthHeaders]
+  );
+
+  const hydrateRemoteProfile = useCallback(async (userId: string, email?: string) => {
+    if (!userId && !email) return;
+    const startedAt = Date.now();
+    try {
+      const params = new URLSearchParams();
+      if (userId) params.set('userId', userId);
+      if (email?.trim()) params.set('email', email.trim());
+
+      const apiPromise = fetch(`/api/profile?${params.toString()}`, {
+        cache: 'no-store',
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => (d?.ok && d?.profile ? d.profile : null))
+        .catch(() => null);
+
+      const fbPromise = (async () => {
+        try {
+          const fbUser = auth?.currentUser;
+          if (!fbUser) return null;
+          if (
+            fbUser.uid !== userId &&
+            (!email || fbUser.email?.toLowerCase() !== email.trim().toLowerCase())
+          ) {
+            return null;
+          }
+          const [{ doc, getDoc }, { db }] = await Promise.all([
+            import('firebase/firestore'),
+            import('@/lib/firebase/client'),
+          ]);
+          const snap = await getDoc(doc(db, 'users', fbUser.uid));
+          return snap.exists() ? snap.data() : null;
+        } catch {
+          return null;
+        }
+      })();
+
+      const [apiRec, fbRec] = await Promise.all([apiPromise, fbPromise]);
+      const apiTs = apiRec?.updatedAt ? Date.parse(apiRec.updatedAt) || 0 : 0;
+      const fbTs = fbRec?.updatedAt ? Date.parse(fbRec.updatedAt) || 0 : 0;
+      const primary = apiTs > fbTs ? apiRec : fbRec || apiRec;
+      const secondary = primary === apiRec ? fbRec : apiRec;
+      if (!primary) return;
+
+      if (lastLocalMutationAtRef.current > startedAt) return;
+
+      const remoteLatestTs = Math.max(apiTs, fbTs);
+
+      setProfile((prev) => {
+        if (!prev) return prev;
+        const matchesId = prev.id === userId || prev.id === primary.id;
+        const matchesEmail =
+          Boolean(email) && prev.email?.toLowerCase() === email?.trim().toLowerCase();
+        if (!matchesId && !matchesEmail) return prev;
+
+        const isDurable = (u?: string) =>
+          Boolean(u && typeof u === 'string' && !u.startsWith('blob:'));
+
+        const remoteName =
+          (typeof primary.name === 'string' && primary.name.trim()) ||
+          (typeof secondary?.name === 'string' && secondary.name.trim()) ||
+          undefined;
+        const remoteBio =
+          primary.bio !== undefined
+            ? primary.bio
+            : secondary?.bio !== undefined
+            ? secondary.bio
+            : prev.bio;
+        const remoteVideo = isDurable(primary.profileVideoUrl)
+          ? primary.profileVideoUrl
+          : isDurable(secondary?.profileVideoUrl) && !('profileVideoUrl' in primary)
+          ? secondary.profileVideoUrl
+          : undefined;
+        const remoteAvatar = isDurable(primary.avatarUrl)
+          ? primary.avatarUrl
+          : isDurable(secondary?.avatarUrl) && !('avatarUrl' in primary)
+          ? secondary.avatarUrl
+          : undefined;
+
+        const localPrefs = getProfilePrefs(prev.id, prev.email);
+        const remoteNewerThanLocalPrefs = remoteLatestTs > (localPrefs?.updatedAt || 0) + 1000;
+
+        const nextVideo =
+          remoteVideo !== undefined
+            ? remoteVideo
+            : remoteNewerThanLocalPrefs
+            ? undefined
+            : prev.profileVideoUrl;
+
+        const nextAvatar =
+          remoteAvatar !== undefined
+            ? remoteAvatar
+            : remoteNewerThanLocalPrefs
+            ? prev.avatarUrl === '/images/logo.png'
+              ? '/images/logo.png'
+              : undefined
+            : prev.avatarUrl;
+
+        const nextName = remoteName || prev.name;
+
+        if (
+          prev.name === nextName &&
+          prev.bio === remoteBio &&
+          prev.profileVideoUrl === nextVideo &&
+          prev.avatarUrl === (nextAvatar || prev.avatarUrl)
+        ) {
+          return prev;
+        }
+
+        const updated: UserProfile = {
+          ...prev,
+          name: nextName,
+          bio: remoteBio,
+          profileVideoUrl: nextVideo,
+          avatarUrl: nextAvatar,
+        };
+
+        profileRef.current = updated;
+        saveProfilePrefs(updated);
+        const cur = getActiveSession();
+        saveActiveSession(
+          updated,
+          cur?.isDemo ?? false,
+          cur?.authProvider || 'firebase',
+          cur?.sessionId
+        );
+        AdminUserManager.syncAuthUser(updated);
+        return updated;
+      });
+    } catch (err) {
+      console.warn('[AuthContext] hydrateRemoteProfile failed:', err);
+    }
+  }, []);
+
   const hydrateProfileMedia = useCallback(
     (userId: string, email?: string, forceRefresh: boolean = false) => {
       ProfileMediaStorageService.getProfileMedia(userId, email, forceRefresh).then((media) => {
@@ -236,10 +508,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             Boolean(email) && prev.email?.toLowerCase() === email?.trim().toLowerCase();
           if (!matchesId && !matchesEmail) return prev;
 
+          const cachedRemoteUrl =
+            (media as { remoteUrl?: string }).remoteUrl ||
+            ProfileMediaStorageService.getCachedRemoteUrl(userId, email);
+          const preferredUrl =
+            cachedRemoteUrl && !cachedRemoteUrl.startsWith('blob:')
+              ? cachedRemoteUrl
+              : media.objectUrl;
+          const hasDurableMedia = (url?: string) =>
+            Boolean(url && !url.startsWith('blob:') && url !== '/images/logo.png');
+
+          const nextVideo =
+            media.type === 'video'
+              ? hasDurableMedia(prev.profileVideoUrl)
+                ? prev.profileVideoUrl
+                : preferredUrl
+              : hasDurableMedia(prev.profileVideoUrl)
+              ? prev.profileVideoUrl
+              : undefined;
+
+          const nextAvatar =
+            media.type === 'image'
+              ? hasDurableMedia(prev.avatarUrl)
+                ? prev.avatarUrl
+                : preferredUrl
+              : prev.avatarUrl;
+
+          if (prev.profileVideoUrl === nextVideo && prev.avatarUrl === nextAvatar) {
+            return prev;
+          }
+
           const updated: UserProfile = {
             ...prev,
-            profileVideoUrl: media.type === 'video' ? media.objectUrl : undefined,
-            avatarUrl: media.type === 'image' ? media.objectUrl : prev.avatarUrl,
+            profileVideoUrl: nextVideo,
+            avatarUrl: nextAvatar,
           };
           profileRef.current = updated;
           return updated;
@@ -249,31 +551,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     []
   );
 
-  const updateUserProfile = useCallback((updates: Partial<UserProfile>) => {
-    const prev = profileRef.current;
-    if (!prev) {
-      setProfile((p) => {
-        if (!p) return null;
-        const next = { ...p, ...updates };
-        profileRef.current = next;
-        const cur = getActiveSession();
-        saveActiveSession(next, cur?.isDemo || false, cur?.authProvider || 'firebase', cur?.sessionId);
-        AdminUserManager.syncAuthUser(next);
-        broadcastAuthEvent({ type: 'PROFILE_UPDATED', profile: stripVolatileBlobUrls(next) });
-        return next;
-      });
-      return;
-    }
+  const updateUserProfile = useCallback(
+    (updates: Partial<UserProfile>) => {
+      lastLocalMutationAtRef.current = Date.now();
+      const prev = profileRef.current;
+      if (!prev) {
+        setProfile((p) => {
+          if (!p) return null;
+          const next = { ...p, ...updates };
+          profileRef.current = next;
+          const cur = getActiveSession();
+          saveActiveSession(
+            next,
+            cur?.isDemo || false,
+            cur?.authProvider || 'firebase',
+            cur?.sessionId
+          );
+          AdminUserManager.syncAuthUser(next);
+          syncProfileToCloud(next, updates);
+          broadcastAuthEvent({ type: 'PROFILE_UPDATED', profile: stripVolatileBlobUrls(next) });
+          return next;
+        });
+        return;
+      }
 
-    const updated = { ...prev, ...updates };
-    profileRef.current = updated;
-    setProfile(updated);
+      const updated = { ...prev, ...updates };
+      profileRef.current = updated;
+      setProfile(updated);
 
-    const cur = getActiveSession();
-    saveActiveSession(updated, cur?.isDemo || false, cur?.authProvider || 'firebase', cur?.sessionId);
-    AdminUserManager.syncAuthUser(updated);
-    broadcastAuthEvent({ type: 'PROFILE_UPDATED', profile: stripVolatileBlobUrls(updated) });
-  }, []);
+      const cur = getActiveSession();
+      saveActiveSession(
+        updated,
+        cur?.isDemo || false,
+        cur?.authProvider || 'firebase',
+        cur?.sessionId
+      );
+      AdminUserManager.syncAuthUser(updated);
+      syncProfileToCloud(updated, updates);
+      broadcastAuthEvent({ type: 'PROFILE_UPDATED', profile: stripVolatileBlobUrls(updated) });
+    },
+    [syncProfileToCloud]
+  );
 
   // Multi-tab message handler
   const handleAuthMessage = useCallback(
@@ -288,6 +606,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setLoading(false);
           setForcedLogoutReason(null);
           hydrateProfileMedia(data.profile.id, data.profile.email);
+          hydrateRemoteProfile(data.profile.id, data.profile.email);
         }
       } else if (data.type === 'AUTH_LOGOUT') {
         setUser(null);
@@ -372,14 +691,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               ? 'admin'
               : (adminUser?.role as any) || saved.profile.role,
           avatarUrl: saved.profile.avatarUrl || adminUser?.avatarUrl || prefs?.avatarUrl,
+          profileVideoUrl: saved.profile.profileVideoUrl || prefs?.profileVideoUrl,
         };
         setProfile(syncedProfile);
         profileRef.current = syncedProfile;
         setIsDemo(saved.isDemo);
         setLoading(false);
 
-        // Hydrate persistent photo or video media from IndexedDB
+        // Hydrate persistent photo or video media from IndexedDB and cloud/server store
         hydrateProfileMedia(syncedProfile.id, syncedProfile.email);
+        hydrateRemoteProfile(syncedProfile.id, syncedProfile.email);
       }
     }
 
@@ -540,6 +861,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             adminUser?.avatarUrl ||
             fbUser.photoURL ||
             undefined,
+          profileVideoUrl:
+            (isSameUser ? preservedProfile?.profileVideoUrl : undefined) ||
+            prefs?.profileVideoUrl ||
+            undefined,
           role: adminUser?.role === 'super_admin' || isSuper ? 'admin' : (adminUser?.role as any) || 'user',
           createdAt: preservedProfile?.createdAt || adminUser?.createdAt || new Date().toISOString(),
           likedTrackIds: preservedProfile?.likedTrackIds || [],
@@ -557,8 +882,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         AdminUserManager.syncAuthUser(userProf);
         setLoading(false);
 
-        // Hydrate persistent photo or video media from IndexedDB
+        // Hydrate persistent photo or video media from IndexedDB and durable remote cloud/server profile
         hydrateProfileMedia(fbUser.uid, email);
+        hydrateRemoteProfile(fbUser.uid, email);
       } else {
         // Firebase returned null user.
         // Check if there is an active session in localStorage (email, superuser, demo, etc.). If valid, preserve it!
@@ -602,14 +928,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 activeSess.profile.avatarUrl ||
                 adminUser?.avatarUrl ||
                 prefs?.avatarUrl,
-              profileVideoUrl: keepLiveMedia ? curLive?.profileVideoUrl : undefined,
+              profileVideoUrl:
+                (keepLiveMedia && curLive?.profileVideoUrl) ||
+                activeSess.profile.profileVideoUrl ||
+                prefs?.profileVideoUrl ||
+                undefined,
             };
             setProfile(syncedProfile);
             profileRef.current = syncedProfile;
             setIsDemo(Boolean(activeSess.isDemo));
 
-            // Always ensure IndexedDB photo/video media is hydrated cleanly
+            // Always ensure IndexedDB and remote cloud/server profile media is hydrated cleanly
             hydrateProfileMedia(syncedProfile.id, syncedProfile.email);
+            hydrateRemoteProfile(syncedProfile.id, syncedProfile.email);
           }
         } else {
           setUser(null);
@@ -629,7 +960,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (channel) channel.close();
       if (mediaChannel) mediaChannel.close();
     };
-  }, [handleAuthMessage, hydrateProfileMedia]);
+  }, [handleAuthMessage, hydrateProfileMedia, hydrateRemoteProfile]);
 
   const signInWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -665,6 +996,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: email,
         bio: prefs?.bio,
         avatarUrl: prefs?.avatarUrl || adminUser?.avatarUrl || cred.user.photoURL || undefined,
+        profileVideoUrl: prefs?.profileVideoUrl || undefined,
         role: adminUser?.role === 'super_admin' || isSuper ? 'admin' : (adminUser?.role as any) || 'user',
         createdAt: adminUser?.createdAt || new Date().toISOString(),
         likedTrackIds: [],
@@ -681,6 +1013,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       saveActiveSession(userProf, false, 'google');
       AdminUserManager.syncAuthUser(userProf);
       hydrateProfileMedia(userProf.id, userProf.email);
+      hydrateRemoteProfile(userProf.id, userProf.email);
       broadcastAuthEvent({
         type: 'AUTH_LOGIN',
         profile: userProf,
@@ -741,6 +1074,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: userEmail,
         bio: prefs?.bio,
         avatarUrl: prefs?.avatarUrl || adminUser?.avatarUrl || undefined,
+        profileVideoUrl: prefs?.profileVideoUrl || undefined,
         role: adminUser?.role === 'super_admin' || isSuper ? 'admin' : (adminUser?.role as any) || 'user',
         createdAt: adminUser?.createdAt || new Date().toISOString(),
         likedTrackIds: [],
@@ -757,6 +1091,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       saveActiveSession(userProf, false, 'email');
       AdminUserManager.syncAuthUser(userProf);
       hydrateProfileMedia(userProf.id, userProf.email);
+      hydrateRemoteProfile(userProf.id, userProf.email);
       broadcastAuthEvent({
         type: 'AUTH_LOGIN',
         profile: userProf,
@@ -824,6 +1159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsDemo(false);
       saveActiveSession(userProf, false, 'email');
       AdminUserManager.syncAuthUser(userProf);
+      syncProfileToCloud(userProf);
       broadcastAuthEvent({
         type: 'AUTH_LOGIN',
         profile: userProf,
@@ -859,6 +1195,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email: email,
       bio: prefs?.bio,
       avatarUrl: prefs?.avatarUrl || existing?.avatarUrl || undefined,
+      profileVideoUrl: prefs?.profileVideoUrl || undefined,
       role: 'admin',
       createdAt: existing?.createdAt || new Date().toISOString(),
       likedTrackIds: [],
@@ -874,6 +1211,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     saveActiveSession(userProf, true, 'superuser');
     AdminUserManager.syncAuthUser(userProf);
     hydrateProfileMedia(userProf.id, userProf.email);
+    hydrateRemoteProfile(userProf.id, userProf.email);
     broadcastAuthEvent({
       type: 'AUTH_LOGIN',
       profile: userProf,
@@ -894,6 +1232,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email,
       bio: prefs?.bio,
       avatarUrl: prefs?.avatarUrl || undefined,
+      profileVideoUrl: prefs?.profileVideoUrl || undefined,
       role: 'creator',
       createdAt: new Date().toISOString(),
       likedTrackIds: [],
@@ -909,6 +1248,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     saveActiveSession(userProf, true, 'demo');
     AdminUserManager.syncAuthUser(userProf);
     hydrateProfileMedia(userProf.id, userProf.email);
+    hydrateRemoteProfile(userProf.id, userProf.email);
     broadcastAuthEvent({
       type: 'AUTH_LOGIN',
       profile: userProf,

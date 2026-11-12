@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { UserAvatar } from '@/components/navigation/UserAvatar';
+import SignInPresencePreview from './SignInPresencePreview';
 import {
   X,
   Sparkles,
@@ -366,6 +367,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">{title}</h3>
           <p className="text-xs text-neutral-300 max-w-sm">{description}</p>
         </div>
+
+        {/* Sign-In Presence Preview resolved from email before signing in */}
+        <SignInPresencePreview email={email} visible={!profile && tab === 'signin'} />
 
         {/* Live Profile Presence Preview upon Sign In */}
         {profile && (

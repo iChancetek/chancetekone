@@ -1735,3 +1735,22 @@ esolvedAudioUrl is reset to '' (zero tolerance).
 
 
 
+### 73. Server & Cloud Durable Profile Media Persistence Architecture (Up to 50MB)
+- **Root Causes Identified**:
+  1. `ProfileMediaStorageService` only persisted profile media into browser-local IndexedDB (`blob:`) and never uploaded media durably to Firebase Storage or server storage; `AuthContext` never synced profile fields or media URLs to Firestore (`users/{uid}`) or server API endpoints.
+  2. `SavedProfilePrefs` (`chancetek_profile_prefs_v1`) omitted `profileVideoUrl`, while `onAuthStateChanged` did not preserve `profileVideoUrl` on login/session sync and `hydrateProfileMedia` overwrote durable HTTP(S)/`/api/` media URLs with ephemeral `blob:` object URLs.
+  3. Clearing `profileVideoUrl` / `avatarUrl` / `bio` (`undefined`) was dropped in JSON payloads / Firestore `{ merge: true }` writes instead of explicitly deleting removed fields.
+  4. IndexedDB stored mutable `Blob` objects rather than raw `ArrayBuffer` bytes, lacked `navigator.storage.persist()`, and didn't reconcile `updatedAt` across `userId` vs `email:` alias keys.
+- **Architectural Implementation**:
+  1. **Server Profile & Media Persistence (`src/lib/server/profileStore.ts`, `src/app/api/profile/route.ts`, `src/app/api/profile/media/route.ts`)**:
+     - Added durable persistence to Firebase Admin Firestore (`users`, `user_profile_aliases`) + Firebase Admin Storage (`nestobanks-221.firebasestorage.app`) when available, with atomic local fallback (`.data/user_profiles.json` and `.data/profile_media/`).
+     - Enforced 50MB upload validation (`validateProfileMediaUpload`), QuickTime `.mov` -> playable `.mp4` normalization (`normalizeQuickTimeMovToMp4`), owner/admin write authorization (`verifyServerUser`), and HTTP `206 Partial Content` byte-range streaming (`Accept-Ranges: bytes`, `ETag`) on `GET`/`HEAD /api/profile/media`.
+     - Supported explicit `null` removals mapped to `FieldValue.delete()` / field deletion across Firestore and `.data`.
+  2. **Hybrid Dual-Path Client Media Service (`src/lib/auth/ProfileMediaStorageService.ts`, `src/app/profile/page.tsx`)**:
+     - Upgraded IndexedDB storage to persist raw `ArrayBuffer` + `mimeType` + `remoteUrl`, request persistent storage (`navigator.storage.persist()`), compare `updatedAt` timestamps across `userId` and `email:` aliases, and clear aliased keys on deletion.
+     - Added `uploadDurableProfileMedia`: routes uploads `<= 28MB` (or any size up to 50MB on localhost) through `/api/profile/media`, and uses direct Client Firebase Storage `uploadBytes` + `getDownloadURL` for `> 28MB` production uploads (or server fallback) to stay safely within Cloud Run's 32 MiB ingress limit.
+     - Updated `persistMediaChanges` in `src/app/profile/page.tsx` to persist both locally in IndexedDB and durably on server/Firebase Storage, passing non-`blob:` URLs into `AuthContext` and updating Firebase Auth `photoURL` when applicable.
+  3. **Auth Hydration & Sign-In Presence (`src/lib/auth/AuthContext.tsx`, `src/components/auth/SignInPresencePreview.tsx`, `src/components/auth/AuthModal.tsx`, `src/components/navigation/UserAvatar.tsx`)**:
+     - Extended `SavedProfilePrefs` and `stripVolatileBlobUrls` to retain durable `profileVideoUrl` and `avatarUrl` while filtering expired `blob:` URLs.
+     - Added `syncProfileToCloud` (Client Firestore `setDoc` + `POST /api/profile` with `deleteField()` / `null` removal semantics) and `hydrateRemoteProfile` across mount, `onAuthStateChanged`, and all sign-in methods, ensuring `hydrateProfileMedia` never overwrites durable non-`blob:` URLs with `blob:` URLs.
+     - Added `poster` fallback support in `UserAvatar.tsx` and debounced pre-sign-in email lookup (`SignInPresencePreview.tsx`) inside `AuthModal.tsx` so saved profile photos and looping videos display when entering an email to sign in.

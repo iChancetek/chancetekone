@@ -9,13 +9,18 @@ const DB_VERSION = 1;
 const STORE_NAME = 'media_vault';
 const MAX_MEDIA_BYTES = 50 * 1024 * 1024; // 50MB
 
+// Module-level cache of durable remote HTTP(S)/API URLs keyed by userId and lowercase email
+const durableRemoteUrlCache = new Map<string, { url: string; mediaType: 'image' | 'video'; updatedAt: number }>();
+
 export interface StoredProfileMedia {
   userId: string;
   type: 'image' | 'video';
   mimeType: string;
   fileName: string;
   sizeBytes: number;
-  blob: Blob;
+  blob?: Blob;
+  buffer?: ArrayBuffer;
+  remoteUrl?: string;
   updatedAt: number;
 }
 
@@ -132,6 +137,12 @@ class ProfileMediaStorageServiceClass {
     const db = await this.getDB();
 
     // Defer revoking previous URL so mounted <video> components never flash error during swap
+    if (typeof navigator !== 'undefined' && navigator.storage?.persist) {
+      navigator.storage.persist().catch(() => {});
+    }
+
+    const persistentBuffer = await persistentBlob.arrayBuffer().catch(() => undefined);
+
     const prev = this.memoryCache.get(userId);
     if (prev) {
       this.revokeLater(prev.objectUrl);
@@ -145,6 +156,7 @@ class ProfileMediaStorageServiceClass {
       fileName,
       sizeBytes: persistentBlob.size,
       blob: persistentBlob,
+      buffer: persistentBuffer,
       updatedAt: now,
     };
 
@@ -199,24 +211,66 @@ class ProfileMediaStorageServiceClass {
           req.onerror = () => reject(req.error);
         });
 
-      let raw = await readKey(userId);
+      let raw: StoredProfileMedia | null = null;
+      const directRec = await readKey(userId);
+      if (directRec && !('aliasFor' in directRec)) {
+        raw = directRec as StoredProfileMedia;
+      }
 
-      // Fallback lookup by normalized email alias if signed in under another ID for same email
-      if (!raw && email?.trim()) {
+      // Check normalized email alias as well and keep whichever record has the latest timestamp
+      if (email?.trim()) {
         const emailKey = `email:${email.trim().toLowerCase()}`;
         const aliasRec = await readKey(emailKey);
         if (aliasRec && 'aliasFor' in aliasRec && aliasRec.aliasFor) {
-          raw = await readKey(aliasRec.aliasFor);
+          const aliasTarget = await readKey(aliasRec.aliasFor);
+          if (aliasTarget && !('aliasFor' in aliasTarget)) {
+            const candidate = aliasTarget as StoredProfileMedia;
+            if (!raw || (candidate.updatedAt || 0) > (raw.updatedAt || 0)) {
+              raw = candidate;
+            }
+          }
         }
       }
 
-      if (!raw || !('blob' in raw) || !raw.blob) {
+      if (!raw) {
         return null;
       }
 
-      const objectUrl = URL.createObjectURL(raw.blob);
-      const entry = { objectUrl, type: raw.type };
-      this.memoryCache.set(userId, entry);
+      let sourceBlob: Blob | null = null;
+      if (raw.buffer instanceof ArrayBuffer && raw.buffer.byteLength > 0) {
+        sourceBlob = new Blob([raw.buffer], {
+          type: raw.mimeType || (raw.type === 'video' ? 'video/mp4' : 'image/jpeg'),
+        });
+      } else if (raw.blob) {
+        sourceBlob = raw.blob;
+      }
+
+      if (!sourceBlob) {
+        return null;
+      }
+
+      if (raw.remoteUrl) {
+        durableRemoteUrlCache.set(userId, {
+          url: raw.remoteUrl,
+          mediaType: raw.type,
+          updatedAt: raw.updatedAt || Date.now(),
+        });
+        if (email?.trim()) {
+          durableRemoteUrlCache.set(`email:${email.trim().toLowerCase()}`, {
+            url: raw.remoteUrl,
+            mediaType: raw.type,
+            updatedAt: raw.updatedAt || Date.now(),
+          });
+        }
+      }
+
+      const objectUrl = URL.createObjectURL(sourceBlob);
+      const entry = {
+        objectUrl,
+        type: raw.type,
+        ...(raw.remoteUrl ? { remoteUrl: raw.remoteUrl } : {}),
+      };
+      this.memoryCache.set(userId, { objectUrl, type: raw.type });
       return entry;
     } catch (err) {
       console.warn('[ProfileMediaStorageService] Error loading media for', userId, err);
@@ -237,10 +291,17 @@ class ProfileMediaStorageServiceClass {
       await new Promise<void>((resolve, reject) => {
         const tx = db.transaction([STORE_NAME], 'readwrite');
         const store = tx.objectStore(STORE_NAME);
-        store.delete(userId);
         if (emailKey) {
-          store.delete(emailKey);
+          const aliasReq = store.get(emailKey);
+          aliasReq.onsuccess = () => {
+            const aliasRec = aliasReq.result as StoredMediaAlias | undefined;
+            if (aliasRec?.aliasFor && aliasRec.aliasFor !== userId) {
+              store.delete(aliasRec.aliasFor);
+            }
+            store.delete(emailKey);
+          };
         }
+        store.delete(userId);
 
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
@@ -250,7 +311,182 @@ class ProfileMediaStorageServiceClass {
       console.warn('[ProfileMediaStorageService] Failed to delete media', err);
     }
 
+    durableRemoteUrlCache.delete(userId);
+    if (email?.trim()) {
+      durableRemoteUrlCache.delete(`email:${email.trim().toLowerCase()}`);
+    }
     this.broadcastMediaEvent({ type: 'PROFILE_MEDIA_CLEARED', userId, email });
+  }
+
+  public getCachedRemoteUrl(userId: string, email?: string): string | undefined {
+    const byId = durableRemoteUrlCache.get(userId);
+    if (byId?.url) return byId.url;
+    if (email?.trim()) {
+      return durableRemoteUrlCache.get(`email:${email.trim().toLowerCase()}`)?.url;
+    }
+    return undefined;
+  }
+
+  public async attachRemoteUrl(
+    userId: string,
+    email: string | undefined,
+    mediaType: 'image' | 'video',
+    remoteUrl: string
+  ): Promise<void> {
+    if (!remoteUrl || remoteUrl.startsWith('blob:')) return;
+    const now = Date.now();
+    durableRemoteUrlCache.set(userId, { url: remoteUrl, mediaType, updatedAt: now });
+    if (email?.trim()) {
+      durableRemoteUrlCache.set(`email:${email.trim().toLowerCase()}`, {
+        url: remoteUrl,
+        mediaType,
+        updatedAt: now,
+      });
+    }
+
+    try {
+      const db = await this.getDB();
+      if (!db) return;
+      await new Promise<void>((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.get(userId);
+        req.onsuccess = () => {
+          const rec = req.result as StoredProfileMedia | undefined;
+          if (rec && !('aliasFor' in rec)) {
+            store.put({ ...rec, remoteUrl, updatedAt: now });
+          }
+        };
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+        tx.onabort = () => resolve();
+      });
+    } catch {}
+  }
+
+  private async buildAuthHeaders(userId?: string, email?: string): Promise<Record<string, string>> {
+    const headers: Record<string, string> = {};
+    if (userId) headers['x-user-id'] = userId;
+    if (email?.trim()) {
+      const trimmed = email.trim();
+      headers['x-user-email'] = trimmed;
+      headers['x-admin-email'] = trimmed;
+    }
+    try {
+      const { auth } = await import('@/lib/firebase/client');
+      const fbUser = auth?.currentUser;
+      if (fbUser) {
+        const token = await fbUser.getIdToken().catch(() => null);
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        if (fbUser.email && !headers['x-user-email']) {
+          headers['x-user-email'] = fbUser.email;
+          headers['x-admin-email'] = fbUser.email;
+        }
+      }
+    } catch {}
+    return headers;
+  }
+
+  public async uploadDurableProfileMedia(args: {
+    userId: string;
+    email?: string;
+    file: File;
+    mediaType: 'image' | 'video';
+  }): Promise<{
+    url: string;
+    mediaType: 'image' | 'video';
+    storageBackend: 'firebase' | 'disk' | 'firebase-client';
+  }> {
+    const SERVER_SAFE_BYTES = 28 * 1024 * 1024; // Avoid Cloud Run 32MiB ingress ceiling in prod
+    const isLocalhost =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+    let serverError: Error | null = null;
+
+    // Path A: Server API (/api/profile/media) — handles up to 50MB locally & <=28MB on Cloud Run, plus .mov->.mp4 normalization
+    if (isLocalhost || args.file.size <= SERVER_SAFE_BYTES) {
+      try {
+        const headers = await this.buildAuthHeaders(args.userId, args.email);
+        const form = new FormData();
+        form.append('file', args.file, args.file.name || 'profile_media');
+        form.append('userId', args.userId);
+        if (args.email?.trim()) form.append('email', args.email.trim());
+        form.append('mediaType', args.mediaType);
+
+        const res = await fetch('/api/profile/media', {
+          method: 'POST',
+          headers,
+          body: form,
+        });
+        const data = await res.json().catch(() => null);
+        if (res.ok && data?.ok && typeof data.url === 'string' && data.url) {
+          await this.attachRemoteUrl(args.userId, args.email, args.mediaType, data.url);
+          return {
+            url: data.url,
+            mediaType: data.mediaType === 'video' ? 'video' : 'image',
+            storageBackend: data.storageBackend === 'firebase' ? 'firebase' : 'disk',
+          };
+        }
+        serverError = new Error(data?.error || `Server media upload failed (${res.status}).`);
+      } catch (err: any) {
+        serverError = err instanceof Error ? err : new Error('Server media upload failed.');
+      }
+    }
+
+    // Path B: Direct Client Firebase Storage upload (handles >28MB up to 50MB in production & server fallback)
+    try {
+      const [{ auth, storage }, { getDownloadURL, ref, uploadBytes }] = await Promise.all([
+        import('@/lib/firebase/client'),
+        import('firebase/storage'),
+      ]);
+
+      const fbUser = auth?.currentUser;
+      if (fbUser && storage) {
+        const safeName = (args.file.name || 'profile_media')
+          .replace(/[^a-zA-Z0-9._-]/g, '_')
+          .slice(0, 64);
+        const storagePath = `users/${fbUser.uid}/profile_media/${Date.now()}_${safeName}`;
+        const storageRef = ref(storage, storagePath);
+        const contentType =
+          args.file.type || (args.mediaType === 'video' ? 'video/mp4' : 'image/jpeg');
+
+        await uploadBytes(storageRef, args.file, {
+          contentType,
+          cacheControl: 'public, max-age=31536000, immutable',
+        });
+        const url = await getDownloadURL(storageRef);
+        await this.attachRemoteUrl(args.userId, args.email, args.mediaType, url);
+        return {
+          url,
+          mediaType: args.mediaType,
+          storageBackend: 'firebase-client',
+        };
+      }
+    } catch (fbErr: any) {
+      if (!serverError) {
+        serverError = fbErr instanceof Error ? fbErr : new Error('Firebase Storage upload failed.');
+      }
+    }
+
+    throw serverError || new Error('Failed to upload durable profile media.');
+  }
+
+  public async clearDurableProfileMedia(userId: string, email?: string): Promise<void> {
+    await this.clearProfileMedia(userId, email);
+    try {
+      const headers = await this.buildAuthHeaders(userId, email);
+      headers['Content-Type'] = 'application/json';
+      await fetch('/api/profile/media', {
+        method: 'DELETE',
+        headers,
+        body: JSON.stringify({ userId, email }),
+      });
+    } catch (err) {
+      console.warn('[ProfileMediaStorageService] Server media delete warning:', err);
+    }
   }
 }
 

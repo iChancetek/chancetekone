@@ -80,6 +80,11 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         <video
           key={cleanVideoUrl!}
           src={cleanVideoUrl!}
+          poster={
+            cleanAvatarUrl && !imageError && cleanAvatarUrl !== '/images/logo.png'
+              ? cleanAvatarUrl
+              : undefined
+          }
           autoPlay
           loop
           muted

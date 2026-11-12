@@ -324,7 +324,7 @@ export default function ProfilePage() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // Shared helper to persist staged media upload or removal to IndexedDB
+  // Shared helper to persist staged media upload or removal durably (Server/Cloud + IndexedDB cache)
   const persistMediaChanges = async (
     activeProfile: UserProfile
   ): Promise<{
@@ -337,6 +337,8 @@ export default function ProfilePage() {
 
     if (mediaFile && mediaType) {
       const savedType = mediaType;
+
+      // 1. Write immediately to local IndexedDB (ArrayBuffer + Blob) for instant offline resilience
       const stored = await ProfileMediaStorageService.saveProfileMedia(
         userId,
         mediaFile,
@@ -345,6 +347,26 @@ export default function ProfilePage() {
         activeProfile.email
       );
 
+      // 2. Upload durably to Server API (/api/profile/media -> Firebase Admin / .data) or Client Firebase Storage
+      let durableUrl: string | undefined;
+      try {
+        const uploaded = await ProfileMediaStorageService.uploadDurableProfileMedia({
+          userId,
+          email: activeProfile.email,
+          file: mediaFile,
+          mediaType: savedType,
+        });
+        durableUrl = uploaded.url;
+      } catch (uploadErr: any) {
+        const msg = String(uploadErr?.message || '');
+        const isHardRejection =
+          /413|exceeds|unsupported|not authorized|authentication/i.test(msg);
+        if (isHardRejection) {
+          throw uploadErr;
+        }
+        console.warn('[ProfilePage] Durable remote upload failed, falling back locally:', uploadErr);
+      }
+
       let avatarDataUrl =
         activeProfile.avatarUrl && !activeProfile.avatarUrl.startsWith('blob:')
           ? activeProfile.avatarUrl
@@ -352,15 +374,22 @@ export default function ProfilePage() {
       const patch: Partial<UserProfile> = {};
 
       if (savedType === 'image') {
-        try {
-          avatarDataUrl = await createCompressedThumbnail(mediaFile);
-        } catch {
-          avatarDataUrl = stored.objectUrl;
+        if (durableUrl) {
+          avatarDataUrl = durableUrl;
+          if (user && durableUrl.startsWith('https://')) {
+            await updateProfile(user, { photoURL: durableUrl }).catch(() => {});
+          }
+        } else {
+          try {
+            avatarDataUrl = await createCompressedThumbnail(mediaFile);
+          } catch {
+            avatarDataUrl = stored.objectUrl;
+          }
         }
         patch.avatarUrl = avatarDataUrl;
         patch.profileVideoUrl = undefined;
       } else {
-        patch.profileVideoUrl = stored.objectUrl;
+        patch.profileVideoUrl = durableUrl || stored.objectUrl;
         patch.avatarUrl = avatarDataUrl || '/images/logo.png';
       }
 
@@ -371,16 +400,19 @@ export default function ProfilePage() {
         tempPreviewUrlRef.current = null;
       }
 
+      const activePreview = durableUrl || stored.objectUrl;
       setMediaFile(null);
       mediaFileRef.current = null;
       setPendingMediaRemoval(false);
       pendingMediaRemovalRef.current = false;
-      setMediaPreviewUrl(stored.objectUrl);
+      setMediaPreviewUrl(activePreview);
       setMediaType(savedType);
       setPreviewVideoError(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
 
-      const inlineMsg = `Profile ${savedType === 'video' ? 'video' : 'photo'} saved and active across the platform!`;
+      const inlineMsg = durableUrl
+        ? `Profile ${savedType === 'video' ? 'video' : 'photo'} saved durably across sessions, sign-in, and devices!`
+        : `Profile ${savedType === 'video' ? 'video' : 'photo'} saved locally (offline mode).`;
       return {
         patch,
         label: savedType === 'video' ? 'Profile Video' : 'Profile Photo',
@@ -390,7 +422,13 @@ export default function ProfilePage() {
     }
 
     if (pendingMediaRemoval) {
-      await ProfileMediaStorageService.clearProfileMedia(activeProfile.id, activeProfile.email);
+      await ProfileMediaStorageService.clearDurableProfileMedia(
+        activeProfile.id,
+        activeProfile.email
+      );
+      if (user) {
+        await updateProfile(user, { photoURL: '' }).catch(() => {});
+      }
       setPendingMediaRemoval(false);
       pendingMediaRemovalRef.current = false;
       setMediaPreviewUrl(null);
@@ -400,7 +438,7 @@ export default function ProfilePage() {
         patch: { avatarUrl: undefined, profileVideoUrl: undefined },
         label: 'Profile Media Removal',
         toastTitle: 'Profile Media Removed',
-        inlineMsg: 'Profile media removed. Default initials are now displayed.',
+        inlineMsg: 'Profile media removed across platform and cloud storage. Default initials are now displayed.',
       };
     }
 

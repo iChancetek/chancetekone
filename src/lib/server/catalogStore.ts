@@ -165,7 +165,7 @@ export type CatalogAssetKind = 'audio' | 'video' | 'cover' | 'document';
  * normalizer. Keeps every box size and stco chunk offset identical so H.264/AAC .mov uploads
  * play natively in Chromium, Firefox, Safari, Edge, Android, and iOS.
  */
-function normalizeQuickTimeMovToMp4(input: Buffer): { buffer: Buffer; normalized: boolean } {
+export function normalizeQuickTimeMovToMp4(input: Buffer): { buffer: Buffer; normalized: boolean } {
   if (input.length < 32 || input.subarray(4, 12).toString('ascii') !== 'ftypqt  ') {
     return { buffer: input, normalized: false };
   }
