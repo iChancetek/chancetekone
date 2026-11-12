@@ -51,6 +51,8 @@ export async function GET(request: NextRequest) {
       bpmMax: num('bpmMax'),
       genre: sp.get('genre') || undefined,
       crate: sp.get('crate') || undefined,
+      q: sp.get('q') || undefined,
+      mediaMode: sp.get('mediaMode') || sp.get('mediaType') || 'music',
       structure: parseStructure(sp.get('structure')),
       excludeTrackIds,
       limit: num('limit'),
@@ -77,6 +79,13 @@ export async function POST(request: NextRequest) {
       bpmMax: Number.isFinite(Number(body.bpmMax)) ? Number(body.bpmMax) : undefined,
       genre: typeof body.genre === 'string' ? body.genre : undefined,
       crate: typeof body.crate === 'string' ? body.crate : undefined,
+      q: typeof body.q === 'string' ? body.q : undefined,
+      mediaMode:
+        typeof body.mediaMode === 'string'
+          ? body.mediaMode
+          : typeof body.mediaType === 'string'
+            ? body.mediaType
+            : 'music',
       structure: parseStructure(body.structure),
       excludeTrackIds: Array.isArray(body.excludeTrackIds)
         ? body.excludeTrackIds.map(String)

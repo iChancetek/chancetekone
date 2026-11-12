@@ -36,6 +36,7 @@ interface TelemetrySummary {
 
 interface TestMixTrack {
   id: string;
+  mediaType?: 'music' | 'audiobook_chapter' | 'podcast';
   title: string;
   artist: string;
   genre: string;
@@ -44,6 +45,13 @@ interface TestMixTrack {
   workoutPhase?: string;
   streamUrl: string | null;
 }
+
+const MEDIA_MODES = [
+  { id: 'music', label: 'Music Only' },
+  { id: 'audiobook', label: 'Audiobooks & Literature' },
+  { id: 'podcast', label: 'Podcasts' },
+  { id: 'mixed', label: 'Mixed (Music + Spoken)' },
+];
 
 const WORKOUT_ACTIVITIES = [
   { id: 'running', label: 'Running' },
@@ -62,6 +70,8 @@ export const StrideIqIntegrationCard: React.FC = () => {
 
   const [baseUrl, setBaseUrl] = useState('https://chancetekone.us/api/strideiq/v1');
   const [playableCount, setPlayableCount] = useState<number | null>(null);
+  const [audiobookCount, setAudiobookCount] = useState<number | null>(null);
+  const [podcastCount, setPodcastCount] = useState<number | null>(null);
   const [keys, setKeys] = useState<PublicKeyRecord[]>([]);
   const [telemetry, setTelemetry] = useState<TelemetrySummary>({
     totalStreams: 0,
@@ -77,12 +87,14 @@ export const StrideIqIntegrationCard: React.FC = () => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Interactive Mix Preview
+  const [testMediaMode, setTestMediaMode] = useState('music');
   const [testActivity, setTestActivity] = useState('running');
   const [testDuration, setTestDuration] = useState(30);
   const [testCadence, setTestCadence] = useState('');
   const [testLoading, setTestLoading] = useState(false);
   const [testResult, setTestResult] = useState<{
-    averageBpm: number;
+    averageBpm: number | null;
+    mediaMode?: string;
     actualDurationSeconds: number;
     tracks: TestMixTrack[];
   } | null>(null);
@@ -117,6 +129,8 @@ export const StrideIqIntegrationCard: React.FC = () => {
       const healthData = await healthRes.json().catch(() => null);
       if (healthRes.ok && healthData?.ok) {
         setPlayableCount(healthData.catalog?.playableTracksCount ?? null);
+        setAudiobookCount(healthData.catalog?.playableAudiobooksCount ?? null);
+        setPodcastCount(healthData.catalog?.playablePodcastsCount ?? null);
       }
 
       const keysData = await keysRes.json().catch(() => null);
@@ -208,6 +222,7 @@ export const StrideIqIntegrationCard: React.FC = () => {
         headers,
         body: JSON.stringify({
           activity: testActivity,
+          mediaMode: testMediaMode,
           targetDurationMinutes: testDuration,
           cadenceSpm: testCadence ? Number(testCadence) : undefined,
           structure: 'warmup_main_cooldown',
@@ -247,25 +262,32 @@ export const StrideIqIntegrationCard: React.FC = () => {
     setPreviewTrackId(track.id);
   };
 
-  const snippetCode = `// StrideIQ.fit Client Example (Web / React Native / TypeScript)
-const res = await fetch('${baseUrl}/workout-mix', {
+  const snippetCode = `// StrideIQ.fit Client Example (Music, Audiobooks & Podcasts)
+const headers = {
+  'Content-Type': 'application/json',
+  'x-strideiq-api-key': process.env.STRIDEIQ_CHANCETEK_API_KEY!,
+};
+
+// 1) Generate Music, Audiobook, Podcast, or Mixed workout queue
+const mixRes = await fetch('${baseUrl}/workout-mix', {
   method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'x-strideiq-api-key': process.env.STRIDEIQ_CHANCETEK_API_KEY!,
-  },
+  headers,
   body: JSON.stringify({
     activity: 'running', // walking | running | biking | hiit | strength | cooldown
+    mediaMode: 'mixed',  // music | audiobook | podcast | mixed
     targetDurationMinutes: 45,
     cadenceSpm: 172,
     structure: 'warmup_main_cooldown',
   }),
 });
+const { mix } = await mixRes.json();
 
-const { mix } = await res.json();
-// Stream tracks directly using signed HTTP 206 streamUrl (no custom headers needed in audio player):
-const firstTrack = mix.tracks[0];
-const audio = new Audio(firstTrack.streamUrl);
+// 2) Or browse Audiobooks & Podcasts directly:
+const booksRes = await fetch('${baseUrl}/audiobooks', { headers });
+const podsRes = await fetch('${baseUrl}/podcasts?mediaType=audio', { headers });
+
+// Stream any returned track/chapter/episode URL directly (HTTP 206 byte-range supported):
+const audio = new Audio(mix.tracks[0].streamUrl);
 await audio.play();`;
 
   return (
@@ -284,7 +306,7 @@ await audio.play();`;
               </span>
             </div>
             <p className="text-xs text-zinc-400 mt-1">
-              Powers Running, Walking, Biking, HIIT &amp; Cool-Down workout audio streaming from ChanceTEK One directly inside StrideIQ.fit.
+              Powers Music, Audiobooks &amp; Podcasts streaming from ChanceTEK One inside StrideIQ.fit workouts (Running, Walking, Biking, HIIT &amp; Recovery).
             </p>
           </div>
         </div>
@@ -314,8 +336,12 @@ await audio.play();`;
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="p-3.5 rounded-2xl bg-black/40 border border-white/5">
           <p className="text-[11px] uppercase tracking-wider text-zinc-500">Playable Catalog</p>
-          <p className="text-xl font-semibold text-white mt-1">
+          <p className="text-lg font-semibold text-white mt-1">
             {playableCount !== null ? `${playableCount} Tracks` : '—'}
+          </p>
+          <p className="text-[11px] text-zinc-400 mt-0.5">
+            {audiobookCount !== null ? `${audiobookCount} Books` : '—'} ·{' '}
+            {podcastCount !== null ? `${podcastCount} Podcasts` : '—'}
           </p>
         </div>
         <div className="p-3.5 rounded-2xl bg-black/40 border border-white/5">
@@ -335,12 +361,14 @@ await audio.play();`;
       </div>
 
       {/* Endpoint Directory */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
         {[
           { id: 'base', label: 'Base Partner URL', val: baseUrl },
+          { id: 'mix', label: 'Workout Mix (Music / Spoken)', val: `${baseUrl}/workout-mix` },
+          { id: 'audiobooks', label: 'Audiobooks & Chapters', val: `${baseUrl}/audiobooks` },
+          { id: 'podcasts', label: 'Podcasts Feed', val: `${baseUrl}/podcasts` },
           { id: 'openapi', label: 'OpenAPI 3.1 Schema', val: `${baseUrl}/openapi.json` },
-          { id: 'mix', label: 'Workout Mix Generator (POST/GET)', val: `${baseUrl}/workout-mix` },
-          { id: 'stream', label: 'Range Stream (HTTP 206)', val: `${baseUrl}/stream/{trackId}?token=...` },
+          { id: 'stream', label: 'Range Stream (HTTP 206)', val: `${baseUrl}/stream/{assetId}?token=...` },
         ].map((item) => (
           <div
             key={item.id}
@@ -490,12 +518,23 @@ await audio.play();`;
       <div className="p-4 rounded-2xl bg-black/35 border border-white/10 space-y-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
-            <h4 className="text-sm font-medium text-white">Workout Cadence Mix Simulator</h4>
+            <h4 className="text-sm font-medium text-white">Workout Mix, Audiobook &amp; Podcast Simulator</h4>
             <p className="text-xs text-zinc-400">
-              Preview the exact BPM-matched Warm-Up -&gt; Main -&gt; Cool-Down queue returned to StrideIQ.fit.
+              Preview Music queues, Audiobooks, Podcasts, or Mixed sessions returned to StrideIQ.fit.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={testMediaMode}
+              onChange={(e) => setTestMediaMode(e.target.value)}
+              className="bg-black/60 border border-emerald-500/30 rounded-xl px-3 py-1.5 text-xs text-emerald-200"
+            >
+              {MEDIA_MODES.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
             <select
               value={testActivity}
               onChange={(e) => setTestActivity(e.target.value)}
@@ -539,8 +578,15 @@ await audio.play();`;
           <div className="space-y-2 pt-2 border-t border-white/5">
             <div className="flex items-center justify-between text-xs text-zinc-400">
               <span>
-                Queue: <strong className="text-white">{testResult.tracks.length} tracks</strong> · Avg{' '}
-                <strong className="text-amber-300">{testResult.averageBpm} BPM</strong>
+                Queue: <strong className="text-white">{testResult.tracks.length} items</strong>
+                {testResult.averageBpm ? (
+                  <>
+                    {' '}
+                    · Avg <strong className="text-amber-300">{testResult.averageBpm} BPM</strong>
+                  </>
+                ) : (
+                  <> · Spoken Audio Session</>
+                )}
               </span>
               <span>{Math.round(testResult.actualDurationSeconds / 60)} min total</span>
             </div>
@@ -552,15 +598,21 @@ await audio.play();`;
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      {t.workoutPhase && (
+                      {t.mediaType && t.mediaType !== 'music' ? (
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-[9px] uppercase tracking-wider text-emerald-300">
+                          {t.mediaType === 'audiobook_chapter' ? 'Book' : 'Podcast'}
+                        </span>
+                      ) : t.workoutPhase ? (
                         <span className="px-1.5 py-0.5 rounded bg-white/10 text-[9px] uppercase tracking-wider text-zinc-300">
                           {t.workoutPhase}
                         </span>
-                      )}
+                      ) : null}
                       <span className="text-white font-medium truncate">{t.title}</span>
                     </div>
                     <p className="text-[11px] text-zinc-400 truncate mt-0.5">
-                      {t.artist} · {t.bpm} BPM · {t.genre}
+                      {t.artist} ·{' '}
+                      {t.bpm > 0 ? `${t.bpm} BPM` : `${Math.max(1, Math.round(t.durationSeconds / 60))} min`}{' '}
+                      · {t.genre}
                     </p>
                   </div>
                   <button

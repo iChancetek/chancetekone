@@ -8,14 +8,16 @@ import {
   optionsStrideIqResponse,
   verifyStrideIqPartnerRequest,
 } from '@/lib/server/strideiqStore';
-import { getStrideIqTrackById } from '@/lib/server/strideiqCatalog';
+import { resolvePlayableStreamAsset } from '@/lib/server/strideiqCatalog';
 
 export const dynamic = 'force-dynamic';
 
 const CONTENT_TYPE_BY_EXT: Record<string, string> = {
   '.mp3': 'audio/mpeg',
   '.m4a': 'audio/mp4',
-  '.mp4': 'audio/mp4',
+  '.mp4': 'video/mp4',
+  '.m4v': 'video/mp4',
+  '.mov': 'video/quicktime',
   '.aac': 'audio/aac',
   '.wav': 'audio/wav',
   '.ogg': 'audio/ogg',
@@ -93,11 +95,11 @@ async function handleStream(
   }
 
   const corsHeaders = buildStrideIqCorsHeaders(request);
-  const track = await getStrideIqTrackById(trackId, { includeUnplayable: false });
+  const track = await resolvePlayableStreamAsset(trackId);
 
   if (!track || !track.playable) {
     return NextResponse.json(
-      { ok: false, error: `Stream unavailable for track "${trackId}".` },
+      { ok: false, error: `Stream unavailable for "${trackId}".` },
       { status: 404, headers: { ...corsHeaders, ...auth.rateHeaders } },
     );
   }

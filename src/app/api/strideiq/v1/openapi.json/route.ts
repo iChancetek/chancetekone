@@ -72,6 +72,8 @@ export async function GET(request: NextRequest) {
             { name: 'cadenceSpm', in: 'query', schema: { type: 'integer' } },
             { name: 'targetBpm', in: 'query', schema: { type: 'integer' } },
             { name: 'structure', in: 'query', schema: { type: 'string', enum: ['steady', 'warmup_main_cooldown', 'interval'] } },
+            { name: 'mediaMode', in: 'query', schema: { type: 'string', enum: ['music', 'audiobook', 'podcast', 'mixed'], default: 'music' } },
+            { name: 'q', in: 'query', schema: { type: 'string' }, description: 'Topic/keyword filter for audiobooks, podcasts, or music' },
             { name: 'genre', in: 'query', schema: { type: 'string' } },
             { name: 'crate', in: 'query', schema: { type: 'string' } },
             { name: 'limit', in: 'query', schema: { type: 'integer', default: 24 } },
@@ -79,7 +81,7 @@ export async function GET(request: NextRequest) {
           responses: { '200': { description: 'Ordered workout mix queue' } },
         },
         post: {
-          summary: 'Generate cadence-matched workout mix (JSON body)',
+          summary: 'Generate cadence-matched music, audiobook, podcast, or mixed workout queue (JSON body)',
           requestBody: {
             required: false,
             content: {
@@ -88,11 +90,13 @@ export async function GET(request: NextRequest) {
                   type: 'object',
                   properties: {
                     activity: { type: 'string', example: 'running' },
+                    mediaMode: { type: 'string', enum: ['music', 'audiobook', 'podcast', 'mixed'], default: 'music' },
                     targetDurationMinutes: { type: 'integer', example: 45 },
                     cadenceSpm: { type: 'integer', example: 172 },
                     targetBpm: { type: 'integer' },
                     bpmMin: { type: 'integer' },
                     bpmMax: { type: 'integer' },
+                    q: { type: 'string' },
                     genre: { type: 'string' },
                     crate: { type: 'string' },
                     structure: { type: 'string', enum: ['steady', 'warmup_main_cooldown', 'interval'] },
@@ -106,6 +110,53 @@ export async function GET(request: NextRequest) {
             },
           },
           responses: { '200': { description: 'Ordered workout mix queue' } },
+        },
+      },
+      '/audiobooks': {
+        get: {
+          summary: 'List playable audiobooks and chapter series with signed chapter streamUrls',
+          parameters: [
+            { name: 'q', in: 'query', schema: { type: 'string' } },
+            { name: 'genre', in: 'query', schema: { type: 'string' } },
+            { name: 'author', in: 'query', schema: { type: 'string' } },
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 25 } },
+            { name: 'offset', in: 'query', schema: { type: 'integer', default: 0 } },
+          ],
+          responses: { '200': { description: 'Paginated audiobooks and chapter stream URLs' } },
+        },
+      },
+      '/audiobooks/{id}': {
+        get: {
+          summary: 'Fetch full chapter list and signed streamUrls for one audiobook',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: {
+            '200': { description: 'Audiobook details with playable chapters' },
+            '404': { description: 'Audiobook not found or removed' },
+          },
+        },
+      },
+      '/podcasts': {
+        get: {
+          summary: 'List playable podcast episodes with signed streamUrls',
+          parameters: [
+            { name: 'q', in: 'query', schema: { type: 'string' } },
+            { name: 'category', in: 'query', schema: { type: 'string' } },
+            { name: 'show', in: 'query', schema: { type: 'string' } },
+            { name: 'mediaType', in: 'query', schema: { type: 'string', enum: ['audio', 'video'] } },
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 25 } },
+            { name: 'offset', in: 'query', schema: { type: 'integer', default: 0 } },
+          ],
+          responses: { '200': { description: 'Paginated podcast episodes' } },
+        },
+      },
+      '/podcasts/{id}': {
+        get: {
+          summary: 'Fetch single podcast episode metadata and signed streamUrl',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: {
+            '200': { description: 'Podcast episode payload' },
+            '404': { description: 'Podcast episode not found or removed' },
+          },
         },
       },
       '/crates': {
@@ -158,6 +209,7 @@ export async function GET(request: NextRequest) {
                   properties: {
                     event: { type: 'string', enum: ['play_start', 'heartbeat', 'track_complete', 'skip'] },
                     trackId: { type: 'string' },
+                    mediaType: { type: 'string', enum: ['music', 'audiobook', 'podcast'], default: 'music' },
                     trackTitle: { type: 'string' },
                     artistName: { type: 'string' },
                     activity: { type: 'string', example: 'running' },

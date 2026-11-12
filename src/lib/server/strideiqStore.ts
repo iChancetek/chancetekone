@@ -34,6 +34,7 @@ export interface StrideIqTelemetryEvent {
   id: string;
   event: 'play_start' | 'heartbeat' | 'track_complete' | 'skip';
   trackId: string;
+  mediaType?: 'music' | 'audiobook' | 'podcast';
   trackTitle?: string;
   artistName?: string;
   activity: string;
@@ -59,6 +60,7 @@ interface LocalTelemetryShape {
   totalStreams: number;
   totalCompleted: number;
   byActivity: Record<string, number>;
+  byMediaType: Record<string, number>;
 }
 
 let cachedSigningSecret: string | null = null;
@@ -122,7 +124,7 @@ function readLocalTelemetry(): LocalTelemetryShape {
   try {
     const file = getTelemetryPath();
     if (!fs.existsSync(file)) {
-      return { events: [], totalStreams: 0, totalCompleted: 0, byActivity: {} };
+      return { events: [], totalStreams: 0, totalCompleted: 0, byActivity: {}, byMediaType: {} };
     }
     const parsed = JSON.parse(fs.readFileSync(file, 'utf-8'));
     return {
@@ -131,9 +133,11 @@ function readLocalTelemetry(): LocalTelemetryShape {
       totalCompleted: Number(parsed?.totalCompleted) || 0,
       byActivity:
         parsed?.byActivity && typeof parsed.byActivity === 'object' ? parsed.byActivity : {},
+      byMediaType:
+        parsed?.byMediaType && typeof parsed.byMediaType === 'object' ? parsed.byMediaType : {},
     };
   } catch {
-    return { events: [], totalStreams: 0, totalCompleted: 0, byActivity: {} };
+    return { events: [], totalStreams: 0, totalCompleted: 0, byActivity: {}, byMediaType: {} };
   }
 }
 
@@ -177,7 +181,7 @@ async function getSigningSecret(): Promise<string> {
       await docRef.set({ signingSecret: generated, updatedAt: new Date().toISOString() }, { merge: true });
       cachedSigningSecret = generated;
       return generated;
-    } catch {}
+    } catch { }
   }
 
   const local = readLocalConfig();
@@ -371,7 +375,7 @@ export async function revokePartnerApiKey(keyId: string): Promise<boolean> {
         await docRef.set({ revokedAt }, { merge: true });
         updated = true;
       }
-    } catch {}
+    } catch { }
   }
 
   return updated;
@@ -389,7 +393,7 @@ async function touchPartnerKeyLastUsed(keyId: string): Promise<void> {
     try {
       const { adminDb } = await getFirebaseAdmin();
       await adminDb.collection(PARTNER_KEYS_COLLECTION).doc(keyId).set({ lastUsedAt: now }, { merge: true });
-    } catch {}
+    } catch { }
   }
 }
 
@@ -503,7 +507,7 @@ export async function verifyStrideIqPartnerRequest(
           ),
         };
       }
-      touchPartnerKeyLastUsed(matched.id).catch(() => {});
+      touchPartnerKeyLastUsed(matched.id).catch(() => { });
       return {
         authorized: true,
         authType: 'api_key',
@@ -528,7 +532,7 @@ export async function verifyStrideIqPartnerRequest(
           rateHeaders: rate.headers,
         };
       }
-    } catch {}
+    } catch { }
   }
 
   const rate = checkRateLimit(`anon:${request.headers.get('x-forwarded-for') || 'unknown'}`, 30);
@@ -563,6 +567,8 @@ export async function recordStrideIqTelemetry(
     current.totalStreams += 1;
     const act = record.activity || 'running';
     current.byActivity[act] = (current.byActivity[act] || 0) + 1;
+    const mt = record.mediaType || 'music';
+    current.byMediaType[mt] = (current.byMediaType[mt] || 0) + 1;
   } else if (record.event === 'track_complete') {
     current.totalCompleted += 1;
   }
@@ -572,7 +578,7 @@ export async function recordStrideIqTelemetry(
     try {
       const { adminDb } = await getFirebaseAdmin();
       await adminDb.collection(STRIDEIQ_TELEMETRY_COLLECTION).doc(record.id).set(record);
-    } catch {}
+    } catch { }
   }
 
   return record;
@@ -582,6 +588,7 @@ export async function getStrideIqTelemetrySummary(): Promise<{
   totalStreams: number;
   totalCompleted: number;
   byActivity: Record<string, number>;
+  byMediaType: Record<string, number>;
   recentEvents: StrideIqTelemetryEvent[];
 }> {
   const local = readLocalTelemetry();
@@ -589,6 +596,7 @@ export async function getStrideIqTelemetrySummary(): Promise<{
     totalStreams: local.totalStreams,
     totalCompleted: local.totalCompleted,
     byActivity: local.byActivity,
+    byMediaType: local.byMediaType,
     recentEvents: local.events.slice(0, 25),
   };
 }

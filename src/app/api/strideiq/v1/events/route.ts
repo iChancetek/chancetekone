@@ -45,9 +45,18 @@ export async function POST(request: NextRequest) {
         return Number.isFinite(n) ? n : undefined;
       };
 
+      const rawMediaType = String(body.mediaType || 'music').trim().toLowerCase();
+      const mediaType: 'music' | 'audiobook' | 'podcast' =
+        rawMediaType === 'audiobook' || rawMediaType === 'audiobook_chapter'
+          ? 'audiobook'
+          : rawMediaType === 'podcast'
+            ? 'podcast'
+            : 'music';
+
       const recorded = await recordStrideIqTelemetry({
         event: eventRaw as StrideIqTelemetryEvent['event'],
         trackId,
+        mediaType,
         trackTitle: typeof body.trackTitle === 'string' ? body.trackTitle : undefined,
         artistName: typeof body.artistName === 'string' ? body.artistName : undefined,
         activity,
