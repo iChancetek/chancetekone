@@ -24,6 +24,7 @@ export interface PartnerApiKeyRecord {
   prefix: string;
   sha256: string;
   scopes: ('read' | 'stream' | 'telemetry')[];
+  appType?: 'general' | 'mobile' | 'fitness' | 'social' | 'ai' | 'kiosk' | 'auto';
   createdAt: string;
   createdBy: string;
   lastUsedAt?: string;
@@ -244,6 +245,10 @@ const ALLOWED_EXACT_ORIGINS = new Set([
   'https://www.strideiq.fit',
   'https://app.strideiq.fit',
   'https://api.strideiq.fit',
+  'https://famio.us',
+  'https://www.famio.us',
+  'https://app.famio.us',
+  'https://api.famio.us',
   'https://chancetekone.us',
   'https://www.chancetekone.us',
   'https://chancetekone.com',
@@ -256,7 +261,9 @@ export function buildStrideIqCorsHeaders(request?: NextRequest): Record<string, 
     Boolean(origin) &&
     (ALLOWED_EXACT_ORIGINS.has(origin.toLowerCase()) ||
       /^https:\/\/[a-z0-9-]+\.strideiq\.fit$/i.test(origin) ||
+      /^https:\/\/[a-z0-9-]+\.famio\.us$/i.test(origin) ||
       /^https:\/\/[a-z0-9-]+\.chancetekone\.us$/i.test(origin) ||
+      /^https:\/\/[a-z0-9-]+\.chancetekone\.com$/i.test(origin) ||
       /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin));
 
   return {
@@ -264,9 +271,10 @@ export function buildStrideIqCorsHeaders(request?: NextRequest): Record<string, 
     ...(isAllowedOrigin ? { Vary: 'Origin' } : {}),
     'Access-Control-Allow-Methods': 'GET, HEAD, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers':
-      'Authorization, Content-Type, Range, Origin, Accept, x-strideiq-api-key, x-api-key, x-admin-email, x-user-id, x-user-email',
+      'Authorization, Content-Type, Range, Origin, Accept, x-api-key, x-famio-api-key, x-chancetek-api-key, x-strideiq-api-key, x-strideiq-partner-key, x-admin-email, x-user-id, x-user-email',
     'Access-Control-Expose-Headers':
-      'Content-Length, Content-Range, Accept-Ranges, ETag, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-StrideIQ-Partner',
+      'Content-Length, Content-Range, Accept-Ranges, ETag, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-Partner-Platform, X-StrideIQ-Partner',
+    'X-Partner-Platform': 'ChanceTEK One Universal Platform API v1',
     'X-StrideIQ-Partner': 'ChanceTEK One Music API v1',
   };
 }
@@ -280,15 +288,30 @@ export function optionsStrideIqResponse(request: NextRequest): NextResponse {
 
 function getEnvApiKeys(): string[] {
   const keys: string[] = [];
-  if (process.env.STRIDEIQ_API_KEY?.trim()) {
-    keys.push(process.env.STRIDEIQ_API_KEY.trim());
-  }
-  if (process.env.STRIDEIQ_API_KEYS?.trim()) {
-    process.env.STRIDEIQ_API_KEYS.split(',')
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .forEach((k) => keys.push(k));
-  }
+  const envVars = [
+    process.env.CHANCETEK_API_KEY,
+    process.env.PARTNER_API_KEY,
+    process.env.STRIDEIQ_API_KEY,
+    process.env.FAMIO_API_KEY,
+  ];
+  envVars.forEach((v) => {
+    if (v?.trim()) keys.push(v.trim());
+  });
+  const envListVars = [
+    process.env.CHANCETEK_API_KEYS,
+    process.env.PARTNER_API_KEYS,
+    process.env.STRIDEIQ_API_KEYS,
+    process.env.FAMIO_API_KEYS,
+  ];
+  envListVars.forEach((list) => {
+    if (list?.trim()) {
+      list
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .forEach((k) => keys.push(k));
+    }
+  });
   return keys;
 }
 
@@ -323,16 +346,33 @@ export async function createPartnerApiKey(args: {
   label: string;
   createdBy: string;
   scopes?: ('read' | 'stream' | 'telemetry')[];
+  appType?: 'general' | 'mobile' | 'fitness' | 'social' | 'ai' | 'kiosk' | 'auto';
+  prefix?: string;
 }): Promise<{ apiKey: string; record: PartnerApiKeyRecord }> {
   const rawSecret = randomBytes(24).toString('base64url');
-  const apiKey = `sk_strideiq_${rawSecret}`;
-  const id = `key_sq_${Date.now()}_${randomBytes(3).toString('hex')}`;
+  const labelLower = (args.label || '').toLowerCase();
+  let keyPrefix = args.prefix?.trim();
+  if (!keyPrefix) {
+    if (args.appType === 'social' || labelLower.includes('famio')) {
+      keyPrefix = 'sk_famio_';
+    } else if (args.appType === 'fitness' || labelLower.includes('strideiq')) {
+      keyPrefix = 'sk_strideiq_';
+    } else {
+      keyPrefix = 'sk_live_';
+    }
+  }
+  if (!keyPrefix.endsWith('_')) keyPrefix += '_';
+
+  const apiKey = `${keyPrefix}${rawSecret}`;
+  const idPrefix = (args.appType || keyPrefix.replace(/^sk_/, '').replace(/_$/, '') || 'sq').slice(0, 8);
+  const id = `key_${idPrefix}_${Date.now()}_${randomBytes(3).toString('hex')}`;
   const record: PartnerApiKeyRecord = {
     id,
-    label: args.label.trim() || 'StrideIQ.fit Production App',
+    label: args.label.trim() || 'Partner Production App',
     prefix: apiKey.slice(0, 18) + '...',
     sha256: sha256Hex(apiKey),
     scopes: args.scopes && args.scopes.length > 0 ? args.scopes : ['read', 'stream', 'telemetry'],
+    appType: args.appType || (labelLower.includes('famio') ? 'social' : 'fitness'),
     createdAt: new Date().toISOString(),
     createdBy: args.createdBy,
   };
@@ -459,8 +499,13 @@ export async function verifyStrideIqPartnerRequest(
 
   // 2. Extract API key or Bearer token (supports headers and query parameters)
   const apiKeyHeader =
-    request.headers.get('x-strideiq-api-key')?.trim() ||
     request.headers.get('x-api-key')?.trim() ||
+    request.headers.get('x-famio-api-key')?.trim() ||
+    request.headers.get('x-chancetek-api-key')?.trim() ||
+    request.headers.get('x-strideiq-api-key')?.trim() ||
+    request.headers.get('x-strideiq-partner-key')?.trim() ||
+    request.nextUrl.searchParams.get('x-api-key')?.trim() ||
+    request.nextUrl.searchParams.get('x-famio-api-key')?.trim() ||
     request.nextUrl.searchParams.get('x-strideiq-api-key')?.trim() ||
     request.nextUrl.searchParams.get('api_key')?.trim() ||
     request.nextUrl.searchParams.get('apiKey')?.trim() ||
@@ -540,18 +585,30 @@ export async function verifyStrideIqPartnerRequest(
   }
 
   const rate = checkRateLimit(`anon:${request.headers.get('x-forwarded-for') || 'unknown'}`, 30);
+  const isV1Path = request.nextUrl.pathname.startsWith('/api/v1');
+  const docsUrl = isV1Path
+    ? `${resolvePublicOrigin(request)}/api/v1`
+    : `${resolvePublicOrigin(request)}/api/strideiq/v1`;
+
   return {
     authorized: false,
     rateHeaders: rate.headers,
     response: NextResponse.json(
       {
         ok: false,
-        error: 'Unauthorized: Missing or invalid StrideIQ.fit API key.',
-        docsUrl: `${resolvePublicOrigin(request)}/api/strideiq/v1`,
+        error: 'Unauthorized: Missing or invalid ChanceTEK One Partner API key.',
+        docsUrl,
         setupHint:
-          'Send a valid key via `x-strideiq-api-key` or `Authorization: Bearer <key>`. Platform admins can issue partner keys in ChanceTEK One Admin > RBAC & Settings or configure STRIDEIQ_API_KEY.',
+          'Send a valid key via `x-api-key`, `x-famio-api-key`, `x-strideiq-api-key`, or `Authorization: Bearer <key>`. Platform admins can issue partner keys in ChanceTEK One Admin > Developer API Keys or configure CHANCETEK_API_KEY / STRIDEIQ_API_KEY / FAMIO_API_KEY.',
       },
-      { status: 401, headers: { ...cors, ...rate.headers, 'WWW-Authenticate': 'Bearer realm="StrideIQ Music API"' } }
+      {
+        status: 401,
+        headers: {
+          ...cors,
+          ...rate.headers,
+          'WWW-Authenticate': 'Bearer realm="ChanceTEK One Universal Partner API"',
+        },
+      }
     ),
   };
 }

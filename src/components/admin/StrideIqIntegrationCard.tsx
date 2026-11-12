@@ -83,7 +83,9 @@ export const StrideIqIntegrationCard: React.FC = () => {
   const [creating, setCreating] = useState(false);
   const [isSyncingLive, setIsSyncingLive] = useState(false);
   const [syncSuccessMsg, setSyncSuccessMsg] = useState<string | null>(null);
-  const [keyLabel, setKeyLabel] = useState('StrideIQ.fit Production App');
+  const [selectedApp, setSelectedApp] = useState<'famio' | 'strideiq' | 'universal'>('famio');
+  const [snippetTab, setSnippetTab] = useState<'famio' | 'strideiq' | 'curl'>('famio');
+  const [keyLabel, setKeyLabel] = useState('Famio.us Social Platform');
   const [revealedKey, setRevealedKey] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -173,11 +175,16 @@ export const StrideIqIntegrationCard: React.FC = () => {
     setCreating(true);
     setErrorMsg(null);
     try {
-      const res = await fetch('/api/strideiq/v1/keys', {
+      const appType = selectedApp === 'famio' ? 'social' : selectedApp === 'strideiq' ? 'fitness' : 'general';
+      const prefix = selectedApp === 'famio' ? 'sk_famio_' : selectedApp === 'strideiq' ? 'sk_strideiq_' : 'sk_live_';
+      const defaultLabel = selectedApp === 'famio' ? 'Famio.us Social Platform' : selectedApp === 'strideiq' ? 'StrideIQ.fit Production App' : 'Universal Live Platform Key';
+      const res = await fetch('/api/v1/keys', {
         method: 'POST',
         headers: await buildAdminHeaders(),
         body: JSON.stringify({
-          label: keyLabel.trim() || 'StrideIQ.fit Production App',
+          label: keyLabel.trim() || defaultLabel,
+          appType,
+          prefix,
           scopes: ['read', 'stream', 'telemetry'],
         }),
       });
@@ -289,14 +296,39 @@ export const StrideIqIntegrationCard: React.FC = () => {
     setPreviewTrackId(track.id);
   };
 
-  const snippetCode = `// StrideIQ.fit Client Example (Music, Audiobooks & Podcasts)
+  const famioSnippetCode = `// Famio.us Social Platform Client (Music & Audiobook Feed Streaming)
+const FAMIO_API_KEY = process.env.CHANCETEK_FAMIO_API_KEY!; // sk_famio_...
+const CHANCETEK_API_URL = 'https://chancetekone.us/api/v1';
+
 const headers = {
   'Content-Type': 'application/json',
-  'x-strideiq-api-key': process.env.STRIDEIQ_CHANCETEK_API_KEY!,
+  'x-api-key': FAMIO_API_KEY, // or 'x-famio-api-key'
 };
 
-// 1) Generate Music, Audiobook, Podcast, or Mixed workout queue
-const mixRes = await fetch('${baseUrl}/workout-mix', {
+// 1. Search music tracks or crates to attach to a Famio social post
+const searchRes = await fetch(\`\${CHANCETEK_API_URL}/tracks?q=nas&limit=10\`, { headers });
+const { tracks } = await searchRes.json();
+
+// 2. Fetch curated audiobooks & literature chapters
+const booksRes = await fetch(\`\${CHANCETEK_API_URL}/audiobooks?limit=20\`, { headers });
+const { audiobooks } = await booksRes.json();
+
+// 3. Play stream directly in Famio post feed (HTTP 206 Byte-Range seeking):
+// Every track or chapter has a pre-signed streamUrl with HMAC token for instant playback:
+const audio = new Audio(tracks[0].streamUrl);
+await audio.play();`;
+
+  const strideIqSnippetCode = `// StrideIQ.fit Client (Cadence-Aware Mixes & Real-Time Sync)
+const STRIDEIQ_API_KEY = process.env.STRIDEIQ_CHANCETEK_API_KEY!; // sk_strideiq_...
+const CHANCETEK_API_URL = 'https://chancetekone.us/api/v1';
+
+const headers = {
+  'Content-Type': 'application/json',
+  'x-strideiq-api-key': STRIDEIQ_API_KEY,
+};
+
+// 1. Generate workout queue matching cadence & activity
+const mixRes = await fetch(\`\${CHANCETEK_API_URL}/workout-mix\`, {
   method: 'POST',
   headers,
   body: JSON.stringify({
@@ -309,13 +341,28 @@ const mixRes = await fetch('${baseUrl}/workout-mix', {
 });
 const { mix } = await mixRes.json();
 
-// 2) Or browse Audiobooks & Podcasts directly:
-const booksRes = await fetch('${baseUrl}/audiobooks', { headers });
-const podsRes = await fetch('${baseUrl}/podcasts?mediaType=audio', { headers });
-
-// Stream any returned track/chapter/episode URL directly (HTTP 206 byte-range supported):
+// 2. Play audio stream with AVPlayer / ExoPlayer / HTML5 Audio:
 const audio = new Audio(mix.tracks[0].streamUrl);
 await audio.play();`;
+
+  const curlSnippetCode = `# 1. Test Famio.us / Universal API with API Key:
+curl -H "x-api-key: sk_famio_YOUR_KEY" \\
+  https://chancetekone.us/api/v1/tracks?q=nas
+
+# 2. Real-time Live Catalog Sync (Tracks, Audiobooks, Podcasts, Crates):
+curl -H "x-api-key: sk_famio_YOUR_KEY" \\
+  https://chancetekone.us/api/v1/sync
+
+# 3. Stream Audio Chunk with Byte-Range Seeking (HTTP 206):
+curl -i -H "Range: bytes=0-1048576" \\
+  "https://chancetekone.us/api/v1/stream/TRACK_ID?token=STREAM_TOKEN"`;
+
+  const activeSnippet =
+    snippetTab === 'famio'
+      ? famioSnippetCode
+      : snippetTab === 'strideiq'
+      ? strideIqSnippetCode
+      : curlSnippetCode;
 
   return (
     <div className="p-6 rounded-3xl glass-panel border border-emerald-500/20 space-y-5 bg-gradient-to-br from-emerald-950/15 via-black/40 to-amber-950/10">
@@ -327,13 +374,16 @@ await audio.play();`;
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-lg font-serif text-white">StrideIQ.fit Partner Streaming API</h3>
+              <h3 className="text-lg font-serif text-white">Partner &amp; Developer API Console</h3>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                API v1 Live
+                Famio.us &amp; StrideIQ.fit
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                /api/v1 Live
               </span>
             </div>
             <p className="text-xs text-zinc-400 mt-1">
-              Powers Music, Audiobooks &amp; Podcasts streaming from ChanceTEK One inside StrideIQ.fit workouts (Running, Walking, Biking, HIIT &amp; Recovery).
+              Universal Platform API v1 for streaming verified Music, Audiobooks &amp; Podcasts across Famio.us social media feeds, StrideIQ.fit workouts, and partner applications.
             </p>
           </div>
         </div>
@@ -400,13 +450,14 @@ await audio.play();`;
       {/* Endpoint Directory */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
         {[
-          { id: 'base', label: 'Base Partner URL', val: baseUrl },
-          { id: 'sync', label: 'Live Catalog Sync (Full Music & Spoken)', val: `${baseUrl}/sync` },
-          { id: 'mix', label: 'Workout Mix (Music / Spoken)', val: `${baseUrl}/workout-mix` },
-          { id: 'audiobooks', label: 'Audiobooks & Chapters', val: `${baseUrl}/audiobooks` },
-          { id: 'podcasts', label: 'Podcasts Feed', val: `${baseUrl}/podcasts` },
-          { id: 'openapi', label: 'OpenAPI 3.1 Schema', val: `${baseUrl}/openapi.json` },
-          { id: 'stream', label: 'Range Stream (HTTP 206)', val: `${baseUrl}/stream/{assetId}?token=...` },
+          { id: 'v1base', label: 'Universal Base URL (/api/v1)', val: baseUrl.replace('/api/strideiq/v1', '/api/v1') },
+          { id: 'sync', label: 'Live Catalog Sync (Full Real-Time)', val: `${baseUrl.replace('/api/strideiq/v1', '/api/v1')}/sync` },
+          { id: 'tracks', label: 'Tracks & Search (Nas, R&B, etc.)', val: `${baseUrl.replace('/api/strideiq/v1', '/api/v1')}/tracks` },
+          { id: 'audiobooks', label: 'Audiobooks & Chapters', val: `${baseUrl.replace('/api/strideiq/v1', '/api/v1')}/audiobooks` },
+          { id: 'podcasts', label: 'Podcasts Feed', val: `${baseUrl.replace('/api/strideiq/v1', '/api/v1')}/podcasts` },
+          { id: 'stream', label: 'Range Stream (HTTP 206 Seeking)', val: `${baseUrl.replace('/api/strideiq/v1', '/api/v1')}/stream/{assetId}?token=...` },
+          { id: 'openapi', label: 'OpenAPI 3.1 Schema', val: `${baseUrl.replace('/api/strideiq/v1', '/api/v1')}/openapi.json` },
+          { id: 'strideiq', label: 'StrideIQ Fitness Mix Route', val: `${baseUrl}/workout-mix` },
         ].map((item) => (
           <div
             key={item.id}
@@ -433,22 +484,57 @@ await audio.play();`;
       </div>
 
       {showSnippet && (
-        <div className="p-4 rounded-2xl bg-zinc-950/90 border border-amber-500/20 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-300">
-              StrideIQ.fit Integration Code
-            </span>
+        <div className="p-4 rounded-2xl bg-zinc-950/90 border border-amber-500/20 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-300 mr-2">
+                Quick Integration SDK:
+              </span>
+              <button
+                type="button"
+                onClick={() => setSnippetTab('famio')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  snippetTab === 'famio'
+                    ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
+                    : 'bg-white/5 text-zinc-400 hover:text-white'
+                }`}
+              >
+                Famio.us (Social Web)
+              </button>
+              <button
+                type="button"
+                onClick={() => setSnippetTab('strideiq')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  snippetTab === 'strideiq'
+                    ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
+                    : 'bg-white/5 text-zinc-400 hover:text-white'
+                }`}
+              >
+                StrideIQ.fit (Workouts)
+              </button>
+              <button
+                type="button"
+                onClick={() => setSnippetTab('curl')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  snippetTab === 'curl'
+                    ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
+                    : 'bg-white/5 text-zinc-400 hover:text-white'
+                }`}
+              >
+                cURL / REST API
+              </button>
+            </div>
             <button
               type="button"
-              onClick={() => handleCopy('snippet', snippetCode)}
-              className="text-xs text-zinc-300 hover:text-white flex items-center gap-1"
+              onClick={() => handleCopy('snippet', activeSnippet)}
+              className="text-xs text-zinc-300 hover:text-white flex items-center gap-1 self-start sm:self-auto"
             >
               {copiedId === 'snippet' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
               Copy Snippet
             </button>
           </div>
           <pre className="text-[11px] font-mono text-zinc-300 overflow-x-auto leading-relaxed">
-            {snippetCode}
+            {activeSnippet}
           </pre>
         </div>
       )}
@@ -468,9 +554,56 @@ await audio.play();`;
 
       {/* Partner Key Issuer */}
       <div className="p-4 rounded-2xl bg-black/35 border border-white/10 space-y-4">
-        <div className="flex items-center gap-2">
-          <KeyRound className="w-4 h-4 text-amber-400" />
-          <h4 className="text-sm font-medium text-white">Partner API Keys</h4>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <KeyRound className="w-4 h-4 text-amber-400" />
+            <h4 className="text-sm font-medium text-white">Partner API Keys</h4>
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[11px] text-zinc-400 mr-1">App Preset:</span>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedApp('famio');
+                setKeyLabel('Famio.us Social Platform');
+              }}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                selectedApp === 'famio'
+                  ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/40'
+                  : 'bg-white/5 text-zinc-400 hover:text-white'
+              }`}
+            >
+              Famio.us
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedApp('strideiq');
+                setKeyLabel('StrideIQ.fit Production App');
+              }}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                selectedApp === 'strideiq'
+                  ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/40'
+                  : 'bg-white/5 text-zinc-400 hover:text-white'
+              }`}
+            >
+              StrideIQ.fit
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedApp('universal');
+                setKeyLabel('Universal Live Platform Key');
+              }}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                selectedApp === 'universal'
+                  ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/40'
+                  : 'bg-white/5 text-zinc-400 hover:text-white'
+              }`}
+            >
+              Universal Key
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
@@ -478,7 +611,13 @@ await audio.play();`;
             type="text"
             value={keyLabel}
             onChange={(e) => setKeyLabel(e.target.value)}
-            placeholder="Key label (e.g., StrideIQ.fit iOS & Web)"
+            placeholder={`Key label (e.g., ${
+              selectedApp === 'famio'
+                ? 'Famio.us Social Platform'
+                : selectedApp === 'strideiq'
+                ? 'StrideIQ.fit iOS & Web'
+                : 'Universal Live Key'
+            })`}
             className="flex-1 bg-black/50 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50"
           />
           <button
@@ -488,7 +627,15 @@ await audio.play();`;
             className="px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
           >
             <Zap className="w-3.5 h-3.5" />
-            {creating ? 'Generating...' : 'Generate StrideIQ API Key'}
+            {creating
+              ? 'Generating...'
+              : `Generate ${
+                  selectedApp === 'famio'
+                    ? 'Famio.us'
+                    : selectedApp === 'strideiq'
+                    ? 'StrideIQ'
+                    : 'Universal'
+                } Key`}
           </button>
         </div>
 
@@ -496,7 +643,7 @@ await audio.play();`;
           <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/40 space-y-2">
             <div className="flex items-center justify-between gap-2">
               <span className="text-[11px] font-semibold text-emerald-300 flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4" /> New StrideIQ Partner Key (copy now — shown once)
+                <ShieldCheck className="w-4 h-4" /> New {revealedKey.startsWith('sk_famio_') ? 'Famio.us' : revealedKey.startsWith('sk_strideiq_') ? 'StrideIQ.fit' : 'Universal'} Key (copy now — shown once)
               </span>
               <button
                 type="button"
@@ -554,7 +701,7 @@ await audio.play();`;
           </div>
         ) : (
           <p className="text-xs text-zinc-500">
-            No StrideIQ.fit partner keys issued yet. Generate one above to authorize the fitness application.
+            No partner keys issued yet. Generate a key above for Famio.us, StrideIQ.fit, or universal live access.
           </p>
         )}
       </div>

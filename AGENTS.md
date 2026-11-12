@@ -1872,3 +1872,42 @@ esolvedAudioUrl is reset to '' (zero tolerance).
      - Updated `queryStrideIqTracks` default limit to 250 (up to 1,000 with `limit=all`, `all=true`, or `sync=true`).
   5. **Real Cloud Catalog Synchronization (`/api/admin/catalog/sync`)**:
      - Built `src/app/api/admin/catalog/sync/route.ts` and updated `handleSyncCatalog` in `src/app/admin/page.tsx` and `StrideIqIntegrationCard.tsx` to commit all canonical releases, uploads, audiobooks, and podcasts directly into Firestore and `.data`, followed by `CloudCatalogClient.syncNow()`.
+
+### 79. Universal Platform API (`/api/v1/*`), Famio.us Social Media Streaming Integration & Multi-App Access Architecture
+- **User Directives**:
+  1. `I want other applications beside strideiq to connect to chancetekone as well.`
+  2. `I would like social media platform famio.us to connect the platform as well. using the api keys or via the MCP server. when one would recommend?`
+  3. `I would famio.us users to have access to ChanceTEKOne to stream music and audiobooks`
+- **Architectural Solution & Multi-App Support**:
+  1. **Universal Platform API (`/api/v1/*`)**:
+     - Deployed unbranded, first-class REST endpoints under `/api/v1/*`:
+       - `/api/v1` (Universal discovery index)
+       - `/api/v1/tracks` & `/api/v1/tracks/[id]` (music search, catalog, and authentic metadata)
+       - `/api/v1/sync` & `/api/v1/sync-live` (real-time zero-truncation catalog sync across tracks, audiobooks, and podcasts)
+       - `/api/v1/audiobooks` & `/api/v1/audiobooks/[id]` (spoken literature, books, and chapters)
+       - `/api/v1/podcasts` & `/api/v1/podcasts/[id]` (podcast shows and audio/video episodes)
+       - `/api/v1/stream/[trackId]` (HTTP 206 byte-range streaming for HTML5 audio, AVPlayer, and ExoPlayer)
+       - `/api/v1/crates`, `/api/v1/playlists`, `/api/v1/radio`, `/api/v1/workout-mix`, `/api/v1/health`, `/api/v1/events`, `/api/v1/keys`, `/api/v1/openapi.json`
+     - Preserved complete backward-compatibility with `/api/strideiq/v1/*` so StrideIQ operations remain uninterrupted.
+  2. **Cross-Origin Resource Sharing (CORS) & Domain Whitelisting**:
+     - Added `https://famio.us`, `https://www.famio.us`, `https://app.famio.us`, and `https://api.famio.us` along with wildcard subdomains `^https:\/\/[a-z0-9-]+\.famio\.us$` to `ALLOWED_EXACT_ORIGINS` and regex checks in `src/lib/server/strideiqStore.ts`.
+     - Updated `next.config.ts` to include `/api/v1/:path*` with comprehensive allowed headers: `x-api-key`, `x-famio-api-key`, `x-chancetek-api-key`, `x-strideiq-api-key`, `Authorization`, `Range`, `Origin`, and exposed `X-Partner-Platform`.
+  3. **Universal API Key Management & App Presets**:
+     - Expanded `createPartnerApiKey` and `PartnerApiKeyRecord` with `appType` (`'social' | 'fitness' | 'general' | 'mobile' | 'ai'`) and customizable prefixes:
+       - Famio.us: `sk_famio_...` (Social streaming & post embeds)
+       - StrideIQ.fit: `sk_strideiq_...` (Fitness & workouts)
+       - Universal: `sk_live_...` (General platform keys)
+     - Expanded `verifyStrideIqPartnerRequest` to accept `x-api-key`, `x-famio-api-key`, `x-chancetek-api-key`, `x-strideiq-api-key`, `Authorization: Bearer <key>`, and query parameter `?api_key=...`.
+     - Supported environment-based keys across `CHANCETEK_API_KEY`, `FAMIO_API_KEY`, `PARTNER_API_KEY`, and `STRIDEIQ_API_KEY`.
+  4. **Famio.us User Access & Streaming Model**:
+     - **In-Feed / In-Post Streaming (Zero-Friction)**: Famio backend/client passes Famio's platform API key (`x-famio-api-key` or `x-api-key`) to fetch tracks or audiobooks. Every returned item includes a pre-signed HMAC streaming URL (`/api/v1/stream/[id]?token=...`) allowing any Famio.us visitor to stream music and audiobooks without needing a ChanceTEK One account.
+     - **Rich Social Previews**: Endpoints return high-resolution cover artwork, artist credits, duration, and BPM for rich media previews in Famio feeds.
+     - **Linked Account Synchronization**: Famio users with linked ChanceTEK One credentials can pass `Authorization: Bearer <firebase_id_token>` to save favorites to personal crates and sync listening progress.
+  5. **Developer Console & Admin UI Enhancement**:
+     - Upgraded `src/components/admin/StrideIqIntegrationCard.tsx` into the **Partner & Developer API Console (Famio.us & StrideIQ.fit)**.
+     - Added 1-click app presets (`Famio.us`, `StrideIQ.fit`, `Universal Key`) for instant key generation.
+     - Added tabbed SDK snippets with complete code examples for Famio.us (Social Web), StrideIQ.fit (Workouts), and cURL / REST API.
+  6. **Automated Verification**:
+     - Verified with `scripts/test-famio-integration.ts`: Issued `sk_famio_...` key, verified CORS header return for `https://famio.us`, validated `x-famio-api-key` and `x-api-key` auth, queried Nas tracks (7 tracks returned with pre-signed streaming tokens), retrieved 7 audiobooks, performed real-time catalog live sync (68 tracks, 7 audiobooks, 12 chapters, 31 podcasts, 8 crates), verified HTTP 206 partial content streaming, and verified `/api/v1` discovery root with 100% success.
+     - Verified with `scripts/test-strideiq-api.ts` and `npx tsc --noEmit` with 0 type errors.
+

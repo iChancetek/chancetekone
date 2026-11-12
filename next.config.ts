@@ -23,16 +23,16 @@ const nextConfig: NextConfig = {
       { key: "Access-Control-Allow-Methods", value: "GET, HEAD, OPTIONS" },
       { key: "Access-Control-Allow-Headers", value: "Range, Accept, Origin, Content-Type" },
     ];
-    const strideiqApiCors = [
+    const partnerApiCors = [
       { key: "Access-Control-Allow-Origin", value: "*" },
       { key: "Access-Control-Allow-Methods", value: "GET, POST, DELETE, HEAD, OPTIONS" },
       {
         key: "Access-Control-Allow-Headers",
-        value: "Authorization, x-strideiq-api-key, x-strideiq-partner-key, x-admin-email, Range, Accept, Origin, Content-Type",
+        value: "Authorization, x-api-key, x-famio-api-key, x-chancetek-api-key, x-strideiq-api-key, x-strideiq-partner-key, x-admin-email, x-user-id, x-user-email, Range, Accept, Origin, Content-Type",
       },
       {
         key: "Access-Control-Expose-Headers",
-        value: "Content-Range, Content-Length, Accept-Ranges, ETag, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset",
+        value: "Content-Range, Content-Length, Accept-Ranges, ETag, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-Partner-Platform, X-StrideIQ-Partner",
       },
     ];
     return [
@@ -44,7 +44,8 @@ const nextConfig: NextConfig = {
       },
       { source: "/audio/:path*", headers: corsHeaders },
       { source: "/videos/:path*", headers: corsHeaders },
-      { source: "/api/strideiq/:path*", headers: strideiqApiCors },
+      { source: "/api/strideiq/:path*", headers: partnerApiCors },
+      { source: "/api/v1/:path*", headers: partnerApiCors },
     ];
   },
   experimental: {

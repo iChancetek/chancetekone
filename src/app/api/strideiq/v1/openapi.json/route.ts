@@ -10,24 +10,26 @@ export async function OPTIONS(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const origin = resolvePublicOrigin(request).replace(/\/$/, '');
+  const isV1Path = request.nextUrl.pathname.startsWith('/api/v1');
+  const baseSegment = isV1Path ? '/api/v1' : '/api/strideiq/v1';
 
   const spec = {
     openapi: '3.1.0',
     info: {
-      title: 'ChanceTEK One Music Streaming API for StrideIQ.fit',
+      title: 'ChanceTEK One Universal Music & Audiobook Streaming API',
       version: '1.0.0',
       description:
-        'Partner streaming & cadence-aware workout music API connecting StrideIQ.fit fitness sessions (Running, Walking, Biking, HIIT, Strength, Cool-Down) to verified ChanceTEK One studio masters, crates, and live radio.',
+        'Universal platform API for streaming verified ChanceTEK One studio masters, audiobooks, podcasts, crates, and playlists across partner applications including Famio.us (social sharing & feed audio) and StrideIQ.fit (workout streaming & cadence mixes).',
       contact: {
         name: 'ChanceTEK One Engineering',
         url: 'https://chancetekone.us',
       },
     },
     servers: [
-      { url: `${origin}/api/strideiq/v1`, description: 'Active ChanceTEK One Partner Server' },
-      { url: 'https://chancetekone.us/api/strideiq/v1', description: 'Production Host' },
+      { url: `${origin}${baseSegment}`, description: 'Active ChanceTEK One Partner Server' },
+      { url: `https://chancetekone.us${baseSegment}`, description: 'Production Host' },
     ],
-    security: [{ StrideIqApiKeyHeader: [] }, { BearerAuth: [] }],
+    security: [{ ApiKeyHeader: [] }, { StrideIqApiKeyHeader: [] }, { FamioApiKeyHeader: [] }, { BearerAuth: [] }],
     paths: {
       '/health': {
         get: {
@@ -242,8 +244,10 @@ export async function GET(request: NextRequest) {
     },
     components: {
       securitySchemes: {
+        ApiKeyHeader: { type: 'apiKey', in: 'header', name: 'x-api-key' },
+        FamioApiKeyHeader: { type: 'apiKey', in: 'header', name: 'x-famio-api-key' },
         StrideIqApiKeyHeader: { type: 'apiKey', in: 'header', name: 'x-strideiq-api-key' },
-        BearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'Partner API Key or Firebase JWT' },
+        BearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'Partner API Key (sk_live_..., sk_famio_..., sk_strideiq_...) or Firebase JWT' },
         StreamTokenQuery: { type: 'apiKey', in: 'query', name: 'token' },
       },
     },
