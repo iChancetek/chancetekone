@@ -1769,3 +1769,46 @@ esolvedAudioUrl is reset to '' (zero tolerance).
      - Extended `next.config.ts` with cross-origin headers on `/images/:path*` and `/api/strideiq/:path*`.
   4. **Admin Key Management & Mix Simulator UI (`src/components/admin/StrideIqIntegrationCard.tsx`, `src/components/admin/sections/SettingsRBACSection.tsx`)**:
      - Added live playable catalog counters (Tracks, Books, Podcasts), copyable base/OpenAPI/audiobooks/podcasts/stream URLs, one-time `sk_strideiq_...` key issuance & revocation, TypeScript SDK usage snippet, and an interactive **Workout Mix, Audiobook & Podcast Simulator** in Admin `RBAC & Settings`.
+
+### 75. ChanceTEK One Model Context Protocol (MCP) Server Architecture (`src/mcp/*`, `/api/mcp/*`, `bin/chancetek-mcp.js`)
+- **Objective**: Expose the ChanceTEK One streaming platform, catalog intelligence, and cadence-aware workout audio engine to MCP-compatible AI clients (Claude Desktop, Antigravity, Cursor, Windsurf, Claude Code, Zed, and remote HTTP/SSE web agents).
+- **Architectural Implementation**:
+  1. **Dual Transport Architecture**:
+     - **Stdio Transport (`src/mcp/cli.ts`, `bin/chancetek-mcp.js`)**: Connects over standard input/output using `@modelcontextprotocol/sdk/server/stdio.js`, enabling local desktop and terminal agents to invoke ChanceTEK One tools directly via `node bin/chancetek-mcp.js` or `npm run mcp`.
+     - **HTTP & SSE Transports (`src/app/api/mcp/route.ts`, `src/app/api/mcp/sse/route.ts`)**: Next.js App Router endpoints providing discovery (`GET /api/mcp`), standard JSON-RPC 2.0 execution (`POST /api/mcp`), and Server-Sent Events streaming (`GET /api/mcp/sse`) for remote agents.
+  2. **13 Production MCP Tools**:
+     - `get_platform_health`: Playable tracks, audiobooks, chapters, podcasts count, and partner health.
+     - `search_music`: Query tracks by keyword, artist, title, genre, crate, activity, min/max BPM.
+     - `get_track`: Retrieve specific track with full metadata and pre-signed HTTP 206 streaming URL.
+     - `list_crates`: Return the 8 official ChanceTEK sound crates with track counts and average BPMs.
+     - `generate_workout_mix`: Cadence/BPM-matched workout queues for 11 sports across `music`, `audiobook`, `podcast`, or `mixed` modes with signed stream URLs.
+     - `get_workout_profiles`: Full workout activity specifications with ideal BPM ranges and cadence alignment rules.
+     - `list_audiobooks`: Search & browse spoken literature.
+     - `get_audiobook`: Full chapter breakdown with signed stream URLs.
+     - `list_podcasts`: Search talk and video podcast episodes.
+     - `get_podcast`: Episode metadata and signed stream URL.
+     - `list_radio_stations`: 24/7 internet radio frequencies.
+     - `get_openapi_spec`: Direct access to OpenAPI 3.1 specification.
+     - `report_workout_telemetry`: Record playback events (`play_start`, `heartbeat`, `track_complete`, `skip`).
+  3. **MCP Resources & Prompts**:
+     - Resources: `chancetek://catalog/summary`, `chancetek://workout/profiles`, `chancetek://crates`.
+     - Prompts: `workout_audio_advisor` and `crate_curator`.
+  4. **Verification**: Verified via `scratch/test_mcp_server.ts` (`InMemoryTransport`), `scratch/test_cli_stdio.ts` (`StdioClientTransport`), and `scratch/test_mcp_http.ts` (Next.js route handlers).
+
+### 76. Real-Time Catalog Synchronization & Dynamic Physical Asset Discovery for API & MCP Server
+- **Directive**: As tracks, audiobooks, chapters, and podcasts are added or uploaded to the platform, the ChanceTEK One API (`/api/strideiq/v1/*`) and the Model Context Protocol (MCP) server must pick them up in real time with zero stale caching.
+- **Root Causes of Delay Identified & Eliminated**:
+  1. `readCatalogSnapshot()` in `src/lib/server/catalogStore.ts` cached snapshots purely by revision, which remained static in local/hybrid environments without GCP service account credentials, locking in an empty or initial state forever.
+  2. `applyCatalogOps()` only committed to Firestore when GCP admin credentials were provided and did not persist ops to `.data/catalog_snapshot.json`, leaving local server instances unaware of changes.
+  3. `resolveServerCatalog()` and `resolveServerAudiobooks()` only checked predetermined snapshot records and mock seeds, missing files uploaded or dropped directly into `public/audio/uploads/` and `public/audio/`.
+- **Architectural Implementation**:
+  1. **Hybrid Cloud & Local Snapshot Persistence (`src/lib/server/catalogStore.ts`)**:
+     - `applyCatalogOps()` immediately persists valid ops to `.data/catalog_snapshot.json` atomically, commits to Firestore if Firebase Admin is available, bumps the monotonic revision, and invalidates in-memory cache via `invalidateCatalogSnapshotCache()`.
+     - `readCatalogSnapshot()` enforces a tight 2.5-second cache TTL, checks the combined revision across Firestore and local storage, and merges any newly synced collections on read.
+     - Upload route handlers (`/api/admin/upload`, `/api/catalog/asset`) explicitly invoke `invalidateCatalogSnapshotCache()` on asset write completion.
+  2. **Dynamic Physical Media Discovery (`src/lib/server/strideiqCatalog.ts`)**:
+     - In `resolveServerCatalog()`: Scans `public/audio/uploads/` and `.data/audio/uploads/` for new `.mp3`/`.m4a` files. Unregistered files are parsed for clean artist and title, checked against tombstone lists, classified by genre/BPM, and registered as playable tracks in real time.
+     - In `resolveServerAudiobooks()`: Scans `public/audio/` and `.data/audio/` for new substantive audio files (> 500KB). Unregistered files are parsed into authentic chaptered audiobooks and made available for streaming and mix generation.
+     - In `resolveServerPodcasts()`: Scans `public/videos/` and `public/podcasts/` for new video and audio podcast episodes.
+  3. **Zero-Latency Invalidation**: Every tool call in the MCP server (`search_music`, `list_audiobooks`, `generate_workout_mix`, `get_platform_health`) and every Partner API request dynamically resolves the catalog without holding stale memory objects.
+  4. **Verification**: Verified via `scratch/test_realtime_catalog.ts` (live track & audiobook addition, query, health sync, and deletion) and `scratch/test_realtime_disk_discovery.ts` (physical file drop & removal detection).

@@ -3,7 +3,7 @@ import { verifyServerAdmin } from '@/lib/auth/serverAuth';
 import fs from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { uploadCatalogAsset, CatalogAssetKind } from '@/lib/server/catalogStore';
+import { uploadCatalogAsset, CatalogAssetKind, invalidateCatalogSnapshotCache } from '@/lib/server/catalogStore';
 import { sha256Hex, validateUploadBytes, writeAssetExclusive } from '@/lib/server/audioAssetStore';
 import { buildUniqueAudioFileName, logAudioDiag } from '@/lib/music/audioAssetIntegrity';
 
@@ -344,6 +344,8 @@ export async function POST(request: NextRequest) {
           console.warn('[Upload API APIC extraction notice]', apicErr);
         }
       }
+
+      invalidateCatalogSnapshotCache();
 
       return NextResponse.json({
         success: true,

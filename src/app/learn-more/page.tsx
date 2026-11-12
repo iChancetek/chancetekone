@@ -17,6 +17,10 @@ import {
   Mic,
   Palette,
   Footprints,
+  Activity,
+  Terminal,
+  Zap,
+  ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
@@ -609,6 +613,125 @@ export default function LearnMorePage() {
               <p className="text-xs text-neutral-400 leading-relaxed">
                 Tangible physical collector artifacts crafted for dedicated crate enthusiasts.
               </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/5 bg-neutral-900/40 space-y-6 hover:border-brand-gold/40 transition-colors">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-2xl bg-brand-gold/20 text-brand-gold border border-brand-gold/30">
+                <Terminal className="w-5 h-5" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-white tracking-wide">
+                Autonomous Intelligence, Partner Streaming API, and MCP Architecture
+              </h2>
+            </div>
+            <VoiceNarrationButton
+              text="Music and culture should never exist in walled gardens. ChanceTEK One pioneers an open, agentic media architecture that seamlessly connects crate-digging heritage to external fitness ecosystems, smart hardware, and artificial intelligence reasoning agents through high-performance streaming APIs and the Model Context Protocol."
+              variant="icon"
+            />
+          </div>
+
+          <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
+            Music and culture should never exist in walled gardens. ChanceTEK One pioneers an open, agentic media architecture that seamlessly connects crate-digging heritage to external fitness ecosystems, smart hardware, and artificial intelligence reasoning agents through high-performance streaming APIs and the Model Context Protocol.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-5 rounded-2xl bg-neutral-950/60 border border-white/5 space-y-2.5">
+              <div className="flex items-center gap-2 text-brand-gold font-bold text-sm">
+                <Activity className="w-4 h-4" />
+                <span>Partner Streaming API (/api/strideiq/v1)</span>
+              </div>
+              <p className="text-xs text-neutral-400 leading-relaxed">
+                Real-time tempo and cadence pacing tailored for athletic platforms such as StrideIQ, featuring 6 continuous 24/7 radio stations, full-length spoken audiobooks, and HTTP 206 Partial Content byte-range audio streaming.
+              </p>
+              <ul className="text-xs text-neutral-400 space-y-1 pt-1">
+                <li className="flex items-center gap-2">
+                  <span className="text-brand-gold">•</span>
+                  <span>Dynamic BPM sorting for warm-up, endurance, and sprint splits</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-brand-gold">•</span>
+                  <span>Continuous commercial-free breakbeat and soulful house radio</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-brand-gold">•</span>
+                  <span>Chapter-indexed historical literature with voice metadata</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-neutral-950/60 border border-white/5 space-y-2.5">
+              <div className="flex items-center gap-2 text-brand-neon font-bold text-sm">
+                <Zap className="w-4 h-4" />
+                <span>Model Context Protocol (MCP) Server</span>
+              </div>
+              <p className="text-xs text-neutral-400 leading-relaxed">
+                Native Model Context Protocol interface supporting both local Stdio execution and remote HTTP JSON-RPC 2.0 with Server-Sent Events at /api/mcp and /api/mcp/sse.
+              </p>
+              <ul className="text-xs text-neutral-400 space-y-1 pt-1">
+                <li className="flex items-center gap-2">
+                  <span className="text-brand-neon">•</span>
+                  <span>13 autonomous tools for catalog querying, pacing, and playback</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-brand-neon">•</span>
+                  <span>3 live dynamic resources providing real-time platform summaries</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-brand-neon">•</span>
+                  <span>Prompt templates for curated DJ workout sets and literary sessions</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-neutral-950/60 border border-white/5 space-y-2.5">
+              <div className="flex items-center gap-2 text-brand-purple font-bold text-sm">
+                <Cpu className="w-4 h-4" />
+                <span>Real-Time Catalog Synchronization</span>
+              </div>
+              <p className="text-xs text-neutral-400 leading-relaxed">
+                As tracks, audiobooks, and podcasts are uploaded or ingested into ChanceTEK One, they are immediately indexed via dynamic filesystem inspection and reactive cache invalidation.
+              </p>
+              <ul className="text-xs text-neutral-400 space-y-1 pt-1">
+                <li className="flex items-center gap-2">
+                  <span className="text-brand-purple">•</span>
+                  <span>Zero-delay ingestion: newly added items are accessible instantly</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-brand-purple">•</span>
+                  <span>Cross-artist protection guarantees authentic artist attribution</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-brand-purple">•</span>
+                  <span>Persistent catalog snapshot with lightning-fast sub-second response</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-neutral-950/60 border border-white/5 space-y-2.5">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Universal Multi-Platform Reach</span>
+              </div>
+              <p className="text-xs text-neutral-400 leading-relaxed">
+                Engineered for rapid integration across developer platforms, connected hardware, and artificial intelligence agents.
+              </p>
+              <ul className="text-xs text-neutral-400 space-y-1 pt-1">
+                <li className="flex items-center gap-2">
+                  <span className="text-emerald-400">•</span>
+                  <span>Claude Desktop, Cursor, Antigravity, Windsurf, and Claude Code</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-emerald-400">•</span>
+                  <span>Autonomous agent frameworks: LangChain, CrewAI, AutoGen</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-emerald-400">•</span>
+                  <span>Connected gym consoles, Apple Watch, Wear OS, iOS and Android</span>
+                </li>
+              </ul>
             </div>
           </div>
         </section>

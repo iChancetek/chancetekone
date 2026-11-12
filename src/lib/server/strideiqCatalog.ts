@@ -741,6 +741,85 @@ export async function resolveServerCatalog(options?: {
     registerTrack(normalizeAndResolveTrack(radioTrack as Record<string, any>, 'radio'));
   }
 
+  // 4. Real-time physical server uploads discovery (public/audio/uploads & .data/audio/uploads)
+  const registeredSources = new Set<string>();
+  for (const t of mergedById.values()) {
+    if (t.resolvedAudioSource) registeredSources.add(t.resolvedAudioSource.toLowerCase());
+  }
+
+  const uploadDirs = [
+    path.join(process.cwd(), 'public', 'audio', 'uploads'),
+    path.join(process.cwd(), '.data', 'audio', 'uploads'),
+  ];
+
+  for (const uDir of uploadDirs) {
+    if (!fs.existsSync(uDir)) continue;
+    try {
+      const files = fs.readdirSync(uDir);
+      for (const file of files) {
+        if (!/\.(mp3|m4a|wav|aac)$/i.test(file)) continue;
+        const relativeUrl = `/audio/uploads/${file}`;
+        if (registeredSources.has(relativeUrl.toLowerCase())) continue;
+
+        const fullPath = path.join(uDir, file);
+        let stat: fs.Stats;
+        try {
+          stat = fs.statSync(fullPath);
+        } catch {
+          continue;
+        }
+        if (stat.size < 100_000) continue; // skip empty or corrupt files
+
+        // Clean artist and title from filename
+        const baseName = file.replace(/\.[^/.]+$/, '').replace(/^\d{10,14}_/, '');
+        let artist = 'ChanceTEK Master';
+        let title = baseName;
+
+        if (baseName.includes('_-_') || baseName.includes(' - ')) {
+          const parts = baseName.includes('_-_') ? baseName.split('_-_') : baseName.split(' - ');
+          artist = (parts[0] || '').replace(/_/g, ' ').trim() || 'ChanceTEK Master';
+          title = (parts.slice(1).join(' ') || '').replace(/_/g, ' ').trim() || baseName;
+        } else if (baseName.includes('_')) {
+          const parts = baseName.split('_');
+          if (parts.length >= 2) {
+            artist = parts[0];
+            title = parts.slice(1).join(' ');
+          }
+        }
+
+        const id = `trk-upload-${normalizeAlbumKey(title)}-${normalizeAlbumKey(artist)}`;
+        if (mergedById.has(id) || isTombstoned(id, title, artist)) continue;
+
+        const genre = classifyGenre({ title, artist });
+        const { bpm, estimated } = inferTrackBpm({ id, title, artistName: artist, genre });
+        const crate = getCrateInfoForTrack({ crateId: 'direct', crateName: 'Direct Music Library' }, genre);
+        const approxDuration = Math.max(90, Math.min(600, Math.round(stat.size / 16000)));
+
+        registerTrack({
+          id,
+          title,
+          artist,
+          album: 'Studio Uploads & Vaults',
+          genre,
+          bpm,
+          bpmEstimated: estimated,
+          energy: inferEnergyLevel(bpm, genre),
+          durationSeconds: approxDuration,
+          explicit: false,
+          crateId: crate.id,
+          crateName: crate.name,
+          source: 'catalog',
+          playable: true,
+          resolvedAudioSource: relativeUrl,
+          localFilePath: fullPath,
+          isExternalUrl: false,
+          artworkPath: getDefaultCoverForTrack({ genre, crateId: crate.id, artistName: artist, title }),
+        });
+        registeredSources.add(relativeUrl.toLowerCase());
+      }
+    } catch {}
+  }
+
   return Array.from(mergedById.values());
 }
 
@@ -1509,6 +1588,79 @@ export async function resolveServerAudiobooks(options?: {
   for (const doc of snapshot.collections.audiobooks || []) register(doc);
   for (const seed of MOCK_AUDIOBOOKS) register(seed as Record<string, any>);
 
+  // 3. Real-time physical audiobooks discovery (public/audio, public/audiobooks, .data/audio)
+  const registeredAudioPaths = new Set<string>();
+  for (const b of byId.values()) {
+    for (const ch of b.chapters) {
+      if (ch.resolvedSource) registeredAudioPaths.add(ch.resolvedSource.toLowerCase());
+    }
+  }
+
+  const bookDirs = [
+    path.join(process.cwd(), 'public', 'audio'),
+    path.join(process.cwd(), 'public', 'audiobooks'),
+    path.join(process.cwd(), '.data', 'audio'),
+  ];
+
+  for (const bDir of bookDirs) {
+    if (!fs.existsSync(bDir)) continue;
+    try {
+      const files = fs.readdirSync(bDir);
+      for (const file of files) {
+        if (!/\.(mp3|m4a|wav|aac)$/i.test(file)) continue;
+        const relativeUrl = `/audio/${file}`;
+        if (registeredAudioPaths.has(relativeUrl.toLowerCase())) continue;
+
+        // Skip music and advertisement tracks in public/audio
+        if (/fort[_\s]apache/i.test(file) || /voice_ad/i.test(file)) continue;
+
+        const fullPath = path.join(bDir, file);
+        let stat: fs.Stats;
+        try {
+          stat = fs.statSync(fullPath);
+        } catch {
+          continue;
+        }
+        if (stat.size < 500_000) continue; // audiobooks are substantive spoken files
+
+        const rawTitle = file.replace(/\.[^/.]+$/, '').replace(/_/g, ' ').trim();
+        const bookId = `audiobook-disk-${normalizeAlbumKey(rawTitle)}`;
+
+        if (byId.has(bookId) || isMediaEntityTombstoned(removedDocs, 'audiobook:', bookId, rawTitle)) continue;
+
+        const approxDuration = Math.max(300, Math.round(stat.size / 16000));
+        const streamId = `ab:${bookId}:ch-1`;
+
+        byId.set(bookId, {
+          id: bookId,
+          title: rawTitle,
+          author: 'Chancellor @ ChanceTEK LLC',
+          narrator: 'Studio Narrator',
+          genre: 'Cultural & Tech Literature',
+          description: `Spoken literature and master narrative: ${rawTitle}.`,
+          releaseYear: new Date().getFullYear(),
+          totalDurationSeconds: approxDuration,
+          playable: true,
+          artworkPath: safeResolveSpokenArtwork('/images/audiobooks/famio.jpg'),
+          chapters: [
+            {
+              id: 'ch-1',
+              streamId,
+              chapterIndex: 1,
+              title: `Chapter 1: ${rawTitle}`,
+              durationSeconds: approxDuration,
+              playable: true,
+              resolvedSource: relativeUrl,
+              localFilePath: fullPath,
+              isExternalUrl: false,
+            },
+          ],
+        });
+        registeredAudioPaths.add(relativeUrl.toLowerCase());
+      }
+    } catch {}
+  }
+
   return Array.from(byId.values());
 }
 
@@ -1728,6 +1880,66 @@ export async function resolveServerPodcasts(options?: {
 
   for (const doc of snapshot.collections.podcasts || []) register(doc);
   for (const seed of SEED_PODCASTS) register(seed as Record<string, any>);
+
+  // 3. Real-time physical video & podcast discovery (public/videos, public/podcasts)
+  const registeredSources = new Set<string>();
+  for (const p of byId.values()) {
+    if (p.resolvedSource) registeredSources.add(p.resolvedSource.toLowerCase());
+  }
+
+  const podDirs = [
+    path.join(process.cwd(), 'public', 'videos'),
+    path.join(process.cwd(), 'public', 'podcasts'),
+  ];
+
+  for (const pDir of podDirs) {
+    if (!fs.existsSync(pDir)) continue;
+    try {
+      const files = fs.readdirSync(pDir);
+      for (const file of files) {
+        if (!/\.(mp4|mov|m4v|webm|mp3)$/i.test(file)) continue;
+        const relativeUrl = pDir.includes('videos') ? `/videos/${file}` : `/podcasts/${file}`;
+        if (registeredSources.has(relativeUrl.toLowerCase())) continue;
+
+        // Skip background loop videos that are not podcast episodes
+        if (/lounge/i.test(file)) continue;
+
+        const fullPath = path.join(pDir, file);
+        let stat: fs.Stats;
+        try {
+          stat = fs.statSync(fullPath);
+        } catch {
+          continue;
+        }
+        if (stat.size < 500_000) continue;
+
+        const rawTitle = file.replace(/\.[^/.]+$/, '').replace(/_/g, ' ').trim();
+        const podId = `podcast-disk-${normalizeAlbumKey(rawTitle)}`;
+        if (byId.has(podId) || isMediaEntityTombstoned(removedDocs, 'podcast:', podId, rawTitle)) continue;
+
+        const isVid = /\.(mp4|mov|m4v|webm)$/i.test(file);
+        const approxDuration = Math.max(300, Math.round(stat.size / (isVid ? 120000 : 16000)));
+
+        byId.set(podId, {
+          id: podId,
+          title: rawTitle,
+          showTitle: 'ChanceTEK Master Broadcasts',
+          host: 'Chancellor @ ChanceTEK LLC',
+          description: `Authentic studio broadcast: ${rawTitle}.`,
+          category: 'Culture & Technology',
+          mediaType: isVid ? 'video' : 'audio',
+          releaseDate: new Date().toISOString().split('T')[0],
+          durationSeconds: approxDuration,
+          playable: true,
+          resolvedSource: relativeUrl,
+          localFilePath: fullPath,
+          isExternalUrl: false,
+          artworkPath: safeResolveSpokenArtwork('/images/audiobooks/agentic_ai.jpg'),
+        });
+        registeredSources.add(relativeUrl.toLowerCase());
+      }
+    } catch {}
+  }
 
   return Array.from(byId.values());
 }

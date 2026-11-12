@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import { verifyServerAdmin } from '@/lib/auth/serverAuth';
-import { CatalogAssetKind, uploadCatalogAsset } from '@/lib/server/catalogStore';
+import { CatalogAssetKind, uploadCatalogAsset, invalidateCatalogSnapshotCache } from '@/lib/server/catalogStore';
 import { sha256Hex, validateUploadBytes, writeAssetExclusive } from '@/lib/server/audioAssetStore';
 import { logAudioDiag, sanitizeFileSegment } from '@/lib/music/audioAssetIntegrity';
 
@@ -95,6 +95,7 @@ export async function POST(request: NextRequest) {
     }
 
     logAudioDiag({ stage: 'upload_complete', uploadId: ownerId, sha256, assetKey: url, source: backend, status: 'verified' });
+    invalidateCatalogSnapshotCache();
     return NextResponse.json({
       ok: true,
       url,

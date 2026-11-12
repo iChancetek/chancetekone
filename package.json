@@ -3,11 +3,15 @@
   "version": "1.0.0",
   "description": "chancetekone",
   "main": "firebase.js",
+  "bin": {
+    "chancetek-mcp": "./bin/chancetek-mcp.js"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build && node scripts/copy-standalone.js",
     "start": "next start",
-    "test:ingestion": "tsx scripts/test-ingestion.ts"
+    "test:ingestion": "tsx scripts/test-ingestion.ts",
+    "mcp": "tsx src/mcp/cli.ts"
   },
   "repository": {
     "type": "git",
@@ -22,6 +26,7 @@
   },
   "homepage": "https://github.com/iChancetek/chancetekone#readme",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "clsx": "^2.1.1",
     "firebase": "^12.18.0",
     "firebase-admin": "^14.3.0",

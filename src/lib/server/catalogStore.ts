@@ -4,6 +4,8 @@
  */
 
 import { createHash, randomUUID } from 'crypto';
+import fs from 'fs';
+import path from 'path';
 import { getFirebaseAdmin } from '../../../firebaseAdmin.js';
 import {
   CATALOG_COLLECTIONS,
@@ -21,60 +23,125 @@ import {
 
 const MAX_DOC_BYTES = 900_000; // Firestore hard limit is 1 MiB
 const BATCH_SIZE = 400; // Firestore hard limit is 500 writes per batch
+const SNAPSHOT_CACHE_TTL_MS = 2500; // 2.5 seconds cache TTL for instant real-time synchronization
 
-let snapshotCache: { revision: number; snapshot: CatalogSnapshot } | null = null;
+let snapshotCache: { revision: number; snapshot: CatalogSnapshot; timestamp: number } | null = null;
 
-export async function getCatalogRevision(): Promise<number> {
-  // If no private key or client email is configured, don't attempt to contact GCP
-  if (!process.env.FIREBASE_ADMIN_PRIVATE_KEY && !process.env.FIREBASE_ADMIN_CLIENT_EMAIL) {
-    return 0;
-  }
+export function canUseFirebaseAdmin(): boolean {
+  return Boolean(
+    process.env.K_SERVICE ||
+      process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+      (process.env.FIREBASE_ADMIN_PRIVATE_KEY && process.env.FIREBASE_ADMIN_CLIENT_EMAIL)
+  );
+}
 
+function getDataDir(): string {
+  return path.join(process.cwd(), '.data');
+}
+
+function getLocalSnapshotPath(): string {
+  return path.join(getDataDir(), 'catalog_snapshot.json');
+}
+
+function readLocalCatalogSnapshot(): CatalogSnapshot | null {
   try {
-    const { adminDb } = await getFirebaseAdmin();
-    const snap = await adminDb.collection(CATALOG_META_COLLECTION).doc(CATALOG_META_DOC).get();
-    return snap.exists ? Number(snap.data()?.revision || 0) : 0;
-  } catch (err: any) {
-    return 0;
+    const file = getLocalSnapshotPath();
+    if (!fs.existsSync(file)) return null;
+    const parsed = JSON.parse(fs.readFileSync(file, 'utf-8'));
+    if (parsed && typeof parsed === 'object' && parsed.collections) {
+      return parsed as CatalogSnapshot;
+    }
+  } catch {}
+  return null;
+}
+
+function writeLocalCatalogSnapshot(snapshot: CatalogSnapshot): void {
+  try {
+    const dir = getDataDir();
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const target = getLocalSnapshotPath();
+    const tmp = `${target}.${process.pid}.${Date.now()}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(snapshot, null, 2), 'utf-8');
+    fs.renameSync(tmp, target);
+  } catch (err) {
+    if (!process.env.K_SERVICE) {
+      console.warn('[catalogStore] Local catalog snapshot write warning:', err);
+    }
   }
 }
 
+export function invalidateCatalogSnapshotCache(): void {
+  snapshotCache = null;
+}
+
+export async function getCatalogRevision(): Promise<number> {
+  let cloudRev = 0;
+  if (canUseFirebaseAdmin()) {
+    try {
+      const { adminDb } = await getFirebaseAdmin();
+      const snap = await adminDb.collection(CATALOG_META_COLLECTION).doc(CATALOG_META_DOC).get();
+      cloudRev = snap.exists ? Number(snap.data()?.revision || 0) : 0;
+    } catch {
+      cloudRev = 0;
+    }
+  }
+  const local = readLocalCatalogSnapshot();
+  const localRev = Number(local?.revision || 0);
+  return Math.max(cloudRev, localRev);
+}
+
 /**
- * Reads the full catalog. Cached per server instance by revision, so with N members
- * polling we only pay one Firestore read (the meta doc) per poll until something changes.
+ * Reads the full catalog across Firestore and local snapshot.
+ * Ensures newly added tracks, audiobooks, and podcasts are picked up in real time.
  */
 export async function readCatalogSnapshot(): Promise<CatalogSnapshot> {
   const revision = await getCatalogRevision();
-  if (snapshotCache && snapshotCache.revision === revision) {
+  const now = Date.now();
+
+  if (snapshotCache && snapshotCache.revision === revision && now - snapshotCache.timestamp < SNAPSHOT_CACHE_TTL_MS) {
     return snapshotCache.snapshot;
   }
 
   const snapshot = emptySnapshot();
   snapshot.revision = revision;
 
-  if (!process.env.FIREBASE_ADMIN_PRIVATE_KEY && !process.env.FIREBASE_ADMIN_CLIENT_EMAIL) {
-    snapshotCache = { revision, snapshot };
-    return snapshot;
+  // 1. Load cloud snapshot if Firebase Admin is available
+  if (canUseFirebaseAdmin()) {
+    try {
+      const { adminDb } = await getFirebaseAdmin();
+      await Promise.all(
+        CATALOG_COLLECTIONS.map(async (c) => {
+          const qs = await adminDb.collection(firestoreCollectionName(c)).get();
+          snapshot.collections[c] = qs.docs.map((d: any) => {
+            const { _updatedAt, ...data } = d.data() || {};
+            const id = typeof data.id === 'string' && data.id ? data.id : safeDecode(d.id);
+            return { ...data, id } as CatalogDoc;
+          });
+        })
+      );
+    } catch (err: any) {
+      // Fallback gracefully to local snapshot
+    }
   }
 
-  try {
-    const { adminDb } = await getFirebaseAdmin();
-    await Promise.all(
-      CATALOG_COLLECTIONS.map(async (c) => {
-        const qs = await adminDb.collection(firestoreCollectionName(c)).get();
-        snapshot.collections[c] = qs.docs.map((d: any) => {
-          const { _updatedAt, ...data } = d.data() || {};
-          const id = typeof data.id === 'string' && data.id ? data.id : safeDecode(d.id);
-          return { ...data, id } as CatalogDoc;
-        });
-      })
-    );
-  } catch (err: any) {
-    // If Admin credentials are not set locally, return empty snapshot so client serves local catalog cleanly
-    return snapshot;
+  // 2. Merge local snapshot if present (ensures instant real-time reflection across local writes/dev mode)
+  const local = readLocalCatalogSnapshot();
+  if (local?.collections) {
+    for (const col of CATALOG_COLLECTIONS) {
+      const localDocs = local.collections[col] || [];
+      if (localDocs.length > 0) {
+        const existingMap = new Map<string, CatalogDoc>(
+          (snapshot.collections[col] || []).map((d) => [d.id, d])
+        );
+        for (const ld of localDocs) {
+          existingMap.set(ld.id, { ...(existingMap.get(ld.id) || {}), ...ld });
+        }
+        snapshot.collections[col] = Array.from(existingMap.values());
+      }
+    }
   }
 
-  snapshotCache = { revision, snapshot };
+  snapshotCache = { revision, snapshot, timestamp: now };
   return snapshot;
 }
 
@@ -95,10 +162,6 @@ export async function applyCatalogOps(
   ops: CatalogOp[],
   actor: string
 ): Promise<{ applied: number; revision: number }> {
-  if (!process.env.FIREBASE_ADMIN_PRIVATE_KEY && !process.env.FIREBASE_ADMIN_CLIENT_EMAIL) {
-    return { applied: ops.length, revision: await getCatalogRevision() };
-  }
-
   const valid = ops.filter(
     (o) =>
       o &&
@@ -111,44 +174,73 @@ export async function applyCatalogOps(
     return { applied: 0, revision: await getCatalogRevision() };
   }
 
-  const { admin, adminDb } = await getFirebaseAdmin();
-
-  for (let i = 0; i < valid.length; i += BATCH_SIZE) {
-    const batch = adminDb.batch();
-    for (const o of valid.slice(i, i + BATCH_SIZE)) {
-      const ref = adminDb
-        .collection(firestoreCollectionName(o.collection as CatalogCollection))
-        .doc(encodeDocId(o.id));
-      if (o.op === 'delete') {
-        batch.delete(ref);
+  // 1. Immediately apply to local catalog snapshot for 0-latency real-time reflection
+  const local = readLocalCatalogSnapshot() || emptySnapshot();
+  for (const o of valid) {
+    const col = o.collection as CatalogCollection;
+    const list = local.collections[col] || [];
+    if (o.op === 'delete') {
+      local.collections[col] = list.filter((d) => d.id !== o.id);
+    } else {
+      const payload = sanitize({ ...o.data, id: o.id });
+      const idx = list.findIndex((d) => d.id === o.id);
+      if (idx >= 0) {
+        list[idx] = payload;
       } else {
-        const payload = sanitize({ ...o.data, id: o.id });
-        const size = Buffer.byteLength(JSON.stringify(payload));
-        if (size > MAX_DOC_BYTES) {
-          throw new Error(
-            `Catalog item "${o.id}" in "${o.collection}" is too large (${size} bytes). Upload large media/artwork as files, not inline data.`
-          );
-        }
-        batch.set(ref, { ...payload, _updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+        list.unshift(payload);
       }
+      local.collections[col] = list;
     }
-    await batch.commit();
+  }
+  local.revision = (local.revision || 0) + 1;
+  writeLocalCatalogSnapshot(local);
+
+  // 2. If Firebase Admin is available, commit batches to Firestore
+  if (canUseFirebaseAdmin()) {
+    try {
+      const { admin, adminDb } = await getFirebaseAdmin();
+
+      for (let i = 0; i < valid.length; i += BATCH_SIZE) {
+        const batch = adminDb.batch();
+        for (const o of valid.slice(i, i + BATCH_SIZE)) {
+          const ref = adminDb
+            .collection(firestoreCollectionName(o.collection as CatalogCollection))
+            .doc(encodeDocId(o.id));
+          if (o.op === 'delete') {
+            batch.delete(ref);
+          } else {
+            const payload = sanitize({ ...o.data, id: o.id });
+            const size = Buffer.byteLength(JSON.stringify(payload));
+            if (size > MAX_DOC_BYTES) {
+              throw new Error(
+                `Catalog item "${o.id}" in "${o.collection}" is too large (${size} bytes). Upload large media/artwork as files, not inline data.`
+              );
+            }
+            batch.set(ref, { ...payload, _updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+          }
+        }
+        await batch.commit();
+      }
+
+      await adminDb
+        .collection(CATALOG_META_COLLECTION)
+        .doc(CATALOG_META_DOC)
+        .set(
+          {
+            revision: admin.firestore.FieldValue.increment(1),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedBy: actor,
+          },
+          { merge: true }
+        );
+    } catch (cloudErr) {
+      console.warn('[catalogStore] Cloud batch write warning (local write succeeded):', cloudErr);
+    }
   }
 
-  await adminDb
-    .collection(CATALOG_META_COLLECTION)
-    .doc(CATALOG_META_DOC)
-    .set(
-      {
-        revision: admin.firestore.FieldValue.increment(1),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedBy: actor,
-      },
-      { merge: true }
-    );
-
-  snapshotCache = null;
-  return { applied: valid.length, revision: await getCatalogRevision() };
+  invalidateCatalogSnapshotCache();
+  const revision = await getCatalogRevision();
+  return { applied: valid.length, revision };
 }
 
 const sanitizeSegment = (s: string) =>
