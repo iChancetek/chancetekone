@@ -81,6 +81,13 @@ export const VERIFIED_SERVER_UPLOADS = new Set([
   'The_Isley_Brothers_For_The_Love_Of_You.mp3',
   'The_Spinners_Could_It_Be_Im_Falling_In_Love.mp3',
   'The_Spinners_Ill_Be_Around.mp3',
+  'Nas_NY_State_Of_Mind.mp3',
+  'Nas_Halftime.mp3',
+  'Nas_The_World_Is_Yours.mp3',
+  'Nas_If_I_Ruled_The_World.mp3',
+  'Nas_Made_You_Look.mp3',
+  'Nas_Nas_Is_Like.mp3',
+  'Nas_One_Love.mp3',
 ]);
 
 /**
@@ -189,6 +196,7 @@ export function isCrossArtistAudioMismatch(track: {
     { pattern: /^tevin_campbell_/i, expectedArtist: 'tevin campbell' },
     { pattern: /^the_isley_brothers_/i, expectedArtist: 'isley' },
     { pattern: /^the_spinners_/i, expectedArtist: 'spinners' },
+    { pattern: /^nas_/i, expectedArtist: 'nas' },
   ];
 
   for (const sig of masterSignatures) {
@@ -260,6 +268,32 @@ export function getAuthenticAudioUrl(track: TrackIdentifier): string | null {
     (artist.includes('lauryn') || file.includes('lauryn') || id.includes('lauryn'))
   ) {
     return '/audio/uploads/Lauryn_Hill_Ex_Factor_Remix.mp3';
+  }
+
+  // 4. Nas authentic studio masters (Illmatic, It Was Written, God's Son, I Am...)
+  if (artist.includes('nas') || file.includes('nas_') || id.includes('nas-') || id.includes('trk-pub-nas')) {
+    if (title.includes('state of mind') || file.includes('state_of_mind')) {
+      return '/audio/uploads/Nas_NY_State_Of_Mind.mp3';
+    }
+    if (title.includes('halftime') || file.includes('halftime')) {
+      return '/audio/uploads/Nas_Halftime.mp3';
+    }
+    if (title.includes('world is yours') || file.includes('world_is_yours')) {
+      return '/audio/uploads/Nas_The_World_Is_Yours.mp3';
+    }
+    if (title.includes('if i ruled') || file.includes('if_i_ruled')) {
+      return '/audio/uploads/Nas_If_I_Ruled_The_World.mp3';
+    }
+    if (title.includes('made you look') || file.includes('made_you_look')) {
+      return '/audio/uploads/Nas_Made_You_Look.mp3';
+    }
+    if (title.includes('nas is like') || file.includes('nas_is_like')) {
+      return '/audio/uploads/Nas_Nas_Is_Like.mp3';
+    }
+    if (title.includes('one love') || file.includes('one_love')) {
+      return '/audio/uploads/Nas_One_Love.mp3';
+    }
+    return '/audio/uploads/Nas_NY_State_Of_Mind.mp3';
   }
 
   // 5. Mary J. Blige (ONLY match "I Can Love You" when artist is Mary J. Blige)

@@ -3,7 +3,7 @@ import { verifyServerAdmin } from '@/lib/auth/serverAuth';
 import fs from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { uploadCatalogAsset, CatalogAssetKind, invalidateCatalogSnapshotCache } from '@/lib/server/catalogStore';
+import { uploadCatalogAsset, CatalogAssetKind, invalidateCatalogSnapshotCache, applyCatalogOps } from '@/lib/server/catalogStore';
 import { sha256Hex, validateUploadBytes, writeAssetExclusive } from '@/lib/server/audioAssetStore';
 import { buildUniqueAudioFileName, logAudioDiag } from '@/lib/music/audioAssetIntegrity';
 
@@ -342,6 +342,48 @@ export async function POST(request: NextRequest) {
           }
         } catch (apicErr) {
           console.warn('[Upload API APIC extraction notice]', apicErr);
+        }
+      }
+
+      if (assetKind === 'audio') {
+        const rawArtist = (formData.get('artist') as string) || '';
+        const rawTitle = (formData.get('title') as string) || '';
+        let inferredArtist = rawArtist.trim();
+        let inferredTitle = rawTitle.trim();
+        if (!inferredArtist || !inferredTitle) {
+          if (cleanBase.includes('_-_') || cleanBase.includes(' - ')) {
+            const parts = cleanBase.includes('_-_') ? cleanBase.split('_-_') : cleanBase.split(' - ');
+            inferredArtist = parts[0].replace(/_/g, ' ').trim();
+            inferredTitle = parts.slice(1).join(' ').replace(/_/g, ' ').trim();
+          } else if (cleanBase.includes('_')) {
+            const parts = cleanBase.split('_');
+            inferredArtist = parts[0].trim();
+            inferredTitle = parts.slice(1).join(' ').trim();
+          } else {
+            inferredTitle = cleanBase;
+            inferredArtist = 'ChanceTEK Master';
+          }
+        }
+        if (inferredTitle && inferredArtist) {
+          const trackDoc = {
+            id: uploadId || `trk-pub-${Date.now()}`,
+            title: inferredTitle,
+            artist: inferredArtist,
+            artistName: inferredArtist,
+            album: (formData.get('album') as string) || 'Studio Uploads & Vaults',
+            albumTitle: (formData.get('album') as string) || 'Studio Uploads & Vaults',
+            audioUrl: mediaUrl,
+            coverUrl: coverUrl || `/images/genres/hip-hop.jpg`,
+            genre: (formData.get('genre') as string) || 'Golden Era Hip Hop',
+            bpm: Number(formData.get('bpm')) || 94,
+            duration: Math.max(90, Math.min(600, Math.round(buffer.length / 16000))),
+            durationSeconds: Math.max(90, Math.min(600, Math.round(buffer.length / 16000))),
+            crateId: (formData.get('crateId') as string) || 'golden-era-hip-hop',
+            crateName: (formData.get('crateName') as string) || 'Golden Era Hip Hop',
+            uploadedAt: new Date().toISOString(),
+            isPublished: true,
+          };
+          applyCatalogOps([{ collection: 'tracks', op: 'set', id: trackDoc.id, data: trackDoc }], auth.email || 'admin').catch(() => {});
         }
       }
 

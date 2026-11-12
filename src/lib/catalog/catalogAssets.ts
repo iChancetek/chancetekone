@@ -150,34 +150,42 @@ export async function externalizeMedia(
 export async function prepareTrackDoc(doc: CatalogDoc): Promise<CatalogDoc | null> {
   const t = { ...doc };
   if (needsCloudAudioExternalization(t.audioUrl)) {
-    const audio = await externalizeMedia(t.audioUrl, t.id, 'audio', t.title || t.id, {
-      title: t.title,
-      artistName: t.artistName,
-      fileName: (t as any).fileName,
-    });
-    if (audio) {
-      t.audioUrl = audio;
-      t.audioStatus = 'verified';
-    } else {
+    try {
+      const audio = await externalizeMedia(t.audioUrl, t.id, 'audio', t.title || t.id, {
+        title: t.title,
+        artistName: t.artistName,
+        fileName: (t as any).fileName,
+      });
+      if (audio) {
+        t.audioUrl = audio;
+        t.audioStatus = 'verified';
+      }
+    } catch {
+      // Non-blocking
+    }
+    if (!t.audioUrl || t.audioUrl.startsWith('indexeddb://') || t.audioUrl.startsWith('blob:')) {
       const authentic = getAuthenticAudioUrl(t);
       if (authentic) {
         t.audioUrl = authentic;
-      } else {
-        // Do NOT synthesize a non-existent `/audio/uploads/${safe}.mp3` URL when local media is
-        // unavailable in this browser; return null so CloudCatalogClient skips pushing a broken reference.
-        return null;
       }
     }
   } else if (!t.audioUrl || t.audioUrl === '/audio/Fort Apache.mp3') {
     const authentic = getAuthenticAudioUrl(t);
     if (authentic) {
       t.audioUrl = authentic;
-    } else if (!t.audioUrl) {
-      return null;
     }
   }
-  if (isEphemeralUrl(t.coverUrl)) t.coverUrl = await externalizeImage(t.coverUrl, t.id);
-  if (isEphemeralUrl(t.albumCoverUrl)) t.albumCoverUrl = await externalizeImage(t.albumCoverUrl, `${t.id}_album`);
+
+  if (isEphemeralUrl(t.coverUrl)) {
+    try {
+      t.coverUrl = await externalizeImage(t.coverUrl, t.id);
+    } catch {}
+  }
+  if (isEphemeralUrl(t.albumCoverUrl)) {
+    try {
+      t.albumCoverUrl = await externalizeImage(t.albumCoverUrl, `${t.id}_album`);
+    } catch {}
+  }
   return t;
 }
 

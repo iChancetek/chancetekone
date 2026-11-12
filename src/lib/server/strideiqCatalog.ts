@@ -335,7 +335,19 @@ export function resolvePhysicalMediaFile(mediaUrl?: string): string | null {
 export function resolvePhysicalAudioFile(audioUrl?: string): string | null {
   if (!audioUrl) return null;
   if (!audioUrl.trim().toLowerCase().startsWith('/audio/')) return null;
-  return resolvePhysicalPublicAsset(audioUrl);
+  const inPublic = resolvePhysicalPublicAsset(audioUrl);
+  if (inPublic) return inPublic;
+
+  // Also check local .data storage directory (.data/audio/uploads and .data/audio)
+  const cleaned = audioUrl.split('?')[0].split('#')[0].trim();
+  const subPath = cleaned.replace(/^\/audio\//i, '');
+  const dataCandidate = path.resolve(process.cwd(), '.data', 'audio', subPath);
+  try {
+    if (fs.existsSync(dataCandidate) && fs.statSync(dataCandidate).isFile()) {
+      return dataCandidate;
+    }
+  } catch {}
+  return null;
 }
 
 function resolvePhysicalPublicAsset(assetUrl?: string): string | null {
@@ -771,19 +783,22 @@ export async function resolveServerCatalog(options?: {
         if (stat.size < 100_000) continue; // skip empty or corrupt files
 
         // Clean artist and title from filename
-        const baseName = file.replace(/\.[^/.]+$/, '').replace(/^\d{10,14}_/, '');
+        const rawBase = file.replace(/\.[^/.]+$/, '');
+        const cleanBaseName = rawBase
+          .replace(/^(?:[a-zA-Z0-9\-]+_[a-fA-F0-9]{12}_|\d{10,14}_|asset_[a-fA-F0-9]{12}_)/, '')
+          .replace(/^cover_/, '');
         let artist = 'ChanceTEK Master';
-        let title = baseName;
+        let title = cleanBaseName;
 
-        if (baseName.includes('_-_') || baseName.includes(' - ')) {
-          const parts = baseName.includes('_-_') ? baseName.split('_-_') : baseName.split(' - ');
+        if (cleanBaseName.includes('_-_') || cleanBaseName.includes(' - ')) {
+          const parts = cleanBaseName.includes('_-_') ? cleanBaseName.split('_-_') : cleanBaseName.split(' - ');
           artist = (parts[0] || '').replace(/_/g, ' ').trim() || 'ChanceTEK Master';
-          title = (parts.slice(1).join(' ') || '').replace(/_/g, ' ').trim() || baseName;
-        } else if (baseName.includes('_')) {
-          const parts = baseName.split('_');
+          title = (parts.slice(1).join(' ') || '').replace(/_/g, ' ').trim() || cleanBaseName;
+        } else if (cleanBaseName.includes('_')) {
+          const parts = cleanBaseName.split('_');
           if (parts.length >= 2) {
-            artist = parts[0];
-            title = parts.slice(1).join(' ');
+            artist = parts[0].trim();
+            title = parts.slice(1).join(' ').trim();
           }
         }
 

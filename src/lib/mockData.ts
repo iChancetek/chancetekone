@@ -41,6 +41,27 @@ export const MOCK_ARTISTS: Artist[] = [
       website: 'https://michaeljackson.com',
     },
   },
+  {
+    id: 'artist-nas',
+    name: 'Nas',
+    label: 'Columbia Records / Mass Appeal / ChanceTEK One',
+    bio: 'Nasir bin Olu Dara Jones, known mononymously as Nas, is a hip-hop luminary, lyricist, and cornerstone of New York culture whose debut album Illmatic is widely heralded as the definitive rap masterpiece.',
+    avatarUrl: '/images/albums/nas_illmatic.jpg',
+    bannerUrl: '/images/albums/nas_it_was_written.jpg',
+    genres: ['Golden Era Hip Hop', 'Boom-Bap', 'Turntablism', 'Break Beats'],
+    verified: true,
+    followerCount: 0,
+    popularTrackIds: [
+      'trk-pub-nas-ny-state-of-mind',
+      'trk-pub-nas-halftime',
+      'trk-pub-nas-the-world-is-yours',
+      'trk-pub-nas-if-i-ruled-the-world',
+      'trk-pub-nas-made-you-look',
+    ],
+    socialLinks: {
+      website: 'https://nasirjones.com',
+    },
+  },
 ];
 
 export const MOCK_TRACKS: Track[] = [

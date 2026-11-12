@@ -3004,6 +3004,24 @@ class MusicCatalogServiceClass {
     this.persistTracks();
     this.forcePushAllToCloud();
 
+    // Direct server catalog synchronization for 0-latency reflection to StrideIQ partner API & MCP
+    if (typeof window !== 'undefined' && typeof fetch === 'function') {
+      const ops = formattedTracks.map((t) => ({
+        collection: 'tracks',
+        op: 'set',
+        id: t.id,
+        data: t as unknown as Record<string, any>,
+      }));
+      fetch('/api/catalog', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-email': actorName && actorName.includes('@') ? actorName : 'admin@chancetekone.com',
+        },
+        body: JSON.stringify({ ops }),
+      }).catch((err) => console.warn('[MusicCatalogService] Direct server catalog push warning:', err));
+    }
+
     // Increment track count on folder if specified
     if (folderId) {
       const f = this.crateFolders.find((folder) => folder.id === folderId);

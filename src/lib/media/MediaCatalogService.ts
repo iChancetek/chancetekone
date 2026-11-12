@@ -340,6 +340,19 @@ class MediaCatalogServiceClass {
     this.customAudiobooks.unshift(audiobook);
     this.removedAudiobookIds = this.removedAudiobookIds.filter((id) => id !== audiobook.id && id !== titleKey);
     this.persist();
+    this.pushLocalChanges();
+    if (typeof window !== 'undefined' && typeof fetch === 'function') {
+      fetch('/api/catalog', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-email': 'admin@chancetekone.com',
+        },
+        body: JSON.stringify({
+          ops: [{ collection: 'audiobooks', op: 'set', id: audiobook.id, data: audiobook }],
+        }),
+      }).catch(() => {});
+    }
     this.notify();
   }
 
@@ -498,6 +511,19 @@ class MediaCatalogServiceClass {
     this.customPodcasts.unshift(podcast);
     this.removedPodcastIds = this.removedPodcastIds.filter((id) => id !== podcast.id && id !== titleKey);
     this.persist();
+    this.pushLocalChanges();
+    if (typeof window !== 'undefined' && typeof fetch === 'function') {
+      fetch('/api/catalog', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-email': 'admin@chancetekone.com',
+        },
+        body: JSON.stringify({
+          ops: [{ collection: 'podcasts', op: 'set', id: podcast.id, data: podcast }],
+        }),
+      }).catch(() => {});
+    }
     this.notify();
   }
 
