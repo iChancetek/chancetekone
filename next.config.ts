@@ -23,12 +23,28 @@ const nextConfig: NextConfig = {
       { key: "Access-Control-Allow-Methods", value: "GET, HEAD, OPTIONS" },
       { key: "Access-Control-Allow-Headers", value: "Range, Accept, Origin, Content-Type" },
     ];
+    const strideiqApiCors = [
+      { key: "Access-Control-Allow-Origin", value: "*" },
+      { key: "Access-Control-Allow-Methods", value: "GET, POST, DELETE, HEAD, OPTIONS" },
+      {
+        key: "Access-Control-Allow-Headers",
+        value: "Authorization, x-strideiq-api-key, x-strideiq-partner-key, x-admin-email, Range, Accept, Origin, Content-Type",
+      },
+      {
+        key: "Access-Control-Expose-Headers",
+        value: "Content-Range, Content-Length, Accept-Ranges, ETag, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset",
+      },
+    ];
     return [
       { source: "/sw.js", headers: [...noStore, { key: "Service-Worker-Allowed", value: "/" }] },
       { source: "/manifest.webmanifest", headers: noStore },
-      { source: "/images/:path*", headers: staticAssetCache },
+      {
+        source: "/images/:path*",
+        headers: [...staticAssetCache, { key: "Access-Control-Allow-Origin", value: "*" }],
+      },
       { source: "/audio/:path*", headers: corsHeaders },
       { source: "/videos/:path*", headers: corsHeaders },
+      { source: "/api/strideiq/:path*", headers: strideiqApiCors },
     ];
   },
   experimental: {

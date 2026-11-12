@@ -1,5 +1,7 @@
 'use client';
 
+import { StrideIqIntegrationCard } from '@/components/admin/StrideIqIntegrationCard';
+
 import React, { useState } from 'react';
 import { RolePermissionRule, AdminRole } from '@/types/admin';
 import {
@@ -240,6 +242,9 @@ export const SettingsRBACSection: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* StrideIQ.fit External Streaming API & Partner Controls */}
+      <StrideIqIntegrationCard />
     </div>
   );
 };
