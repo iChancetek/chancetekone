@@ -1,1 +1,2 @@
-export { GET, OPTIONS, dynamic } from '@/app/api/strideiq/v1/audiobooks/[id]/route';
+export const dynamic = 'force-dynamic';
+export { GET, OPTIONS } from '@/app/api/strideiq/v1/audiobooks/[id]/route';
