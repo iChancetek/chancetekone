@@ -1708,6 +1708,26 @@ esolvedAudioUrl is reset to '' (zero tolerance).
      - In `CartDrawer.tsx`, updated the drawer title from `Break Beats Merch Cart` to `ChanceTEK One Merch Cart`.
      - In `MerchCatalogService.ts`, added automated cache sanitization in `loadState` to intercept and cleanse any legacy `8 of spades` or `return of the break beats` references from user browser `localStorage`.
 
+### 72. Account Profile & Settings Unified Media/Profile Save, Real-Time Toast, and Unsaved Changes Exit Guard Architecture
+- **Root Causes Identified**:
+  1. `handleSaveProfileInfo` in `src/app/profile/page.tsx` ignored staged uploaded media (`mediaFile`) when clicking "Save Profile", while `useEffect([profile])` re-ran on `updateUserProfile()` and overwrote active previews with previous IndexedDB media.
+  2. `ProfileMediaStorageService` stored mutable `File` references, resolved writes on `req.onsuccess` instead of `tx.oncomplete`, returned stale `memoryCache` entries during cross-tab sync, and lacked email-alias fallback.
+  3. `UserAvatar` never reset `imageError`/`videoError` state on prop changes, allowing transient expired `blob:` URLs restored from `localStorage` to poison `<video onError>` before IndexedDB hydrated.
+  4. `AuthContext` lost `bio`/`name` preferences on provider updates/re-login, leaked `blob:` URLs into `localStorage` and `AdminUserManager`, and skipped `hydrateProfileMedia` during sign-in flows.
+- **Architectural Implementation**:
+  1. **Unified Save Profile & Hydration Protection (`src/app/profile/page.tsx`)**:
+     - Added `handleSaveAllProfileChanges()` to atomically save staged photo/video media (up to 50MB via IndexedDB), media removal, Display Name, Bio, and optional Password edits in one action, wired to both the `Save Profile` buttons and the bottom unified footer bar.
+     - Guarded profile state synchronization with `hydratedProfileIdRef`, `mediaFileRef`, and `pendingMediaRemovalRef` so active edits/previews are never overwritten by background profile refreshes.
+     - Added drag-and-drop upload support and computed live preview props (`activePreviewAvatarUrl`, `activePreviewVideoUrl`, `activePreviewName`) for the header banner and post preview card.
+  2. **Real-Time Save Confirmation Toast & Inline Status**:
+     - Added a fixed real-time notification banner (`realTimeToast`, auto-dismissable) plus inline confirmation alerts immediately announcing when profile media, display name, bio, or password changes are persisted.
+  3. **Unsaved Changes Exit Prompt (`X`, `Back`, Internal Links, `beforeunload`)**:
+     - Added a header `X` close button and "Account Profile & Settings" navigation labels across `Sidebar.tsx`, `TopNav.tsx`, and `/profile`.
+     - Added comprehensive dirty-state tracking across media uploads/removals, display name, bio, and password fields. Attempting to click `X`, `Back`, any internal `<Link>`, or close the tab while edits are unsaved opens a confirmation modal offering **Save & Exit**, **Disregard Changes & Exit**, or **Keep Editing**.
+  4. **IndexedDB, Auth & Comment Sync Resilience**:
+     - Upgraded `ProfileMediaStorageService.ts` to write immutable ArrayBuffer `Blob` copies on `tx.oncomplete`, support `email:` alias lookups, defer `URL.revokeObjectURL`, and broadcast `PROFILE_MEDIA_CLEARED`.
+     - Hardened `AuthContext.tsx` (`stripVolatileBlobUrls`, `chancetek_profile_prefs_v1`, `hydrateProfileMedia` across all auth flows), `AdminUserManager.ts`, `UserAvatar.tsx` (error resets on URL prop change + `key`/`preload="auto"`), and `CommentSection.tsx` (live author avatar/video/name resolution).
+
 
 
 

@@ -347,7 +347,17 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
           sortedComments.map((comment) => {
             const userReactions = comment.userReactions?.[userId] || [];
             const isCollapsed = collapsedThreads.has(comment.id);
-            const isAuthor = profile?.id === comment.userId || user?.uid === comment.userId;
+            const isAuthor =
+              profile?.id === comment.userId ||
+              user?.uid === comment.userId ||
+              Boolean(
+                profile?.email &&
+                  comment.userEmail &&
+                  comment.userEmail.toLowerCase() === profile.email.toLowerCase()
+              );
+            const displayAvatar = isAuthor && profile ? profile.avatarUrl : comment.userAvatar;
+            const displayVideo = isAuthor && profile ? profile.profileVideoUrl : comment.userVideoUrl;
+            const displayName = isAuthor && profile ? profile.name : comment.userName;
             const replies = comment.replies || [];
             const isEditing = editingCommentId === comment.id;
 
@@ -371,16 +381,16 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <UserAvatar
-                      avatarUrl={comment.userAvatar}
-                      videoUrl={comment.userVideoUrl}
-                      name={comment.userName}
+                      avatarUrl={displayAvatar}
+                      videoUrl={displayVideo}
+                      name={displayName}
                       size="md"
                       borderClassName="border border-brand-purple/40 shadow-sm"
                     />
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs sm:text-sm font-black text-white hover:text-brand-gold transition-colors">
-                          {comment.userName}
+                          {displayName}
                         </span>
                         {renderBadge(comment.userRole, comment.creatorType)}
                       </div>
@@ -599,7 +609,16 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                         {replies.map((reply) => {
                           const replyUserReactions = reply.userReactions?.[userId] || [];
                           const isReplyAuthor =
-                            profile?.id === reply.userId || user?.uid === reply.userId;
+                            profile?.id === reply.userId ||
+                            user?.uid === reply.userId ||
+                            Boolean(
+                              profile?.email &&
+                                reply.userEmail &&
+                                reply.userEmail.toLowerCase() === profile.email.toLowerCase()
+                            );
+                          const replyAvatar = isReplyAuthor && profile ? profile.avatarUrl : reply.userAvatar;
+                          const replyVideo = isReplyAuthor && profile ? profile.profileVideoUrl : reply.userVideoUrl;
+                          const replyName = isReplyAuthor && profile ? profile.name : reply.userName;
                           const isReplyEditing = editingCommentId === reply.id;
 
                           return (
@@ -610,14 +629,14 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex items-center gap-2.5 flex-wrap">
                                   <UserAvatar
-                                    avatarUrl={reply.userAvatar}
-                                    videoUrl={reply.userVideoUrl}
-                                    name={reply.userName}
+                                    avatarUrl={replyAvatar}
+                                    videoUrl={replyVideo}
+                                    name={replyName}
                                     size="xs"
                                     borderClassName="border border-brand-purple/30"
                                   />
                                   <span className="text-xs font-bold text-white">
-                                    {reply.userName}
+                                    {replyName}
                                   </span>
                                   {renderBadge(reply.userRole, reply.creatorType)}
 

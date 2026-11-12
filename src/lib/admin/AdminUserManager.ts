@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { AdminUserRecord, UserAccountStatus, AdminRole, UserActivityTimelineItem } from '@/types/admin';
 import { AuditLogger } from './AuditLogger';
@@ -277,7 +277,13 @@ class AdminUserManagerClass {
       user.lastLogin = now;
       user.lastActivity = now;
       if (profile.name) user.name = profile.name;
-      if (profile.avatarUrl) user.avatarUrl = profile.avatarUrl;
+      if ('avatarUrl' in profile) {
+        if (!profile.avatarUrl) {
+          user.avatarUrl = undefined as any;
+        } else if (!profile.avatarUrl.startsWith('blob:')) {
+          user.avatarUrl = profile.avatarUrl;
+        }
+      }
       if (profile.creatorType) user.creatorType = profile.creatorType;
       if (profile.agreementStatus) user.agreementStatus = profile.agreementStatus;
       if (profile.agreementId) user.agreementId = profile.agreementId;

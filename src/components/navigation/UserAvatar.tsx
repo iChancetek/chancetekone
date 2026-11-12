@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
-import Image from 'next/image';
+import React, { useState, useEffect } from 'react';
 import { Video as VideoIcon } from 'lucide-react';
 
 export interface UserAvatarProps {
@@ -48,16 +47,27 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   const [imageError, setImageError] = useState(false);
   const [videoError, setVideoError] = useState(false);
 
+  const cleanVideoUrl = typeof videoUrl === 'string' && videoUrl.trim() ? videoUrl.trim() : null;
+  const cleanAvatarUrl = typeof avatarUrl === 'string' && avatarUrl.trim() ? avatarUrl.trim() : null;
+
+  // Reset error states whenever media URL props change so newly saved/hydrated media renders immediately
+  useEffect(() => {
+    setImageError(false);
+  }, [cleanAvatarUrl]);
+
+  useEffect(() => {
+    setVideoError(false);
+  }, [cleanVideoUrl]);
+
   const initial = (name || 'Member').trim().charAt(0).toUpperCase() || 'M';
   const sizeClasses = SIZE_MAP[size] || SIZE_MAP.md;
-  const pixelSize = PIXEL_SIZES[size] || 40;
 
   const defaultBorder = borderClassName !== undefined
     ? borderClassName
     : 'border border-brand-purple/40 shadow-sm';
 
-  const hasVideo = Boolean(videoUrl && showVideo && !videoError);
-  const hasImage = Boolean(avatarUrl && !imageError);
+  const hasVideo = Boolean(cleanVideoUrl && showVideo && !videoError);
+  const hasImage = Boolean(cleanAvatarUrl && !imageError);
 
   return (
     <div
@@ -68,11 +78,16 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     >
       {hasVideo ? (
         <video
-          src={videoUrl!}
+          key={cleanVideoUrl!}
+          src={cleanVideoUrl!}
           autoPlay
           loop
           muted
           playsInline
+          preload="auto"
+          onLoadedData={(e) => {
+            e.currentTarget.play().catch(() => {});
+          }}
           onError={() => setVideoError(true)}
           className="w-full h-full object-cover"
         />
@@ -80,7 +95,8 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         // Standard img tag handles data URLs, blob URLs, and remote URLs seamlessly
         // without Next.js domain whitelist restriction issues
         <img
-          src={avatarUrl!}
+          key={cleanAvatarUrl!}
+          src={cleanAvatarUrl!}
           alt={name || 'User Avatar'}
           onError={() => setImageError(true)}
           className="w-full h-full object-cover"

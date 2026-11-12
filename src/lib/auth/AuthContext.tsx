@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import {
   User,
   signInWithPopup,
@@ -46,6 +46,68 @@ export interface ActiveSessionData {
   lastActiveTimestamp: number;
 }
 
+const PROFILE_PREFS_KEY = 'chancetek_profile_prefs_v1';
+
+interface SavedProfilePrefs {
+  name?: string;
+  bio?: string;
+  avatarUrl?: string;
+  updatedAt?: number;
+}
+
+function saveProfilePrefs(profile: UserProfile): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = localStorage.getItem(PROFILE_PREFS_KEY);
+    const map: Record<string, SavedProfilePrefs> = raw ? JSON.parse(raw) : {};
+    const entry: SavedProfilePrefs = {
+      name: profile.name,
+      bio: profile.bio,
+      avatarUrl: profile.avatarUrl && !profile.avatarUrl.startsWith('blob:') ? profile.avatarUrl : undefined,
+      updatedAt: Date.now(),
+    };
+    if (profile.id) map[profile.id] = entry;
+    if (profile.email) map[`email:${profile.email.trim().toLowerCase()}`] = entry;
+    localStorage.setItem(PROFILE_PREFS_KEY, JSON.stringify(map));
+  } catch {}
+}
+
+function getProfilePrefs(userId?: string, email?: string): SavedProfilePrefs | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(PROFILE_PREFS_KEY);
+    if (!raw) return null;
+    const map: Record<string, SavedProfilePrefs> = JSON.parse(raw);
+    if (userId && map[userId]) return map[userId];
+    if (email) {
+      const key = `email:${email.trim().toLowerCase()}`;
+      if (map[key]) return map[key];
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Strip session-scoped blob: URLs before persisting/restoring from localStorage
+ * so expired blob URLs never poison UserAvatar after a browser refresh.
+ * Live media Blobs are always hydrated fresh from IndexedDB (ProfileMediaStorageService).
+ */
+function stripVolatileBlobUrls(profile: UserProfile): UserProfile {
+  return {
+    ...profile,
+    profileVideoUrl:
+      profile.profileVideoUrl && !profile.profileVideoUrl.startsWith('blob:')
+        ? profile.profileVideoUrl
+        : undefined,
+    avatarUrl:
+      profile.avatarUrl && !profile.avatarUrl.startsWith('blob:')
+        ? profile.avatarUrl
+        : undefined,
+  };
+}
+
 // Helpers for multi-tab persistent storage and cookie management
 export function saveActiveSession(
   profile: UserProfile,
@@ -55,19 +117,21 @@ export function saveActiveSession(
 ): ActiveSessionData | null {
   if (typeof window === 'undefined') return null;
   try {
+    const persistableProfile = stripVolatileBlobUrls(profile);
     const sessionId =
       existingSessionId || `sess_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     const sessionData: ActiveSessionData = {
       sessionId,
       userId: profile.id,
       email: profile.email,
-      profile,
+      profile: persistableProfile,
       isDemo,
       authProvider,
       loginTimestamp: Date.now(),
       lastActiveTimestamp: Date.now(),
     };
     localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(sessionData));
+    saveProfilePrefs(persistableProfile);
     // Set 1-year long-lived cookie for persistent session awareness across browser restarts
     document.cookie = `${AUTH_COOKIE_NAME}=true; path=/; max-age=31536000; SameSite=Lax`;
     return sessionData;
@@ -82,7 +146,11 @@ export function getActiveSession(): ActiveSessionData | null {
   try {
     const raw = localStorage.getItem(AUTH_SESSION_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as ActiveSessionData;
+    const parsed = JSON.parse(raw) as ActiveSessionData;
+    if (parsed?.profile) {
+      parsed.profile = stripVolatileBlobUrls(parsed.profile);
+    }
+    return parsed;
   } catch (e) {
     return null;
   }
@@ -144,66 +212,130 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const profileRef = useRef<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isDemo, setIsDemo] = useState<boolean>(false);
   const [forcedLogoutReason, setForcedLogoutReason] = useState<string | null>(null);
+
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
 
   const clearForcedLogoutReason = useCallback(() => {
     setForcedLogoutReason(null);
   }, []);
 
+  const hydrateProfileMedia = useCallback(
+    (userId: string, email?: string, forceRefresh: boolean = false) => {
+      ProfileMediaStorageService.getProfileMedia(userId, email, forceRefresh).then((media) => {
+        if (!media) return;
+        setProfile((prev) => {
+          if (!prev) return prev;
+          const matchesId = prev.id === userId;
+          const matchesEmail =
+            Boolean(email) && prev.email?.toLowerCase() === email?.trim().toLowerCase();
+          if (!matchesId && !matchesEmail) return prev;
+
+          const updated: UserProfile = {
+            ...prev,
+            profileVideoUrl: media.type === 'video' ? media.objectUrl : undefined,
+            avatarUrl: media.type === 'image' ? media.objectUrl : prev.avatarUrl,
+          };
+          profileRef.current = updated;
+          return updated;
+        });
+      });
+    },
+    []
+  );
+
   const updateUserProfile = useCallback((updates: Partial<UserProfile>) => {
-    setProfile((prev) => {
-      if (!prev) return null;
-      const updated = { ...prev, ...updates };
-      const cur = getActiveSession();
-      saveActiveSession(updated, cur?.isDemo || false, cur?.authProvider || 'firebase', cur?.sessionId);
-      AdminUserManager.syncAuthUser(updated);
-      broadcastAuthEvent({ type: 'PROFILE_UPDATED', profile: updated });
-      return updated;
-    });
+    const prev = profileRef.current;
+    if (!prev) {
+      setProfile((p) => {
+        if (!p) return null;
+        const next = { ...p, ...updates };
+        profileRef.current = next;
+        const cur = getActiveSession();
+        saveActiveSession(next, cur?.isDemo || false, cur?.authProvider || 'firebase', cur?.sessionId);
+        AdminUserManager.syncAuthUser(next);
+        broadcastAuthEvent({ type: 'PROFILE_UPDATED', profile: stripVolatileBlobUrls(next) });
+        return next;
+      });
+      return;
+    }
+
+    const updated = { ...prev, ...updates };
+    profileRef.current = updated;
+    setProfile(updated);
+
+    const cur = getActiveSession();
+    saveActiveSession(updated, cur?.isDemo || false, cur?.authProvider || 'firebase', cur?.sessionId);
+    AdminUserManager.syncAuthUser(updated);
+    broadcastAuthEvent({ type: 'PROFILE_UPDATED', profile: stripVolatileBlobUrls(updated) });
   }, []);
 
   // Multi-tab message handler
-  const handleAuthMessage = useCallback((data: any) => {
-    if (!data || !data.type) return;
+  const handleAuthMessage = useCallback(
+    (data: any) => {
+      if (!data || !data.type) return;
 
-    if (data.type === 'AUTH_LOGIN') {
-      if (data.profile) {
-        setProfile(data.profile);
-        setIsDemo(Boolean(data.isDemo));
-        setLoading(false);
-        setForcedLogoutReason(null);
-      }
-    } else if (data.type === 'AUTH_LOGOUT') {
-      setUser(null);
-      setProfile(null);
-      setIsDemo(false);
-      setLoading(false);
-    } else if (data.type === 'PROFILE_UPDATED') {
-      if (data.profile) {
-        setProfile((prev) => (prev ? { ...prev, ...data.profile } : data.profile));
-      }
-    } else if (data.type === 'ADMIN_FORCE_LOGOUT') {
-      const cur = getActiveSession();
-      const curId = cur?.profile?.id;
-      const curEmail = cur?.profile?.email?.toLowerCase();
-      const targetId = data.targetUserId;
-      const targetEmail = data.targetEmail?.toLowerCase();
-
-      // Check if target is this user or platform-wide termination
-      if (!targetId || targetId === curId || (targetEmail && targetEmail === curEmail)) {
-        clearActiveSession();
+      if (data.type === 'AUTH_LOGIN') {
+        if (data.profile) {
+          setProfile(data.profile);
+          profileRef.current = data.profile;
+          setIsDemo(Boolean(data.isDemo));
+          setLoading(false);
+          setForcedLogoutReason(null);
+          hydrateProfileMedia(data.profile.id, data.profile.email);
+        }
+      } else if (data.type === 'AUTH_LOGOUT') {
         setUser(null);
         setProfile(null);
+        profileRef.current = null;
         setIsDemo(false);
-        setForcedLogoutReason(data.reason || 'Your session was terminated by an administrator.');
-        try {
-          fbSignOut(auth);
-        } catch (e) {}
+        setLoading(false);
+      } else if (data.type === 'PROFILE_UPDATED') {
+        if (data.profile) {
+          setProfile((prev) => {
+            if (!prev) return data.profile;
+            const merged = {
+              ...prev,
+              ...data.profile,
+              // Preserve live blob: URLs currently loaded in memory; mediaChannel handles blob sync
+              profileVideoUrl: data.profile.profileVideoUrl ?? prev.profileVideoUrl,
+              avatarUrl:
+                'avatarUrl' in data.profile
+                  ? data.profile.avatarUrl ?? (prev.avatarUrl?.startsWith('blob:') ? prev.avatarUrl : undefined)
+                  : prev.avatarUrl,
+            };
+            profileRef.current = merged;
+            return merged;
+          });
+        }
+      } else if (data.type === 'ADMIN_FORCE_LOGOUT') {
+        const cur = getActiveSession();
+        const curId = cur?.profile?.id;
+        const curEmail = cur?.profile?.email?.toLowerCase();
+        const targetId = data.targetUserId;
+        const targetEmail = data.targetEmail?.toLowerCase();
+
+        // Check if target is this user or platform-wide termination
+        if (!targetId || targetId === curId || (targetEmail && targetEmail === curEmail)) {
+          clearActiveSession();
+          setUser(null);
+          setProfile(null);
+          profileRef.current = null;
+          setIsDemo(false);
+          setForcedLogoutReason(data.reason || 'Your session was terminated by an administrator.');
+          try {
+            fbSignOut(auth);
+          } catch (e) {}
+        }
       }
-    }
-  }, []);
+    },
+    [hydrateProfileMedia]
+  );
 
   // Hydrate session and configure cross-tab + heartbeat listeners on mount
   useEffect(() => {
@@ -230,33 +362,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setForcedLogoutReason('Your session has been ended by a platform administrator.');
         setLoading(false);
       } else {
+        const prefs = getProfilePrefs(saved.profile.id, saved.profile.email);
         const syncedProfile: UserProfile = {
           ...saved.profile,
-          name: adminUser?.name || saved.profile.name,
+          name: saved.profile.name || prefs?.name || adminUser?.name || saved.profile.name,
+          bio: saved.profile.bio ?? prefs?.bio,
           role:
             adminUser?.role === 'super_admin' || isSuperUserEmail(saved.profile.email)
               ? 'admin'
               : (adminUser?.role as any) || saved.profile.role,
-          avatarUrl: adminUser?.avatarUrl || saved.profile.avatarUrl,
+          avatarUrl: saved.profile.avatarUrl || adminUser?.avatarUrl || prefs?.avatarUrl,
         };
         setProfile(syncedProfile);
+        profileRef.current = syncedProfile;
         setIsDemo(saved.isDemo);
         setLoading(false);
 
         // Hydrate persistent photo or video media from IndexedDB
-        ProfileMediaStorageService.getProfileMedia(syncedProfile.id).then((media) => {
-          if (media) {
-            setProfile((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    profileVideoUrl: media.type === 'video' ? media.objectUrl : prev.profileVideoUrl,
-                    avatarUrl: media.type === 'image' ? media.objectUrl : prev.avatarUrl,
-                  }
-                : prev
-            );
-          }
-        });
+        hydrateProfileMedia(syncedProfile.id, syncedProfile.email);
       }
     }
 
@@ -272,20 +395,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         mediaChannel = new BroadcastChannel('chancetek_profile_media_channel');
         mediaChannel.onmessage = (ev) => {
-          if (ev.data?.userId) {
-            ProfileMediaStorageService.getProfileMedia(ev.data.userId).then((media) => {
-              if (media) {
-                setProfile((prev) =>
-                  prev && prev.id === ev.data.userId
-                    ? {
-                        ...prev,
-                        profileVideoUrl: media.type === 'video' ? media.objectUrl : undefined,
-                        avatarUrl: media.type === 'image' ? media.objectUrl : prev.avatarUrl,
-                      }
-                    : prev
-                );
-              }
+          if (!ev.data?.userId) return;
+          if (ev.data.type === 'PROFILE_MEDIA_CLEARED') {
+            ProfileMediaStorageService.invalidateCache(ev.data.userId);
+            setProfile((prev) => {
+              if (!prev) return prev;
+              const matchesId = prev.id === ev.data.userId;
+              const matchesEmail =
+                Boolean(ev.data.email) &&
+                prev.email?.toLowerCase() === String(ev.data.email).trim().toLowerCase();
+              if (!matchesId && !matchesEmail) return prev;
+              const updated = { ...prev, profileVideoUrl: undefined, avatarUrl: undefined };
+              profileRef.current = updated;
+              return updated;
             });
+          } else {
+            hydrateProfileMedia(ev.data.userId, ev.data.email, true);
           }
         };
       } catch (e) {}
@@ -392,15 +517,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const isSuper = isSuperUserEmail(email) || (adminUser && adminUser.role === 'super_admin');
         const existingSession = getActiveSession();
         const preservedProfile = existingSession?.profile;
+        const isSameUser = Boolean(
+          preservedProfile &&
+            (preservedProfile.id === fbUser.uid ||
+              preservedProfile.email?.toLowerCase() === email.toLowerCase())
+        );
+        const prefs = getProfilePrefs(fbUser.uid, email);
 
         const userProf: UserProfile = {
           id: fbUser.uid,
           name:
+            (isSameUser ? preservedProfile?.name : undefined) ||
+            prefs?.name ||
             fbUser.displayName ||
             adminUser?.name ||
             (isSuper ? 'Chancellor (Admin)' : email.split('@')[0] || 'ChanceTEK One'),
           email: email,
-          avatarUrl: fbUser.photoURL || adminUser?.avatarUrl || '/images/logo.png',
+          bio: isSameUser ? (preservedProfile?.bio ?? prefs?.bio) : prefs?.bio,
+          avatarUrl:
+            (isSameUser ? preservedProfile?.avatarUrl : undefined) ||
+            prefs?.avatarUrl ||
+            adminUser?.avatarUrl ||
+            fbUser.photoURL ||
+            undefined,
           role: adminUser?.role === 'super_admin' || isSuper ? 'admin' : (adminUser?.role as any) || 'user',
           createdAt: preservedProfile?.createdAt || adminUser?.createdAt || new Date().toISOString(),
           likedTrackIds: preservedProfile?.likedTrackIds || [],
@@ -412,25 +551,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setUser(fbUser);
         setProfile(userProf);
+        profileRef.current = userProf;
         setIsDemo(false);
         saveActiveSession(userProf, false, 'firebase');
         AdminUserManager.syncAuthUser(userProf);
         setLoading(false);
 
         // Hydrate persistent photo or video media from IndexedDB
-        ProfileMediaStorageService.getProfileMedia(fbUser.uid).then((media) => {
-          if (media) {
-            setProfile((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    profileVideoUrl: media.type === 'video' ? media.objectUrl : prev.profileVideoUrl,
-                    avatarUrl: media.type === 'image' ? media.objectUrl : prev.avatarUrl,
-                  }
-                : prev
-            );
-          }
-        });
+        hydrateProfileMedia(fbUser.uid, email);
       } else {
         // Firebase returned null user.
         // Check if there is an active session in localStorage (email, superuser, demo, etc.). If valid, preserve it!
@@ -454,24 +582,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             clearActiveSession();
             setUser(null);
             setProfile(null);
+            profileRef.current = null;
             setIsDemo(false);
             setForcedLogoutReason('Your session has been ended by a platform administrator.');
           } else {
+            const prefs = getProfilePrefs(activeSess.profile.id, activeSess.profile.email);
+            const curLive = profileRef.current;
+            const keepLiveMedia = Boolean(curLive && curLive.id === activeSess.profile.id);
             const syncedProfile: UserProfile = {
               ...activeSess.profile,
-              name: adminUser?.name || activeSess.profile.name,
+              name: activeSess.profile.name || prefs?.name || adminUser?.name || activeSess.profile.name,
+              bio: activeSess.profile.bio ?? prefs?.bio,
               role:
                 adminUser?.role === 'super_admin' || isSuperUserEmail(activeSess.profile.email)
                   ? 'admin'
                   : (adminUser?.role as any) || activeSess.profile.role,
-              avatarUrl: adminUser?.avatarUrl || activeSess.profile.avatarUrl,
+              avatarUrl:
+                (keepLiveMedia && curLive?.avatarUrl) ||
+                activeSess.profile.avatarUrl ||
+                adminUser?.avatarUrl ||
+                prefs?.avatarUrl,
+              profileVideoUrl: keepLiveMedia ? curLive?.profileVideoUrl : undefined,
             };
             setProfile(syncedProfile);
+            profileRef.current = syncedProfile;
             setIsDemo(Boolean(activeSess.isDemo));
+
+            // Always ensure IndexedDB photo/video media is hydrated cleanly
+            hydrateProfileMedia(syncedProfile.id, syncedProfile.email);
           }
         } else {
           setUser(null);
           setProfile(null);
+          profileRef.current = null;
           setIsDemo(false);
         }
         setLoading(false);
@@ -484,8 +627,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       window.removeEventListener('focus', verifySessionState);
       clearInterval(heartbeat);
       if (channel) channel.close();
+      if (mediaChannel) mediaChannel.close();
     };
-  }, [handleAuthMessage]);
+  }, [handleAuthMessage, hydrateProfileMedia]);
 
   const signInWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -509,15 +653,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const isSuper = isSuperUserEmail(email) || (adminUser && adminUser.role === 'super_admin');
+      const prefs = getProfilePrefs(cred.user.uid, email);
 
       const userProf: UserProfile = {
         id: cred.user.uid,
         name:
+          prefs?.name ||
           cred.user.displayName ||
           adminUser?.name ||
           (isSuper ? 'Chancellor (Admin)' : 'ChanceTEK One'),
         email: email,
-        avatarUrl: cred.user.photoURL || adminUser?.avatarUrl || '/images/logo.png',
+        bio: prefs?.bio,
+        avatarUrl: prefs?.avatarUrl || adminUser?.avatarUrl || cred.user.photoURL || undefined,
         role: adminUser?.role === 'super_admin' || isSuper ? 'admin' : (adminUser?.role as any) || 'user',
         createdAt: adminUser?.createdAt || new Date().toISOString(),
         likedTrackIds: [],
@@ -529,9 +676,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setUser(cred.user);
       setProfile(userProf);
+      profileRef.current = userProf;
       setIsDemo(false);
       saveActiveSession(userProf, false, 'google');
       AdminUserManager.syncAuthUser(userProf);
+      hydrateProfileMedia(userProf.id, userProf.email);
       broadcastAuthEvent({
         type: 'AUTH_LOGIN',
         profile: userProf,
@@ -579,15 +728,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const cred = await signInWithEmailAndPassword(auth, trimmedEmail, password);
       const isSuper =
         isSuperUserEmail(trimmedEmail) || (adminUser && adminUser.role === 'super_admin');
+      const userEmail = cred.user.email || trimmedEmail;
+      const prefs = getProfilePrefs(cred.user.uid, userEmail);
 
       const userProf: UserProfile = {
         id: cred.user.uid,
         name:
+          prefs?.name ||
           cred.user.displayName ||
           adminUser?.name ||
           (isSuper ? 'Chancellor (Admin)' : trimmedEmail.split('@')[0]),
-        email: cred.user.email || trimmedEmail,
-        avatarUrl: adminUser?.avatarUrl || '/images/logo.png',
+        email: userEmail,
+        bio: prefs?.bio,
+        avatarUrl: prefs?.avatarUrl || adminUser?.avatarUrl || undefined,
         role: adminUser?.role === 'super_admin' || isSuper ? 'admin' : (adminUser?.role as any) || 'user',
         createdAt: adminUser?.createdAt || new Date().toISOString(),
         likedTrackIds: [],
@@ -599,9 +752,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setUser(cred.user);
       setProfile(userProf);
+      profileRef.current = userProf;
       setIsDemo(false);
       saveActiveSession(userProf, false, 'email');
       AdminUserManager.syncAuthUser(userProf);
+      hydrateProfileMedia(userProf.id, userProf.email);
       broadcastAuthEvent({
         type: 'AUTH_LOGIN',
         profile: userProf,
@@ -665,6 +820,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setUser(cred.user);
       setProfile(userProf);
+      profileRef.current = userProf;
       setIsDemo(false);
       saveActiveSession(userProf, false, 'email');
       AdminUserManager.syncAuthUser(userProf);
@@ -694,12 +850,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signInAsSuperUser = (email: string = 'chancellor@ichancetek.com') => {
     const isAntGreene = email.toLowerCase().includes('antgreene');
     const existing = AdminUserManager.getUserByEmail(email);
+    const id = existing?.id || (isAntGreene ? 'usr-antgreene' : 'usr-chancellor');
+    const prefs = getProfilePrefs(id, email);
 
     const userProf: UserProfile = {
-      id: existing?.id || (isAntGreene ? 'usr-antgreene' : 'usr-chancellor'),
-      name: isAntGreene ? 'Ant Greene (Admin)' : 'Chancellor (Super Admin)',
+      id,
+      name: prefs?.name || existing?.name || (isAntGreene ? 'Ant Greene (Admin)' : 'Chancellor (Super Admin)'),
       email: email,
-      avatarUrl: existing?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+      bio: prefs?.bio,
+      avatarUrl: prefs?.avatarUrl || existing?.avatarUrl || undefined,
       role: 'admin',
       createdAt: existing?.createdAt || new Date().toISOString(),
       likedTrackIds: [],
@@ -710,9 +869,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     setProfile(userProf);
+    profileRef.current = userProf;
     setIsDemo(true);
     saveActiveSession(userProf, true, 'superuser');
     AdminUserManager.syncAuthUser(userProf);
+    hydrateProfileMedia(userProf.id, userProf.email);
     broadcastAuthEvent({
       type: 'AUTH_LOGIN',
       profile: userProf,
@@ -723,11 +884,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signInAsDemo = () => {
+    const id = 'demo-user-chancetekone';
+    const email = 'fathertime4000@breakbeats.io';
+    const prefs = getProfilePrefs(id, email);
+
     const userProf: UserProfile = {
-      id: 'demo-user-chancetekone',
-      name: 'ChanceTEK One',
-      email: 'fathertime4000@breakbeats.io',
-      avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80',
+      id,
+      name: prefs?.name || 'ChanceTEK One',
+      email,
+      bio: prefs?.bio,
+      avatarUrl: prefs?.avatarUrl || undefined,
       role: 'creator',
       createdAt: new Date().toISOString(),
       likedTrackIds: [],
@@ -738,9 +904,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     setProfile(userProf);
+    profileRef.current = userProf;
     setIsDemo(true);
     saveActiveSession(userProf, true, 'demo');
     AdminUserManager.syncAuthUser(userProf);
+    hydrateProfileMedia(userProf.id, userProf.email);
     broadcastAuthEvent({
       type: 'AUTH_LOGIN',
       profile: userProf,
@@ -759,6 +927,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsDemo(false);
     setUser(null);
     setProfile(null);
+    profileRef.current = null;
   };
 
   const isAdmin = Boolean(profile && (profile.role === 'admin' || isSuperUserEmail(profile.email)));

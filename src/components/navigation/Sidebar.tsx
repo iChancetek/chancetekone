@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
@@ -70,7 +70,7 @@ const NAV_ITEMS: NavItem[] = [
 
 const LIBRARY_ITEMS = [
   { label: 'Your Library', href: '/library', icon: Library },
-  { label: 'Profile & Settings', href: '/profile', icon: UserIcon },
+  { label: 'Account Profile & Settings', href: '/profile', icon: UserIcon },
   { label: 'Creator Studio', href: '/studio', icon: Sparkles, badge: 'Studio' },
   { label: 'Liked Tracks', href: '/library?tab=liked', icon: Heart },
   { label: 'Listening History', href: '/library?tab=history', icon: History },
@@ -498,7 +498,7 @@ export const Sidebar: React.FC = () => {
             <div
               className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'
                 } p-1.5 rounded-xl bg-white/5 border border-white/5 hover:border-brand-gold/40 transition-all`}
-              title={isCollapsed ? `${profile.name} — Profile & Settings` : undefined}
+              title={isCollapsed ? `${profile.name} — Account Profile & Settings` : undefined}
             >
               <Link
                 href="/profile"

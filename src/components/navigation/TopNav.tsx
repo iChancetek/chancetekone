@@ -164,7 +164,7 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
                 className={`flex items-center gap-2 p-0.5 rounded-full bg-white/5 hover:bg-white/10 transition-all ${
                   isAdmin ? 'ring-2 ring-red-500/30' : ''
                 }`}
-                title={`${profile.name} — Profile & Settings`}
+                title={`${profile.name} — Account Profile & Settings`}
               >
                 <UserAvatar
                   avatarUrl={profile.avatarUrl}
@@ -224,7 +224,7 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
                   className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-brand-gold hover:bg-brand-gold/10 transition-colors"
                 >
                   <UserIcon className="w-3.5 h-3.5 text-brand-gold" />
-                  <span>Profile & Settings</span>
+                  <span>Account Profile & Settings</span>
                 </Link>
 
                 {isAdmin && (
