@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ChanceTEK One — Catalog asset externalization.
  *
  * Content that only exists inside one browser (IndexedDB audio, data: / blob: artwork) is
