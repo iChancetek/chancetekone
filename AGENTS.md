@@ -1910,4 +1910,8 @@ esolvedAudioUrl is reset to '' (zero tolerance).
   6. **Automated Verification**:
      - Verified with `scripts/test-famio-integration.ts`: Issued `sk_famio_...` key, verified CORS header return for `https://famio.us`, validated `x-famio-api-key` and `x-api-key` auth, queried Nas tracks (7 tracks returned with pre-signed streaming tokens), retrieved 7 audiobooks, performed real-time catalog live sync (68 tracks, 7 audiobooks, 12 chapters, 31 podcasts, 8 crates), verified HTTP 206 partial content streaming, and verified `/api/v1` discovery root with 100% success.
      - Verified with `scripts/test-strideiq-api.ts` and `npx tsc --noEmit` with 0 type errors.
+  7. **Next.js Turbopack Route-Segment Dynamic Declaration**:
+     - Turbopack statically validates route segment configuration variables (e.g. `dynamic`, `revalidate`, `runtime`, `fetchCache`) at AST parse time. In Next.js App Router, `dynamic` must NEVER be re-exported via `export { dynamic } from ...`.
+     - In all 17 `/api/v1/*` proxy route files, `export const dynamic = 'force-dynamic';` is explicitly declared as a top-level statement, resolving Turbopack compile failures in Cloud Build.
+
 
