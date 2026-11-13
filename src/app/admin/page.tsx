@@ -40,6 +40,7 @@ const CreatorHoldingSection = dynamic(() => import('@/components/admin/sections/
 const DuplicateDetectionSection = dynamic(() => import('@/components/admin/sections/DuplicateDetectionSection').then((m) => m.DuplicateDetectionSection));
 const UnplayableAudioSection = dynamic(() => import('@/components/admin/sections/UnplayableAudioSection').then((m) => m.UnplayableAudioSection));
 const CommentsModerationSection = dynamic(() => import('@/components/admin/sections/CommentsModerationSection').then((m) => m.CommentsModerationSection));
+const StrideIqIntegrationCard = dynamic(() => import('@/components/admin/StrideIqIntegrationCard').then((m) => m.StrideIqIntegrationCard));
 import { MusicRecoveryService } from '@/lib/music/MusicRecoveryService';
 import { PlaylistService } from '@/lib/playlist/PlaylistService';
 import { DistributionAgreementService } from '@/lib/agreements/DistributionAgreementService';
@@ -93,10 +94,12 @@ import {
   EyeOff,
   AlertCircle,
   MessageSquare,
+  KeyRound,
 } from 'lucide-react';
 
 type AdminTab =
   | 'overview'
+  | 'partner-api'
   | 'comments'
   | 'duplicates'
   | 'unplayable-music'
@@ -177,6 +180,20 @@ export default function AdminPage() {
 
   // Initialize and subscribe to real-time events and user updates
   useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const tabParam = sp.get('tab')?.toLowerCase();
+      if (
+        tabParam === 'partner-api' ||
+        tabParam === 'api' ||
+        tabParam === 'keys' ||
+        tabParam === 'famio' ||
+        tabParam === 'strideiq'
+      ) {
+        setActiveTab('partner-api');
+      }
+    } catch {}
+
     setEvents(AnalyticsEngine.getEvents());
     setUsers(AdminUserManager.getUsers());
     const refreshRecoveryCount = () => {
@@ -904,6 +921,15 @@ export default function AdminPage() {
               description: 'Role permissions & platform config',
             },
             {
+              id: 'partner-api' as const,
+              label: 'Developer & Partner API Keys',
+              displayLabel: 'Partner API & Keys',
+              icon: KeyRound,
+              category: 'governance' as const,
+              description: 'Famio.us & StrideIQ.fit API keys, streaming & live sync',
+              accent: 'neon' as const,
+            },
+            {
               id: 'radio' as const,
               label: 'Radio Stations',
               icon: Radio,
@@ -1029,6 +1055,7 @@ export default function AdminPage() {
                 { id: 'agreements', label: `Creator Agreements (${pendingAgreementsCount} Pending)` },
                 { id: 'audit', label: 'Audit Logs' },
                 { id: 'settings', label: 'RBAC & Settings' },
+                { id: 'partner-api', label: 'Developer & Partner API Console (Famio.us & StrideIQ.fit)' },
                 { id: 'radio', label: 'Radio Stations' },
               ].find((t) => t.id === activeTab)?.label || 'Overview'}
             </span>
@@ -1036,7 +1063,7 @@ export default function AdminPage() {
 
           <div className="flex items-center gap-2 text-[10px] text-neutral-400">
             <span className="px-2 py-0.5 rounded-md bg-white/5 font-mono text-neutral-300 border border-white/10 uppercase">
-              22 Modules Ready
+              23 Modules Ready
             </span>
             <span className="text-emerald-400 font-bold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -1177,6 +1204,12 @@ export default function AdminPage() {
         )}
 
         {activeTab === 'settings' && <SettingsRBACSection />}
+
+        {activeTab === 'partner-api' && (
+          <div className="space-y-6">
+            <StrideIqIntegrationCard />
+          </div>
+        )}
 
         {activeTab === 'radio' && <RadioManagementSection />}
       </div>

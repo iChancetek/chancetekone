@@ -33,6 +33,7 @@ import {
   CopyCheck,
   VolumeX,
   MessageSquare,
+  KeyRound,
 } from 'lucide-react';
 
 interface OverviewSectionProps {
@@ -330,21 +331,35 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
                 <MessageSquare className="w-4 h-4" />
                 <span>Comments & Threads</span>
               </button>
+
+              {/* Button: Developer & Partner API Keys */}
+              <button
+                onClick={() => onNavigateToTab('partner-api')}
+                className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600/30 to-teal-600/30 hover:from-emerald-500 hover:to-teal-500 border border-emerald-500/50 text-emerald-300 hover:text-black font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/25 flex items-center gap-2 hover:scale-105 active:scale-95 cursor-pointer"
+                title="Generate & manage API keys for Famio.us, StrideIQ.fit, and Universal /api/v1 apps"
+              >
+                <KeyRound className="w-4 h-4 text-emerald-400" />
+                <span>Partner API Keys (Famio.us & StrideIQ)</span>
+              </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1 text-xs">
             <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.03] border border-white/5 text-neutral-300">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span><strong>Audiobooks Area:</strong> Narratives & literature live at /audiobooks</span>
+              <span><strong>Audiobooks Area:</strong> Narratives live at /audiobooks</span>
             </div>
             <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.03] border border-white/5 text-neutral-300">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span><strong>Artist & Producer Hubs:</strong> Target rosters live at /artists</span>
+              <span><strong>Artist & Producer Hubs:</strong> Rosters live at /artists</span>
             </div>
             <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.03] border border-white/5 text-neutral-300">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span><strong>Lossless Ingestion:</strong> In-memory zero-latency auditioning</span>
+              <span><strong>Partner APIs:</strong> Famio.us & StrideIQ at /api/v1</span>
+            </div>
+            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.03] border border-white/5 text-neutral-300">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span><strong>Live Audition:</strong> Zero-latency streaming</span>
             </div>
           </div>
         </div>

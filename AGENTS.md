@@ -1914,4 +1914,22 @@ esolvedAudioUrl is reset to '' (zero tolerance).
      - Turbopack statically validates route segment configuration variables (e.g. `dynamic`, `revalidate`, `runtime`, `fetchCache`) at AST parse time. In Next.js App Router, `dynamic` must NEVER be re-exported via `export { dynamic } from ...`.
      - In all 17 `/api/v1/*` proxy route files, `export const dynamic = 'force-dynamic';` is explicitly declared as a top-level statement, resolving Turbopack compile failures in Cloud Build.
 
+### 80. Developer & Partner API Console Top-Level Navigation & Direct Deep-Linking
+- **User Directives**:
+  1. `i don't see the Developer & Partner API Console:`
+- **Root Cause Identified**:
+  - The `StrideIqIntegrationCard` component was nested deep inside `SettingsRBACSection.tsx` under the RBAC & Settings tab. Administrators had to navigate to Settings and scroll to the bottom, with no top-level tab, no search keyword trigger in `ADMIN_TABS`, and no quick-access action button on the Overview page.
+- **Architectural Implementation**:
+  1. **Dedicated Top-Level Admin Tab (`partner-api`)**:
+     - Added `'partner-api'` to `AdminTab` union in `src/app/admin/page.tsx`.
+     - Added entry to `ADMIN_TABS` with display label `"Partner API & Keys"`, `KeyRound` icon, category `'governance'`, and description `"Famio.us & StrideIQ.fit API keys, streaming & live sync"`.
+     - Updated total active admin modules counter from 22 to 23 modules.
+     - Dynamically rendered `<StrideIqIntegrationCard />` with code-splitting when `activeTab === 'partner-api'`.
+  2. **Direct Deep-Link & Query Parameter Routing**:
+     - Added URL parameter detection in initial `useEffect` so `/admin?tab=partner-api`, `/admin?tab=api`, `/admin?tab=keys`, `/admin?tab=famio`, or `/admin?tab=strideiq` automatically activates the Partner API Console immediately on load.
+  3. **Executive Action Button in Overview Console (`OverviewSection.tsx`)**:
+     - Added a dedicated, emerald-accented button: `Partner API Keys (Famio.us & StrideIQ)` in the Platform Ingestion & Operations Console that triggers `onNavigateToTab('partner-api')`.
+     - Added live status pill: `Partner APIs: Famio.us & StrideIQ at /api/v1`.
+
+
 
