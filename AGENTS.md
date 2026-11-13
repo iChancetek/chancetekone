@@ -1931,5 +1931,22 @@ esolvedAudioUrl is reset to '' (zero tolerance).
      - Added a dedicated, emerald-accented button: `Partner API Keys (Famio.us & StrideIQ)` in the Platform Ingestion & Operations Console that triggers `onNavigateToTab('partner-api')`.
      - Added live status pill: `Partner APIs: Famio.us & StrideIQ at /api/v1`.
 
+### 81. Real-Time Famio.us Platform Integration, Ellipsis Traversal Resolution & Sovereign In-App Streaming
+- **User Directives**:
+  1. `The chancetekone.us api keys has been added to the famio.us code. however, the api is showing mock music and audiobooks. unable to see, browse, and listening to the music and audiobooks on the famio.us platform`
+- **Root Causes Identified & Eliminated**:
+  1. **Famio.us Hardcoded Mock Data**: In `d:\chancellor\WeAreFamily\lib\chancetekone.ts`, `getChanceTekOneMediaCatalog()` returned 5 hardcoded mock objects ("Sovereign Symphony", "Family Legacy Beats", "Family Harmony & Digital Sanctuaries (Audiobook)") with fake URLs (`${baseUrl}/music/sovereign-symphony`, `${baseUrl}/books/family-harmony`) instead of calling the ChanceTEK One API.
+  2. **Ellipsis Path Traversal False-Positive**: In `src/lib/server/strideiqCatalog.ts` and `src/lib/music/audioAssetIntegrity.ts`, `decoded.includes('..')` falsely flagged `The Fam... Famio.mp3` as path traversal due to the three dots in its title, dropping `audiobook-6` from the catalog and marking Chapter 6 of the Omnibus unplayable.
+  3. **Missing `/api/v1/status` Route**: Famio.us queried `${baseUrl}/api/v1/status` which threw 404 because ChanceTEK One only had `/api/v1` and `/api/v1/health`.
+  4. **Pre-Authorized Key Binding**: Famio.us used key `sk_famio_Hj6MKnoe3G5WoUQGs9wwQGF2MpeUcrwJ`, which needed to be added to default known partner keys.
+  5. **Missing In-App Audio Player in Famio.us**: The `ChanceTekOneHub` component on Famio.us had no HTML5 audio player; clicking "Stream" or "Listen" opened a new tab to fake 404 URLs instead of playing the audio.
+- **Architectural Implementation**:
+  1. **Ellipsis Traversal Fix**: Replaced naive `decoded.includes('..')` with regex `/(?:^|[\\/])\.\.(?:[\\/]|$)/.test(decoded)`, ensuring filenames containing ellipsis (`The Fam... Famio.mp3`) resolve cleanly while preventing directory traversal.
+  2. **Dedicated `/api/v1/status` Route**: Added `src/app/api/v1/status/route.ts` returning full ecosystem status, version, pillar descriptions, active stages, and real counts (68 tracks, 7 audiobooks, 31 podcasts).
+  3. **Pre-Authorized Famio Key**: Whitelisted `sk_famio_Hj6MKnoe3G5WoUQGs9wwQGF2MpeUcrwJ` in `src/lib/server/strideiqStore.ts` and `.data/strideiq_config.json`.
+  4. **Dynamic API Catalog Integration in Famio.us (`d:\chancellor\WeAreFamily\lib\chancetekone.ts`)**: Rewrote `getChanceTekOneMediaCatalog()` to fetch live from `/api/v1/sync` with `x-famio-api-key`, mapping real studio tracks (Nas, Michael Jackson, Avant, etc.), audiobooks ("The Fam... Famio", "Agentic AI", "AI Security", "Healthy Living", "Intermittent Fasting", "iSkylar"), and podcasts with pre-signed streaming tokens.
+  5. **In-App Media Player Deck in Famio.us (`ChanceTekOneHub.tsx`)**: Built an interactive HTML5 audio player deck with Play/Pause, time scrubber, -15s/+15s skip, animated equalizer, volume control, search bar, and category filters ("All", "Music", "Audiobooks", "Live").
+
+
 
 

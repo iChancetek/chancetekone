@@ -145,7 +145,7 @@ export function isSafeUploadFileName(name: string): boolean {
   } catch {
     return false;
   }
-  if (decoded.includes('\0') || decoded.includes('..') || decoded.includes('\\') || decoded.includes('/')) return false;
+  if (decoded.includes('\0') || /(?:^|[\\/])\.\.(?:[\\/]|$)/.test(decoded) || decoded.includes('\\') || decoded.includes('/')) return false;
   if (decoded.startsWith('.')) return false;
   return true;
 }

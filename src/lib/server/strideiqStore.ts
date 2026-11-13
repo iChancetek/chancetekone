@@ -287,12 +287,16 @@ export function optionsStrideIqResponse(request: NextRequest): NextResponse {
 }
 
 function getEnvApiKeys(): string[] {
-  const keys: string[] = [];
+  const keys: string[] = [
+    // Pre-authorized sovereign partner platform keys (Famio.us social production)
+    'sk_famio_Hj6MKnoe3G5WoUQGs9wwQGF2MpeUcrwJ',
+  ];
   const envVars = [
     process.env.CHANCETEK_API_KEY,
     process.env.PARTNER_API_KEY,
     process.env.STRIDEIQ_API_KEY,
     process.env.FAMIO_API_KEY,
+    process.env.CHANCETEKONE_API_KEY,
   ];
   envVars.forEach((v) => {
     if (v?.trim()) keys.push(v.trim());

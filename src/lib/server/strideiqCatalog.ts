@@ -361,7 +361,7 @@ function resolvePhysicalPublicAsset(assetUrl?: string): string | null {
   } catch {
     return null;
   }
-  if (!decoded || decoded.includes('\0') || decoded.includes('..')) return null;
+  if (!decoded || decoded.includes('\0') || /(?:^|[\\/])\.\.(?:[\\/]|$)/.test(decoded)) return null;
   const resolvedPublic = path.resolve(PUBLIC_DIR);
   const candidate = path.resolve(resolvedPublic, decoded);
   if (!candidate.startsWith(resolvedPublic + path.sep)) return null;
@@ -851,7 +851,7 @@ export async function toStrideIqTrackDto(
   let streamUrl: string | null = null;
   if (track.playable) {
     const token = await signStrideIqStreamToken(track.id, tokenTtl);
-    streamUrl = `${publicOrigin.replace(/\/$/, '')}/api/strideiq/v1/stream/${encodeURIComponent(track.id)}?token=${encodeURIComponent(token)}`;
+    streamUrl = `${publicOrigin.replace(/\/$/, '')}/api/v1/stream/${encodeURIComponent(track.id)}?token=${encodeURIComponent(token)}`;
   }
 
   return {
@@ -1689,7 +1689,7 @@ async function toStrideIqAudiobookDto(
       let streamUrl: string | null = null;
       if (ch.playable) {
         const token = await signStrideIqStreamToken(ch.streamId, tokenTtl);
-        streamUrl = `${publicOrigin.replace(/\/$/, '')}/api/strideiq/v1/stream/${encodeURIComponent(ch.streamId)}?token=${encodeURIComponent(token)}`;
+        streamUrl = `${publicOrigin.replace(/\/$/, '')}/api/v1/stream/${encodeURIComponent(ch.streamId)}?token=${encodeURIComponent(token)}`;
       }
       return {
         id: ch.id,
@@ -1746,7 +1746,7 @@ async function chapterToQueueDto(
     crateName: 'Audiobooks & Literature',
     source: 'audiobook',
     playable: ch.playable,
-    streamUrl: `${publicOrigin.replace(/\/$/, '')}/api/strideiq/v1/stream/${encodeURIComponent(ch.streamId)}?token=${encodeURIComponent(token)}`,
+    streamUrl: `${publicOrigin.replace(/\/$/, '')}/api/v1/stream/${encodeURIComponent(ch.streamId)}?token=${encodeURIComponent(token)}`,
     streamExpiresInSeconds: tokenTtl,
     artworkUrl: toAbsoluteUrl(book.artworkPath, publicOrigin),
     workoutTags: SPOKEN_WORKOUT_TAGS,
@@ -1967,7 +1967,7 @@ async function toStrideIqPodcastDto(
   let streamUrl: string | null = null;
   if (ep.playable) {
     const token = await signStrideIqStreamToken(ep.id, tokenTtl);
-    streamUrl = `${publicOrigin.replace(/\/$/, '')}/api/strideiq/v1/stream/${encodeURIComponent(ep.id)}?token=${encodeURIComponent(token)}`;
+    streamUrl = `${publicOrigin.replace(/\/$/, '')}/api/v1/stream/${encodeURIComponent(ep.id)}?token=${encodeURIComponent(token)}`;
   }
 
   return {
