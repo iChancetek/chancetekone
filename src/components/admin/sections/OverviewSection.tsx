@@ -34,6 +34,7 @@ import {
   VolumeX,
   MessageSquare,
   KeyRound,
+  BarChart3,
 } from 'lucide-react';
 
 interface OverviewSectionProps {
@@ -340,6 +341,16 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
               >
                 <KeyRound className="w-4 h-4 text-emerald-400" />
                 <span>Partner API Keys (Famio.us & StrideIQ)</span>
+              </button>
+
+              {/* Button: Real-Time API Usage Monitor */}
+              <button
+                onClick={() => onNavigateToTab('api-usage')}
+                className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600/30 to-cyan-600/30 hover:from-indigo-500 hover:to-cyan-500 border border-indigo-500/50 text-indigo-300 hover:text-black font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-indigo-500/25 flex items-center gap-2 hover:scale-105 active:scale-95 cursor-pointer"
+                title="Monitor real-time API usage by hour, day, week, year & exact time"
+              >
+                <BarChart3 className="w-4 h-4 text-indigo-400" />
+                <span>API Usage (Live)</span>
               </button>
             </div>
           </div>

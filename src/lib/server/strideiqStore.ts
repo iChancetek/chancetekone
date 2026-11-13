@@ -11,6 +11,7 @@ import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirebaseAdmin } from '../../../firebaseAdmin.js';
 import { canUseFirebaseAdmin } from './profileStore';
+import { recordApiUsage } from './apiUsageTracker';
 
 export const STRIDEIQ_DEFAULT_PUBLIC_ORIGIN = 'https://chancetekone.us';
 const PARTNER_KEYS_COLLECTION = 'strideiq_partner_keys';
@@ -496,6 +497,7 @@ export async function verifyStrideIqPartnerRequest(
             ),
           };
         }
+        recordApiUsage(request, { authType: 'stream_token', statusCode: 206 });
         return { authorized: true, authType: 'stream_token', rateHeaders: rate.headers };
       }
     }
@@ -536,6 +538,11 @@ export async function verifyStrideIqPartnerRequest(
             ),
           };
         }
+        recordApiUsage(request, {
+          authType: 'api_key',
+          partnerKeyId: 'env-partner-key',
+          candidateKey,
+        });
         return {
           authorized: true,
           authType: 'api_key',
@@ -561,6 +568,14 @@ export async function verifyStrideIqPartnerRequest(
         };
       }
       touchPartnerKeyLastUsed(matched.id).catch(() => { });
+      recordApiUsage(request, {
+        authType: 'api_key',
+        partnerKeyId: matched.id,
+        keyLabel: matched.label,
+        keyPrefix: matched.prefix,
+        appType: matched.appType,
+        candidateKey,
+      });
       return {
         authorized: true,
         authType: 'api_key',
@@ -577,6 +592,12 @@ export async function verifyStrideIqPartnerRequest(
       const decoded = await adminAuth.verifyIdToken(bearer);
       if (decoded?.uid) {
         const rate = checkRateLimit(`fb:${decoded.uid}`, limit);
+        recordApiUsage(request, {
+          authType: 'firebase_user',
+          partnerKeyId: decoded.uid,
+          keyLabel: decoded.email || 'Authenticated User',
+          appType: 'user',
+        });
         return {
           authorized: true,
           authType: 'firebase_user',

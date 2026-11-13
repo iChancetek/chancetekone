@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { auth } from '@/lib/firebase/client';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { ApiUsageMonitorSection } from './ApiUsageMonitorSection';
 
 interface PublicKeyRecord {
   id: string;
@@ -826,6 +827,9 @@ curl -i -H "Range: bytes=0-1048576" \\
           </div>
         )}
       </div>
+
+      {/* Real-Time Partner API Usage Monitor (Hour, Day, Week, Year, Exact Time) */}
+      <ApiUsageMonitorSection />
     </div>
   );
 };

@@ -1947,6 +1947,24 @@ esolvedAudioUrl is reset to '' (zero tolerance).
   4. **Dynamic API Catalog Integration in Famio.us (`d:\chancellor\WeAreFamily\lib\chancetekone.ts`)**: Rewrote `getChanceTekOneMediaCatalog()` to fetch live from `/api/v1/sync` with `x-famio-api-key`, mapping real studio tracks (Nas, Michael Jackson, Avant, etc.), audiobooks ("The Fam... Famio", "Agentic AI", "AI Security", "Healthy Living", "Intermittent Fasting", "iSkylar"), and podcasts with pre-signed streaming tokens.
   5. **In-App Media Player Deck in Famio.us (`ChanceTekOneHub.tsx`)**: Built an interactive HTML5 audio player deck with Play/Pause, time scrubber, -15s/+15s skip, animated equalizer, volume control, search bar, and category filters ("All", "Music", "Audiobooks", "Live").
 
+### 82. Real-Time Partner API Usage Monitor (Hour / Day / Week / Year / Exact Time)
+- **User Directives**:
+  1. `Add an option in the admin dashboard to keep usages of the APIs being used by applications in real time. by the hour, day, week, year, and time.`
+- **Architectural Implementation**:
+  1. **Real-Time API Usage Tracker (`src/lib/server/apiUsageTracker.ts`)**:
+     - Captures every authenticated request passing through `verifyStrideIqPartnerRequest()` in `src/lib/server/strideiqStore.ts` (`api_key`, `stream_token`, `firebase_user`) without blocking API responses.
+     - Automatically resolves the calling application identity (`Famio.us`, `StrideIQ.fit`, `Media Player Stream`, or custom partner app label) from key prefix (`sk_famio_`, `sk_strideiq_`), headers, and origin.
+     - Aggregates requests across all 5 time dimensions: exact timestamp (`events` rolling buffer), `hourly`, `daily`, `weekly` (ISO weeks), and `yearly` buckets in `.data/api_usage_store.json` with optional Firestore backup (`api_usage_events`).
+     - Supports a persistent `trackingEnabled` toggle (`setApiUsageTrackingEnabled`) and reset (`clearApiUsageStats`).
+  2. **Admin Usage Analytics API (`src/app/api/admin/api-usage/route.ts`)**:
+     - Protected by `requireStrideIqAdmin(request)`.
+     - `GET /api/admin/api-usage?granularity=time|hour|day|week|year&app=all` returns KPI summaries (`lastHour`, `today`, `thisWeek`, `thisYear`, `allTime`, `totalStreams`), zero-filled stacked time-series buckets per app, active applications table, top endpoints, and exact timestamped live logs.
+     - `POST /api/admin/api-usage` toggles `trackingEnabled` or clears recorded stats.
+  3. **Admin Dashboard UI (`src/components/admin/ApiUsageMonitorSection.tsx`, `StrideIqIntegrationCard.tsx`, `src/app/admin/page.tsx`, `OverviewSection.tsx`)**:
+     - Added dedicated **"API Usage (Live)"** top-level admin tab (`api-usage`, also deep-linkable via `/admin?tab=api-usage`), an **"API Usage (Live)"** quick button in Overview, and embedded `<ApiUsageMonitorSection />` inside the **Partner API & Keys** console.
+     - Includes a **Tracking: ON / PAUSED** toggle, **Auto-Sync (4s)** live polling toggle, granularity selector (**By Time (Live)**, **By Hour**, **By Day**, **By Week**, **By Year**), application filter pills, stacked bar chart, connected applications table, top endpoints breakdown, and exact-time live request stream.
+
+
 
 
 

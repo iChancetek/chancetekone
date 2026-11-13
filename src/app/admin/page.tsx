@@ -41,6 +41,7 @@ const DuplicateDetectionSection = dynamic(() => import('@/components/admin/secti
 const UnplayableAudioSection = dynamic(() => import('@/components/admin/sections/UnplayableAudioSection').then((m) => m.UnplayableAudioSection));
 const CommentsModerationSection = dynamic(() => import('@/components/admin/sections/CommentsModerationSection').then((m) => m.CommentsModerationSection));
 const StrideIqIntegrationCard = dynamic(() => import('@/components/admin/StrideIqIntegrationCard').then((m) => m.StrideIqIntegrationCard));
+const ApiUsageMonitorSection = dynamic(() => import('@/components/admin/ApiUsageMonitorSection').then((m) => m.ApiUsageMonitorSection));
 import { MusicRecoveryService } from '@/lib/music/MusicRecoveryService';
 import { PlaylistService } from '@/lib/playlist/PlaylistService';
 import { DistributionAgreementService } from '@/lib/agreements/DistributionAgreementService';
@@ -95,11 +96,13 @@ import {
   AlertCircle,
   MessageSquare,
   KeyRound,
+  BarChart3,
 } from 'lucide-react';
 
 type AdminTab =
   | 'overview'
   | 'partner-api'
+  | 'api-usage'
   | 'comments'
   | 'duplicates'
   | 'unplayable-music'
@@ -191,6 +194,8 @@ export default function AdminPage() {
         tabParam === 'strideiq'
       ) {
         setActiveTab('partner-api');
+      } else if (tabParam === 'api-usage' || tabParam === 'usage' || tabParam === 'telemetry') {
+        setActiveTab('api-usage');
       }
     } catch {}
 
@@ -930,6 +935,15 @@ export default function AdminPage() {
               accent: 'neon' as const,
             },
             {
+              id: 'api-usage' as const,
+              label: 'Real-Time API Usage Monitor',
+              displayLabel: 'API Usage (Live)',
+              icon: BarChart3,
+              category: 'governance' as const,
+              description: 'Real-time API usage by hour, day, week, year & exact time',
+              accent: 'neon' as const,
+            },
+            {
               id: 'radio' as const,
               label: 'Radio Stations',
               icon: Radio,
@@ -1056,6 +1070,7 @@ export default function AdminPage() {
                 { id: 'audit', label: 'Audit Logs' },
                 { id: 'settings', label: 'RBAC & Settings' },
                 { id: 'partner-api', label: 'Developer & Partner API Console (Famio.us & StrideIQ.fit)' },
+                { id: 'api-usage', label: 'Real-Time API Usage Monitor (Hour / Day / Week / Year / Time)' },
                 { id: 'radio', label: 'Radio Stations' },
               ].find((t) => t.id === activeTab)?.label || 'Overview'}
             </span>
@@ -1063,7 +1078,7 @@ export default function AdminPage() {
 
           <div className="flex items-center gap-2 text-[10px] text-neutral-400">
             <span className="px-2 py-0.5 rounded-md bg-white/5 font-mono text-neutral-300 border border-white/10 uppercase">
-              23 Modules Ready
+              24 Modules Ready
             </span>
             <span className="text-emerald-400 font-bold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -1208,6 +1223,12 @@ export default function AdminPage() {
         {activeTab === 'partner-api' && (
           <div className="space-y-6">
             <StrideIqIntegrationCard />
+          </div>
+        )}
+
+        {activeTab === 'api-usage' && (
+          <div className="space-y-6">
+            <ApiUsageMonitorSection />
           </div>
         )}
 
