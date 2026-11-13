@@ -36,6 +36,7 @@ import {
   FileText,
   FileSignature,
   User as UserIcon,
+  BarChart3,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useAI } from '@/lib/ai/AIContext';
@@ -341,27 +342,49 @@ export const Sidebar: React.FC = () => {
                 )}
               </Link>
 
-              {/* Admin Operations shortcut for Super Users */}
+              {/* Admin Operations & API Management shortcuts for Super Users */}
               {isAdmin && (
-                <Link
-                  href="/admin"
-                  prefetch={false}
-                  onMouseEnter={() => handleIntentPrefetch('/admin')}
-                  onTouchStart={() => handleIntentPrefetch('/admin')}
-                  onClick={(e) => handleMenuNavigate(e, '/admin', false, false)}
-                  title={isCollapsed ? 'Operations Center (Super Admin)' : undefined}
-                  className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2'
-                    } rounded-xl text-xs font-bold text-red-400 hover:text-red-300 bg-red-950/30 border border-red-500/30 hover:border-red-500/60 transition-all`}
-                >
-                  <ShieldAlert className="w-4 h-4 text-red-400 shrink-0 animate-pulse" />
-                  {!isCollapsed && <span>Admin Ops</span>}
+                <>
+                  <Link
+                    href="/admin"
+                    prefetch={false}
+                    onMouseEnter={() => handleIntentPrefetch('/admin')}
+                    onTouchStart={() => handleIntentPrefetch('/admin')}
+                    onClick={(e) => handleMenuNavigate(e, '/admin', false, false)}
+                    title={isCollapsed ? 'Operations Center (Super Admin)' : undefined}
+                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2.5'
+                      } rounded-xl text-sm font-bold text-red-400 hover:text-red-300 bg-red-950/30 border border-red-500/30 hover:border-red-500/60 transition-all`}
+                  >
+                    <ShieldAlert className="w-4 h-4 text-red-400 shrink-0 animate-pulse" />
+                    {!isCollapsed && <span>Admin Ops</span>}
 
-                  {isCollapsed && (
-                    <div className="absolute left-full ml-2 px-2.5 py-1 rounded-lg bg-red-950 border border-red-500/40 text-red-200 text-[11px] font-bold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
-                      Admin Operations Center
-                    </div>
-                  )}
-                </Link>
+                    {isCollapsed && (
+                      <div className="absolute left-full ml-2 px-2.5 py-1 rounded-lg bg-red-950 border border-red-500/40 text-red-200 text-xs font-bold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
+                        Admin Operations Center
+                      </div>
+                    )}
+                  </Link>
+
+                  <Link
+                    href="/admin?tab=api-management"
+                    prefetch={false}
+                    onMouseEnter={() => handleIntentPrefetch('/admin?tab=api-management')}
+                    onTouchStart={() => handleIntentPrefetch('/admin?tab=api-management')}
+                    onClick={(e) => handleMenuNavigate(e, '/admin?tab=api-management', false, false)}
+                    title={isCollapsed ? 'API Management' : undefined}
+                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2.5'
+                      } rounded-xl text-sm font-bold text-cyan-300 hover:text-cyan-200 bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-500/60 transition-all`}
+                  >
+                    <BarChart3 className="w-4 h-4 text-cyan-400 shrink-0" />
+                    {!isCollapsed && <span>API Management</span>}
+
+                    {isCollapsed && (
+                      <div className="absolute left-full ml-2 px-2.5 py-1 rounded-lg bg-cyan-950 border border-cyan-500/40 text-cyan-200 text-xs font-bold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
+                        API Management
+                      </div>
+                    )}
+                  </Link>
+                </>
               )}
             </nav>
           </div>
@@ -686,19 +709,33 @@ export const Sidebar: React.FC = () => {
                 <span>+ Create Playlist</span>
               </Link>
 
-              {/* Admin Operations shortcut for Super Users */}
+              {/* Admin Operations & API Management shortcuts for Super Users */}
               {isAdmin && (
-                <Link
-                  href="/admin"
-                  prefetch={false}
-                  onMouseEnter={() => handleIntentPrefetch('/admin')}
-                  onTouchStart={() => handleIntentPrefetch('/admin')}
-                  onClick={(e) => handleMenuNavigate(e, '/admin', false, true)}
-                  className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-red-400 bg-red-950/40 border border-red-500/40 active:border-red-500/70 transition-all mt-1 touch-manipulation"
-                >
-                  <ShieldAlert className="w-4 h-4 text-red-400 shrink-0 animate-pulse" />
-                  <span>Admin Operations Center</span>
-                </Link>
+                <>
+                  <Link
+                    href="/admin"
+                    prefetch={false}
+                    onMouseEnter={() => handleIntentPrefetch('/admin')}
+                    onTouchStart={() => handleIntentPrefetch('/admin')}
+                    onClick={(e) => handleMenuNavigate(e, '/admin', false, true)}
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold text-red-400 bg-red-950/40 border border-red-500/40 active:border-red-500/70 transition-all mt-1 touch-manipulation"
+                  >
+                    <ShieldAlert className="w-5 h-5 text-red-400 shrink-0 animate-pulse" />
+                    <span>Admin Operations Center</span>
+                  </Link>
+
+                  <Link
+                    href="/admin?tab=api-management"
+                    prefetch={false}
+                    onMouseEnter={() => handleIntentPrefetch('/admin?tab=api-management')}
+                    onTouchStart={() => handleIntentPrefetch('/admin?tab=api-management')}
+                    onClick={(e) => handleMenuNavigate(e, '/admin?tab=api-management', false, true)}
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold text-cyan-300 bg-cyan-950/40 border border-cyan-500/40 active:border-cyan-500/70 transition-all mt-1 touch-manipulation"
+                  >
+                    <BarChart3 className="w-5 h-5 text-cyan-400 shrink-0" />
+                    <span>API Management</span>
+                  </Link>
+                </>
               )}
             </nav>
           </div>

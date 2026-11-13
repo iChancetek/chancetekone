@@ -754,7 +754,7 @@ export default function AdminPage() {
         </div>
 
         {/* 22 Navigation Modules Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {[
             {
               id: 'overview' as const,
@@ -974,7 +974,7 @@ export default function AdminPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`group relative p-3 rounded-2xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between gap-2 overflow-hidden ${
+                  className={`group relative p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between gap-2.5 overflow-hidden ${
                     isActive
                       ? 'bg-gradient-to-br from-brand-purple/35 via-[#1d102e] to-brand-violet/25 border-brand-purple/80 shadow-[0_0_24px_rgba(168,85,247,0.35)] scale-[1.01]'
                       : tab.accent === 'danger'
@@ -990,7 +990,7 @@ export default function AdminPage() {
                   {/* Top Row: Icon + Badge */}
                   <div className="flex items-center justify-between gap-2 w-full">
                     <div
-                      className={`w-7 h-7 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shrink-0 ${
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shrink-0 ${
                         isActive
                           ? 'bg-brand-purple text-white shadow-md shadow-brand-purple/40'
                           : tab.accent === 'danger'
@@ -1002,12 +1002,12 @@ export default function AdminPage() {
                           : 'bg-white/5 text-neutral-300 border border-white/10 group-hover:text-white'
                       }`}
                     >
-                      <Icon className="w-3.5 h-3.5" />
+                      <Icon className="w-5 h-5" />
                     </div>
 
                     {tab.badge !== undefined && (
                       <span
-                        className={`px-1.5 py-0.5 rounded-full text-[10px] font-black font-mono shrink-0 ${
+                        className={`px-2 py-0.5 rounded-full text-xs font-black font-mono shrink-0 ${
                           isActive
                             ? 'bg-brand-gold text-black shadow-sm'
                             : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
@@ -1018,7 +1018,7 @@ export default function AdminPage() {
                     )}
 
                     {tab.accent === 'danger' && !tab.badge && (
-                      <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase text-red-400 bg-red-500/15 border border-red-500/30 shrink-0">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase text-red-400 bg-red-500/15 border border-red-500/30 shrink-0">
                         Protect
                       </span>
                     )}
@@ -1027,13 +1027,13 @@ export default function AdminPage() {
                   {/* Bottom Row: Label & Description */}
                   <div className="min-w-0">
                     <p
-                      className={`text-xs font-black truncate leading-tight ${
-                        isActive ? 'text-white' : 'text-neutral-200 group-hover:text-white'
+                      className={`text-sm font-black leading-snug ${
+                        isActive ? 'text-white' : 'text-neutral-100 group-hover:text-white'
                       }`}
                     >
                       {tab.displayLabel || tab.label}
                     </p>
-                    <p className="text-[10px] text-neutral-500 truncate mt-0.5 group-hover:text-neutral-400">
+                    <p className="text-xs text-neutral-300/80 leading-snug line-clamp-2 mt-1 group-hover:text-neutral-200">
                       {tab.description}
                     </p>
                   </div>
@@ -1048,11 +1048,11 @@ export default function AdminPage() {
         </div>
 
         {/* Live Active Context Bar */}
-        <div className="px-3.5 py-2 rounded-2xl bg-black/40 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-            <span className="text-neutral-400 text-[11px]">Active Workspace:</span>
-            <span className="font-extrabold text-white text-[11px] truncate">
+        <div className="px-4 py-2.5 rounded-2xl bg-black/40 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span className="text-neutral-400 text-xs sm:text-sm">Active Workspace:</span>
+            <span className="font-extrabold text-white text-xs sm:text-sm truncate">
               {[
                 { id: 'overview', label: 'Overview' },
                 { id: 'duplicates', label: `Duplicate Detective (${duplicatesCount})` },
