@@ -194,7 +194,12 @@ export default function AdminPage() {
         tabParam === 'strideiq'
       ) {
         setActiveTab('partner-api');
-      } else if (tabParam === 'api-usage' || tabParam === 'usage' || tabParam === 'telemetry') {
+      } else if (
+        tabParam === 'api-usage' ||
+        tabParam === 'api-management' ||
+        tabParam === 'usage' ||
+        tabParam === 'telemetry'
+      ) {
         setActiveTab('api-usage');
       }
     } catch {}
@@ -936,11 +941,11 @@ export default function AdminPage() {
             },
             {
               id: 'api-usage' as const,
-              label: 'Real-Time API Usage Monitor',
-              displayLabel: 'API Usage (Live)',
+              label: 'API Management',
+              displayLabel: 'API Management',
               icon: BarChart3,
               category: 'governance' as const,
-              description: 'Real-time API usage by hour, day, week, year & exact time',
+              description: 'Real-time API usage by user, app, key, hour, day, week & year',
               accent: 'neon' as const,
             },
             {
@@ -1070,7 +1075,7 @@ export default function AdminPage() {
                 { id: 'audit', label: 'Audit Logs' },
                 { id: 'settings', label: 'RBAC & Settings' },
                 { id: 'partner-api', label: 'Developer & Partner API Console (Famio.us & StrideIQ.fit)' },
-                { id: 'api-usage', label: 'Real-Time API Usage Monitor (Hour / Day / Week / Year / Time)' },
+                { id: 'api-usage', label: 'API Management' },
                 { id: 'radio', label: 'Radio Stations' },
               ].find((t) => t.id === activeTab)?.label || 'Overview'}
             </span>

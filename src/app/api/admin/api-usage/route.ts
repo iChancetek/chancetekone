@@ -31,12 +31,16 @@ export async function GET(request: NextRequest) {
       : 'hour';
 
   const appFilter = sp.get('app')?.trim() || 'all';
+  const userFilter = sp.get('user')?.trim() || 'all';
+  const keyFilter = sp.get('key')?.trim() || 'all';
   const limitRaw = Number(sp.get('limit') || '50');
   const limit = Number.isFinite(limitRaw) ? Math.min(200, Math.max(10, limitRaw)) : 50;
 
   const data = queryApiUsageAnalytics({
     granularity,
     appFilter,
+    userFilter,
+    keyFilter,
     limit,
   });
 

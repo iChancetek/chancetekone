@@ -594,9 +594,13 @@ export async function verifyStrideIqPartnerRequest(
         const rate = checkRateLimit(`fb:${decoded.uid}`, limit);
         recordApiUsage(request, {
           authType: 'firebase_user',
-          partnerKeyId: decoded.uid,
-          keyLabel: decoded.email || 'Authenticated User',
+          partnerKeyId: `fb:${decoded.uid}`,
+          keyLabel: 'Firebase User Token',
+          keyPrefix: 'firebase-jwt',
           appType: 'user',
+          userId: decoded.uid,
+          userEmail: decoded.email || undefined,
+          userName: typeof decoded.name === 'string' ? decoded.name : undefined,
         });
         return {
           authorized: true,

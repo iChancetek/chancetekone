@@ -6,12 +6,15 @@ import {
   BarChart3,
   Clock,
   Globe,
+  KeyRound,
   Pause,
   Play,
   Radio,
   RefreshCw,
   Server,
   Trash2,
+  Users,
+  X,
 } from 'lucide-react';
 import { auth } from '@/lib/firebase/client';
 import { useAuth } from '@/lib/auth/AuthContext';
@@ -37,13 +40,45 @@ interface AppUsageSummary {
   endpoints: Record<string, number>;
 }
 
+interface UserUsageSummary {
+  userKey: string;
+  userId: string;
+  userEmail: string;
+  userDisplay: string;
+  apps: string[];
+  keyLabels: string[];
+  keyPrefixes: string[];
+  totalRequests: number;
+  totalStreams: number;
+  lastUsedAt: string;
+  lastEndpoint: string;
+}
+
+interface ApiKeyUsageSummary {
+  keyId: string;
+  keyLabel: string;
+  keyPrefix: string;
+  appName: string;
+  appType: string;
+  authType: string;
+  users: string[];
+  totalRequests: number;
+  totalStreams: number;
+  lastUsedAt: string;
+  lastEndpoint: string;
+}
+
 interface ApiUsageEvent {
   id: string;
   timestamp: string;
   ts: number;
   appName: string;
   appType: string;
+  userId: string;
+  userEmail: string;
+  userDisplay: string;
   keyId: string;
+  keyLabel: string;
   keyPrefix: string;
   endpoint: string;
   method: string;
@@ -65,8 +100,12 @@ interface UsageAnalyticsPayload {
     thisWeek: number;
     thisYear: number;
     connectedAppCount: number;
+    uniqueUserCount?: number;
+    activeKeyCount?: number;
   };
   activeApps: AppUsageSummary[];
+  activeUsers?: UserUsageSummary[];
+  activeKeys?: ApiKeyUsageSummary[];
   topEndpoints: Array<{ endpoint: string; count: number }>;
   series: SeriesPoint[];
   recentLogs: ApiUsageEvent[];
@@ -107,6 +146,8 @@ export const ApiUsageMonitorSection: React.FC = () => {
   const { user, profile } = useAuth();
   const [granularity, setGranularity] = useState<UsageGranularity>('hour');
   const [appFilter, setAppFilter] = useState<string>('all');
+  const [userFilter, setUserFilter] = useState<string>('all');
+  const [keyFilter, setKeyFilter] = useState<string>('all');
   const [livePolling, setLivePolling] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
   const [toggling, setToggling] = useState<boolean>(false);
@@ -137,6 +178,8 @@ export const ApiUsageMonitorSection: React.FC = () => {
         const params = new URLSearchParams({
           granularity,
           app: appFilter,
+          user: userFilter,
+          key: keyFilter,
           limit: '60',
         });
         const res = await fetch(`/api/admin/api-usage?${params.toString()}`, {
@@ -154,7 +197,7 @@ export const ApiUsageMonitorSection: React.FC = () => {
         if (!silent) setLoading(false);
       }
     },
-    [appFilter, buildAdminHeaders, granularity],
+    [appFilter, buildAdminHeaders, granularity, keyFilter, userFilter],
   );
 
   useEffect(() => {
@@ -222,7 +265,7 @@ export const ApiUsageMonitorSection: React.FC = () => {
             </div>
             <div>
               <h3 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
-                Real-Time API Usage Monitor
+                API Management
                 {livePolling && data?.trackingEnabled && (
                   <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
@@ -231,7 +274,7 @@ export const ApiUsageMonitorSection: React.FC = () => {
                 )}
               </h3>
               <p className="text-xs text-neutral-400">
-                Track every partner API request & media stream in real time by exact time, hour, day, week, and year.
+                Real-time API usage by users, applications, and API keys across exact time, hour, day, week, and year.
               </p>
             </div>
           </div>
@@ -244,11 +287,10 @@ export const ApiUsageMonitorSection: React.FC = () => {
             type="button"
             disabled={toggling || !data}
             onClick={handleToggleTracking}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-              data?.trackingEnabled !== false
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${data?.trackingEnabled !== false
                 ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/25'
                 : 'bg-rose-500/15 border-rose-500/40 text-rose-300 hover:bg-rose-500/25'
-            }`}
+              }`}
             title="Enable or pause server-side API usage recording"
           >
             <Radio className="w-3.5 h-3.5" />
@@ -259,11 +301,10 @@ export const ApiUsageMonitorSection: React.FC = () => {
           <button
             type="button"
             onClick={() => setLivePolling((p) => !p)}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-              livePolling
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${livePolling
                 ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
                 : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
-            }`}
+              }`}
           >
             {livePolling ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
             <span>{livePolling ? 'Auto-Sync (4s)' : 'Auto-Sync Off'}</span>
@@ -353,11 +394,10 @@ export const ApiUsageMonitorSection: React.FC = () => {
                 key={tab.id}
                 type="button"
                 onClick={() => setGranularity(tab.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  active
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${active
                     ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20'
                     : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                }`}
+                  }`}
                 title={tab.subtitle}
               >
                 {tab.label}
@@ -366,17 +406,16 @@ export const ApiUsageMonitorSection: React.FC = () => {
           })}
         </div>
 
-        {/* Application Filter */}
+        {/* Application, User & Key Filters */}
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-[11px] text-neutral-400 font-semibold mr-1">App:</span>
           <button
             type="button"
             onClick={() => setAppFilter('all')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-              appFilter === 'all'
+            className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${appFilter === 'all'
                 ? 'bg-white text-black border-white'
                 : 'bg-white/5 text-neutral-300 border-white/10 hover:bg-white/10'
-            }`}
+              }`}
           >
             All Apps
           </button>
@@ -385,15 +424,34 @@ export const ApiUsageMonitorSection: React.FC = () => {
               key={app}
               type="button"
               onClick={() => setAppFilter(app)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                appFilter === app
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${appFilter === app
                   ? 'bg-indigo-500 text-white border-indigo-400'
                   : 'bg-white/5 text-neutral-300 border-white/10 hover:bg-white/10'
-              }`}
+                }`}
             >
               {app}
             </button>
           ))}
+          {userFilter !== 'all' && (
+            <button
+              type="button"
+              onClick={() => setUserFilter('all')}
+              className="px-2.5 py-1 rounded-lg text-xs font-semibold border bg-cyan-500/20 text-cyan-200 border-cyan-500/40 flex items-center gap-1 cursor-pointer hover:bg-cyan-500/30"
+            >
+              <span>User: {userFilter}</span>
+              <X className="w-3 h-3" />
+            </button>
+          )}
+          {keyFilter !== 'all' && (
+            <button
+              type="button"
+              onClick={() => setKeyFilter('all')}
+              className="px-2.5 py-1 rounded-lg text-xs font-semibold border bg-amber-500/20 text-amber-200 border-amber-500/40 flex items-center gap-1 cursor-pointer hover:bg-amber-500/30"
+            >
+              <span>Key: {keyFilter}</span>
+              <X className="w-3 h-3" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -466,7 +524,7 @@ export const ApiUsageMonitorSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Connected Apps & Top Endpoints */}
+      {/* Connected Apps, Active Users, API Keys & Top Endpoints */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Connected Applications */}
         <div className="rounded-2xl bg-black/40 border border-white/10 p-4 space-y-3">
@@ -479,30 +537,135 @@ export const ApiUsageMonitorSection: React.FC = () => {
               No API calls recorded yet. Calls from Famio.us, StrideIQ.fit, or any partner app will appear here in real time.
             </p>
           ) : (
-            <div className="space-y-2">
-              {data.activeApps.map((app) => (
-                <div
-                  key={app.appName}
-                  className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between gap-3"
-                >
-                  <div className="min-w-0 space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-md border ${getAppBadgeClass(app.appName)}`}>
-                        {app.appName}
-                      </span>
-                      <span className="text-[10px] font-mono text-neutral-500">{app.keyPrefix}</span>
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+              {data.activeApps.map((app) => {
+                const isSelected = appFilter === app.appName;
+                return (
+                  <button
+                    key={app.appName}
+                    type="button"
+                    onClick={() => setAppFilter(isSelected ? 'all' : app.appName)}
+                    className={`w-full text-left p-3 rounded-xl border flex items-center justify-between gap-3 transition-all cursor-pointer ${isSelected
+                        ? 'bg-indigo-500/15 border-indigo-500/40'
+                        : 'bg-white/[0.03] border-white/5 hover:border-white/15'
+                      }`}
+                  >
+                    <div className="min-w-0 space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-md border ${getAppBadgeClass(app.appName)}`}>
+                          {app.appName}
+                        </span>
+                        <span className="text-[10px] font-mono text-neutral-500">{app.keyPrefix}</span>
+                      </div>
+                      <div className="text-[11px] text-neutral-400 truncate">
+                        Last: <span className="font-mono text-neutral-300">{app.lastEndpoint}</span> •{' '}
+                        {new Date(app.lastUsedAt).toLocaleTimeString()}
+                      </div>
                     </div>
-                    <div className="text-[11px] text-neutral-400 truncate">
-                      Last: <span className="font-mono text-neutral-300">{app.lastEndpoint}</span> •{' '}
-                      {new Date(app.lastUsedAt).toLocaleTimeString()}
+                    <div className="text-right shrink-0">
+                      <div className="text-sm font-black text-white">{app.totalRequests.toLocaleString()}</div>
+                      <div className="text-[10px] text-cyan-400">{app.totalStreams.toLocaleString()} streams</div>
                     </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <div className="text-sm font-black text-white">{app.totalRequests.toLocaleString()}</div>
-                    <div className="text-[10px] text-cyan-400">{app.totalStreams.toLocaleString()} streams</div>
-                  </div>
-                </div>
-              ))}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Active Users Using APIs */}
+        <div className="rounded-2xl bg-black/40 border border-white/10 p-4 space-y-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-300 flex items-center gap-2">
+            <Users className="w-4 h-4 text-cyan-400" />
+            <span>Users Accessing APIs ({data?.activeUsers?.length ?? 0})</span>
+          </h4>
+          {(!data?.activeUsers || data.activeUsers.length === 0) ? (
+            <p className="text-xs text-neutral-500 py-4">
+              No user-attributed API calls recorded yet. Firebase users and partner-app user headers will appear here.
+            </p>
+          ) : (
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+              {data.activeUsers.map((usr) => {
+                const isSelected = userFilter === usr.userKey;
+                return (
+                  <button
+                    key={usr.userKey}
+                    type="button"
+                    onClick={() => setUserFilter(isSelected ? 'all' : usr.userKey)}
+                    className={`w-full text-left p-3 rounded-xl border flex items-center justify-between gap-3 transition-all cursor-pointer ${isSelected
+                        ? 'bg-cyan-500/15 border-cyan-500/40'
+                        : 'bg-white/[0.03] border-white/5 hover:border-white/15'
+                      }`}
+                  >
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-bold text-white truncate">{usr.userDisplay}</span>
+                        {usr.apps.map((a) => (
+                          <span key={a} className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${getAppBadgeClass(a)}`}>
+                            {a}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="text-[11px] text-neutral-400 truncate">
+                        {usr.userEmail && usr.userEmail !== usr.userDisplay ? `${usr.userEmail} • ` : ''}
+                        Keys: <span className="font-mono text-amber-300/90">{usr.keyPrefixes.join(', ')}</span>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-sm font-black text-white">{usr.totalRequests.toLocaleString()}</div>
+                      <div className="text-[10px] text-cyan-400">{usr.totalStreams.toLocaleString()} streams</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* API Keys Being Used */}
+        <div className="rounded-2xl bg-black/40 border border-white/10 p-4 space-y-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-300 flex items-center gap-2">
+            <KeyRound className="w-4 h-4 text-amber-400" />
+            <span>API Keys Being Used ({data?.activeKeys?.length ?? 0})</span>
+          </h4>
+          {(!data?.activeKeys || data.activeKeys.length === 0) ? (
+            <p className="text-xs text-neutral-500 py-4">No API keys have recorded traffic yet.</p>
+          ) : (
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+              {data.activeKeys.map((k) => {
+                const isSelected = keyFilter === k.keyId;
+                return (
+                  <button
+                    key={k.keyId}
+                    type="button"
+                    onClick={() => setKeyFilter(isSelected ? 'all' : k.keyId)}
+                    className={`w-full text-left p-3 rounded-xl border flex items-center justify-between gap-3 transition-all cursor-pointer ${isSelected
+                        ? 'bg-amber-500/15 border-amber-500/40'
+                        : 'bg-white/[0.03] border-white/5 hover:border-white/15'
+                      }`}
+                  >
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-bold text-white truncate">{k.keyLabel}</span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                          {k.keyPrefix}
+                        </span>
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${getAppBadgeClass(k.appName)}`}>
+                          {k.appName}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-neutral-400 truncate">
+                        {k.users.length} user{k.users.length === 1 ? '' : 's'} ({k.users.slice(0, 3).join(', ')}
+                        {k.users.length > 3 ? ` +${k.users.length - 3}` : ''}) • {new Date(k.lastUsedAt).toLocaleTimeString()}
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-sm font-black text-white">{k.totalRequests.toLocaleString()}</div>
+                      <div className="text-[10px] text-cyan-400">{k.totalStreams.toLocaleString()} streams</div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -516,7 +679,7 @@ export const ApiUsageMonitorSection: React.FC = () => {
           {(!data?.topEndpoints || data.topEndpoints.length === 0) ? (
             <p className="text-xs text-neutral-500 py-4">No endpoint traffic recorded yet.</p>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
               {data.topEndpoints.map((ep) => {
                 const maxEp = Math.max(1, data.topEndpoints[0]?.count || 1);
                 const pct = Math.max(5, Math.round((ep.count / maxEp) * 100));
@@ -552,15 +715,16 @@ export const ApiUsageMonitorSection: React.FC = () => {
         {(!data?.recentLogs || data.recentLogs.length === 0) ? (
           <p className="text-xs text-neutral-500 py-3">Waiting for incoming partner API requests...</p>
         ) : (
-          <div className="max-h-64 overflow-y-auto overflow-x-auto">
+          <div className="max-h-72 overflow-y-auto overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-white/10 text-[10px] uppercase tracking-wider text-neutral-500">
                   <th className="py-2 pr-3">Time</th>
+                  <th className="py-2 pr-3">User</th>
                   <th className="py-2 pr-3">Application</th>
+                  <th className="py-2 pr-3">API Key</th>
                   <th className="py-2 pr-3">Method</th>
                   <th className="py-2 pr-3">Endpoint</th>
-                  <th className="py-2 pr-3">Auth</th>
                   <th className="py-2">Origin</th>
                 </tr>
               </thead>
@@ -578,13 +742,22 @@ export const ApiUsageMonitorSection: React.FC = () => {
                       </span>
                     </td>
                     <td className="py-1.5 pr-3 whitespace-nowrap">
+                      <div className="text-[11px] font-semibold text-cyan-200">{evt.userDisplay}</div>
+                      {evt.userEmail && evt.userEmail !== evt.userDisplay && (
+                        <div className="text-[10px] text-neutral-500">{evt.userEmail}</div>
+                      )}
+                    </td>
+                    <td className="py-1.5 pr-3 whitespace-nowrap">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getAppBadgeClass(evt.appName)}`}>
                         {evt.appName}
                       </span>
                     </td>
+                    <td className="py-1.5 pr-3 whitespace-nowrap">
+                      <div className="text-[11px] text-neutral-200 font-medium">{evt.keyLabel}</div>
+                      <div className="text-[10px] font-mono text-amber-300/90">{evt.keyPrefix}</div>
+                    </td>
                     <td className="py-1.5 pr-3 font-mono text-[11px] text-emerald-400">{evt.method}</td>
                     <td className="py-1.5 pr-3 font-mono text-[11px] text-white">{evt.endpoint}</td>
-                    <td className="py-1.5 pr-3 font-mono text-[10px] text-neutral-400">{evt.authType}</td>
                     <td className="py-1.5 text-[11px] text-neutral-400 truncate max-w-[180px]">{evt.origin}</td>
                   </tr>
                 ))}

@@ -19,7 +19,11 @@ export interface ApiUsageEvent {
   ts: number;
   appName: string;
   appType: string;
+  userId: string;
+  userEmail: string;
+  userDisplay: string;
   keyId: string;
+  keyLabel: string;
   keyPrefix: string;
   endpoint: string;
   method: string;
@@ -49,6 +53,34 @@ export interface AppUsageSummary {
   endpoints: Record<string, number>;
 }
 
+export interface UserUsageSummary {
+  userKey: string;
+  userId: string;
+  userEmail: string;
+  userDisplay: string;
+  apps: string[];
+  keyLabels: string[];
+  keyPrefixes: string[];
+  totalRequests: number;
+  totalStreams: number;
+  lastUsedAt: string;
+  lastEndpoint: string;
+}
+
+export interface ApiKeyUsageSummary {
+  keyId: string;
+  keyLabel: string;
+  keyPrefix: string;
+  appName: string;
+  appType: string;
+  authType: string;
+  users: string[];
+  totalRequests: number;
+  totalStreams: number;
+  lastUsedAt: string;
+  lastEndpoint: string;
+}
+
 interface UsageStoreShape {
   trackingEnabled: boolean;
   totalRequests: number;
@@ -59,6 +91,8 @@ interface UsageStoreShape {
   weekly: Record<string, UsageBucket>;
   yearly: Record<string, UsageBucket>;
   apps: Record<string, AppUsageSummary>;
+  users: Record<string, UserUsageSummary>;
+  apiKeys: Record<string, ApiKeyUsageSummary>;
   updatedAt: string;
 }
 
@@ -92,6 +126,8 @@ function emptyStore(): UsageStoreShape {
     weekly: {},
     yearly: {},
     apps: {},
+    users: {},
+    apiKeys: {},
     updatedAt: new Date().toISOString(),
   };
 }
@@ -113,6 +149,8 @@ function loadStore(): UsageStoreShape {
           weekly: parsed.weekly && typeof parsed.weekly === 'object' ? parsed.weekly : {},
           yearly: parsed.yearly && typeof parsed.yearly === 'object' ? parsed.yearly : {},
           apps: parsed.apps && typeof parsed.apps === 'object' ? parsed.apps : {},
+          users: parsed.users && typeof parsed.users === 'object' ? parsed.users : {},
+          apiKeys: parsed.apiKeys && typeof parsed.apiKeys === 'object' ? parsed.apiKeys : {},
           updatedAt: String(parsed.updatedAt || new Date().toISOString()),
         };
         return memoryStore;
@@ -210,6 +248,12 @@ function normalizeEndpointPath(pathname: string): string {
   return pathname || '/api/v1';
 }
 
+function maskApiKey(candidateKey: string, fallbackPrefix: string): string {
+  if (!candidateKey) return fallbackPrefix;
+  if (candidateKey.length <= 12) return `${candidateKey.slice(0, 6)}...`;
+  return `${candidateKey.slice(0, 12)}...${candidateKey.slice(-4)}`;
+}
+
 export function resolveApplicationIdentity(
   request: NextRequest,
   meta: {
@@ -220,8 +264,9 @@ export function resolveApplicationIdentity(
     appType?: string;
     candidateKey?: string;
   }
-): { appName: string; appType: string; keyPrefix: string } {
+): { appName: string; appType: string; keyPrefix: string; keyLabel: string } {
   const origin = (request.headers.get('origin') || request.headers.get('referer') || '').toLowerCase();
+  const explicitApp = (request.headers.get('x-app-name') || request.headers.get('x-application-name') || '').trim();
   const key = meta.candidateKey || '';
   const label = (meta.keyLabel || '').trim();
   const labelLow = label.toLowerCase();
@@ -232,17 +277,28 @@ export function resolveApplicationIdentity(
       request.nextUrl.searchParams.get('x-strideiq-api-key')
   );
 
+  if (meta.authType === 'firebase_user') {
+    return {
+      appName: explicitApp || (origin.includes('famio') ? 'Famio.us' : origin.includes('strideiq') ? 'StrideIQ.fit' : 'ChanceTEK One User'),
+      appType: meta.appType || 'user',
+      keyPrefix: meta.keyPrefix || 'firebase-jwt',
+      keyLabel: label || 'Firebase User Token',
+    };
+  }
+
   if (
     key.startsWith('sk_famio_') ||
     hasFamioHeader ||
     origin.includes('famio.us') ||
     labelLow.includes('famio') ||
+    explicitApp.toLowerCase().includes('famio') ||
     meta.appType === 'social'
   ) {
     return {
-      appName: label && !labelLow.includes('production') ? label : 'Famio.us',
+      appName: explicitApp || (label && !labelLow.includes('production') ? label : 'Famio.us'),
       appType: 'social',
-      keyPrefix: meta.keyPrefix || (key ? `${key.slice(0, 12)}...` : 'sk_famio_...'),
+      keyPrefix: meta.keyPrefix || maskApiKey(key, 'sk_famio_...'),
+      keyLabel: label || (meta.partnerKeyId === 'env-partner-key' ? 'Famio.us Env Key' : 'Famio.us API Key'),
     };
   }
 
@@ -251,36 +307,98 @@ export function resolveApplicationIdentity(
     hasStrideIqHeader ||
     origin.includes('strideiq.fit') ||
     labelLow.includes('strideiq') ||
+    explicitApp.toLowerCase().includes('strideiq') ||
     meta.appType === 'fitness' ||
     request.nextUrl.pathname.startsWith('/api/strideiq/')
   ) {
     return {
-      appName: label && !labelLow.includes('production') ? label : 'StrideIQ.fit',
+      appName: explicitApp || (label && !labelLow.includes('production') ? label : 'StrideIQ.fit'),
       appType: 'fitness',
-      keyPrefix: meta.keyPrefix || (key ? `${key.slice(0, 14)}...` : 'sk_strideiq_...'),
+      keyPrefix: meta.keyPrefix || maskApiKey(key, 'sk_strideiq_...'),
+      keyLabel: label || (meta.partnerKeyId === 'env-partner-key' ? 'StrideIQ Env Key' : 'StrideIQ API Key'),
     };
   }
 
-  if (label) {
+  if (label || explicitApp) {
     return {
-      appName: label,
+      appName: explicitApp || label,
       appType: meta.appType || 'general',
-      keyPrefix: meta.keyPrefix || (key ? `${key.slice(0, 12)}...` : 'sk_live_...'),
+      keyPrefix: meta.keyPrefix || maskApiKey(key, 'sk_live_...'),
+      keyLabel: label || 'Partner API Key',
     };
   }
 
   if (meta.authType === 'stream_token') {
+    const streamApp = origin.includes('famio')
+      ? 'Famio.us'
+      : origin.includes('strideiq')
+        ? 'StrideIQ.fit'
+        : 'Media Player Stream';
     return {
-      appName: origin.includes('famio') ? 'Famio.us' : origin.includes('strideiq') ? 'StrideIQ.fit' : 'Media Player Stream',
+      appName: streamApp,
       appType: 'stream',
       keyPrefix: 'signed-token',
+      keyLabel: 'Signed Stream Token',
     };
   }
 
   return {
     appName: 'Universal Partner App',
     appType: meta.appType || 'general',
-    keyPrefix: meta.keyPrefix || (key ? `${key.slice(0, 12)}...` : 'api-key'),
+    keyPrefix: meta.keyPrefix || maskApiKey(key, 'api-key'),
+    keyLabel: meta.partnerKeyId === 'env-partner-key' ? 'Environment API Key' : 'Partner API Key',
+  };
+}
+
+export function resolveUserIdentity(
+  request: NextRequest,
+  meta: {
+    userId?: string;
+    userEmail?: string;
+    userName?: string;
+  },
+  appName: string
+): { userKey: string; userId: string; userEmail: string; userDisplay: string } {
+  const sp = request.nextUrl.searchParams;
+  const userEmail = (
+    meta.userEmail ||
+    request.headers.get('x-user-email') ||
+    request.headers.get('x-famio-user-email') ||
+    request.headers.get('x-strideiq-user-email') ||
+    sp.get('userEmail') ||
+    ''
+  ).trim();
+
+  const userId = (
+    meta.userId ||
+    request.headers.get('x-user-id') ||
+    request.headers.get('x-famio-user-id') ||
+    request.headers.get('x-strideiq-user-id') ||
+    request.headers.get('x-partner-user-id') ||
+    sp.get('userId') ||
+    sp.get('uid') ||
+    ''
+  ).trim();
+
+  const userName = (
+    meta.userName ||
+    request.headers.get('x-user-name') ||
+    request.headers.get('x-user-display-name') ||
+    request.headers.get('x-famio-user-name') ||
+    request.headers.get('x-strideiq-user-name') ||
+    sp.get('userName') ||
+    ''
+  ).trim();
+
+  const fallbackKey = `service:${appName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+  const userKey = (userEmail || userId || fallbackKey).toLowerCase();
+  const userDisplay = userName || userEmail || userId || `Service (${appName})`;
+
+  return {
+    userKey,
+    userId: userId || fallbackKey,
+    userEmail,
+    userDisplay,
   };
 }
 
@@ -322,6 +440,9 @@ export function recordApiUsage(
     appType?: string;
     candidateKey?: string;
     statusCode?: number;
+    userId?: string;
+    userEmail?: string;
+    userName?: string;
   }
 ): void {
   const store = loadStore();
@@ -333,6 +454,8 @@ export function recordApiUsage(
   const endpoint = normalizeEndpointPath(request.nextUrl.pathname);
   const isStream = endpoint.includes('/stream');
   const identity = resolveApplicationIdentity(request, meta);
+  const userIdentity = resolveUserIdentity(request, meta, identity.appName);
+  const keyId = meta.partnerKeyId || `${meta.authType}:${identity.keyPrefix}`;
 
   const event: ApiUsageEvent = {
     id: `usage_${ts}_${randomBytes(3).toString('hex')}`,
@@ -340,7 +463,11 @@ export function recordApiUsage(
     ts,
     appName: identity.appName,
     appType: identity.appType,
-    keyId: meta.partnerKeyId || meta.authType || 'partner',
+    userId: userIdentity.userId,
+    userEmail: userIdentity.userEmail,
+    userDisplay: userIdentity.userDisplay,
+    keyId,
+    keyLabel: identity.keyLabel,
     keyPrefix: identity.keyPrefix,
     endpoint,
     method: request.method || 'GET',
@@ -389,6 +516,59 @@ export function recordApiUsage(
   appRec.keyPrefix = identity.keyPrefix || appRec.keyPrefix;
   appRec.endpoints[endpoint] = (appRec.endpoints[endpoint] || 0) + 1;
 
+  // Update User Summary
+  if (!store.users[userIdentity.userKey]) {
+    store.users[userIdentity.userKey] = {
+      userKey: userIdentity.userKey,
+      userId: userIdentity.userId,
+      userEmail: userIdentity.userEmail,
+      userDisplay: userIdentity.userDisplay,
+      apps: [],
+      keyLabels: [],
+      keyPrefixes: [],
+      totalRequests: 0,
+      totalStreams: 0,
+      lastUsedAt: iso,
+      lastEndpoint: endpoint,
+    };
+  }
+  const userRec = store.users[userIdentity.userKey];
+  userRec.totalRequests += 1;
+  if (isStream) userRec.totalStreams += 1;
+  userRec.lastUsedAt = iso;
+  userRec.lastEndpoint = endpoint;
+  if (userIdentity.userEmail && !userRec.userEmail) userRec.userEmail = userIdentity.userEmail;
+  if (!userRec.apps.includes(identity.appName)) userRec.apps.push(identity.appName);
+  if (!userRec.keyLabels.includes(identity.keyLabel)) userRec.keyLabels.push(identity.keyLabel);
+  if (!userRec.keyPrefixes.includes(identity.keyPrefix)) userRec.keyPrefixes.push(identity.keyPrefix);
+
+  // Update API Key Summary
+  if (!store.apiKeys[keyId]) {
+    store.apiKeys[keyId] = {
+      keyId,
+      keyLabel: identity.keyLabel,
+      keyPrefix: identity.keyPrefix,
+      appName: identity.appName,
+      appType: identity.appType,
+      authType: meta.authType,
+      users: [],
+      totalRequests: 0,
+      totalStreams: 0,
+      lastUsedAt: iso,
+      lastEndpoint: endpoint,
+    };
+  }
+  const keyRec = store.apiKeys[keyId];
+  keyRec.totalRequests += 1;
+  if (isStream) keyRec.totalStreams += 1;
+  keyRec.lastUsedAt = iso;
+  keyRec.lastEndpoint = endpoint;
+  keyRec.keyLabel = identity.keyLabel || keyRec.keyLabel;
+  keyRec.keyPrefix = identity.keyPrefix || keyRec.keyPrefix;
+  if (!keyRec.users.includes(userIdentity.userDisplay)) {
+    keyRec.users.push(userIdentity.userDisplay);
+  }
+
   store.updatedAt = iso;
   scheduleFlush();
 
@@ -428,13 +608,30 @@ export function clearApiUsageStats(): void {
 export function queryApiUsageAnalytics(options?: {
   granularity?: UsageGranularity;
   appFilter?: string;
+  userFilter?: string;
+  keyFilter?: string;
   limit?: number;
 }) {
   const store = loadStore();
   const granularity: UsageGranularity = options?.granularity || 'hour';
   const appFilter = options?.appFilter && options.appFilter !== 'all' ? options.appFilter : undefined;
+  const userFilter = options?.userFilter && options.userFilter !== 'all' ? options.userFilter.toLowerCase() : undefined;
+  const keyFilter = options?.keyFilter && options.keyFilter !== 'all' ? options.keyFilter : undefined;
   const now = new Date();
   const nowMs = now.getTime();
+
+  const matchesEvent = (evt: ApiUsageEvent): boolean => {
+    if (appFilter && evt.appName !== appFilter) return false;
+    if (userFilter) {
+      const evtUserKey = (evt.userEmail || evt.userId || `service:${evt.appName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`).toLowerCase();
+      const evtDisplay = (evt.userDisplay || '').toLowerCase();
+      if (evtUserKey !== userFilter && evtDisplay !== userFilter) return false;
+    }
+    if (keyFilter && evt.keyId !== keyFilter && evt.keyPrefix !== keyFilter) return false;
+    return true;
+  };
+
+  const hasDeepFilter = Boolean(userFilter || keyFilter);
 
   const filterBucket = (b?: UsageBucket): { total: number; streams: number; byApp: Record<string, number> } => {
     if (!b) return { total: 0, streams: 0, byApp: {} };
@@ -449,6 +646,21 @@ export function queryApiUsageAnalytics(options?: {
     };
   };
 
+  const buildEventBucketMap = (keyFn: (d: Date) => string, cutoffMs?: number) => {
+    const map = new Map<string, { total: number; streams: number; byApp: Record<string, number> }>();
+    for (const evt of store.events) {
+      if (cutoffMs && evt.ts < cutoffMs) continue;
+      if (!matchesEvent(evt)) continue;
+      const k = keyFn(new Date(evt.ts));
+      const cur = map.get(k) || { total: 0, streams: 0, byApp: {} };
+      cur.total += 1;
+      if (evt.isStream) cur.streams += 1;
+      cur.byApp[evt.appName] = (cur.byApp[evt.appName] || 0) + 1;
+      map.set(k, cur);
+    }
+    return map;
+  };
+
   const series: Array<{
     key: string;
     label: string;
@@ -458,81 +670,48 @@ export function queryApiUsageAnalytics(options?: {
   }> = [];
 
   if (granularity === 'time') {
-    // Minute-by-minute over the last 30 minutes
-    const buckets = new Map<string, { total: number; streams: number; byApp: Record<string, number> }>();
     const cutoff = nowMs - 30 * 60_000;
-    for (const evt of store.events) {
-      if (evt.ts < cutoff) continue;
-      if (appFilter && evt.appName !== appFilter) continue;
-      const d = new Date(evt.ts);
-      const minKey = `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`;
-      const cur = buckets.get(minKey) || { total: 0, streams: 0, byApp: {} };
-      cur.total += 1;
-      if (evt.isStream) cur.streams += 1;
-      cur.byApp[evt.appName] = (cur.byApp[evt.appName] || 0) + 1;
-      buckets.set(minKey, cur);
-    }
-
+    const buckets = buildEventBucketMap((d) => `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`, cutoff);
     for (let i = 29; i >= 0; i--) {
       const d = new Date(nowMs - i * 60_000);
       const minKey = `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`;
       const localLabel = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const data = buckets.get(minKey) || { total: 0, streams: 0, byApp: {} };
-      series.push({
-        key: minKey,
-        label: localLabel,
-        ...data,
-      });
+      series.push({ key: minKey, label: localLabel, ...data });
     }
   } else if (granularity === 'hour') {
-    // Last 24 hours
+    const eventMap = hasDeepFilter ? buildEventBucketMap(getHourKey, nowMs - 24 * 3600_000) : null;
     for (let i = 23; i >= 0; i--) {
       const d = new Date(nowMs - i * 3600_000);
       const hKey = getHourKey(d);
       const localLabel = d.toLocaleTimeString([], { hour: 'numeric' });
-      const data = filterBucket(store.hourly[hKey]);
-      series.push({
-        key: hKey,
-        label: localLabel,
-        ...data,
-      });
+      const data = eventMap ? (eventMap.get(hKey) || { total: 0, streams: 0, byApp: {} }) : filterBucket(store.hourly[hKey]);
+      series.push({ key: hKey, label: localLabel, ...data });
     }
   } else if (granularity === 'day') {
-    // Last 14 days
+    const eventMap = hasDeepFilter ? buildEventBucketMap(getDayKey, nowMs - 14 * 86400_000) : null;
     for (let i = 13; i >= 0; i--) {
       const d = new Date(nowMs - i * 86400_000);
       const dKey = getDayKey(d);
       const label = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
-      const data = filterBucket(store.daily[dKey]);
-      series.push({
-        key: dKey,
-        label,
-        ...data,
-      });
+      const data = eventMap ? (eventMap.get(dKey) || { total: 0, streams: 0, byApp: {} }) : filterBucket(store.daily[dKey]);
+      series.push({ key: dKey, label, ...data });
     }
   } else if (granularity === 'week') {
-    // Last 12 weeks
+    const eventMap = hasDeepFilter ? buildEventBucketMap(getIsoWeekKey, nowMs - 12 * 7 * 86400_000) : null;
     for (let i = 11; i >= 0; i--) {
       const d = new Date(nowMs - i * 7 * 86400_000);
       const wKey = getIsoWeekKey(d);
-      const data = filterBucket(store.weekly[wKey]);
-      series.push({
-        key: wKey,
-        label: wKey,
-        ...data,
-      });
+      const data = eventMap ? (eventMap.get(wKey) || { total: 0, streams: 0, byApp: {} }) : filterBucket(store.weekly[wKey]);
+      series.push({ key: wKey, label: wKey, ...data });
     }
   } else if (granularity === 'year') {
-    // Last 5 years
+    const eventMap = hasDeepFilter ? buildEventBucketMap(getYearKey) : null;
     const currentYear = now.getUTCFullYear();
     for (let y = currentYear - 4; y <= currentYear; y++) {
       const yKey = String(y);
-      const data = filterBucket(store.yearly[yKey]);
-      series.push({
-        key: yKey,
-        label: yKey,
-        ...data,
-      });
+      const data = eventMap ? (eventMap.get(yKey) || { total: 0, streams: 0, byApp: {} }) : filterBucket(store.yearly[yKey]);
+      series.push({ key: yKey, label: yKey, ...data });
     }
   }
 
@@ -541,18 +720,33 @@ export function queryApiUsageAnalytics(options?: {
   const currentWeekBucket = store.weekly[getIsoWeekKey(now)];
   const currentYearBucket = store.yearly[getYearKey(now)];
 
-  const recentLogs = (appFilter
-    ? store.events.filter((e) => e.appName === appFilter)
-    : store.events
-  ).slice(0, options?.limit || 40);
+  const recentLogs = store.events
+    .filter(matchesEvent)
+    .slice(0, options?.limit || 40)
+    .map((evt) => ({
+      ...evt,
+      userId: evt.userId || `service:${evt.appName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+      userEmail: evt.userEmail || '',
+      userDisplay: evt.userDisplay || evt.userEmail || evt.userId || `Service (${evt.appName})`,
+      keyLabel: evt.keyLabel || (evt.authType === 'stream_token' ? 'Signed Stream Token' : 'Partner API Key'),
+    }));
 
   const activeApps = Object.values(store.apps).sort((a, b) => b.totalRequests - a.totalRequests);
+  const activeUsers = Object.values(store.users).sort((a, b) => b.totalRequests - a.totalRequests);
+  const activeKeys = Object.values(store.apiKeys).sort((a, b) => b.totalRequests - a.totalRequests);
 
   const endpointTotals: Record<string, number> = {};
-  for (const app of activeApps) {
-    if (appFilter && app.appName !== appFilter) continue;
-    for (const [ep, count] of Object.entries(app.endpoints || {})) {
-      endpointTotals[ep] = (endpointTotals[ep] || 0) + count;
+  if (hasDeepFilter) {
+    for (const evt of store.events) {
+      if (!matchesEvent(evt)) continue;
+      endpointTotals[evt.endpoint] = (endpointTotals[evt.endpoint] || 0) + 1;
+    }
+  } else {
+    for (const app of activeApps) {
+      if (appFilter && app.appName !== appFilter) continue;
+      for (const [ep, count] of Object.entries(app.endpoints || {})) {
+        endpointTotals[ep] = (endpointTotals[ep] || 0) + count;
+      }
     }
   }
   const topEndpoints = Object.entries(endpointTotals)
@@ -572,8 +766,12 @@ export function queryApiUsageAnalytics(options?: {
       thisWeek: filterBucket(currentWeekBucket).total,
       thisYear: filterBucket(currentYearBucket).total,
       connectedAppCount: activeApps.length,
+      uniqueUserCount: activeUsers.length,
+      activeKeyCount: activeKeys.length,
     },
     activeApps,
+    activeUsers,
+    activeKeys,
     topEndpoints,
     series,
     recentLogs,
