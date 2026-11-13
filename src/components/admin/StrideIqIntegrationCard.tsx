@@ -66,7 +66,9 @@ const WORKOUT_ACTIVITIES = [
   { id: 'cooldown', label: 'Cool-Down / Yoga' },
 ];
 
-export const StrideIqIntegrationCard: React.FC = () => {
+export const StrideIqIntegrationCard: React.FC<{ hideUsageMonitor?: boolean }> = ({
+  hideUsageMonitor = false,
+}) => {
   const { user, profile } = useAuth();
 
   const [baseUrl, setBaseUrl] = useState('https://chancetekone.us/api/strideiq/v1');
@@ -829,7 +831,7 @@ curl -i -H "Range: bytes=0-1048576" \\
       </div>
 
       {/* Real-Time Partner API Usage Monitor (Hour, Day, Week, Year, Exact Time) */}
-      <ApiUsageMonitorSection />
+      {!hideUsageMonitor && <ApiUsageMonitorSection />}
     </div>
   );
 };

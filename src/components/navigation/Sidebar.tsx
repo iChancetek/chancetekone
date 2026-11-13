@@ -229,11 +229,11 @@ export const Sidebar: React.FC = () => {
           {/* Discover Menu */}
           <div>
             {!isCollapsed && (
-              <div className="px-2.5 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+              <div className="px-3 mb-2 text-xs font-extrabold uppercase tracking-wider text-neutral-400">
                 Discover
               </div>
             )}
-            <nav className="space-y-0.5">
+            <nav className="space-y-1">
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const isActive =
@@ -250,30 +250,30 @@ export const Sidebar: React.FC = () => {
                     onTouchStart={() => handleIntentPrefetch(item.href, item.isExternal)}
                     onClick={(e) => handleMenuNavigate(e, item.href, item.isExternal, false)}
                     title={isCollapsed ? item.label : undefined}
-                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'justify-between gap-3 px-3 py-2'
-                      } rounded-xl text-xs font-medium transition-all ${isActive
+                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'justify-between gap-3 px-3.5 py-2.5'
+                      } rounded-xl text-[15px] font-semibold transition-all ${isActive
                         ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
-                        : 'text-neutral-300 hover:text-white hover:bg-white/5'
+                        : 'text-neutral-200 hover:text-white hover:bg-white/5'
                       }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0 mr-1.5">
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400 group-hover:text-white'}`} />
+                    <div className="flex items-center gap-3 min-w-0 mr-1.5">
+                      <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400 group-hover:text-white'}`} />
                       {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
                     </div>
 
                     {!isCollapsed && item.badge && (
-                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 shrink-0 ml-auto whitespace-nowrap">
+                      <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 shrink-0 ml-auto whitespace-nowrap">
                         {item.badge}
                       </span>
                     )}
 
                     {!isCollapsed && item.isExternal && !item.badge && (
-                      <ExternalLink className="w-3.5 h-3.5 text-neutral-500 group-hover:text-brand-gold transition-colors shrink-0 ml-1.5 opacity-60 group-hover:opacity-100" />
+                      <ExternalLink className="w-4 h-4 text-neutral-500 group-hover:text-brand-gold transition-colors shrink-0 ml-1.5 opacity-60 group-hover:opacity-100" />
                     )}
 
                     {/* Tooltip in Collapsed Mode */}
                     {isCollapsed && (
-                      <div className="absolute left-full ml-2 px-2.5 py-1 rounded-lg bg-[#141224] border border-white/10 text-white text-[11px] font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
+                      <div className="absolute left-full ml-2 px-3 py-1.5 rounded-lg bg-[#141224] border border-white/10 text-white text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
                         {item.label}
                       </div>
                     )}
@@ -286,11 +286,11 @@ export const Sidebar: React.FC = () => {
           {/* Your Library Menu */}
           <div>
             {!isCollapsed && (
-              <div className="px-2.5 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+              <div className="px-3 mb-2 text-xs font-extrabold uppercase tracking-wider text-neutral-400">
                 Your Space
               </div>
             )}
-            <nav className="space-y-0.5">
+            <nav className="space-y-1">
               {LIBRARY_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const isActive = (pendingHref || pathname) === item.href;
@@ -303,13 +303,13 @@ export const Sidebar: React.FC = () => {
                     onTouchStart={() => handleIntentPrefetch(item.href)}
                     onClick={(e) => handleMenuNavigate(e, item.href, false, false)}
                     title={isCollapsed ? item.label : undefined}
-                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2'
-                      } rounded-xl text-xs font-medium transition-all ${isActive
+                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'
+                      } rounded-xl text-[15px] font-semibold transition-all ${isActive
                         ? 'bg-white/10 text-white border border-white/10'
-                        : 'text-neutral-300 hover:text-white hover:bg-white/5'
+                        : 'text-neutral-200 hover:text-white hover:bg-white/5'
                       }`}
                   >
-                    <Icon className="w-4 h-4 text-neutral-400 group-hover:text-white shrink-0" />
+                    <Icon className="w-5 h-5 text-neutral-400 group-hover:text-white shrink-0" />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
 
                     {isCollapsed && (
@@ -352,14 +352,14 @@ export const Sidebar: React.FC = () => {
                     onTouchStart={() => handleIntentPrefetch('/admin')}
                     onClick={(e) => handleMenuNavigate(e, '/admin', false, false)}
                     title={isCollapsed ? 'Operations Center (Super Admin)' : undefined}
-                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2.5'
-                      } rounded-xl text-sm font-bold text-red-400 hover:text-red-300 bg-red-950/30 border border-red-500/30 hover:border-red-500/60 transition-all`}
+                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'
+                      } rounded-xl text-[15px] font-bold text-red-400 hover:text-red-300 bg-red-950/30 border border-red-500/30 hover:border-red-500/60 transition-all`}
                   >
-                    <ShieldAlert className="w-4 h-4 text-red-400 shrink-0 animate-pulse" />
+                    <ShieldAlert className="w-5 h-5 text-red-400 shrink-0 animate-pulse" />
                     {!isCollapsed && <span>Admin Ops</span>}
 
                     {isCollapsed && (
-                      <div className="absolute left-full ml-2 px-2.5 py-1 rounded-lg bg-red-950 border border-red-500/40 text-red-200 text-xs font-bold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
+                      <div className="absolute left-full ml-2 px-3 py-1.5 rounded-lg bg-red-950 border border-red-500/40 text-red-200 text-xs font-bold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
                         Admin Operations Center
                       </div>
                     )}
@@ -372,14 +372,14 @@ export const Sidebar: React.FC = () => {
                     onTouchStart={() => handleIntentPrefetch('/admin?tab=api-management')}
                     onClick={(e) => handleMenuNavigate(e, '/admin?tab=api-management', false, false)}
                     title={isCollapsed ? 'API Management' : undefined}
-                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2.5'
-                      } rounded-xl text-sm font-bold text-cyan-300 hover:text-cyan-200 bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-500/60 transition-all`}
+                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'
+                      } rounded-xl text-[15px] font-bold text-cyan-300 hover:text-cyan-200 bg-cyan-950/30 border border-cyan-500/30 hover:border-cyan-500/60 transition-all`}
                   >
-                    <BarChart3 className="w-4 h-4 text-cyan-400 shrink-0" />
+                    <BarChart3 className="w-5 h-5 text-cyan-400 shrink-0" />
                     {!isCollapsed && <span>API Management</span>}
 
                     {isCollapsed && (
-                      <div className="absolute left-full ml-2 px-2.5 py-1 rounded-lg bg-cyan-950 border border-cyan-500/40 text-cyan-200 text-xs font-bold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
+                      <div className="absolute left-full ml-2 px-3 py-1.5 rounded-lg bg-cyan-950 border border-cyan-500/40 text-cyan-200 text-xs font-bold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
                         API Management
                       </div>
                     )}
@@ -622,7 +622,7 @@ export const Sidebar: React.FC = () => {
         <div className="flex-1 touch-scroll-y px-3 py-4 space-y-6 pb-28">
           {/* Discover Section */}
           <div className="space-y-1">
-            <div className="px-3 mb-2 text-[11px] font-extrabold uppercase tracking-wider text-brand-gold flex items-center gap-1.5">
+            <div className="px-3 mb-2 text-xs font-extrabold uppercase tracking-wider text-brand-gold flex items-center gap-1.5">
               <span>Discover</span>
               <div className="flex-1 h-px bg-white/10" />
             </div>
@@ -642,24 +642,24 @@ export const Sidebar: React.FC = () => {
                     onMouseEnter={() => handleIntentPrefetch(item.href, item.isExternal)}
                     onTouchStart={() => handleIntentPrefetch(item.href, item.isExternal)}
                     onClick={(e) => handleMenuNavigate(e, item.href, item.isExternal, true)}
-                    className={`flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all touch-manipulation ${isActive
+                    className={`flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-[15px] font-semibold transition-all touch-manipulation ${isActive
                         ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
                         : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
                       }`}
                   >
                     <div className="flex items-center gap-3 min-w-0 mr-1.5">
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400'}`} />
+                      <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400'}`} />
                       <span className="whitespace-nowrap">{item.label}</span>
                     </div>
 
                     {item.badge && (
-                      <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 shrink-0 ml-auto whitespace-nowrap">
+                      <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 shrink-0 ml-auto whitespace-nowrap">
                         {item.badge}
                       </span>
                     )}
 
                     {item.isExternal && !item.badge && (
-                      <ExternalLink className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                      <ExternalLink className="w-4 h-4 text-neutral-400 shrink-0" />
                     )}
                   </Link>
                 );
@@ -669,7 +669,7 @@ export const Sidebar: React.FC = () => {
 
           {/* Your Space Section */}
           <div className="space-y-1">
-            <div className="px-3 mb-2 text-[11px] font-extrabold uppercase tracking-wider text-brand-gold flex items-center gap-1.5">
+            <div className="px-3 mb-2 text-xs font-extrabold uppercase tracking-wider text-brand-gold flex items-center gap-1.5">
               <span>Your Space</span>
               <div className="flex-1 h-px bg-white/10" />
             </div>
@@ -685,12 +685,12 @@ export const Sidebar: React.FC = () => {
                     onMouseEnter={() => handleIntentPrefetch(item.href)}
                     onTouchStart={() => handleIntentPrefetch(item.href)}
                     onClick={(e) => handleMenuNavigate(e, item.href, false, true)}
-                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all touch-manipulation ${isActive
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[15px] font-semibold transition-all touch-manipulation ${isActive
                         ? 'bg-white/10 text-white border border-white/15'
                         : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
                       }`}
                   >
-                    <Icon className="w-4 h-4 text-neutral-400 shrink-0" />
+                    <Icon className="w-5 h-5 text-neutral-400 shrink-0" />
                     <span className="truncate">{item.label}</span>
                   </Link>
                 );
@@ -718,7 +718,7 @@ export const Sidebar: React.FC = () => {
                     onMouseEnter={() => handleIntentPrefetch('/admin')}
                     onTouchStart={() => handleIntentPrefetch('/admin')}
                     onClick={(e) => handleMenuNavigate(e, '/admin', false, true)}
-                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold text-red-400 bg-red-950/40 border border-red-500/40 active:border-red-500/70 transition-all mt-1 touch-manipulation"
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[15px] font-bold text-red-400 bg-red-950/40 border border-red-500/40 active:border-red-500/70 transition-all mt-1 touch-manipulation"
                   >
                     <ShieldAlert className="w-5 h-5 text-red-400 shrink-0 animate-pulse" />
                     <span>Admin Operations Center</span>
@@ -730,7 +730,7 @@ export const Sidebar: React.FC = () => {
                     onMouseEnter={() => handleIntentPrefetch('/admin?tab=api-management')}
                     onTouchStart={() => handleIntentPrefetch('/admin?tab=api-management')}
                     onClick={(e) => handleMenuNavigate(e, '/admin?tab=api-management', false, true)}
-                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold text-cyan-300 bg-cyan-950/40 border border-cyan-500/40 active:border-cyan-500/70 transition-all mt-1 touch-manipulation"
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[15px] font-bold text-cyan-300 bg-cyan-950/40 border border-cyan-500/40 active:border-cyan-500/70 transition-all mt-1 touch-manipulation"
                   >
                     <BarChart3 className="w-5 h-5 text-cyan-400 shrink-0" />
                     <span>API Management</span>

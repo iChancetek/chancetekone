@@ -102,6 +102,7 @@ const FLUSH_INTERVAL_MS = 1200;
 let memoryStore: UsageStoreShape | null = null;
 let dirty = false;
 let flushTimer: NodeJS.Timeout | null = null;
+let firestoreHydrated = false;
 
 function canUseFirebaseAdmin(): boolean {
   return Boolean(
@@ -578,7 +579,207 @@ export function recordApiUsage(
   }
 }
 
-async function persistUsageToFirestore(event: ApiUsageEvent): Promise<void> {
+function applyEventToAggregates(store: UsageStoreShape, event: ApiUsageEvent): void {
+  const now = new Date(event.ts || event.timestamp);
+  const hKey = getHourKey(now);
+  const dKey = getDayKey(now);
+  const wKey = getIsoWeekKey(now);
+  const yKey = getYearKey(now);
+
+  incrementBucket(store.hourly, hKey, `${pad2(now.getUTCHours())}:00`, event.appName, event.endpoint, event.isStream);
+  incrementBucket(store.daily, dKey, dKey, event.appName, event.endpoint, event.isStream);
+  incrementBucket(store.weekly, wKey, wKey, event.appName, event.endpoint, event.isStream);
+  incrementBucket(store.yearly, yKey, yKey, event.appName, event.endpoint, event.isStream);
+
+  if (!store.apps[event.appName]) {
+    store.apps[event.appName] = {
+      appName: event.appName,
+      appType: event.appType,
+      keyPrefix: event.keyPrefix,
+      totalRequests: 0,
+      totalStreams: 0,
+      lastUsedAt: event.timestamp,
+      lastEndpoint: event.endpoint,
+      endpoints: {},
+    };
+  }
+  const appRec = store.apps[event.appName];
+  appRec.totalRequests += 1;
+  if (event.isStream) appRec.totalStreams += 1;
+  if (event.timestamp > appRec.lastUsedAt) {
+    appRec.lastUsedAt = event.timestamp;
+    appRec.lastEndpoint = event.endpoint;
+  }
+  appRec.keyPrefix = event.keyPrefix || appRec.keyPrefix;
+  appRec.endpoints[event.endpoint] = (appRec.endpoints[event.endpoint] || 0) + 1;
+
+  const userKey = (event.userEmail || event.userId || `service:${event.appName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`).toLowerCase();
+  const userDisplay = event.userDisplay || event.userEmail || event.userId || `Service (${event.appName})`;
+  if (!store.users[userKey]) {
+    store.users[userKey] = {
+      userKey,
+      userId: event.userId || userKey,
+      userEmail: event.userEmail || '',
+      userDisplay,
+      apps: [],
+      keyLabels: [],
+      keyPrefixes: [],
+      totalRequests: 0,
+      totalStreams: 0,
+      lastUsedAt: event.timestamp,
+      lastEndpoint: event.endpoint,
+    };
+  }
+  const userRec = store.users[userKey];
+  userRec.totalRequests += 1;
+  if (event.isStream) userRec.totalStreams += 1;
+  if (event.timestamp > userRec.lastUsedAt) {
+    userRec.lastUsedAt = event.timestamp;
+    userRec.lastEndpoint = event.endpoint;
+  }
+  if (event.userEmail && !userRec.userEmail) userRec.userEmail = event.userEmail;
+  if (!userRec.apps.includes(event.appName)) userRec.apps.push(event.appName);
+  if (event.keyLabel && !userRec.keyLabels.includes(event.keyLabel)) userRec.keyLabels.push(event.keyLabel);
+  if (event.keyPrefix && !userRec.keyPrefixes.includes(event.keyPrefix)) userRec.keyPrefixes.push(event.keyPrefix);
+
+  const keyId = event.keyId || `${event.authType}:${event.keyPrefix}`;
+  if (!store.apiKeys[keyId]) {
+    store.apiKeys[keyId] = {
+      keyId,
+      keyLabel: event.keyLabel || 'Partner API Key',
+      keyPrefix: event.keyPrefix,
+      appName: event.appName,
+      appType: event.appType,
+      authType: event.authType,
+      users: [],
+      totalRequests: 0,
+      totalStreams: 0,
+      lastUsedAt: event.timestamp,
+      lastEndpoint: event.endpoint,
+    };
+  }
+  const keyRec = store.apiKeys[keyId];
+  keyRec.totalRequests += 1;
+  if (event.isStream) keyRec.totalStreams += 1;
+  if (event.timestamp > keyRec.lastUsedAt) {
+    keyRec.lastUsedAt = event.timestamp;
+    keyRec.lastEndpoint = event.endpoint;
+  }
+  keyRec.keyLabel = event.keyLabel || keyRec.keyLabel;
+  keyRec.keyPrefix = event.keyPrefix || keyRec.keyPrefix;
+  if (!keyRec.users.includes(userDisplay)) {
+    keyRec.users.push(userDisplay);
+  }
+}
+
+export async function hydrateApiUsageFromPersistence(
+  partnerKeys?: Array<{
+    id: string;
+    label: string;
+    prefix: string;
+    appType?: string;
+    createdAt?: string;
+    lastUsedAt?: string;
+    revokedAt?: string;
+  }>
+): Promise<void> {
+  const store = loadStore();
+
+  if (!firestoreHydrated && canUseFirebaseAdmin()) {
+    firestoreHydrated = true;
+    try {
+      const { adminDb } = await getFirebaseAdmin();
+      const snap = await adminDb
+        .collection('api_usage_events')
+        .orderBy('ts', 'desc')
+        .limit(500)
+        .get();
+      if (!snap.empty) {
+        const existingIds = new Set(store.events.map((e) => e.id));
+        const restored: ApiUsageEvent[] = [];
+        snap.forEach((doc) => {
+          const d = doc.data() as Partial<ApiUsageEvent>;
+          if (!d || !d.id || existingIds.has(d.id)) return;
+          restored.push({
+            id: String(d.id),
+            timestamp: String(d.timestamp || new Date(d.ts || Date.now()).toISOString()),
+            ts: Number(d.ts) || Date.now(),
+            appName: String(d.appName || 'Universal Partner App'),
+            appType: String(d.appType || 'general'),
+            userId: String(d.userId || ''),
+            userEmail: String(d.userEmail || ''),
+            userDisplay: String(d.userDisplay || d.userEmail || d.userId || `Service (${d.appName || 'Partner'})`),
+            keyId: String(d.keyId || 'partner'),
+            keyLabel: String(d.keyLabel || 'Partner API Key'),
+            keyPrefix: String(d.keyPrefix || 'api-key'),
+            endpoint: String(d.endpoint || '/api/v1'),
+            method: String(d.method || 'GET'),
+            authType: String(d.authType || 'api_key'),
+            origin: String(d.origin || 'direct'),
+            isStream: Boolean(d.isStream),
+            statusCode: Number(d.statusCode) || 200,
+          });
+        });
+
+        if (restored.length > 0) {
+          for (const evt of restored) {
+            store.totalRequests += 1;
+            if (evt.isStream) store.totalStreams += 1;
+            applyEventToAggregates(store, evt);
+          }
+          store.events = [...store.events, ...restored]
+            .sort((a, b) => b.ts - a.ts)
+            .slice(0, MAX_RECENT_EVENTS);
+          dirty = true;
+        }
+      }
+    } catch {
+      // Non-critical Firestore hydration
+    }
+  }
+
+  for (const k of partnerKeys || []) {
+    if (k.revokedAt) continue;
+    const labelLow = (k.label || '').toLowerCase();
+    const appName =
+      k.appType === 'social' || labelLow.includes('famio')
+        ? 'Famio.us'
+        : k.appType === 'fitness' || labelLow.includes('strideiq')
+          ? 'StrideIQ.fit'
+          : k.label || 'Universal Partner App';
+    const lastUsed = k.lastUsedAt || k.createdAt || store.updatedAt;
+
+    if (!store.apiKeys[k.id]) {
+      store.apiKeys[k.id] = {
+        keyId: k.id,
+        keyLabel: k.label || 'Partner API Key',
+        keyPrefix: k.prefix || 'sk_live_...',
+        appName,
+        appType: k.appType || 'general',
+        authType: 'api_key',
+        users: [],
+        totalRequests: 0,
+        totalStreams: 0,
+        lastUsedAt: lastUsed,
+        lastEndpoint: '/api/v1',
+      };
+    }
+    if (!store.apps[appName]) {
+      store.apps[appName] = {
+        appName,
+        appType: k.appType || 'general',
+        keyPrefix: k.prefix || 'sk_live_...',
+        totalRequests: 0,
+        totalStreams: 0,
+        lastUsedAt: lastUsed,
+        lastEndpoint: '/api/v1',
+        endpoints: {},
+      };
+    }
+  }
+}
+
+export async function persistUsageToFirestore(event: ApiUsageEvent): Promise<void> {
   try {
     const { adminDb } = await getFirebaseAdmin();
     await adminDb.collection('api_usage_events').doc(event.id).set(event);

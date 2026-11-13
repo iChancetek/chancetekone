@@ -528,7 +528,7 @@ export const ApiUsageMonitorSection: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Connected Applications */}
         <div className="rounded-2xl bg-black/45 border border-white/10 p-5 space-y-3.5">
-          <h4 className="text-sm font-extrabold uppercase tracking-wider text-neutral-200 flex items-center gap-2">
+                  <h4 className="text-base font-extrabold uppercase tracking-wider text-neutral-100 flex items-center gap-2">
             <Globe className="w-5 h-5 text-indigo-400" />
             <span>Applications Using APIs ({data?.activeApps.length ?? 0})</span>
           </h4>
@@ -575,7 +575,7 @@ export const ApiUsageMonitorSection: React.FC = () => {
 
         {/* Active Users Using APIs */}
         <div className="rounded-2xl bg-black/45 border border-white/10 p-5 space-y-3.5">
-          <h4 className="text-sm font-extrabold uppercase tracking-wider text-neutral-200 flex items-center gap-2">
+          <h4 className="text-base font-extrabold uppercase tracking-wider text-neutral-100 flex items-center gap-2">
             <Users className="w-5 h-5 text-cyan-400" />
             <span>Users Accessing APIs ({data?.activeUsers?.length ?? 0})</span>
           </h4>
@@ -624,7 +624,7 @@ export const ApiUsageMonitorSection: React.FC = () => {
 
         {/* API Keys Being Used */}
         <div className="rounded-2xl bg-black/45 border border-white/10 p-5 space-y-3.5">
-          <h4 className="text-sm font-extrabold uppercase tracking-wider text-neutral-200 flex items-center gap-2">
+          <h4 className="text-base font-extrabold uppercase tracking-wider text-neutral-100 flex items-center gap-2">
             <KeyRound className="w-5 h-5 text-amber-400" />
             <span>API Keys Being Used ({data?.activeKeys?.length ?? 0})</span>
           </h4>
@@ -672,7 +672,7 @@ export const ApiUsageMonitorSection: React.FC = () => {
 
         {/* Top Endpoints */}
         <div className="rounded-2xl bg-black/45 border border-white/10 p-5 space-y-3.5">
-          <h4 className="text-sm font-extrabold uppercase tracking-wider text-neutral-200 flex items-center gap-2">
+          <h4 className="text-base font-extrabold uppercase tracking-wider text-neutral-100 flex items-center gap-2">
             <Server className="w-5 h-5 text-emerald-400" />
             <span>Top Endpoints Called</span>
           </h4>
@@ -703,7 +703,7 @@ export const ApiUsageMonitorSection: React.FC = () => {
       {/* Live Request Stream (Exact Time) */}
       <div className="rounded-2xl bg-black/45 border border-white/10 p-5 space-y-3.5">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-extrabold uppercase tracking-wider text-neutral-200 flex items-center gap-2">
+          <h4 className="text-base font-extrabold uppercase tracking-wider text-neutral-100 flex items-center gap-2">
             <Clock className="w-5 h-5 text-amber-400" />
             <span>Live Request Stream (Exact Time)</span>
           </h4>

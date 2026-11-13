@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStrideIqAdmin, optionsStrideIqResponse } from '@/lib/server/strideiqHttp';
+import { listPartnerApiKeys } from '@/lib/server/strideiqStore';
 import {
+  hydrateApiUsageFromPersistence,
   queryApiUsageAnalytics,
   setApiUsageTrackingEnabled,
   clearApiUsageStats,
@@ -35,6 +37,9 @@ export async function GET(request: NextRequest) {
   const keyFilter = sp.get('key')?.trim() || 'all';
   const limitRaw = Number(sp.get('limit') || '50');
   const limit = Number.isFinite(limitRaw) ? Math.min(200, Math.max(10, limitRaw)) : 50;
+
+  const partnerKeys = await listPartnerApiKeys().catch(() => []);
+  await hydrateApiUsageFromPersistence(partnerKeys);
 
   const data = queryApiUsageAnalytics({
     granularity,

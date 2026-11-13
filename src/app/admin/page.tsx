@@ -754,7 +754,7 @@ export default function AdminPage() {
         </div>
 
         {/* 22 Navigation Modules Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
           {[
             {
               id: 'overview' as const,
@@ -1027,13 +1027,13 @@ export default function AdminPage() {
                   {/* Bottom Row: Label & Description */}
                   <div className="min-w-0">
                     <p
-                      className={`text-sm font-black leading-snug ${
+                      className={`text-base font-black leading-snug ${
                         isActive ? 'text-white' : 'text-neutral-100 group-hover:text-white'
                       }`}
                     >
                       {tab.displayLabel || tab.label}
                     </p>
-                    <p className="text-xs text-neutral-300/80 leading-snug line-clamp-2 mt-1 group-hover:text-neutral-200">
+                    <p className="text-sm text-neutral-300/85 leading-snug line-clamp-2 mt-1 group-hover:text-neutral-200">
                       {tab.description}
                     </p>
                   </div>
@@ -1234,6 +1234,7 @@ export default function AdminPage() {
         {activeTab === 'api-usage' && (
           <div className="space-y-6">
             <ApiUsageMonitorSection />
+            <StrideIqIntegrationCard hideUsageMonitor />
           </div>
         )}
 
