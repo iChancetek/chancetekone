@@ -12,9 +12,15 @@ import {
   ChevronRight,
   Compass,
   Video as VideoIcon,
-  Play,
   Headphones,
   ShieldCheck,
+  Music,
+  Radio,
+  ListMusic,
+  Users,
+  ShoppingBag,
+  Mic,
+  ArrowUpRight,
 } from 'lucide-react';
 import { HeroBanner } from '@/components/media/HeroBanner';
 import { TrackRow } from '@/components/media/TrackRow';
@@ -23,9 +29,19 @@ import { MOCK_TRACKS } from '@/lib/mockData';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
 import { Track } from '@/types/media';
 
+const QUICK_DESTINATIONS = [
+  { label: 'The Lounge', sub: 'Music & Crates', href: '/music', icon: Music, glow: 'from-brand-gold/25 to-amber-500/10', iconColor: 'text-brand-gold' },
+  { label: '4K Cinema', sub: 'Visual Vault', href: '/videos', icon: VideoIcon, glow: 'from-rose-500/25 to-red-500/10', iconColor: 'text-rose-400' },
+  { label: 'Audiobooks', sub: 'Spoken Works', href: '/audiobooks', icon: BookOpen, glow: 'from-brand-purple/25 to-fuchsia-500/10', iconColor: 'text-brand-neon' },
+  { label: 'Podcasts', sub: 'Studio Talks', href: '/podcasts', icon: Mic, glow: 'from-cyan-500/25 to-sky-500/10', iconColor: 'text-cyan-400' },
+  { label: 'Live Radio', sub: '24/7 AI DJs', href: '/radio', icon: Radio, glow: 'from-emerald-500/25 to-teal-500/10', iconColor: 'text-emerald-400' },
+  { label: 'Playlists', sub: 'Curated Sets', href: '/playlists', icon: ListMusic, glow: 'from-indigo-500/25 to-violet-500/10', iconColor: 'text-indigo-400' },
+  { label: 'Artists', sub: 'Creators', href: '/artists', icon: Users, glow: 'from-amber-400/25 to-orange-500/10', iconColor: 'text-amber-300' },
+  { label: 'Vinyl & Merch', sub: 'Collector Drop', href: '/merch', icon: ShoppingBag, glow: 'from-pink-500/25 to-purple-500/10', iconColor: 'text-pink-400' },
+];
+
 export default function HomePage() {
   const [tracks, setTracks] = React.useState<Track[]>(() => MusicCatalogService.getSSRBaselineTracks());
-  const videoRef = React.useRef<HTMLVideoElement>(null);
 
   React.useEffect(() => {
     const sync = () => setTracks(MusicCatalogService.getAllTracks());
@@ -40,81 +56,127 @@ export default function HomePage() {
   const trendingTracks = tracks.slice(0, 5);
 
   return (
-    <div className="relative py-6 min-h-screen">
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          className="w-full h-full object-cover opacity-50 brightness-95 saturate-125 transition-opacity duration-1000"
-          src="/videos/chancetekone1.mp4"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/45 via-neutral-950/55 to-neutral-950/65" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-transparent via-neutral-950/20 to-neutral-950/55" />
+    <div className="relative py-5 sm:py-7 min-h-screen">
+      {/* Clean Futuristic Spatial Light Field (No Background Video) */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[920px] h-[420px] rounded-full bg-gradient-to-b from-brand-purple/18 via-indigo-600/10 to-transparent blur-[130px] animate-aurora-slow" />
+        <div className="absolute top-[28%] right-[-10%] w-[520px] h-[520px] rounded-full bg-brand-gold/[0.08] blur-[140px] animate-aurora-reverse" />
+        <div className="absolute bottom-[-10%] left-[-8%] w-[520px] h-[420px] rounded-full bg-cyan-500/[0.06] blur-[140px]" />
       </div>
 
-      <div className="relative z-10 space-y-8 sm:space-y-10">
-        {/* Top Music Licensing Certification Banner */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-2.5 rounded-2xl bg-neutral-950/85 border border-brand-gold/40 backdrop-blur-xl shadow-[0_0_25px_rgba(245,158,11,0.2)]">
+      <div className="relative z-10 space-y-7 sm:space-y-9">
+        {/* Top Music Licensing & Discovery Ribbon */}
+        <div className="specular-edge flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-5 py-3 rounded-2xl bg-[#0c0c16]/80 backdrop-blur-2xl border border-white/[0.08] shadow-[0_12px_40px_-14px_rgba(0,0,0,0.8)]">
           <div className="flex items-center gap-3 text-center sm:text-left">
-            <div className="p-1.5 rounded-xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold shrink-0 shadow-inner">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-gold/25 to-amber-500/10 border border-brand-gold/35 flex items-center justify-center shrink-0 shadow-[0_0_18px_rgba(245,195,68,0.2)]">
               <ShieldCheck className="w-4 h-4 text-brand-gold" />
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs sm:text-sm font-black text-brand-gold tracking-wide uppercase">
-                Music Curated by ASCAP & BMI Publishing
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2.5 gap-y-0.5">
+              <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-extrabold text-white tracking-tight">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                <span className="gold-gradient-text uppercase tracking-wide">
+                  Music Curated by ASCAP &amp; BMI Publishing
+                </span>
               </span>
-              <span className="text-neutral-500 hidden md:inline">•</span>
-              <span className="text-xs text-neutral-300 hidden md:inline">
-                Discover independent artists, producers, and fresh sounds
+              <span className="text-white/20 hidden md:inline">•</span>
+              <span className="text-xs text-neutral-300/90 hidden md:inline">
+                Discover independent artists, producers, and next-gen spatial audio
               </span>
             </div>
           </div>
+
           <Link
             href="/music"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-brand-gold/15 text-xs font-bold text-neutral-200 hover:text-white border border-white/10 hover:border-brand-gold/40 transition-all shrink-0 cursor-pointer shadow-sm"
+            className="shimmer-cta inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/[0.06] hover:bg-brand-gold text-xs font-bold text-white hover:text-[#050509] border border-white/15 hover:border-brand-gold transition-all duration-300 shrink-0 cursor-pointer shadow-sm"
           >
-            <span>The Lounge & Music Catalog</span>
-            <ChevronRight className="w-3.5 h-3.5 text-brand-gold" />
+            <Headphones className="w-3.5 h-3.5" />
+            <span>The Lounge &amp; Music Catalog</span>
+            <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
+        {/* Dynamic Quick-Navigate Streaming Strip */}
+        <section aria-label="Explore Streaming Hubs" className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-pulse" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-400">
+                Explore The Ecosystem
+              </span>
+            </div>
+            <span className="text-[11px] text-neutral-500 hidden sm:inline">
+              Instant access across music, cinema, books &amp; live radio
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+            {QUICK_DESTINATIONS.map((dest) => {
+              const Icon = dest.icon;
+              return (
+                <Link
+                  key={dest.href}
+                  href={dest.href}
+                  className="group relative rounded-2xl p-3 bg-[#0e0e18]/75 hover:bg-[#161626]/95 border border-white/[0.07] hover:border-white/20 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.8)] overflow-hidden"
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-br ${dest.glow} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
+                  <div className="relative z-10 flex items-center sm:flex-col sm:items-start gap-2.5 sm:gap-2">
+                    <div className="w-9 h-9 rounded-xl bg-white/[0.05] border border-white/10 group-hover:scale-110 group-hover:border-white/20 flex items-center justify-center transition-all duration-300 shrink-0">
+                      <Icon className={`w-4 h-4 ${dest.iconColor}`} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-[13px] font-bold text-white truncate group-hover:text-brand-gold transition-colors">
+                        {dest.label}
+                      </p>
+                      <p className="text-[11px] text-neutral-400 truncate">
+                        {dest.sub}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Featured Spatial Premiere Stage */}
         <HeroBanner track={featuredTrack} />
 
-        <section className="glass-panel p-6 sm:p-8 rounded-3xl border border-brand-gold/30 bg-gradient-to-r from-brand-purple/20 via-neutral-950/80 to-brand-gold/10 shadow-2xl space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-2 max-w-3xl">
+        {/* Cultural & Sonic System Spotlight Card */}
+        <section className="specular-edge relative overflow-hidden glass-panel p-6 sm:p-9 rounded-3xl bg-gradient-to-br from-[#141026]/90 via-[#0c0c16]/90 to-[#120f1c]/90 space-y-5">
+          <div className="pointer-events-none absolute -right-24 -top-24 w-72 h-72 rounded-full bg-brand-gold/12 blur-[90px]" />
+          <div className="pointer-events-none absolute -left-24 -bottom-24 w-72 h-72 rounded-full bg-brand-purple/15 blur-[90px]" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-3.5 max-w-3xl">
               <div className="flex flex-wrap items-center gap-3">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-gold/15 border border-brand-gold/40 text-brand-gold text-xs font-bold uppercase tracking-wider">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold text-[11px] font-bold uppercase tracking-[0.14em]">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Digital Arts & Entertainment Platform</span>
+                  <span>Digital Arts &amp; Entertainment Platform</span>
                 </div>
                 <VoiceNarrationButton
                   text="Introducing an advance cultural and sonic system for Independent Artists & Creators. Using Digital Arts, Entertainment, Music and Videos, Streaming 4K Cultural Documentaries, Narrated Audiobooks and Podcasts. The Platform will also Introduce DJ Playlists, Online Radio, A.I Crate Digging, Music Downloads, Apps, Merchandise and More."
                   variant="dual"
                 />
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                Introducing an advance cultural and sonic system for Independent Artists & Creators
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold studio-heading-gradient tracking-tight leading-[1.15]">
+                Introducing an advance cultural and sonic system for Independent Artists &amp; Creators
               </h2>
-              <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
+              <p className="text-sm sm:text-base text-neutral-300/90 leading-relaxed">
                 Using Digital Arts, Entertainment, Music and Videos, Streaming 4K Cultural Documentaries, Narrated Audiobooks and Podcasts. The Platform will also Introduce DJ Playlists, Online Radio, A.I Crate Digging, Music Downloads, Apps, Merchandise and More.
               </p>
             </div>
-            <div className="flex sm:flex-col gap-2.5 shrink-0">
+
+            <div className="flex flex-row lg:flex-col gap-3 shrink-0">
               <Link
                 href="/learn-more"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-gold to-amber-500 text-black font-black text-xs uppercase tracking-wider shadow-lg hover:scale-105 transition-all"
+                className="shimmer-cta inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-gradient-to-r from-[#f7cf62] via-brand-gold to-amber-500 text-[#050509] font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-[0_8px_30px_rgba(245,195,68,0.35)] hover:shadow-[0_12px_36px_rgba(245,195,68,0.55)] hover:scale-[1.03] active:scale-[0.98] transition-all"
               >
                 <span>Read Manifesto</span>
                 <ChevronRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/support"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/10"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white font-semibold text-xs sm:text-sm transition-all border border-white/15 hover:border-white/25"
               >
                 <span>Support Center</span>
               </Link>
@@ -122,21 +184,39 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="glass-panel p-6 rounded-3xl border border-white/5 space-y-4 bg-white/5">
-          <div className="flex items-center justify-between border-b border-white/5 pb-3">
-            <div className="flex items-center gap-2">
-              <Flame className="w-5 h-5 text-brand-amber" />
-              <h3 className="text-base sm:text-lg font-bold text-white">Trending Breakbeat Anthems</h3>
+        {/* Trending Breakbeat Anthems Studio Deck */}
+        <section className="glass-panel p-5 sm:p-7 rounded-3xl space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-amber/25 to-brand-gold/10 border border-brand-gold/30 flex items-center justify-center shadow-[0_0_20px_rgba(255,159,28,0.2)]">
+                <Flame className="w-5 h-5 text-brand-amber" />
+              </div>
+              <div>
+                <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+                  Trending Breakbeat Anthems
+                </h3>
+                <p className="text-xs text-neutral-400">
+                  Instant hi-res playback • Click any track to stream
+                </p>
+              </div>
             </div>
+
             <Link
               href="/music"
-              className="text-xs font-semibold text-brand-gold hover:underline"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/[0.05] hover:bg-brand-gold/15 border border-white/10 hover:border-brand-gold/40 text-xs font-bold text-brand-gold transition-all"
             >
-              View Top 50
+              <span>View Top 50</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          <div className="divide-y divide-white/5">
+          <div className="hidden md:grid grid-cols-[1fr_1fr_auto] items-center px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+            <span className="pl-9">Title &amp; Artist</span>
+            <span className="px-2">Album &amp; Genre</span>
+            <span className="pr-2">Tempo &amp; Actions</span>
+          </div>
+
+          <div className="space-y-1">
             {trendingTracks.map((track, i) => (
               <TrackRow
                 key={track.id}
@@ -148,102 +228,125 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="space-y-4 pt-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-              Platform & Editorial Pages
-            </h2>
-            <span className="text-xs text-brand-gold font-medium">ChanceTEK One</span>
+        {/* Platform & Editorial Pages Bento Grid */}
+        <section className="space-y-4 pt-2">
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                Platform &amp; Editorial Pages
+              </h2>
+              <p className="text-xs text-neutral-400 mt-0.5">
+                Culture, sonic manifesto, concierge support, and creator governance
+              </p>
+            </div>
+            <span className="px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-[11px] text-brand-gold font-semibold">
+              ChanceTEK One
+            </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             <Link
               href="/about"
-              className="glass-panel p-5 rounded-2xl border border-white/10 hover:border-brand-gold/60 bg-neutral-900/40 transition-all hover:scale-[1.02] space-y-3 group"
+              className="glass-card p-5 rounded-2xl flex flex-col justify-between space-y-4 group"
             >
-              <div className="p-2 rounded-xl bg-brand-gold/20 text-brand-gold w-fit">
-                <Compass className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-brand-gold/15 border border-brand-gold/25 text-brand-gold flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Compass className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-white group-hover:text-brand-gold transition-colors">
+                  About Platform
+                </h3>
+                <p className="text-xs text-neutral-300/90 leading-relaxed">
+                  The Story of ChanceTEK One. Analog ethos, hardware grain, and cultural mission.
+                </p>
               </div>
-              <h3 className="text-base font-bold text-white group-hover:text-brand-gold transition-colors">
-                About Platform
-              </h3>
-              <p className="text-xs text-neutral-300 leading-relaxed">
-                The Story of ChanceTEK One. Analog ethos, hardware grain, and cultural mission.
-              </p>
-              <span className="text-xs font-semibold text-brand-gold flex items-center gap-1 pt-1">
-                Explore Story <ChevronRight className="w-3 h-3" />
+              <span className="text-xs font-bold text-brand-gold flex items-center gap-1 pt-1">
+                <span>Explore Story</span>
+                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </span>
             </Link>
 
             <Link
               href="/learn-more"
-              className="glass-panel p-5 rounded-2xl border border-white/10 hover:border-brand-gold/50 bg-neutral-900/40 transition-all hover:scale-[1.02] space-y-3 group"
+              className="glass-card p-5 rounded-2xl flex flex-col justify-between space-y-4 group"
             >
-              <div className="p-2 rounded-xl bg-brand-gold/20 text-brand-gold w-fit">
-                <BookOpen className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/25 text-brand-gold flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-white group-hover:text-brand-gold transition-colors">
+                  Learn More
+                </h3>
+                <p className="text-xs text-neutral-300/90 leading-relaxed">
+                  The Manifesto of the Break. Lineage, 12-bit SP-1200 lore, and cultural evolution.
+                </p>
               </div>
-              <h3 className="text-base font-bold text-white group-hover:text-brand-gold transition-colors">
-                Learn More
-              </h3>
-              <p className="text-xs text-neutral-300 leading-relaxed">
-                The Manifesto of the Break. Lineage, 12-bit SP-1200 lore, and cultural evolution.
-              </p>
-              <span className="text-xs font-semibold text-brand-gold flex items-center gap-1 pt-1">
-                Read More <ChevronRight className="w-3 h-3" />
+              <span className="text-xs font-bold text-brand-gold flex items-center gap-1 pt-1">
+                <span>Read More</span>
+                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </span>
             </Link>
 
             <Link
               href="/support"
-              className="glass-panel p-5 rounded-2xl border border-white/10 hover:border-brand-neon/50 bg-neutral-900/40 transition-all hover:scale-[1.02] space-y-3 group"
+              className="glass-card p-5 rounded-2xl flex flex-col justify-between space-y-4 group"
             >
-              <div className="p-2 rounded-xl bg-brand-neon/20 text-brand-neon w-fit">
-                <HelpCircle className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-brand-neon/15 border border-brand-neon/25 text-brand-neon flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <HelpCircle className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-white group-hover:text-brand-neon transition-colors">
+                  Support Center
+                </h3>
+                <p className="text-xs text-neutral-300/90 leading-relaxed">
+                  Crate Concierge, PWA offline guide, vinyl tracking, and direct email contacts.
+                </p>
               </div>
-              <h3 className="text-base font-bold text-white group-hover:text-brand-neon transition-colors">
-                Support Center
-              </h3>
-              <p className="text-xs text-neutral-300 leading-relaxed">
-                Crate Concierge, PWA offline guide, vinyl tracking, and direct email contacts.
-              </p>
-              <span className="text-xs font-semibold text-brand-neon flex items-center gap-1 pt-1">
-                Get Help <ChevronRight className="w-3 h-3" />
+              <span className="text-xs font-bold text-brand-neon flex items-center gap-1 pt-1">
+                <span>Get Help</span>
+                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </span>
             </Link>
 
             <Link
               href="/terms"
-              className="glass-panel p-5 rounded-2xl border border-white/10 hover:border-brand-purple/50 bg-neutral-900/40 transition-all hover:scale-[1.02] space-y-3 group"
+              className="glass-card p-5 rounded-2xl flex flex-col justify-between space-y-4 group"
             >
-              <div className="p-2 rounded-xl bg-brand-purple/20 text-brand-purple w-fit">
-                <Scale className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-brand-purple/15 border border-brand-purple/25 text-brand-purple flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Scale className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-white group-hover:text-brand-neon transition-colors">
+                  Terms of Service
+                </h3>
+                <p className="text-xs text-neutral-300/90 leading-relaxed">
+                  Platform covenants, master sample rights, and non-commercial streaming guidelines.
+                </p>
               </div>
-              <h3 className="text-base font-bold text-white group-hover:text-brand-purple transition-colors">
-                Terms of Service
-              </h3>
-              <p className="text-xs text-neutral-300 leading-relaxed">
-                Platform covenants, master sample rights, and non-commercial streaming guidelines.
-              </p>
-              <span className="text-xs font-semibold text-brand-purple flex items-center gap-1 pt-1">
-                View Terms <ChevronRight className="w-3 h-3" />
+              <span className="text-xs font-bold text-brand-neon flex items-center gap-1 pt-1">
+                <span>View Terms</span>
+                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </span>
             </Link>
 
             <Link
               href="/privacy"
-              className="glass-panel p-5 rounded-2xl border border-white/10 hover:border-emerald-500/50 bg-neutral-900/40 transition-all hover:scale-[1.02] space-y-3 group"
+              className="glass-card p-5 rounded-2xl flex flex-col justify-between space-y-4 group"
             >
-              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 w-fit">
-                <Lock className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-white group-hover:text-emerald-400 transition-colors">
+                  Privacy Policy
+                </h3>
+                <p className="text-xs text-neutral-300/90 leading-relaxed">
+                  Global privacy standards, AI memory vault isolation, and data sovereignty.
+                </p>
               </div>
-              <h3 className="text-base font-bold text-white group-hover:text-emerald-400 transition-colors">
-                Privacy Policy
-              </h3>
-              <p className="text-xs text-neutral-300 leading-relaxed">
-                Global privacy standards, AI memory vault isolation, and data sovereignty.
-              </p>
-              <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1 pt-1">
-                Read Policy <ChevronRight className="w-3 h-3" />
+              <span className="text-xs font-bold text-emerald-400 flex items-center gap-1 pt-1">
+                <span>Read Policy</span>
+                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </span>
             </Link>
           </div>

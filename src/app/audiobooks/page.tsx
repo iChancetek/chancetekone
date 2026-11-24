@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { BookOpen, UploadCloud, Share2 } from 'lucide-react';
@@ -39,30 +39,35 @@ export default function AudiobooksPage() {
 
   return (
     <div className="space-y-8 py-6">
-      <div className="border-b border-white/5 pb-6">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-neon/20 border border-brand-neon/40 text-brand-neon text-xs font-semibold uppercase tracking-wider">
-            <BookOpen className="w-3.5 h-3.5" />
-            Audiobook Narratives & Cinema
+      <div className="specular-edge relative overflow-hidden glass-panel rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-brand-purple/20 via-[#0c0c16]/90 to-[#080810]/95">
+        <div className="pointer-events-none absolute -top-20 -right-20 w-72 h-72 rounded-full bg-brand-purple/20 blur-[100px]" />
+        <div className="relative z-10">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-neon/15 border border-brand-neon/35 text-brand-neon text-[11px] font-bold uppercase tracking-[0.14em]">
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Audiobook Narratives &amp; Cinema</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                onClick={() => setIsUploadOpen(true)}
+                className="shimmer-cta px-4 py-2.5 rounded-full bg-gradient-to-r from-[#f7cf62] via-brand-gold to-amber-500 hover:scale-[1.03] text-[#050509] font-extrabold text-xs uppercase tracking-wider transition-all shadow-[0_6px_24px_rgba(245,195,68,0.35)] flex items-center gap-1.5 cursor-pointer"
+              >
+                <UploadCloud className="w-4 h-4" />
+                <span>Upload Audiobook &amp; PDF Book (MP3, MP4, .MOV, .PDF)</span>
+              </button>
+              <VoiceNarrationButton
+                text="Explore immersive master audiobooks and spoken narratives by Chancellor at ChanceTEK LLC and ChanceTEK One. Featuring Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio."
+                variant="dual"
+              />
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsUploadOpen(true)}
-              className="px-4 py-2 rounded-2xl bg-gradient-to-r from-brand-gold to-brand-amber hover:scale-105 text-black font-extrabold text-xs uppercase tracking-wider transition-all shadow-lg flex items-center gap-1.5"
-            >
-              <UploadCloud className="w-4 h-4" />
-              <span>Upload Audiobook & PDF Book (MP3, MP4, .MOV, .PDF)</span>
-            </button>
-            <VoiceNarrationButton
-              text="Explore immersive master audiobooks and spoken narratives by Chancellor at ChanceTEK LLC and ChanceTEK One. Featuring Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio."
-              variant="dual"
-            />
-          </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold studio-heading-gradient tracking-tight">
+            Audiobooks &amp; Spoken Masterworks
+          </h1>
+          <p className="text-sm sm:text-base text-neutral-300/90 mt-2.5 max-w-3xl leading-relaxed">
+            Explore immersive master audiobooks and spoken narratives on Agentic AI, AI Security, Health &amp; Longevity, Neural Systems, and Cultural Heritage by Chancellor @ ChanceTEK LLC.
+          </p>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white">Audiobooks & Spoken Masterworks</h1>
-        <p className="text-sm text-neutral-400 mt-1">
-          Explore immersive master audiobooks and spoken narratives on Agentic AI, AI Security, Health & Longevity, Neural Systems, and Cultural Heritage by Chancellor @ ChanceTEK LLC.
-        </p>
       </div>
 
       {/* Saturday Night, Sunday Morning... By Author, Kwame Thompson */}

@@ -54,26 +54,26 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
   return (
     <>
       <header
-        className={`h-[calc(4rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] fixed top-0 right-0 left-0 glass-panel border-b border-white/5 z-30 px-3 md:px-6 flex items-center justify-between gap-3 bg-[#08080c]/90 transition-all duration-300 ease-in-out ${
+        className={`h-[calc(4.25rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] fixed top-0 right-0 left-0 border-b border-white/[0.07] z-30 px-3 md:px-6 flex items-center justify-between gap-3 bg-[#050509]/80 backdrop-blur-2xl shadow-[0_10px_30px_-15px_rgba(0,0,0,0.8)] transition-all duration-300 ease-in-out ${
           isCollapsed ? 'md:left-20' : 'md:left-72'
         }`}
       >
         {/* Left Side: Back Navigation Button, Mobile Menu Button, Desktop Collapse Toggle & Natural Search */}
-        <div className="flex items-center gap-2 flex-1 max-w-xl">
+        <div className="flex items-center gap-2.5 flex-1 max-w-2xl">
           {/* Universal Back Navigation Arrow Button (Navigates to previous page across all pages) */}
           <button
             onClick={handleGoBack}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 active:bg-white/20 text-brand-gold hover:text-white border border-white/10 transition-all hover:scale-105 shrink-0 flex items-center justify-center cursor-pointer min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] touch-manipulation group"
+            className="p-2 rounded-full bg-white/[0.05] hover:bg-white/[0.12] active:bg-white/20 text-brand-gold hover:text-white border border-white/[0.09] hover:border-brand-gold/40 transition-all hover:scale-105 shrink-0 flex items-center justify-center cursor-pointer min-w-[40px] min-h-[40px] md:min-w-[42px] md:min-h-[42px] touch-manipulation group"
             title="Go Back to Previous Page"
             aria-label="Go Back to Previous Page"
           >
-            <ArrowLeft className="w-5 h-5 text-brand-gold group-hover:text-white transition-colors" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-brand-gold group-hover:text-white group-hover:-translate-x-0.5 transition-all" />
           </button>
 
           {/* Mobile Drawer Hamburger Button (Visible on phones & vertical mobile viewports) */}
           <button
             onClick={toggleMobileSidebar}
-            className="md:hidden p-2 rounded-xl bg-white/5 hover:bg-white/10 active:bg-white/20 text-brand-gold hover:text-white border border-white/10 transition-colors shrink-0 flex items-center justify-center cursor-pointer min-w-[44px] min-h-[44px] touch-manipulation"
+            className="md:hidden p-2 rounded-full bg-white/[0.05] hover:bg-white/[0.12] active:bg-white/20 text-brand-gold hover:text-white border border-white/[0.09] transition-colors shrink-0 flex items-center justify-center cursor-pointer min-w-[42px] min-h-[42px] touch-manipulation"
             title="Open Navigation Menu"
             aria-label="Open Navigation Menu"
           >
@@ -83,7 +83,7 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
           {/* Desktop Sidebar Toggle Button */}
           <button
             onClick={toggleSidebar}
-            className="hidden md:flex p-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition-colors shrink-0 cursor-pointer"
+            className="hidden md:flex p-2.5 rounded-full bg-white/[0.05] hover:bg-white/[0.12] border border-white/[0.08] text-neutral-300 hover:text-white transition-all shrink-0 cursor-pointer"
             title={isCollapsed ? 'Expand Sidebar Menu' : 'Collapse Sidebar Menu'}
           >
             {isCollapsed ? (
@@ -95,20 +95,20 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
 
           {/* Global Natural Language Search Bar */}
           <form onSubmit={handleSearchSubmit} className="flex-1 relative">
-            <div className="relative flex items-center">
-              <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 pointer-events-none" />
+            <div className="relative flex items-center group">
+              <Search className="w-4 h-4 text-neutral-400 group-focus-within:text-brand-gold absolute left-4 pointer-events-none transition-colors" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder='Search: "90s boom bap with heavy horn samples" or track...'
-                className="w-full pl-10 pr-10 py-2 rounded-full bg-white/5 border border-white/10 focus:border-brand-purple focus:outline-none focus:ring-1 focus:ring-brand-purple text-xs md:text-sm text-white placeholder-neutral-400 transition-all"
+                placeholder='Search music, 4K cinema, audiobooks, BPMs or vibes...'
+                className="w-full pl-11 pr-11 py-2.5 rounded-full bg-white/[0.05] hover:bg-white/[0.08] focus:bg-[#0e0e18] border border-white/[0.1] focus:border-brand-gold/50 focus:outline-none focus:ring-2 focus:ring-brand-gold/20 text-xs md:text-sm text-white placeholder-neutral-400 transition-all shadow-inner"
               />
               <button
                 type="button"
                 onClick={() => setIsVoiceSearchOpen(true)}
                 title="Whisper Voice Search & Agent Commands"
-                className="absolute right-2.5 p-1 rounded-full text-brand-gold hover:text-white hover:bg-brand-purple/30 transition-colors"
+                className="absolute right-2 p-1.5 rounded-full bg-white/[0.05] hover:bg-brand-purple/40 text-brand-gold hover:text-white transition-all cursor-pointer"
               >
                 <Mic className="w-4 h-4" />
               </button>
@@ -117,12 +117,12 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
         </div>
 
         {/* Right Action Controls */}
-        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+        <div className="flex items-center gap-2 md:gap-2.5 shrink-0">
           {/* PWA Install Trigger */}
           {isInstallable && (
             <button
               onClick={installPWA}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-brand-gold text-xs font-semibold border border-brand-gold/30 hover:border-brand-gold/60 transition-all hover:scale-105"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/[0.05] hover:bg-brand-gold/15 text-brand-gold text-xs font-bold border border-brand-gold/30 hover:border-brand-gold/60 transition-all hover:scale-105 cursor-pointer"
               title="Install Break Beats Application"
             >
               <Download className="w-3.5 h-3.5" />
@@ -136,7 +136,7 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
           {/* ChanceTEK One AI Assistant Button */}
           <button
             onClick={onOpenAI}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-brand-purple/80 to-brand-violet hover:from-brand-purple hover:to-brand-gold text-white text-xs font-semibold shadow-sm transition-all border border-brand-neon/40 hover:scale-105"
+            className="shimmer-cta flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-brand-purple via-violet-600 to-indigo-600 hover:from-brand-purple hover:to-brand-gold text-white text-xs font-bold shadow-[0_4px_20px_rgba(157,78,221,0.4)] transition-all border border-white/20 hover:scale-105 cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5 text-brand-gold animate-spin-slow" />
             <span className="hidden sm:inline">ChanceTEK One AI</span>
@@ -145,12 +145,12 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
           {/* Shopping Cart Trigger */}
           <button
             onClick={openCart}
-            className="relative p-2 rounded-full bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/5 transition-all"
+            className="relative p-2.5 rounded-full bg-white/[0.05] hover:bg-white/[0.12] text-neutral-200 hover:text-white border border-white/[0.09] transition-all cursor-pointer"
             title="Merch Cart"
           >
             <ShoppingBag className="w-4 h-4" />
             {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-gold text-black text-[10px] font-bold flex items-center justify-center shadow-md animate-bounce">
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-gold text-[#050509] text-[10px] font-black flex items-center justify-center shadow-[0_0_12px_rgba(245,195,68,0.8)] animate-bounce">
                 {itemCount}
               </span>
             )}
@@ -161,8 +161,8 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
             {profile ? (
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className={`flex items-center gap-2 p-0.5 rounded-full bg-white/5 hover:bg-white/10 transition-all ${
-                  isAdmin ? 'ring-2 ring-red-500/30' : ''
+                className={`flex items-center gap-2 p-0.5 rounded-full bg-white/[0.06] hover:bg-white/[0.14] transition-all cursor-pointer ${
+                  isAdmin ? 'ring-2 ring-red-500/40' : 'ring-1 ring-white/15 hover:ring-brand-gold/50'
                 }`}
                 title={`${profile.name} — Account Profile & Settings`}
               >
@@ -181,7 +181,7 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-brand-purple to-brand-violet hover:scale-105 text-white text-xs font-bold border border-white/10 transition-all shadow-md"
+                className="shimmer-cta px-4 py-2 rounded-full bg-gradient-to-r from-[#f7cf62] via-brand-gold to-amber-500 hover:scale-105 text-[#050509] text-xs font-extrabold border border-amber-200/40 transition-all shadow-[0_4px_20px_rgba(245,195,68,0.35)] cursor-pointer"
               >
                 Sign In
               </button>
@@ -189,7 +189,7 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
 
             {/* Profile Dropdown Menu */}
             {showProfileMenu && profile && (
-              <div className="absolute right-0 mt-2 w-56 rounded-2xl glass-panel border border-white/10 p-2 shadow-2xl space-y-1 bg-[#12121c] z-50">
+              <div className="absolute right-0 mt-2.5 w-60 rounded-2xl glass-panel border border-white/15 p-2 shadow-[0_24px_60px_rgba(0,0,0,0.9)] space-y-1 bg-[#0c0c16]/98 z-50">
                 <Link
                   href="/profile"
                   onClick={() => setShowProfileMenu(false)}

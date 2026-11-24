@@ -59,7 +59,7 @@ export const MobileNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => 
   };
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[calc(4rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] glass-panel border-t border-white/10 z-50 px-2 flex items-center justify-around bg-[#0c0c14]/95">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[calc(4.25rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] border-t border-white/[0.1] z-50 px-2 flex items-center justify-around bg-[#07070e]/92 backdrop-blur-2xl shadow-[0_-12px_36px_rgba(0,0,0,0.85)]">
       {NAV_ITEMS.map((item) => {
         const Icon = item.icon;
         const isActive = activePath === item.href || (item.href !== '/' && activePath.startsWith(item.href));
@@ -69,12 +69,17 @@ export const MobileNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => 
             href={item.href}
             prefetch={false}
             onClick={(e) => handleNavClick(e, item.href)}
-            className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all touch-manipulation min-w-[44px] min-h-[44px] justify-center ${
-              isActive && !isMobileOpen ? 'text-brand-gold' : 'text-neutral-400 hover:text-white'
+            className={`relative flex flex-col items-center gap-1 py-1.5 px-2.5 rounded-2xl transition-all touch-manipulation min-w-[48px] min-h-[46px] justify-center ${
+              isActive && !isMobileOpen
+                ? 'text-brand-gold bg-brand-gold/10'
+                : 'text-neutral-400 hover:text-white'
             }`}
           >
-            <Icon className="w-4 h-4" />
-            <span className="text-[10px] font-medium">{item.label}</span>
+            {isActive && !isMobileOpen && (
+              <span className="absolute -top-0.5 w-5 h-[2.5px] rounded-full bg-brand-gold shadow-[0_0_10px_#f5c344]" />
+            )}
+            <Icon className="w-5 h-5" />
+            <span className="text-[11px] font-semibold">{item.label}</span>
           </Link>
         );
       })}
@@ -85,30 +90,30 @@ export const MobileNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => 
           if (isMobileOpen) closeMobileSidebar();
           onOpenAI?.();
         }}
-        className="flex flex-col items-center gap-1 py-1 px-2 text-brand-neon cursor-pointer touch-manipulation min-w-[44px] min-h-[44px] justify-center"
+        className="flex flex-col items-center gap-1 py-1.5 px-2.5 rounded-2xl bg-brand-purple/20 border border-brand-purple/35 text-brand-neon cursor-pointer touch-manipulation min-w-[48px] min-h-[46px] justify-center shadow-[0_0_16px_rgba(157,78,221,0.3)]"
         title="ChanceTEK One AI"
       >
-        <Sparkles className="w-4 h-4 text-brand-gold animate-pulse" />
-        <span className="text-[10px] font-semibold">AI</span>
+        <Sparkles className="w-5 h-5 text-brand-gold animate-pulse" />
+        <span className="text-[11px] font-bold text-white">AI</span>
       </button>
 
       {/* Dedicated Menu Drawer Toggle (Full access to all features) */}
       <button
         onClick={toggleMobileSidebar}
-        className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition-all cursor-pointer touch-manipulation min-w-[44px] min-h-[44px] justify-center ${
+        className={`flex flex-col items-center gap-1 py-1.5 px-2.5 rounded-2xl transition-all cursor-pointer touch-manipulation min-w-[48px] min-h-[46px] justify-center ${
           isMobileOpen
-            ? 'text-brand-gold font-bold scale-105'
+            ? 'text-brand-gold bg-brand-gold/10 font-bold scale-105'
             : 'text-neutral-400 hover:text-white'
         }`}
         title={isMobileOpen ? 'Close Menu' : 'Open Full Menu'}
         aria-label={isMobileOpen ? 'Close Menu' : 'Open Full Menu'}
       >
         {isMobileOpen ? (
-          <X className="w-4 h-4 text-brand-gold" />
+          <X className="w-5 h-5 text-brand-gold" />
         ) : (
-          <Menu className="w-4 h-4" />
+          <Menu className="w-5 h-5" />
         )}
-        <span className="text-[10px] font-medium">Menu</span>
+        <span className="text-[11px] font-semibold">Menu</span>
       </button>
     </nav>
   );

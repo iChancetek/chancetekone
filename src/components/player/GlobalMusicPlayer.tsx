@@ -216,10 +216,12 @@ export const GlobalMusicPlayer: React.FC = () => {
         }`}
       >
         <div
-          className={`flex items-center gap-2 p-1.5 pr-3 rounded-full bg-[#0c0c16]/95 backdrop-blur-xl border transition-all group shadow-2xl ${
+          className={`flex items-center gap-2 p-1.5 pr-3.5 rounded-full bg-[#090913]/92 backdrop-blur-2xl border transition-all group shadow-2xl ${
             isDragging
-              ? 'border-brand-gold shadow-[0_0_25px_rgba(245,195,68,0.5)] scale-[1.03]'
-              : 'border-brand-purple/40 hover:border-brand-neon/60 shadow-[0_10px_30px_rgba(0,0,0,0.7)]'
+              ? 'border-brand-gold shadow-[0_0_30px_rgba(245,195,68,0.55)] scale-[1.03]'
+              : isPlaying
+                ? 'border-brand-gold/35 hover:border-brand-gold/60 shadow-[0_14px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(245,195,68,0.16)]'
+                : 'border-white/15 hover:border-brand-neon/50 shadow-[0_14px_40px_rgba(0,0,0,0.8)]'
           }`}
         >
           {/* Drag Handle Icon */}
@@ -444,12 +446,24 @@ export const GlobalMusicPlayer: React.FC = () => {
       )}
 
       {/* Main Bottom Docked Player (Elevated above MobileNav on mobile viewports) */}
-      <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 h-20 md:h-24 glass-panel border-t border-white/10 z-40 px-2 sm:px-4 md:px-8 flex items-center justify-between gap-1.5 sm:gap-3 md:gap-4 bg-[#08080c]/95 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] overflow-hidden max-w-full touch-manipulation">
+      <div className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 h-20 md:h-[5.5rem] border-t border-white/[0.1] z-40 px-2.5 sm:px-5 md:px-8 flex items-center justify-between gap-2 sm:gap-3 md:gap-4 bg-[#07070f]/92 backdrop-blur-2xl shadow-[0_-18px_50px_rgba(0,0,0,0.85)] overflow-hidden max-w-full touch-manipulation">
+        {/* Top Ambient Hairline Progress Glow */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/[0.05] pointer-events-none">
+          <div
+            className="h-full bg-gradient-to-r from-brand-purple via-brand-gold to-cyan-400 transition-all duration-150 shadow-[0_0_10px_rgba(245,195,68,0.7)]"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+
         {/* Left: Artwork, Track Info, Like & Add to Playlist */}
-        <div className="flex items-center gap-2 md:gap-4 w-auto sm:w-1/3 md:w-1/4 min-w-0 max-w-[42%] sm:max-w-none">
+        <div className="flex items-center gap-2.5 md:gap-4 w-auto sm:w-1/3 md:w-1/4 min-w-0 max-w-[42%] sm:max-w-none">
           <div
             onClick={openFullScreen}
-            className="relative w-10 h-10 sm:w-11 sm:h-11 md:w-14 md:h-14 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0 cursor-pointer border border-white/10 shadow-md group"
+            className={`relative w-10 h-10 sm:w-11 sm:h-11 md:w-14 md:h-14 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0 cursor-pointer border transition-all group ${
+              isPlaying
+                ? 'border-brand-gold/50 shadow-[0_0_24px_rgba(245,195,68,0.28)]'
+                : 'border-white/15 shadow-lg'
+            }`}
             title="Open Full Screen Player"
           >
             <Image
@@ -552,13 +566,13 @@ export const GlobalMusicPlayer: React.FC = () => {
 
             <button
               onClick={togglePlay}
-              className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-gradient-to-r from-brand-gold to-brand-amber text-black flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
+              className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-gradient-to-br from-[#f7cf62] via-brand-gold to-amber-500 text-[#050509] flex items-center justify-center shadow-[0_0_26px_rgba(245,195,68,0.45)] hover:shadow-[0_0_34px_rgba(245,195,68,0.7)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
               title={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? (
-                <Pause className="w-4 h-4 md:w-5 md:h-5 fill-current text-black" />
+                <Pause className="w-4 h-4 md:w-5 md:h-5 fill-current text-[#050509]" />
               ) : (
-                <Play className="w-4 h-4 md:w-5 md:h-5 fill-current text-black ml-0.5" />
+                <Play className="w-4 h-4 md:w-5 md:h-5 fill-current text-[#050509] ml-0.5" />
               )}
             </button>
 
@@ -594,12 +608,14 @@ export const GlobalMusicPlayer: React.FC = () => {
                 const pos = (e.clientX - rect.left) / rect.width;
                 seek(pos * duration);
               }}
-              className="flex-1 h-1.5 md:h-2 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer relative overflow-hidden group"
+              className="flex-1 h-1.5 md:h-2 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer relative group transition-all"
             >
               <div
-                className="h-full bg-gradient-to-r from-brand-purple to-brand-gold rounded-full relative"
+                className="h-full bg-gradient-to-r from-brand-purple via-brand-gold to-amber-300 rounded-full relative shadow-[0_0_12px_rgba(245,195,68,0.45)]"
                 style={{ width: `${progressPercent}%` }}
-              />
+              >
+                <span className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 rounded-full bg-white shadow-[0_0_10px_rgba(245,195,68,0.9)] opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
             </div>
             <span className="w-7 sm:w-8 text-[9px] sm:text-[10px] md:text-xs shrink-0">{formatTime(duration)}</span>
           </div>

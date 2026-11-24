@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Image from 'next/image';
@@ -182,17 +182,26 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
     `${currentTrack.title} by ${currentTrack.artistName}. Engineered with authentic syncopated drum breaks at ${currentTrack.bpm || 120} BPM. Analog bassline and classic sampler grit crafted for elite DJ sets.`;
 
   return (
-    <div className="fixed inset-0 z-[80] bg-[#08080c]/98 backdrop-blur-3xl flex flex-col justify-between p-4 sm:p-6 md:p-10 overflow-y-auto animate-in fade-in zoom-in-95 duration-300">
-      {/* Background Ambient Glow derived from Cover Art */}
-      <div
-        className="absolute inset-0 opacity-20 pointer-events-none blur-[140px] bg-gradient-to-tr from-brand-purple via-brand-violet to-brand-amber"
-      />
+    <div className="fixed inset-0 z-[80] bg-[#050509]/98 backdrop-blur-3xl flex flex-col justify-between p-4 sm:p-6 md:p-10 overflow-y-auto animate-in fade-in zoom-in-95 duration-300">
+      {/* Dynamic Album-Art Adaptive Color Wash */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {currentTrack.coverUrl && (
+          <Image
+            src={currentTrack.coverUrl}
+            alt=""
+            fill
+            className="object-cover blur-[110px] scale-125 opacity-30 saturate-150 transition-all duration-1000"
+            unoptimized={Boolean(currentTrack.coverUrl.startsWith('data:') || currentTrack.coverUrl.startsWith('blob:'))}
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050509]/70 via-[#050509]/60 to-[#050509]/92" />
+      </div>
 
       {/* Top Bar with Title & Close */}
       <div className="relative z-10 flex items-center justify-between">
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-semibold text-brand-gold uppercase tracking-wider">
+        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/15 text-xs font-bold text-brand-gold uppercase tracking-widest">
           <Radio className="w-3.5 h-3.5 animate-pulse text-brand-neon" />
-          Immersive Breakbeat Master Player
+          <span>Immersive Spatial Master Player</span>
         </div>
 
         <button

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useRef, useState } from 'react';
 import Image from 'next/image';
@@ -215,11 +215,11 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, type }) => {
         href={getHref()}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className="group glass-card p-3 rounded-2xl flex flex-col justify-between transition-all duration-300 relative overflow-hidden block"
+        className="group glass-card p-3 sm:p-3.5 rounded-[22px] flex flex-col justify-between transition-all duration-300 relative overflow-hidden block"
       >
         {/* Thumbnail Container */}
         <div
-          className={`relative w-full rounded-xl overflow-hidden mb-3 border border-white/5 bg-black/60 ${isVideo || isVideoAudiobook ? 'aspect-video' : 'aspect-square'
+          className={`relative w-full rounded-2xl overflow-hidden mb-3.5 border border-white/[0.08] bg-[#080810] shadow-inner ${isVideo || isVideoAudiobook ? 'aspect-video' : 'aspect-square'
             } ${isArtist ? 'rounded-full' : ''}`}
         >
           {isVideo || (isVideoAudiobook && !resolvedCover) ? (
@@ -315,28 +315,28 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, type }) => {
               )}
 
               {/* Hover Play Button Overlay */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
                 {isTrack || isAlbum ? (
                   <button
                     onClick={handlePlayClick}
-                    className="w-12 h-12 rounded-full bg-gradient-to-r from-brand-gold to-brand-amber text-black flex items-center justify-center shadow-2xl hover:scale-110 transition-transform cursor-pointer"
+                    className="w-13 h-13 rounded-full bg-gradient-to-br from-[#f7cf62] via-brand-gold to-amber-500 text-[#050509] flex items-center justify-center shadow-[0_8px_30px_rgba(245,195,68,0.55)] translate-y-2 group-hover:translate-y-0 hover:scale-110 transition-all duration-300 cursor-pointer"
                     title={isAlbum ? 'Play Album' : 'Play Track'}
                   >
                     <Play className="w-5 h-5 fill-current ml-0.5" />
                   </button>
                 ) : isAudiobook ? (
-                  <div className="w-12 h-12 rounded-full bg-brand-purple/90 text-white flex items-center justify-center shadow-2xl">
+                  <div className="w-13 h-13 rounded-full bg-gradient-to-br from-brand-purple to-violet-600 text-white flex items-center justify-center shadow-[0_8px_30px_rgba(157,78,221,0.55)] translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                     <BookOpen className="w-5 h-5" />
                   </div>
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center">
+                  <div className="w-13 h-13 rounded-full bg-white/15 backdrop-blur-xl border border-white/25 text-white flex items-center justify-center translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                     <Disc3 className="w-5 h-5" />
                   </div>
                 )}
               </div>
 
               {/* Type Badge */}
-              <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider text-brand-gold border border-white/10">
+              <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-black/65 backdrop-blur-xl text-[10px] font-bold uppercase tracking-widest text-brand-gold border border-white/15">
                 {type}
               </div>
 

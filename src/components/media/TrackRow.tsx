@@ -87,10 +87,10 @@ export const TrackRow: React.FC<TrackRowProps> = ({
   return (
     <div
       onClick={() => handlePlay()}
-      className={`group flex items-center justify-between px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl transition-all cursor-pointer touch-manipulation select-none ${
+      className={`group flex items-center justify-between px-3 sm:px-3.5 py-2.5 sm:py-3 rounded-2xl transition-all duration-200 cursor-pointer touch-manipulation select-none ${
         isCurrent
-          ? 'bg-brand-purple/20 border border-brand-purple/40 text-white shadow-inner'
-          : 'hover:bg-white/5 active:bg-white/10 border border-transparent text-neutral-300'
+          ? 'bg-gradient-to-r from-brand-purple/25 via-brand-violet/15 to-transparent border border-brand-purple/40 text-white shadow-[inset_3px_0_0_#f5c344,0_8px_24px_-10px_rgba(157,78,221,0.35)]'
+          : 'hover:bg-white/[0.05] active:bg-white/10 border border-transparent hover:border-white/[0.07] text-neutral-300'
       }`}
     >
       {/* Left: Index & Play Button & Title */}
@@ -219,7 +219,11 @@ export const TrackRow: React.FC<TrackRowProps> = ({
           className="hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity"
         />
 
-        {track.bpm && <span className="hidden md:inline text-[10px] text-brand-gold/80">{track.bpm} BPM</span>}
+        {track.bpm && (
+          <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full bg-brand-gold/10 border border-brand-gold/20 text-[10px] font-semibold text-brand-gold">
+            {track.bpm} BPM
+          </span>
+        )}
 
         <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 sm:gap-1.5">
           {/* Reaction emojis displayed on desktop viewports to prevent mobile horizontal overflow */}

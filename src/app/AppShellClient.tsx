@@ -42,12 +42,13 @@ const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const { isCollapsed } = useSidebar();
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#08080c] relative">
-      {/* Ambient background glows for glassmorphic depth across all pages */}
+    <div className="min-h-screen flex flex-col bg-[#050509] relative">
+      {/* Dynamic Spatial Aurora & Studio Micro-Grid Atmosphere */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-brand-purple/10 rounded-full blur-[128px]" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-brand-gold/10 rounded-full blur-[128px]" />
-        <div className="absolute -bottom-20 left-1/3 w-96 h-96 bg-brand-violet/15 rounded-full blur-[140px]" />
+        <div className="absolute inset-0 spatial-canvas-grid opacity-70" />
+        <div className="absolute -top-48 -left-32 w-[540px] h-[540px] bg-brand-purple/14 rounded-full blur-[140px] animate-aurora-slow" />
+        <div className="absolute top-1/4 -right-40 w-[500px] h-[500px] bg-brand-gold/10 rounded-full blur-[150px] animate-aurora-reverse" />
+        <div className="absolute -bottom-32 left-1/3 w-[560px] h-[420px] bg-cyan-500/[0.06] rounded-full blur-[150px] animate-aurora-slow" />
       </div>
 
       {/* Fixed Left Sidebar (Desktop) */}
@@ -63,7 +64,7 @@ const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <TopNav onOpenAI={() => openAI()} />
 
         {/* Dynamic Page Content */}
-        <main className="flex-1 pt-[calc(4rem+env(safe-area-inset-top))] px-4 sm:px-6 md:px-8 max-w-7xl w-full mx-auto pb-8">
+        <main className="flex-1 pt-[calc(4.25rem+env(safe-area-inset-top))] px-4 sm:px-6 md:px-8 max-w-7xl w-full mx-auto pb-8">
           {children}
         </main>
 

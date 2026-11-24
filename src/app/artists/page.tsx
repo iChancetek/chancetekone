@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -64,12 +64,20 @@ export default function ArtistsPage() {
           <span>Back</span>
         </button>
       </div>
-      <div className="border-b border-white/5 pb-6">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-gold/20 border border-brand-gold/40 text-brand-gold text-xs font-semibold uppercase tracking-wider mb-2">
-          <Users className="w-3.5 h-3.5" />
-          Creators & DJs
+      <div className="specular-edge relative overflow-hidden glass-panel rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-brand-gold/12 via-[#0c0c16]/90 to-[#080810]/95">
+        <div className="pointer-events-none absolute -top-20 -right-20 w-72 h-72 rounded-full bg-brand-gold/15 blur-[100px]" />
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-gold/15 border border-brand-gold/35 text-brand-gold text-[11px] font-bold uppercase tracking-[0.14em] mb-3">
+            <Users className="w-3.5 h-3.5" />
+            <span>Creators &amp; DJs</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold studio-heading-gradient tracking-tight">
+            Featured Artists
+          </h1>
+          <p className="text-sm text-neutral-300/90 mt-2">
+            Explore verified independent artists, sonic architects, and master DJs across the ChanceTEK One ecosystem.
+          </p>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white">Featured Artists</h1>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">

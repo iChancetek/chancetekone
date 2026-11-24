@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -26,8 +26,8 @@ export const Footer: React.FC = () => {
   const { openAI } = useAI();
 
   return (
-    <footer className="relative z-20 w-full mt-12 sm:mt-16 px-4 sm:px-6 md:px-8">
-      <div className="max-w-7xl mx-auto glass-panel rounded-3xl border border-white/10 p-6 sm:p-10 md:p-12 space-y-12 shadow-2xl">
+    <footer className="relative z-20 w-full mt-14 sm:mt-20 px-4 sm:px-6 md:px-8">
+      <div className="specular-edge max-w-7xl mx-auto glass-panel rounded-[28px] p-6 sm:p-10 md:p-12 space-y-10">
         {/* Top Grid Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-10">
           {/* Column 1: Brand & Platform Narrative (Spans 2 columns on lg) */}
@@ -260,29 +260,29 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Creator Distribution Agreement Highlight Strip */}
-        <div className="rounded-2xl border border-brand-gold/30 bg-gradient-to-r from-brand-gold/10 via-brand-purple/15 to-white/[0.02] p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
-          <div className="flex items-center gap-3 text-center sm:text-left">
-            <div className="w-10 h-10 rounded-xl bg-brand-gold/20 border border-brand-gold/40 flex items-center justify-center shrink-0 shadow-sm">
+        <div className="rounded-2xl border border-brand-gold/25 bg-gradient-to-r from-brand-gold/[0.08] via-brand-purple/12 to-white/[0.02] p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-center gap-3.5 text-center sm:text-left">
+            <div className="w-11 h-11 rounded-2xl bg-brand-gold/15 border border-brand-gold/35 flex items-center justify-center shrink-0 shadow-[0_0_18px_rgba(245,195,68,0.2)]">
               <FileSignature className="w-5 h-5 text-brand-gold" />
             </div>
             <div>
-              <h4 className="text-sm font-black text-white flex items-center gap-2 justify-center sm:justify-start">
+              <h4 className="text-sm sm:text-base font-extrabold text-white flex items-center gap-2 justify-center sm:justify-start">
                 <span>Artist &amp; Creator Distribution Agreement</span>
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-brand-gold/20 text-brand-gold border border-brand-gold/40">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-brand-gold/15 text-brand-gold border border-brand-gold/35">
                   80% Royalty Share
                 </span>
               </h4>
-              <p className="text-xs text-neutral-300 mt-0.5">
+              <p className="text-xs sm:text-sm text-neutral-300/90 mt-1">
                 Retain 100% of your copyright ownership while streaming, selling, and distributing your music, 4K video, audiobooks, and vinyl pressings globally.
               </p>
             </div>
           </div>
           <Link
             href="/distribution-agreement"
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-600 hover:scale-105 active:scale-95 text-black font-black text-xs uppercase tracking-wider shadow-lg shadow-brand-gold/20 transition-all flex items-center gap-1.5 shrink-0"
+            className="shimmer-cta px-6 py-3 rounded-full bg-gradient-to-r from-[#f7cf62] via-brand-gold to-amber-500 hover:scale-[1.03] active:scale-95 text-[#050509] font-extrabold text-xs uppercase tracking-wider shadow-[0_8px_28px_rgba(245,195,68,0.3)] transition-all flex items-center gap-1.5 shrink-0"
           >
             <span>Sign &amp; Submit Agreement</span>
-            <ChevronRight className="w-4 h-4 text-black" />
+            <ChevronRight className="w-4 h-4 text-[#050509]" />
           </Link>
         </div>
 

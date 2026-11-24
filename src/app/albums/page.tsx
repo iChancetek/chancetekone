@@ -41,15 +41,20 @@ export default function AlbumsPage() {
           <span>Back</span>
         </button>
       </div>
-      <div className="border-b border-white/5 pb-6">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-gold/20 border border-brand-gold/40 text-brand-gold text-xs font-semibold uppercase tracking-wider mb-2">
-          <Disc3 className="w-3.5 h-3.5" />
-          Full Length Releases
+      <div className="specular-edge relative overflow-hidden glass-panel rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-brand-gold/12 via-[#0c0c16]/90 to-[#080810]/95">
+        <div className="pointer-events-none absolute -top-20 -right-20 w-72 h-72 rounded-full bg-brand-purple/20 blur-[100px]" />
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-gold/15 border border-brand-gold/35 text-brand-gold text-[11px] font-bold uppercase tracking-[0.14em] mb-3">
+            <Disc3 className="w-3.5 h-3.5" />
+            <span>Full Length Releases</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold studio-heading-gradient tracking-tight">
+            Albums, EPs, &amp; New Releases
+          </h1>
+          <p className="text-sm text-neutral-300/90 mt-2">
+            Explore complete studio albums and curated collections across all 8 crates.
+          </p>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white">Albums, EPs, & New Releases</h1>
-        <p className="text-xs text-neutral-400 mt-1">
-          Explore complete studio albums and curated collections across all 8 crates.
-        </p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">

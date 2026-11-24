@@ -175,13 +175,17 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="relative rounded-3xl overflow-hidden glass-panel border border-brand-gold/30 p-6 sm:p-10 md:p-12 shadow-2xl bg-gradient-to-r from-[#180e29]/95 via-[#0d0918]/90 to-[#08080c]/95 group"
+      className="specular-edge relative rounded-[28px] overflow-hidden glass-panel p-5 sm:p-8 md:p-10 bg-gradient-to-br from-[#140e24]/95 via-[#0b0a14]/95 to-[#06060b]/98 group"
     >
+      {/* Subtle Ambient Stage Glows */}
+      <div className="pointer-events-none absolute -top-24 -right-20 w-80 h-80 rounded-full bg-brand-purple/20 blur-[110px]" />
+      <div className="pointer-events-none absolute -bottom-24 -left-20 w-72 h-72 rounded-full bg-brand-gold/12 blur-[110px]" />
+
       {/* Auto-Slide Progress Bar */}
       {isAutoSlideEnabled && (
-        <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-white/5 overflow-hidden z-30 pointer-events-none">
+        <div className="absolute top-0 left-0 right-0 h-[3px] bg-white/[0.06] overflow-hidden z-30 pointer-events-none">
           <div
-            className="h-full bg-gradient-to-r from-brand-gold via-amber-300 to-brand-neon transition-all duration-75 ease-linear"
+            className="h-full bg-gradient-to-r from-brand-purple via-brand-gold to-cyan-400 transition-all duration-75 ease-linear shadow-[0_0_12px_rgba(245,195,68,0.8)]"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -198,37 +202,35 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
             sizes="(max-width: 768px) 100vw, 66vw"
             className="object-cover object-center blur-lg scale-110 transition-all duration-700"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0c0c16] via-[#0c0c16]/85 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a14] via-[#0a0a14]/85 to-transparent" />
         </div>
       )}
 
       {/* Top Carousel Navigation Controls & Project Counter */}
-      <div className="relative z-20 flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/5">
+      <div className="relative z-20 flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/[0.07]">
         <div className="flex items-center gap-2.5">
-          <span className="text-[11px] uppercase tracking-widest font-black text-brand-gold flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-[11px] uppercase tracking-[0.14em] font-bold text-brand-gold">
             <FolderKanban className="w-3.5 h-3.5 text-brand-gold" />
-            <span>Project {currentIndex + 1} of {slides.length}</span>
+            <span>Premiere {currentIndex + 1} / {slides.length}</span>
           </span>
-          <span className="text-white/20">•</span>
-          <span className="text-[11px] text-neutral-400 font-medium">
+          <span className="text-xs text-neutral-400 font-medium hidden sm:inline">
             {isAutoSlideEnabled
               ? isHovered
-                ? 'Auto-slide paused (hovered)'
-                : 'Auto-sliding'
-              : 'Auto-slide stopped'}
+                ? 'Paused on hover'
+                : 'Auto-advancing stage'
+              : 'Manual control'}
           </span>
         </div>
 
         {/* Carousel Stop Option & Navigation Buttons */}
         <div className="flex items-center gap-2">
-          {/* Explicit Stop / Resume Button */}
           <button
             onClick={toggleAutoSlide}
             aria-label={isAutoSlideEnabled ? 'Stop automatic slide' : 'Start automatic slide'}
             title={isAutoSlideEnabled ? 'Stop automatic slideshow' : 'Start automatic slideshow'}
-            className={`flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer border ${isAutoSlideEnabled
-                ? 'bg-brand-gold/15 text-brand-gold border-brand-gold/40 hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/40'
-                : 'bg-white/10 text-neutral-300 border-white/20 hover:bg-brand-gold/20 hover:text-brand-gold hover:border-brand-gold/40'
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${isAutoSlideEnabled
+                ? 'bg-brand-gold/10 text-brand-gold border-brand-gold/30 hover:bg-rose-500/15 hover:text-rose-300 hover:border-rose-500/35'
+                : 'bg-white/[0.06] text-neutral-300 border-white/15 hover:bg-brand-gold/15 hover:text-brand-gold hover:border-brand-gold/35'
               }`}
           >
             {isAutoSlideEnabled ? (
@@ -238,7 +240,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-gold"></span>
                 </span>
                 <span>Auto-Slide</span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-black/50 text-neutral-300 border border-white/10 font-mono">
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/50 text-neutral-300 border border-white/10 font-mono">
                   Stop
                 </span>
               </>
@@ -246,19 +248,19 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
               <>
                 <Play className="w-2.5 h-2.5 fill-current text-brand-gold" />
                 <span>Auto-Slide</span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-brand-gold/25 text-brand-gold font-mono">
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-mono">
                   Play
                 </span>
               </>
             )}
           </button>
 
-          <div className="flex items-center gap-1 border-l border-white/10 pl-2">
+          <div className="flex items-center gap-1.5 border-l border-white/10 pl-2">
             <button
               onClick={prevSlide}
               aria-label="Previous project banner"
               title="Previous project"
-              className="p-1.5 rounded-full bg-white/5 hover:bg-brand-gold/20 text-neutral-300 hover:text-brand-gold border border-white/10 hover:border-brand-gold/40 transition-all cursor-pointer"
+              className="w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/15 text-neutral-200 hover:text-brand-gold border border-white/10 hover:border-brand-gold/40 flex items-center justify-center transition-all cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -267,7 +269,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
               onClick={nextSlide}
               aria-label="Next project banner"
               title="Next project"
-              className="p-1.5 rounded-full bg-white/5 hover:bg-brand-gold/20 text-neutral-300 hover:text-brand-gold border border-white/10 hover:border-brand-gold/40 transition-all cursor-pointer"
+              className="w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/15 text-neutral-200 hover:text-brand-gold border border-white/10 hover:border-brand-gold/40 flex items-center justify-center transition-all cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -277,13 +279,13 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
 
       {/* Slide Content Area with Smooth Fade Transition */}
       <div
-        className={`relative z-10 w-full max-w-4xl space-y-6 pt-4 transition-all duration-300 ${isTransitioning ? 'opacity-40 translate-y-1' : 'opacity-100 translate-y-0'
+        className={`relative z-10 w-full max-w-5xl space-y-6 pt-5 transition-all duration-300 ${isTransitioning ? 'opacity-40 translate-y-1' : 'opacity-100 translate-y-0'
           }`}
       >
         {/* Featured Upcoming Works Header */}
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-gold/15 border border-brand-gold/40 text-brand-gold text-xs font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gradient-to-r from-brand-gold/15 to-brand-purple/15 border border-brand-gold/30 text-brand-gold text-[11px] font-bold uppercase tracking-[0.14em]">
               <Sparkles className="w-3.5 h-3.5" />
               <span>{currentSlide.badge}</span>
             </div>
@@ -300,13 +302,13 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
               className="group/heading block focus:outline-none focus:ring-1 focus:ring-brand-gold rounded-xl"
               title={`View ${currentSlide.heading} in Projects`}
             >
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight group-hover/heading:text-brand-gold transition-colors flex items-center gap-2">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold studio-heading-gradient tracking-tight group-hover/heading:text-brand-gold transition-colors flex items-center gap-2">
                 <span>{currentSlide.heading}</span>
-                <ChevronRight className="w-5 h-5 opacity-0 group-hover/heading:opacity-100 group-hover/heading:translate-x-1 text-brand-gold transition-all" />
+                <ChevronRight className="w-6 h-6 opacity-0 group-hover/heading:opacity-100 group-hover/heading:translate-x-1 text-brand-gold transition-all shrink-0" />
               </h2>
             </Link>
           ) : (
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight flex items-center gap-2">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold studio-heading-gradient tracking-tight flex items-center gap-2">
               <span>{currentSlide.heading}</span>
             </h2>
           )}
@@ -322,7 +324,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
         <div className="relative max-w-full">
           {currentSlide.videoUrl ? (
             <div
-              className="relative rounded-3xl border border-brand-gold/30 bg-black/95 shadow-2xl p-2 sm:p-3 flex items-center justify-center overflow-hidden w-full max-w-full mx-auto"
+              className="relative rounded-2xl sm:rounded-3xl border border-white/15 bg-black shadow-[0_25px_70px_-15px_rgba(0,0,0,0.95)] p-1.5 sm:p-2.5 flex items-center justify-center overflow-hidden w-full max-w-full mx-auto ring-1 ring-brand-gold/15"
             >
               <video
                 key={`video-${currentSlide.id}`}
@@ -337,7 +339,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
                   setIsAutoSlideEnabled(false);
                 }}
                 style={currentSlide.id === 'mi-vida-loca' ? undefined : { aspectRatio: '1112 / 830' }}
-                className={`w-full h-auto ${currentSlide.id === 'mi-vida-loca' ? 'max-h-[82vh] rounded-2xl' : 'max-h-[70vh] rounded-xl'
+                className={`w-full h-auto ${currentSlide.id === 'mi-vida-loca' ? 'max-h-[82vh] rounded-xl sm:rounded-2xl' : 'max-h-[70vh] rounded-xl'
                   } shadow-lg bg-black block object-contain`}
               />
             </div>
@@ -362,20 +364,20 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
 
         {/* Action Buttons & Slide Indicators */}
         <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
             <button
               onClick={handlePlayToggle}
               aria-label={isCurrentPlaying ? `Pause ${currentSlide.track.title}` : `Play ${currentSlide.track.title}`}
-              className="flex items-center gap-2 px-6 py-3.5 rounded-full bg-gradient-to-r from-[#f5c344] via-[#ff9f1c] to-[#f5c344] text-[#08080c] font-black text-xs md:text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(245,195,68,0.6),0_4px_12px_rgba(0,0,0,0.5)] hover:shadow-[0_0_35px_rgba(245,195,68,0.9),0_6px_20px_rgba(0,0,0,0.6)] border border-amber-200/60 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="shimmer-cta flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#f7cf62] via-brand-gold to-amber-500 text-[#050509] font-extrabold text-xs md:text-sm uppercase tracking-wider shadow-[0_8px_28px_rgba(245,195,68,0.4)] hover:shadow-[0_12px_36px_rgba(245,195,68,0.65)] hover:scale-[1.03] active:scale-95 transition-all duration-200 cursor-pointer"
             >
               {isCurrentPlaying ? (
                 <>
-                  <Disc3 className="w-4 h-4 text-[#08080c] animate-spin" />
+                  <Disc3 className="w-4 h-4 text-[#050509] animate-spin" />
                   <span>Pause</span>
                 </>
               ) : (
                 <>
-                  <Play className="w-4 h-4 fill-[#08080c] text-[#08080c] ml-0.5" />
+                  <Play className="w-4 h-4 fill-[#050509] text-[#050509] ml-0.5" />
                   <span>Play Track</span>
                 </>
               )}
@@ -383,24 +385,24 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
 
             <Link
               href={currentSlide.videoHref}
-              className="flex items-center gap-2 px-5 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white font-semibold text-xs md:text-sm transition-all shadow-md hover:scale-105 active:scale-95"
+              className="flex items-center gap-2 px-5 py-3 rounded-full bg-white/[0.07] hover:bg-white/[0.14] border border-white/15 text-white font-semibold text-xs md:text-sm transition-all hover:scale-[1.03] active:scale-95"
             >
-              <VideoIcon className="w-4 h-4 text-red-400" />
+              <VideoIcon className="w-4 h-4 text-rose-400" />
               <span>Watch Video</span>
             </Link>
 
             <button
               onClick={handleAskAI}
-              className="flex items-center gap-2 px-4 py-3.5 rounded-full bg-brand-purple/20 hover:bg-brand-purple/40 border border-brand-purple/50 text-brand-neon hover:text-white font-semibold text-xs transition-all shadow-md hover:scale-105 active:scale-95 cursor-pointer"
+              className="flex items-center gap-2 px-4 py-3 rounded-full bg-brand-purple/20 hover:bg-brand-purple/35 border border-brand-purple/40 text-brand-neon hover:text-white font-semibold text-xs md:text-sm transition-all hover:scale-[1.03] active:scale-95 cursor-pointer"
               title="Ask ChanceTEK One AI about this project"
             >
               <Sparkles className="w-4 h-4 text-brand-gold animate-spin-slow" />
-              Ask AI
+              <span>Ask AI</span>
             </button>
 
             <button
               onClick={() => setShowShareModal(true)}
-              className="flex items-center gap-2 px-4 py-3.5 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 border border-brand-gold/40 text-brand-gold hover:text-amber-300 font-semibold text-xs md:text-sm transition-all shadow-md hover:scale-105 active:scale-95 cursor-pointer"
+              className="flex items-center gap-2 px-4 py-3 rounded-full bg-white/[0.06] hover:bg-brand-gold/20 border border-white/15 hover:border-brand-gold/40 text-neutral-100 hover:text-brand-gold font-semibold text-xs md:text-sm transition-all hover:scale-[1.03] active:scale-95 cursor-pointer"
               title={`Share ${currentSlide.heading} & text message`}
             >
               <Share2 className="w-4 h-4 text-brand-gold" />
@@ -429,7 +431,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
                     setIsAutoSlideEnabled(false);
                     setDiscussionSlide(currentSlide);
                   }}
-                  className="flex items-center gap-2 px-4 py-3.5 rounded-full bg-white/10 hover:bg-brand-gold/20 border border-white/15 hover:border-brand-gold/40 text-neutral-200 hover:text-brand-gold font-semibold text-xs md:text-sm transition-all shadow-md hover:scale-105 active:scale-95 cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-3 rounded-full bg-white/[0.06] hover:bg-brand-gold/15 border border-white/15 hover:border-brand-gold/40 text-neutral-200 hover:text-brand-gold font-semibold text-xs md:text-sm transition-all hover:scale-[1.03] active:scale-95 cursor-pointer"
                   title={`${count} Discussion Comments & Threads on ${currentSlide.heading}`}
                 >
                   <MessageSquare className="w-4 h-4 text-brand-gold" />
@@ -448,7 +450,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
                 onClick={() => goToSlide(idx)}
                 aria-label={`Jump to ${slide.bannerAlt}`}
                 className={`transition-all duration-300 rounded-full cursor-pointer ${idx === currentIndex
-                    ? 'w-7 h-2 bg-gradient-to-r from-brand-gold to-amber-400 shadow-[0_0_10px_rgba(245,195,68,0.7)]'
+                    ? 'w-8 h-2 bg-gradient-to-r from-brand-gold to-amber-400 shadow-[0_0_12px_rgba(245,195,68,0.75)]'
                     : 'w-2 h-2 bg-white/25 hover:bg-white/50'
                   }`}
               />

@@ -10,8 +10,8 @@ import { CatalogSyncBootstrap } from '@/components/catalog/CatalogSyncBootstrap'
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#08080c' },
-    { media: '(prefers-color-scheme: light)', color: '#08080c' },
+    { media: '(prefers-color-scheme: dark)', color: '#050509' },
+    { media: '(prefers-color-scheme: light)', color: '#050509' },
   ],
   width: 'device-width',
   initialScale: 1,
@@ -63,9 +63,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body
         suppressHydrationWarning
-        className="bg-[#08080c] text-neutral-100 min-h-screen antialiased selection:bg-brand-purple selection:text-white"
+        className="bg-[#050509] text-neutral-100 min-h-screen antialiased selection:bg-brand-purple/80 selection:text-white"
       >
         <PWAProvider>
           <AuthProvider>

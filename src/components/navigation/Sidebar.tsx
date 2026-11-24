@@ -178,12 +178,12 @@ export const Sidebar: React.FC = () => {
       {/* 1. DESKTOP & LANDSCAPE SIDEBAR (>= md)                                    */}
       {/* ========================================================================= */}
       <aside
-        className={`hidden md:flex flex-col h-[100dvh] fixed top-0 left-0 glass-panel border-r border-white/5 z-50 bg-[#0c0c14]/95 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20' : 'w-72'
+        className={`hidden md:flex flex-col h-[100dvh] fixed top-0 left-0 border-r border-white/[0.07] z-50 bg-[#07070d]/92 backdrop-blur-2xl shadow-[12px_0_40px_-15px_rgba(0,0,0,0.8)] transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20' : 'w-72'
           }`}
       >
         {/* Brand Header with Toggle */}
         <div
-          className={`p-3 border-b border-white/5 flex items-center ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'
+          className={`p-3.5 border-b border-white/[0.07] flex items-center ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'
             }`}
         >
           <Link
@@ -251,9 +251,9 @@ export const Sidebar: React.FC = () => {
                     onClick={(e) => handleMenuNavigate(e, item.href, item.isExternal, false)}
                     title={isCollapsed ? item.label : undefined}
                     className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'justify-between gap-3 px-3.5 py-2.5'
-                      } rounded-xl text-[15px] font-semibold transition-all ${isActive
-                        ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
-                        : 'text-neutral-200 hover:text-white hover:bg-white/5'
+                      } rounded-xl text-[15px] font-semibold transition-all duration-200 ${isActive
+                        ? 'bg-gradient-to-r from-brand-purple/30 via-brand-violet/15 to-transparent text-white border border-brand-purple/40 shadow-[inset_3px_0_0_#f5c344,0_4px_20px_rgba(157,78,221,0.15)]'
+                        : 'text-neutral-200 hover:text-white hover:bg-white/[0.06] border border-transparent'
                       }`}
                   >
                     <div className="flex items-center gap-3 min-w-0 mr-1.5">
@@ -392,11 +392,11 @@ export const Sidebar: React.FC = () => {
           {/* Info & Support Menu */}
           <div>
             {!isCollapsed && (
-              <div className="px-2.5 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+              <div className="px-3 mb-2 text-xs font-extrabold uppercase tracking-wider text-neutral-400">
                 Platform & Support
               </div>
             )}
-            <nav className="space-y-0.5">
+            <nav className="space-y-1">
               {INFO_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const isActive = activePath === item.href;
@@ -409,17 +409,17 @@ export const Sidebar: React.FC = () => {
                     onTouchStart={() => handleIntentPrefetch(item.href)}
                     onClick={(e) => handleMenuNavigate(e, item.href, false, false)}
                     title={isCollapsed ? item.label : undefined}
-                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'justify-start gap-2.5 px-3 py-2'
-                      } rounded-xl text-xs font-medium transition-all ${isActive
-                        ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
-                        : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                    className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'justify-start gap-3 px-3.5 py-2'
+                      } rounded-xl text-sm font-medium transition-all duration-200 ${isActive
+                        ? 'bg-gradient-to-r from-brand-purple/30 to-transparent text-white border border-brand-purple/40 shadow-[inset_3px_0_0_#f5c344]'
+                        : 'text-neutral-300 hover:text-white hover:bg-white/[0.06] border border-transparent'
                       }`}
                   >
                     <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400 group-hover:text-white'}`} />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
 
                     {isCollapsed && (
-                      <div className="absolute left-full ml-2 px-2.5 py-1 rounded-lg bg-[#141224] border border-white/10 text-white text-[11px] font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
+                      <div className="absolute left-full ml-2 px-3 py-1.5 rounded-lg bg-[#141224] border border-white/10 text-white text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
                         {item.label}
                       </div>
                     )}
@@ -431,21 +431,21 @@ export const Sidebar: React.FC = () => {
               <button
                 onClick={openAccessibilityModal}
                 title={isCollapsed ? `Text Size (${fontScale}%)` : undefined}
-                className={`group relative flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'
-                  } rounded-xl text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-all w-full cursor-pointer`}
+                className={`group relative flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3.5 py-2'
+                  } rounded-xl text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/[0.06] transition-all w-full cursor-pointer`}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <Type className="w-4 h-4 shrink-0 text-brand-gold" />
                   {!isCollapsed && <span>Text Size</span>}
                 </div>
                 {!isCollapsed && (
-                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-brand-gold font-mono font-bold">
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/10 text-brand-gold font-mono font-bold">
                     {fontScale}%
                   </span>
                 )}
 
                 {isCollapsed && (
-                  <div className="absolute left-full ml-2 px-2.5 py-1 rounded-lg bg-[#141224] border border-brand-gold/30 text-white text-[11px] font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
+                  <div className="absolute left-full ml-2 px-3 py-1.5 rounded-lg bg-[#141224] border border-brand-gold/30 text-white text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
                     Text Size ({fontScale}%)
                   </div>
                 )}
@@ -458,35 +458,35 @@ export const Sidebar: React.FC = () => {
             <div className="flex justify-center pt-2">
               <button
                 onClick={() => openAI()}
-                className="group relative p-2.5 rounded-2xl bg-gradient-to-tr from-brand-purple to-brand-gold text-white shadow-lg hover:scale-110 transition-transform cursor-pointer"
+                className="group relative p-2.5 rounded-2xl bg-gradient-to-tr from-brand-purple to-brand-gold text-white shadow-[0_0_24px_rgba(157,78,221,0.45)] hover:scale-110 transition-transform cursor-pointer"
                 title="Open ChanceTEK One AI Assistant"
               >
                 <Sparkles className="w-4 h-4 text-brand-gold animate-spin-slow" />
-                <div className="absolute left-full ml-2 px-2.5 py-1 rounded-lg bg-[#141224] border border-brand-purple/40 text-white text-[11px] font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
+                <div className="absolute left-full ml-2 px-3 py-1.5 rounded-lg bg-[#141224] border border-brand-purple/40 text-white text-xs font-semibold whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-xl">
                   ChanceTEK One AI
                 </div>
               </button>
             </div>
           ) : (
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-brand-purple/30 via-brand-dark to-brand-gold/10 border border-brand-purple/40 space-y-2 shadow-lg">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-brand-gold flex items-center justify-center text-black">
-                  <Sparkles className="w-3.5 h-3.5 fill-current" />
+            <div className="specular-edge p-3.5 rounded-2xl bg-gradient-to-br from-brand-purple/25 via-[#131024] to-brand-gold/10 border border-white/10 space-y-2.5 shadow-xl">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-brand-gold to-amber-500 flex items-center justify-center text-[#050509] shadow-[0_0_16px_rgba(245,195,68,0.4)]">
+                  <Sparkles className="w-4 h-4 fill-current" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">ChanceTEK One AI</p>
-                  <p className="text-[10px] text-brand-neon font-medium">Agentic Assistant</p>
+                  <p className="text-sm font-bold text-white leading-tight">ChanceTEK One AI</p>
+                  <p className="text-[11px] text-brand-neon font-medium">Agentic Sonic Concierge</p>
                 </div>
               </div>
-              <p className="text-[11px] text-neutral-300 leading-snug">
-                Crate digger & culture assistant with dual memory.
+              <p className="text-xs text-neutral-300 leading-relaxed">
+                Crate digger &amp; culture assistant with dual memory.
               </p>
               <button
                 onClick={() => openAI()}
-                className="w-full py-1.5 px-3 rounded-xl bg-brand-purple/50 hover:bg-brand-purple text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md hover:scale-[1.02] cursor-pointer"
+                className="shimmer-cta w-full py-2 px-3 rounded-xl bg-gradient-to-r from-brand-purple to-violet-600 hover:from-brand-purple hover:to-brand-gold text-white hover:text-[#050509] text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md hover:scale-[1.02] cursor-pointer"
               >
-                <Sparkles className="w-3 h-3 text-brand-gold" />
-                Ask AI Assistant
+                <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
+                <span>Ask AI Assistant</span>
               </button>
             </div>
           )}
