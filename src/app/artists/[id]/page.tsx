@@ -1,12 +1,13 @@
-﻿'use client';
+'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Play, CheckCircle, Users, Disc3, Video as VideoIcon, ShoppingBag, Heart, ArrowLeft, MessageSquare, Share2 } from 'lucide-react';
+import { Play, CheckCircle, Users, Disc3, Video as VideoIcon, ShoppingBag, Heart, ArrowLeft, MessageSquare, Share2, ArrowUpDown } from 'lucide-react';
 import { MOCK_ARTISTS, MOCK_TRACKS, MOCK_ALBUMS, MOCK_VIDEOS, MOCK_PRODUCTS } from '@/lib/mockData';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
+import { MusicSortOption, MUSIC_SORT_OPTIONS, sortTracks } from '@/lib/music/trackSorting';
 import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
 import { Track, Album, Artist, Video as VideoItem } from '@/types/media';
 import { usePlayer } from '@/lib/player/PlayerContext';
@@ -25,6 +26,7 @@ export default function ArtistDetailPage() {
 
   const [isFollowing, setIsFollowing] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [sortBy, setSortBy] = useState<MusicSortOption>('newest');
   const [allTracks, setAllTracks] = useState<Track[]>(() => MusicCatalogService.getAllTracks());
   const [allAlbums, setAllAlbums] = useState<Album[]>(() => MusicCatalogService.getAllAlbums());
   const [allVideos, setAllVideos] = useState<VideoItem[]>(() => MediaCatalogService.getAllVideos());
@@ -48,13 +50,16 @@ export default function ArtistDetailPage() {
     (a) => a.id === artistId || a.id.toLowerCase() === artistId.toLowerCase()
   );
 
-  const artistTracks = allTracks.filter(
-    (t) =>
-      t.artistId === artistId ||
-      (matchingMock && t.artistId === matchingMock.id) ||
-      (matchingMock && t.artistName && t.artistName.toLowerCase().trim() === matchingMock.name.toLowerCase().trim()) ||
-      (t.artistName && t.artistName.toLowerCase().replace(/[^a-z0-9]+/g, '-') === artistId.replace(/^artist-/, ''))
-  );
+  const artistTracks = useMemo(() => {
+    const matched = allTracks.filter(
+      (t) =>
+        t.artistId === artistId ||
+        (matchingMock && t.artistId === matchingMock.id) ||
+        (matchingMock && t.artistName && t.artistName.toLowerCase().trim() === matchingMock.name.toLowerCase().trim()) ||
+        (t.artistName && t.artistName.toLowerCase().replace(/[^a-z0-9]+/g, '-') === artistId.replace(/^artist-/, ''))
+    );
+    return sortTracks(matched, sortBy);
+  }, [allTracks, artistId, matchingMock, sortBy]);
 
   const fallbackName =
     artistTracks[0]?.artistName ||
@@ -220,7 +225,26 @@ export default function ArtistDetailPage() {
 
       {/* Popular Tracks */}
       <section className="glass-panel p-6 rounded-3xl border border-white/5 space-y-4 bg-white/5">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-white">Popular Tracks</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-white">
+            Tracks ({artistTracks.length})
+          </h3>
+          <div className="relative flex items-center self-start sm:self-auto">
+            <ArrowUpDown className="w-3.5 h-3.5 text-brand-gold absolute left-3 pointer-events-none" />
+            <select
+              aria-label="Sort artist tracks"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as MusicSortOption)}
+              className="pl-8 pr-3 py-1.5 rounded-xl bg-black/40 border border-brand-gold/30 text-neutral-100 text-xs font-semibold focus:border-brand-gold focus:outline-none cursor-pointer"
+            >
+              {MUSIC_SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
         <div className="divide-y divide-white/5">
           {artistTracks.map((track, i) => (
             <TrackRow

@@ -59,7 +59,7 @@ export interface ShareableInput {
 const PRODUCTION_ORIGIN = process.env.NEXT_PUBLIC_APP_URL || 'https://chancetekone.us';
 
 /**
- * Returns true if the cover image is missing or is the default master banner / generic platform logo
+ * Returns true if the cover image is missing or is a generic platform placeholder
  */
 export function isDefaultOrInvalidCover(url?: string | null): boolean {
   if (!url || typeof url !== 'string') return true;
@@ -68,15 +68,26 @@ export function isDefaultOrInvalidCover(url?: string | null): boolean {
     lower === '' ||
     lower === 'null' ||
     lower === 'undefined' ||
+    lower.startsWith('blob:') ||
     lower.includes('chancetekone_banner.png') ||
     lower.includes('the_lounge_ambient.jpg') ||
     lower.includes('/images/logo') ||
     lower.endsWith('/logo.png') ||
+    lower.includes('/images/studio_cover.jpg') ||
+    lower.includes('/images/default-cover.jpg') ||
     lower.includes('cover_1792') // dead upload hashes
   ) {
     return true;
   }
   return false;
+}
+
+/**
+ * Returns true if the URL is a generic genre placeholder rather than song-specific cover art.
+ */
+export function isGenericGenreCover(url?: string | null): boolean {
+  if (!url || typeof url !== 'string') return false;
+  return url.toLowerCase().trim().includes('/images/genres/');
 }
 
 /**
@@ -93,29 +104,65 @@ export function cleanDescription(desc?: string, fallback: string = ''): string {
 
 /**
  * Resolves the authentic cover art for any platform entity, guaranteeing
- * it never falls back to the default ChanceTEK One banner.
+ * songs ALWAYS display their exact cover artwork rather than generic placeholders.
  */
 export function resolveAuthenticCover(type: ShareContentType, item: any): string {
-  // If custom or item has a non-default cover, verify it:
+  // For songs and beats, prioritize the exact song/album artwork via MusicCatalogService
+  // before falling back to any generic genre image.
+  if (type === 'song' || type === 'beat') {
+    const rawTrack = item as Track | undefined;
+    const liveTrack =
+      (rawTrack?.id ? MusicCatalogService.getTrackById(rawTrack.id) : undefined) || rawTrack;
+    const mergedTrack = liveTrack ? ({ ...rawTrack, ...liveTrack } as Track) : rawTrack;
+
+    // 1. Direct exact cover on the live/input track (excluding generic studio or genre placeholders)
+    const directCandidates = [rawTrack?.coverUrl, liveTrack?.coverUrl];
+    for (const c of directCandidates) {
+      if (c && !isDefaultOrInvalidCover(c) && !isGenericGenreCover(c)) {
+        return c;
+      }
+    }
+
+    // 2. MusicCatalogService exact song/album cover resolution
+    if (mergedTrack) {
+      try {
+        const resolved = MusicCatalogService.resolveTrackCover(mergedTrack);
+        if (resolved && !isDefaultOrInvalidCover(resolved) && !isGenericGenreCover(resolved)) {
+          return resolved;
+        }
+      } catch {}
+
+      // 3. Matching album cover if track itself didn't hold an explicit URL
+      if (mergedTrack.albumTitle || mergedTrack.albumId) {
+        try {
+          const resolvedAlbum = MusicCatalogService.resolveAlbumCover({
+            title: mergedTrack.albumTitle || '',
+            artistName: mergedTrack.artistName || '',
+            coverUrl: mergedTrack.coverUrl,
+            genre: mergedTrack.genre,
+          });
+          if (resolvedAlbum && !isDefaultOrInvalidCover(resolvedAlbum) && !isGenericGenreCover(resolvedAlbum)) {
+            return resolvedAlbum;
+          }
+        } catch {}
+      }
+
+      // 4. Last resort: genre-matched default cover
+      try {
+        return getDefaultCoverForTrack(mergedTrack);
+      } catch {}
+    }
+
+    return '/images/genres/rnb-neo-soul.jpg';
+  }
+
+  // For non-song entities: if custom or item has a non-default cover, verify it:
   const directCover = item?.coverUrl || item?.imageUrl || item?.thumbnailUrl || item?.avatarUrl || item?.bannerUrl;
   if (directCover && !isDefaultOrInvalidCover(directCover)) {
     return directCover;
   }
 
   switch (type) {
-    case 'song':
-    case 'beat': {
-      const track = item as Track;
-      if (track) {
-        try {
-          return MusicCatalogService.resolveTrackCover(track);
-        } catch {
-          return track.coverUrl || '/images/genres/rnb-neo-soul.jpg';
-        }
-      }
-      return '/images/genres/rnb-neo-soul.jpg';
-    }
-
     case 'video': {
       const video = item as Video;
       if (video?.thumbnailUrl && !isDefaultOrInvalidCover(video.thumbnailUrl)) {
@@ -436,18 +483,36 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
     }
   }
 
-  // Resolve authentic cover art:
-  const coverUrl = input.customCoverUrl && !isDefaultOrInvalidCover(input.customCoverUrl)
-    ? input.customCoverUrl
-    : resolveAuthenticCover(type, item);
+  // Resolve authentic cover art (exact song cover prioritized over generic art):
+  const coverUrl =
+    input.customCoverUrl && !isDefaultOrInvalidCover(input.customCoverUrl) && !isGenericGenreCover(input.customCoverUrl)
+      ? input.customCoverUrl
+      : resolveAuthenticCover(type, item);
 
-  // Canonical public share URL (Required by social crawlers & text message link previews):
+  // Canonical public share URL (Required by SMS/iMessage, WhatsApp, Facebook, X, LinkedIn, Telegram crawlers):
   let relativePath = `/music/${effectiveId}`;
   switch (type) {
     case 'song':
-    case 'beat':
-      relativePath = `/music/${effectiveId}`;
+    case 'beat': {
+      // Route shared songs through /share/track/[id] so social/SMS bots receive exact song OG cover art
+      // AND unauthenticated visitors enter the 2-listen guest preview flow seamlessly.
+      const qp = new URLSearchParams();
+      if (title && title !== 'Featured Track') qp.set('t', title);
+      if (creator && creator !== 'ChanceTEK One') qp.set('a', creator);
+      if (
+        coverUrl &&
+        !coverUrl.startsWith('data:') &&
+        !coverUrl.startsWith('blob:') &&
+        !isDefaultOrInvalidCover(coverUrl) &&
+        !isGenericGenreCover(coverUrl) &&
+        coverUrl.length <= 360
+      ) {
+        qp.set('c', coverUrl);
+      }
+      const qs = qp.toString();
+      relativePath = `/share/track/${encodeURIComponent(effectiveId)}${qs ? `?${qs}` : ''}`;
       break;
+    }
     case 'video':
       relativePath = `/videos/${effectiveId}`;
       break;
@@ -496,21 +561,18 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
   if (item?.price) metadataBadges.push(`$${item.price}`);
   if (item?.releaseYear) metadataBadges.push(String(item.releaseYear));
 
-  // Text message body specifically tailored for SMS / iMessage:
+  // Text message body specifically tailored for SMS / iMessage rich link previews:
   const textMessageBody = `Listen to "${title}" by ${creator} on ChanceTEK One!
 
 ${description}
 
-Stream now:
 ${canonicalUrl}`;
 
   // General share text:
   const shareText = `Check out "${title}" by ${creator} on ChanceTEK One: ${description}`;
 
-  // Social share URLs:
+  // Social share URLs (all point to canonicalUrl carrying exact song OG artwork):
   const encodedUrl = encodeURIComponent(canonicalUrl);
-  const encodedText = encodeURIComponent(shareText);
-  const encodedTitle = encodeURIComponent(title);
   const encodedSms = encodeURIComponent(textMessageBody);
 
   const smsUrl = `sms:?&body=${encodedSms}`;
@@ -520,7 +582,7 @@ ${canonicalUrl}`;
   const whatsAppUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`*${title}* by _${creator}_\n\n${description}\n\n${canonicalUrl}`)}`;
   const telegramUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(`*${title}* by ${creator}\n${description}`)}`;
 
-  const emailSubject = `${title} by ${creator} â€” ChanceTEK One`;
+  const emailSubject = `${title} by ${creator} — ChanceTEK One`;
   const emailBody = `Hey,\n\nI wanted to share this with you on ChanceTEK One:\n\n"${title}" by ${creator}\n\n${description}\n\nStream now: ${canonicalUrl}`;
   const emailUrl = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
 

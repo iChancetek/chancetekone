@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Track, Audiobook, AudiobookChapter, Video } from '@/types/media';
 import { Playlist, PlaylistItem } from '@/types/playlist';
 import { MOCK_TRACKS, MOCK_VIDEOS, MOCK_AUDIOBOOKS } from '@/lib/mockData';
@@ -10,6 +11,14 @@ import { radioOrchestrator } from '@/lib/radio/RadioOrchestrator';
 import { useAuth, getActiveSession } from '@/lib/auth/AuthContext';
 import { AdminUserManager } from '@/lib/admin/AdminUserManager';
 import { AuthModal } from '@/components/auth/AuthModal';
+import {
+  GUEST_SIGNUP_GATE_MESSAGE,
+  buildGuestSignupRedirectUrl,
+  clearGuestSharedSession,
+  consumeGuestPreviewListen,
+  getGuestPreviewState,
+  isSharedMusicGuestSession,
+} from '@/lib/auth/guestPreviewGate';
 import { HistoryService } from '@/lib/history/HistoryService';
 import { FavoritesService } from '@/lib/favorites/FavoritesService';
 import { AudioStorageService } from '@/lib/audio/AudioStorageService';
@@ -138,8 +147,17 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     isDemoRef.current = isDemo;
   }, [isDemo]);
 
+  const router = useRouter();
   const [isAuthGateModalOpen, setIsAuthGateModalOpen] = useState(false);
   const [authGateActionName, setAuthGateActionName] = useState('stream music and video');
+  const guestActiveTrackIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (profile || user || isAdmin || isSuperUser || isDemo) {
+      clearGuestSharedSession();
+      guestActiveTrackIdRef.current = null;
+    }
+  }, [profile, user, isAdmin, isSuperUser, isDemo]);
 
   /**
    * Authoritative check: Returns true if the user is an administrator or registered platform member.
@@ -182,6 +200,26 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return false;
   }, [profile, user, isAdmin, isSuperUser, isDemo]);
 
+  const triggerGuestSignupGate = useCallback(
+    (trackId?: string, redirectToSignup = false) => {
+      if (audioRef.current) {
+        try {
+          audioRef.current.pause();
+        } catch {}
+      }
+      setIsPlaying(false);
+      guestActiveTrackIdRef.current = null;
+      if (redirectToSignup) {
+        setIsAuthGateModalOpen(false);
+        router.push(buildGuestSignupRedirectUrl(trackId));
+      } else {
+        setAuthGateActionName(GUEST_SIGNUP_GATE_MESSAGE);
+        setIsAuthGateModalOpen(true);
+      }
+    },
+    [router]
+  );
+
   const requireStreamAuth = useCallback((actionName = 'stream music and video'): boolean => {
     if (checkIsMemberOrAdmin()) {
       return true;
@@ -197,6 +235,47 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setIsAuthGateModalOpen(true);
     return false;
   }, [checkIsMemberOrAdmin]);
+
+  /**
+   * Authorizes music track playback:
+   * - Authenticated members & admins: unlimited playback.
+   * - Visitors without an account who opened a shared music link: 2-listen guest preview gate,
+   *   then automatic sign-up redirect with the required guest sign-up message.
+   * - Other unauthenticated visitors: immediate sign-up modal prompt.
+   */
+  const authorizeTrackPlayback = useCallback(
+    (track: Track): boolean => {
+      if (checkIsMemberOrAdmin()) {
+        return true;
+      }
+
+      if (isSharedMusicGuestSession()) {
+        // Resuming the same active guest preview listen does not consume a second listen
+        if (
+          guestActiveTrackIdRef.current === track.id &&
+          audioRef.current &&
+          audioRef.current.currentTime > 0 &&
+          !audioRef.current.ended
+        ) {
+          return true;
+        }
+
+        const attempt = consumeGuestPreviewListen(track.id);
+        if (attempt.allowed) {
+          guestActiveTrackIdRef.current = track.id;
+          return true;
+        }
+
+        // 2-listen guest preview limit reached -> automatic sign-up redirect
+        triggerGuestSignupGate(track.id, true);
+        return false;
+      }
+
+      triggerGuestSignupGate(track.id, false);
+      return false;
+    },
+    [checkIsMemberOrAdmin, triggerGuestSignupGate]
+  );
 
   const [currentTrack, setCurrentTrack] = useState<Track | null>(() => {
     const list = MusicCatalogService.getSSRBaselineTracks();
@@ -246,6 +325,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const lastPrevClickTimeRef = useRef<number>(0);
   const playNextRef = useRef<() => void>(() => {});
   const playPrevRef = useRef<() => void>(() => {});
+  const handleTrackEndedRef = useRef<() => void>(() => {});
   const playTrackRef = useRef<(track: Track, newQueue?: Track[], precedingTracks?: Track[], preserveExistingQueue?: boolean) => Promise<void>>((async () => {}) as any);
 
   // Sync player queue and active track with dynamic catalog changes (uploads/deletions)
@@ -449,7 +529,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
     };
 
-    const onEnded = () => handleTrackEnded();
+    const onEnded = () => handleTrackEndedRef.current?.();
     const onPlay = () => {
       setIsPlaying(true);
       if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
@@ -711,6 +791,18 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         metadata: { duration: track.duration, artist: track.artistName },
       });
     }
+
+    // Enforce 2-listen guest preview gate when a guest finishes a track
+    if (!checkIsMemberOrAdmin()) {
+      guestActiveTrackIdRef.current = null;
+      setIsPlaying(false);
+      const preview = getGuestPreviewState();
+      if (preview.limitReached) {
+        triggerGuestSignupGate(track?.id, true);
+      }
+      return;
+    }
+
     if (repeatModeRef.current === 'one' && audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch(() => {});
@@ -718,6 +810,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       playNextRef.current?.();
     }
   };
+  handleTrackEndedRef.current = handleTrackEnded;
 
   const playTrack = async (
     track: Track,
@@ -725,7 +818,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     precedingTracks?: Track[],
     preserveExistingQueue = false
   ) => {
-    if (!requireStreamAuth('stream music')) return;
+    if (!authorizeTrackPlayback(track)) return;
     // Open the music player upon playing any song
     setIsPlayerVisible(true);
     setIsPlayerCollapsed(false);
@@ -1184,7 +1277,27 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const resume = () => {
-    if (!requireStreamAuth('stream music')) return;
+    if (!checkIsMemberOrAdmin()) {
+      if (isSharedMusicGuestSession()) {
+        const isResumingSameActivePreview =
+          Boolean(currentTrack) &&
+          guestActiveTrackIdRef.current === currentTrack?.id &&
+          Boolean(audioRef.current) &&
+          !audioRef.current?.ended &&
+          (audioRef.current?.currentTime || 0) > 0;
+
+        if (!isResumingSameActivePreview) {
+          if (currentTrack) {
+            void playTrack(currentTrack);
+          } else {
+            triggerGuestSignupGate(undefined, true);
+          }
+          return;
+        }
+      } else {
+        if (!requireStreamAuth('stream music')) return;
+      }
+    }
     setIsPlayerVisible(true);
     if (audioRef.current) {
       const src = audioRef.current.src || '';
@@ -1214,7 +1327,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (isPlaying) {
       pause();
     } else {
-      if (!requireStreamAuth('stream music')) return;
       resume();
     }
   };
@@ -1512,9 +1624,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         isOpen={isAuthGateModalOpen}
         onClose={() => setIsAuthGateModalOpen(false)}
         title="Sign Up to Stream on ChanceTEK One"
-        description="You must sign up for an account in order to stream music and video on the platform. Create your free account or sign in to continue."
+        description={GUEST_SIGNUP_GATE_MESSAGE}
         initialTab="signup"
         onSuccess={() => {
+          clearGuestSharedSession();
           setIsAuthGateModalOpen(false);
         }}
       />

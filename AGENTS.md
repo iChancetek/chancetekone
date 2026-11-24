@@ -1968,3 +1968,28 @@ esolvedAudioUrl is reset to '' (zero tolerance).
 
 
 
+
+
+### 83. Newest-First Catalog Ordering, Super Admin Music Export Agent, Exact Song Share Cover Art & 2-Listen Guest Preview Gate
+- **Newest-First Default + Alphabetical Sorting (`src/lib/music/trackSorting.ts`)**:
+  - `getTrackUploadedTimestamp()` resolves `uploadedAt` / `publishedAt` / `createdAt`, then epoch digits embedded in `track.id` or `audioUrl`, then `releaseYear`.
+  - `sortTracks`, `sortAlbums`, `sortArtists` + option lists (`MUSIC_SORT_OPTIONS`, `ALBUM_SORT_OPTIONS`, `ARTIST_SORT_OPTIONS`): Newest Uploaded (Default), Title A–Z / Z–A, Artist A–Z / Z–A.
+  - `MusicCatalogService.getAllTracks()` now returns tracks sorted `'newest'` by default.
+  - Sort selectors added to `/music` (Featured Releases + `PublicMusicCatalogSection` grouped & flat views, shared state), `/music/crate/[slug]`, `/albums`, `/albums/[id]`, `/artists`, `/artists/[id]`.
+- **Super Admin–Only Autonomous Music Export Agent**:
+  - `src/lib/catalog/adminIdentity.ts`: `SUPER_ADMIN_EMAILS` + `isSuperAdminEmail()` (mirrors `SUPER_USER_EMAILS`).
+  - `src/lib/admin/id3CoverEmbedder.ts`: pure-TS ID3v2.3 writer (TIT2/TPE1/TALB/TCON/TYER/TRCK + APIC front cover); replaces any existing leading ID3v2 tag without touching MPEG frames; non-MP3 audio is passed through untouched.
+  - `src/lib/admin/MusicExportAgent.ts`: autonomous controller that resolves audio (IndexedDB → direct fetch → Super Admin proxy → IndexedDB exact match) and exact cover art, embeds ID3 cover art, writes to a File System Access API folder (local/cloud drive) organized as Artist/Album, Artist, or Flat, with optional sidecar `cover.jpg` + `ChanceTEK_One_Export_Manifest.json` (SHA-256). Retries up to 3 times, reads back written bytes to verify, supports pause/resume/cancel/retry-failed, shows live telemetry, writes an `AuditLogger.logAction` record, and falls back to browser downloads. It is strictly read-only: no catalog mutation.
+  - `src/app/api/admin/music-export/fetch/route.ts`: read-only proxy that requires Super Admin (`verifyServerAdmin` + `isSuperAdminEmail`). It serves `/public` assets (path-traversal guarded) and allow-listed Firebase/GCS/platform HTTPS hosts only.
+  - `src/components/admin/sections/MusicDownloadExporterSection.tsx` wired as admin tab `'music-export'` ("Download Platform Music"), visible and rendered only when `isSuperAdmin`. No other admin tabs, API Management, or Partner API Keys were changed.
+- **Exact Song Cover Art in All Shared Links**:
+  - `shareMetadataService.ts`: `isDefaultOrInvalidCover` now also flags `blob:`, `/images/studio_cover.jpg`, and `/images/default-cover.jpg`. New `isGenericGenreCover()`. For songs, `resolveAuthenticCover` prefers the live track cover, then `resolveTrackCover`, then the album cover, then the genre default. Song/beat `canonicalUrl` is now `/share/track/{id}?t=&a=&c=` and is used by SMS/iMessage, WhatsApp, Facebook, X, LinkedIn, Telegram, Email, and the native share sheet.
+  - `src/lib/server/shareTrackLookup.ts`: server resolver over `readCatalogSnapshot()` (Firestore plus `.data` snapshot), canonical/mock tracks, album covers, and the `c` query hint. It checks that `/public` files exist. `data:image` covers are served via `/api/share/cover/[id]`.
+  - `src/app/api/share/cover/[id]/route.ts`: public binary image endpoint (decodes data URIs, proxies HTTPS covers, serves local files).
+  - `/share/track/[id]/page.tsx` and `/music/[id]/layout.tsx` emit `og:image` / `twitter:image` with exact song art (1200×1200, `secure_url`, alt).
+  - `UniversalShareModal` hydrates IndexedDB APIC art when the resolved cover is generic. `ShareTrackModal` passes the exact live cover.
+- **2-Listen Guest Preview Gate (`src/lib/auth/guestPreviewGate.ts`)**:
+  - `GUEST_SIGNUP_GATE_MESSAGE = "To continue enjoying music like this, please create an account on the platform."`, `MAX_GUEST_SHARED_LISTENS = 2`, localStorage `chancetek_guest_shared_preview_v1`, sessionStorage `chancetek_shared_music_arrival_v1`.
+  - `ShareRedirect.tsx`: branded preview card that sends authenticated users to `/music/{id}`, sends guests to `/music/{id}?shared=1`, and sends guests who have used their listens to `/signup?from=shared&track={id}`.
+  - `PlayerContext.tsx`: `authorizeTrackPlayback()` gives members unlimited playback. Shared-link guests consume 1 listen per new track start (resuming the same active track is free). On the 3rd attempt, or when the 2nd listen ends (`handleTrackEndedRef` avoids stale closures), playback pauses and `router.push` goes to `/signup`. Non-shared guests get the sign-up modal. The guest session is cleared on login.
+  - New `/signup` page (auto-opens `AuthModal` with `initialTab="signup"`). The exact message appears on `/music/[id]` (guest banner), `ShareRedirect`, `/signup`, the `PlayerContext` AuthModal, the `AuthPromptModal` default, and the `AuthModal` signup tab.

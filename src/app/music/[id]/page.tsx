@@ -1,13 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Play, Pause, Disc3, Heart, Sparkles, Music, Flame, ListPlus, ArrowLeft, MessageSquare, Share2 } from 'lucide-react';
+import { Play, Pause, Disc3, Heart, Sparkles, Music, Flame, ListPlus, ArrowLeft, MessageSquare, Share2, Headphones, UserPlus } from 'lucide-react';
 import { MOCK_TRACKS } from '@/lib/mockData';
 import { MusicCatalogService, getDefaultCoverForTrack } from '@/lib/music/MusicCatalogService';
 import { usePlayer } from '@/lib/player/PlayerContext';
+import { useAuth } from '@/lib/auth/AuthContext';
+import {
+  GUEST_SIGNUP_GATE_MESSAGE,
+  MAX_GUEST_SHARED_LISTENS,
+  buildGuestSignupRedirectUrl,
+  getGuestPreviewState,
+  markSharedMusicArrival,
+  subscribeGuestPreview,
+} from '@/lib/auth/guestPreviewGate';
 import { ReactionButtons } from '@/components/social/ReactionButtons';
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { CommentSection } from '@/components/comments/CommentSection';
@@ -23,8 +32,30 @@ export default function TrackDetailPage() {
   const router = useRouter();
   const trackId = params.id as string;
   const { currentTrack, isPlaying, playTrack, togglePlay } = usePlayer();
+  const { profile, user, isAdmin } = useAuth();
+  const isAuthenticated = Boolean(profile || user || isAdmin);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [guestPreview, setGuestPreview] = useState(() => ({
+    isSharedGuest: false,
+    listensUsed: 0,
+    listensRemaining: MAX_GUEST_SHARED_LISTENS,
+    limitReached: false,
+    maxListens: MAX_GUEST_SHARED_LISTENS,
+  }));
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!isAuthenticated) {
+      const qs = new URLSearchParams(window.location.search);
+      if (qs.get('shared') === '1') {
+        markSharedMusicArrival(trackId);
+      }
+    }
+    const refreshGuest = () => setGuestPreview(getGuestPreviewState());
+    refreshGuest();
+    return subscribeGuestPreview(refreshGuest);
+  }, [trackId, isAuthenticated]);
 
   const [track, setTrack] = useState<Track>(() => {
     return MusicCatalogService.getTrackById(trackId) || MOCK_TRACKS.find((t) => t.id === trackId) || MOCK_TRACKS[0];
@@ -73,6 +104,39 @@ export default function TrackDetailPage() {
           <span>Back</span>
         </button>
       </div>
+
+      {/* Guest Shared-Link 2-Listen Preview Banner */}
+      {!isAuthenticated && (
+        <div className="p-4 sm:p-5 rounded-3xl glass-panel border border-brand-gold/45 bg-gradient-to-r from-brand-gold/15 via-[#18102b]/90 to-brand-purple/20 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-brand-gold/20 border border-brand-gold/40 flex items-center justify-center text-brand-gold shrink-0">
+              <Headphones className="w-5 h-5" />
+            </div>
+            <div className="space-y-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-black uppercase tracking-wider text-brand-gold">
+                  {guestPreview.limitReached
+                    ? `Free Guest Preview Used (${MAX_GUEST_SHARED_LISTENS}/${MAX_GUEST_SHARED_LISTENS})`
+                    : guestPreview.isSharedGuest
+                    ? `Guest Preview: ${guestPreview.listensRemaining} of ${MAX_GUEST_SHARED_LISTENS} Free Listens Left`
+                    : 'Guest Preview Mode'}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm font-semibold text-white leading-snug">
+                {GUEST_SIGNUP_GATE_MESSAGE}
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href={buildGuestSignupRedirectUrl(track.id)}
+            className="px-5 py-2.5 rounded-full bg-gradient-to-r from-[#ffd700] via-[#f59e0b] to-[#fbbf24] text-black font-black text-xs uppercase tracking-wider shadow-lg hover:scale-105 transition-transform inline-flex items-center gap-2 shrink-0 self-start sm:self-center"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Create Free Account</span>
+          </Link>
+        </div>
+      )}
 
       {/* Hero Header */}
       <div className="glass-panel p-6 sm:p-10 rounded-3xl border border-white/10 flex flex-col md:flex-row items-center gap-8 bg-white/5 shadow-2xl">

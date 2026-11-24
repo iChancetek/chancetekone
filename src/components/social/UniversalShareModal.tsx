@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import {
   X,
@@ -20,7 +20,10 @@ import {
   ShareableInput,
   ResolvedShareMetadata,
   ShareContentType,
+  isDefaultOrInvalidCover,
+  isGenericGenreCover,
 } from '@/lib/sharing/shareMetadataService';
+import { AudioStorageService } from '@/lib/audio/AudioStorageService';
 
 export interface UniversalShareModalProps {
   isOpen: boolean;
@@ -39,12 +42,31 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
   const [copiedTextMsg, setCopiedTextMsg] = useState(false);
   const [instagramNotice, setInstagramNotice] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [hydratedIdbCover, setHydratedIdbCover] = useState<string | null>(null);
 
   const meta = useMemo(() => {
     if (explicitMeta) return explicitMeta;
     if (entity) return resolveShareMetadata(entity);
     return resolveShareMetadata({ type: 'song', id: 'default' });
   }, [explicitMeta, entity]);
+
+  // Reset image error and hydrate any IndexedDB embedded APIC artwork for the exact shared song
+  useEffect(() => {
+    setImgError(false);
+    setHydratedIdbCover(null);
+    if (!isOpen || (meta.type !== 'song' && meta.type !== 'beat') || !meta.id) return;
+    let cancelled = false;
+    AudioStorageService.getCoverArt(meta.id)
+      .then((cover) => {
+        if (!cancelled && cover && cover.startsWith('data:image/')) {
+          setHydratedIdbCover(cover);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, meta.id, meta.type, meta.coverUrl]);
 
   if (!isOpen) return null;
 
@@ -143,7 +165,12 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
     ? '/images/merch/signature_hoodie.jpg'
     : '/images/genres/rnb-neo-soul.jpg';
 
-  const resolvedCoverSrc = imgError ? fallbackCover : meta.coverUrl;
+  const preferredSongCover =
+    hydratedIdbCover && (isDefaultOrInvalidCover(meta.coverUrl) || isGenericGenreCover(meta.coverUrl))
+      ? hydratedIdbCover
+      : meta.coverUrl;
+
+  const resolvedCoverSrc = imgError ? fallbackCover : preferredSongCover;
 
   return (
     <div

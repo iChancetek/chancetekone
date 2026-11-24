@@ -1,20 +1,22 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, ArrowLeft } from 'lucide-react';
+import { Users, ArrowLeft, ArrowUpDown } from 'lucide-react';
 import { MOCK_ARTISTS } from '@/lib/mockData';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
-import { Artist } from '@/types/media';
+import { Artist, Track } from '@/types/media';
 import { MediaCard } from '@/components/media/MediaCard';
+import { SimpleSortOption, ARTIST_SORT_OPTIONS, sortArtists } from '@/lib/music/trackSorting';
 
 export default function ArtistsPage() {
   const router = useRouter();
+  const [allTracks, setAllTracks] = useState<Track[]>([]);
+  const [sortBy, setSortBy] = useState<SimpleSortOption>('newest');
 
-  const loadCombinedArtists = (): Artist[] => {
+  const loadCombinedArtists = (tracks: Track[]): Artist[] => {
     const map = new Map<string, Artist>();
     MOCK_ARTISTS.forEach((a) => map.set(a.id, a));
-    const tracks = MusicCatalogService.getAllTracks();
     tracks.forEach((t) => {
       if (t.artistId && !map.has(t.artistId)) {
         map.set(t.artistId, {
@@ -37,11 +39,20 @@ export default function ArtistsPage() {
   const [artists, setArtists] = useState<Artist[]>(MOCK_ARTISTS);
 
   useEffect(() => {
-    const refresh = () => setArtists(loadCombinedArtists());
+    const refresh = () => {
+      const tracks = MusicCatalogService.getAllTracks();
+      setAllTracks(tracks);
+      setArtists(loadCombinedArtists(tracks));
+    };
     refresh();
     const unsub = MusicCatalogService.subscribe(refresh);
     return () => unsub();
   }, []);
+
+  const sortedArtists = useMemo(
+    () => sortArtists(artists, allTracks, sortBy),
+    [artists, allTracks, sortBy]
+  );
 
   const handleGoBack = () => {
     if (typeof window !== 'undefined' && window.history.length > 1) {
@@ -54,7 +65,7 @@ export default function ArtistsPage() {
   return (
     <div className="space-y-8 py-6 animate-in fade-in duration-300">
       {/* Back Navigation Bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <button
           onClick={handleGoBack}
           className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-neutral-400 hover:text-brand-gold transition-all duration-200 cursor-pointer group py-1.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10"
@@ -63,6 +74,22 @@ export default function ArtistsPage() {
           <ArrowLeft className="w-4 h-4 text-brand-gold group-hover:-translate-x-1 transition-transform" />
           <span>Back</span>
         </button>
+
+        <div className="relative flex items-center">
+          <ArrowUpDown className="w-3.5 h-3.5 text-brand-gold absolute left-3 pointer-events-none" />
+          <select
+            aria-label="Sort artists"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SimpleSortOption)}
+            className="pl-8 pr-3 py-2 rounded-xl bg-white/5 border border-brand-gold/30 text-neutral-100 text-xs font-semibold focus:border-brand-gold focus:outline-none cursor-pointer"
+          >
+            {ARTIST_SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       <div className="specular-edge relative overflow-hidden glass-panel rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-brand-gold/12 via-[#0c0c16]/90 to-[#080810]/95">
         <div className="pointer-events-none absolute -top-20 -right-20 w-72 h-72 rounded-full bg-brand-gold/15 blur-[100px]" />
@@ -81,7 +108,7 @@ export default function ArtistsPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {artists.map((artist) => (
+        {sortedArtists.map((artist) => (
           <MediaCard key={artist.id} item={artist} type="artist" />
         ))}
       </div>

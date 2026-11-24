@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { useAuth } from '@/lib/auth/AuthContext';
+import { useAuth, isSuperUserEmail } from '@/lib/auth/AuthContext';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { AnalyticsEngine } from '@/lib/analytics/AnalyticsEngine';
 import { AnalyticsAggregator } from '@/lib/analytics/AnalyticsAggregator';
@@ -42,6 +42,7 @@ const UnplayableAudioSection = dynamic(() => import('@/components/admin/sections
 const CommentsModerationSection = dynamic(() => import('@/components/admin/sections/CommentsModerationSection').then((m) => m.CommentsModerationSection));
 const StrideIqIntegrationCard = dynamic(() => import('@/components/admin/StrideIqIntegrationCard').then((m) => m.StrideIqIntegrationCard));
 const ApiUsageMonitorSection = dynamic(() => import('@/components/admin/ApiUsageMonitorSection').then((m) => m.ApiUsageMonitorSection));
+const MusicDownloadExporterSection = dynamic(() => import('@/components/admin/sections/MusicDownloadExporterSection').then((m) => m.MusicDownloadExporterSection));
 import { MusicRecoveryService } from '@/lib/music/MusicRecoveryService';
 import { PlaylistService } from '@/lib/playlist/PlaylistService';
 import { DistributionAgreementService } from '@/lib/agreements/DistributionAgreementService';
@@ -108,6 +109,7 @@ type AdminTab =
   | 'unplayable-music'
   | 'content-deletion'
   | 'upload'
+  | 'music-export'
   | 'approval'
   | 'creator-holding'
   | 'agreements'
@@ -127,7 +129,8 @@ type AdminTab =
   | 'radio';
 
 export default function AdminPage() {
-  const { profile, user, isAdmin, signInWithEmail } = useAuth();
+  const { profile, user, isAdmin, isSuperUser, signInWithEmail } = useAuth();
+  const isSuperAdmin = Boolean(isSuperUser || isSuperUserEmail(profile?.email || user?.email));
   const [adminEmailInput, setAdminEmailInput] = useState('');
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [authError, setAuthError] = useState<string | null>(null);
@@ -799,6 +802,20 @@ export default function AdminPage() {
               description: 'Multi-folder ingestion & ID3 extraction',
               accent: 'gold' as const,
             },
+            ...(isSuperAdmin
+              ? [
+                  {
+                    id: 'music-export' as const,
+                    label: 'Download Platform Music',
+                    displayLabel: 'Download Platform Music',
+                    icon: Download,
+                    category: 'operations' as const,
+                    description: 'Super Admin Autonomous Export Agent · Download songs with cover art (read-only)',
+                    badge: 'Super Admin',
+                    accent: 'gold' as const,
+                  },
+                ]
+              : []),
             {
               id: 'approval' as const,
               label: 'Human Approval Center',
@@ -1059,6 +1076,7 @@ export default function AdminPage() {
                 { id: 'unplayable-music', label: `Unplayable Songs (${unplayableCount})` },
                 { id: 'content-deletion', label: 'Delete Platform Content' },
                 { id: 'upload', label: 'Music Upload Center' },
+                ...(isSuperAdmin ? [{ id: 'music-export', label: 'Download Platform Music (Autonomous Agent)' }] : []),
                 { id: 'approval', label: 'Human Approval Center' },
                 { id: 'crates', label: 'Crate Management' },
                 { id: 'recovery', label: `45-Day Recovery Vault (${recoveryCount})` },
@@ -1137,6 +1155,10 @@ export default function AdminPage() {
             }}
             onOpenRecoverySection={() => setActiveTab('recovery')}
           />
+        )}
+
+        {activeTab === 'music-export' && isSuperAdmin && (
+          <MusicDownloadExporterSection />
         )}
 
         {activeTab === 'approval' && (

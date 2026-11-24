@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Play, Disc3, ArrowLeft, MessageSquare, Share2 } from 'lucide-react';
+import { Play, Disc3, ArrowLeft, MessageSquare, Share2, ArrowUpDown } from 'lucide-react';
 import { Album, Track } from '@/types/media';
 import { MOCK_ALBUMS, MOCK_TRACKS } from '@/lib/mockData';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
+import { MusicSortOption, MUSIC_SORT_OPTIONS, sortTracks } from '@/lib/music/trackSorting';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { TrackRow } from '@/components/media/TrackRow';
 import { ReactionButtons } from '@/components/social/ReactionButtons';
@@ -23,7 +24,13 @@ export default function AlbumDetailPage() {
 
   const [album, setAlbum] = useState<Album>(MOCK_ALBUMS[0]);
   const [albumTracks, setAlbumTracks] = useState<Track[]>([]);
+  const [sortBy, setSortBy] = useState<MusicSortOption>('newest');
   const [showShareModal, setShowShareModal] = useState(false);
+
+  const sortedAlbumTracks = useMemo(
+    () => sortTracks(albumTracks, sortBy),
+    [albumTracks, sortBy]
+  );
 
   useEffect(() => {
     const refresh = () => {
@@ -52,8 +59,8 @@ export default function AlbumDetailPage() {
   const resolvedCover = MusicCatalogService.resolveAlbumCover(album);
 
   const handlePlayAlbum = () => {
-    if (albumTracks.length > 0) {
-      playTrack(albumTracks[0], albumTracks.slice(1));
+    if (sortedAlbumTracks.length > 0) {
+      playTrack(sortedAlbumTracks[0], sortedAlbumTracks.slice(1));
     }
   };
 
@@ -167,22 +174,39 @@ export default function AlbumDetailPage() {
 
       {/* Track List */}
       <div className="glass-panel p-6 rounded-3xl border border-white/5 space-y-4 bg-white/5">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-white">
-            Track Listing ({albumTracks.length})
-          </h3>
-          <span className="text-xs text-neutral-400">
-            Click any song to play individually or play the full album above
-          </span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-white">
+              Track Listing ({sortedAlbumTracks.length})
+            </h3>
+            <span className="text-xs text-neutral-400">
+              Click any song to play individually or play the full album above
+            </span>
+          </div>
+          <div className="relative flex items-center self-start sm:self-auto">
+            <ArrowUpDown className="w-3.5 h-3.5 text-brand-gold absolute left-3 pointer-events-none" />
+            <select
+              aria-label="Sort album tracks"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as MusicSortOption)}
+              className="pl-8 pr-3 py-1.5 rounded-xl bg-black/40 border border-brand-gold/30 text-neutral-100 text-xs font-semibold focus:border-brand-gold focus:outline-none cursor-pointer"
+            >
+              {MUSIC_SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="divide-y divide-white/5">
-          {albumTracks.map((track, i) => (
+          {sortedAlbumTracks.map((track, i) => (
             <TrackRow
               key={track.id}
               track={track}
               index={i}
               showCover={false}
-              contextTracks={albumTracks}
+              contextTracks={sortedAlbumTracks}
             />
           ))}
         </div>

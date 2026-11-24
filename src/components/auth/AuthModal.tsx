@@ -31,6 +31,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { GUEST_SIGNUP_GATE_MESSAGE } from '@/lib/auth/guestPreviewGate';
 import {
   DistributionAgreementService,
   SignedDistributionAgreement,
@@ -354,18 +355,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center space-y-1.5 pt-1">
-          <div className="relative w-36 h-10">
-            <Image
-              src="/logo.png"
-              alt="ChanceTEK One"
-              fill
-              sizes="144px"
-              className="object-contain"
-              priority
-            />
-          </div>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-gold/15 border border-brand-gold/35 text-[10px] font-black uppercase tracking-[0.2em] text-brand-gold">
+            <Sparkles className="w-3 h-3" />
+            ChanceTEK One
+          </span>
           <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">{title}</h3>
-          <p className="text-xs text-neutral-300 max-w-sm">{description}</p>
+          <p className="text-xs text-neutral-300 max-w-sm">
+            {tab === 'signup' && description === 'Access custom crates, AI memory sync, exclusive vinyl, and high-fidelity streaming.'
+              ? GUEST_SIGNUP_GATE_MESSAGE
+              : description}
+          </p>
         </div>
 
         {/* Sign-In Presence Preview resolved from email before signing in */}
@@ -529,6 +528,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* ========================================================= */}
         {tab === 'signup' && (
           <div>
+            {signupStep !== 'confirmed' && description !== GUEST_SIGNUP_GATE_MESSAGE && (
+              <div className="mb-4 p-3 rounded-2xl bg-brand-gold/10 border border-brand-gold/30 text-center">
+                <p className="text-xs font-semibold text-brand-gold leading-relaxed">
+                  {GUEST_SIGNUP_GATE_MESSAGE}
+                </p>
+              </div>
+            )}
             {/* ---------------------------------------------------- */}
             {/* STEP 1: ROLE SELECTION                               */}
             {/* "Are you an artist, producer, creator, or streamer?" */}

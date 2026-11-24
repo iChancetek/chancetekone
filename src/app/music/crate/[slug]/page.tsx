@@ -19,6 +19,7 @@ import {
   Clock,
   ArrowRight,
   ShieldCheck,
+  ArrowUpDown,
 } from 'lucide-react';
 import { OFFICIAL_CRATES } from '@/types/catalog';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
@@ -26,6 +27,7 @@ import { usePlayer } from '@/lib/player/PlayerContext';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { TrackRow } from '@/components/media/TrackRow';
 import { MediaCard } from '@/components/media/MediaCard';
+import { MusicSortOption, MUSIC_SORT_OPTIONS, sortTracks } from '@/lib/music/trackSorting';
 
 export default function CrateDetailPage() {
   const params = useParams();
@@ -54,6 +56,7 @@ export default function CrateDetailPage() {
     () => OFFICIAL_CRATES.find((c) => c.slug === slug || c.id === slug) || OFFICIAL_CRATES[0]
   );
   const [tracks, setTracks] = React.useState< ReturnType<typeof MusicCatalogService.getTracksByCrate> >([]);
+  const [sortBy, setSortBy] = React.useState<MusicSortOption>('newest');
 
   React.useEffect(() => {
     const refresh = () => {
@@ -74,12 +77,14 @@ export default function CrateDetailPage() {
     };
   }, [slug, resolveCrate]);
 
+  const sortedTracks = React.useMemo(() => sortTracks(tracks, sortBy), [tracks, sortBy]);
+
   const isCratePlaying =
-    isPlaying && currentTrack && tracks.some((t) => t.id === currentTrack.id);
+    isPlaying && currentTrack && sortedTracks.some((t) => t.id === currentTrack.id);
 
   const handlePlayAll = () => {
-    if (tracks.length > 0) {
-      playTrack(tracks[0], tracks.slice(1));
+    if (sortedTracks.length > 0) {
+      playTrack(sortedTracks[0], sortedTracks.slice(1));
     }
   };
 
@@ -201,20 +206,38 @@ export default function CrateDetailPage() {
             </p>
           </div>
 
-          {!isMember && (
-            <Link
-              href={`/membership?crate=${encodeURIComponent(crate.name)}`}
-              className="px-4 py-2 rounded-full bg-brand-gold text-black font-extrabold text-xs uppercase flex items-center gap-1.5 self-start sm:self-auto hover:scale-105 transition-all shadow-md"
-            >
-              <Crown className="w-3.5 h-3.5" />
-              <span>Subscribe for Full 24-bit Stream</span>
-            </Link>
-          )}
+          <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+            <div className="relative flex items-center">
+              <ArrowUpDown className="w-3.5 h-3.5 text-brand-gold absolute left-3 pointer-events-none" />
+              <select
+                aria-label="Sort crate tracks"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as MusicSortOption)}
+                className="pl-8 pr-3 py-2 rounded-xl bg-black/40 border border-brand-gold/30 text-neutral-100 text-xs font-semibold focus:border-brand-gold focus:outline-none cursor-pointer"
+              >
+                {MUSIC_SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {!isMember && (
+              <Link
+                href={`/membership?crate=${encodeURIComponent(crate.name)}`}
+                className="px-4 py-2 rounded-full bg-brand-gold text-black font-extrabold text-xs uppercase flex items-center gap-1.5 hover:scale-105 transition-all shadow-md"
+              >
+                <Crown className="w-3.5 h-3.5" />
+                <span>Subscribe for Full 24-bit Stream</span>
+              </Link>
+            )}
+          </div>
         </div>
 
         <div className="divide-y divide-white/5">
-          {tracks.map((track, i) => (
-            <TrackRow key={track.id} track={track} index={i} showCover={true} />
+          {sortedTracks.map((track, i) => (
+            <TrackRow key={track.id} track={track} index={i} showCover={true} contextTracks={sortedTracks} />
           ))}
         </div>
       </div>

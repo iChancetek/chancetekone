@@ -26,12 +26,14 @@ import {
   Clock,
   X,
   ArrowLeft,
+  ArrowUpDown,
 } from 'lucide-react';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { Track } from '@/types/media';
 import { MOCK_TRACKS } from '@/lib/mockData';
 import { MediaCard } from '@/components/media/MediaCard';
 import { PublicMusicCatalogSection } from '@/components/music/PublicMusicCatalogSection';
+import { MusicSortOption, MUSIC_SORT_OPTIONS, sortTracks } from '@/lib/music/trackSorting';
 
 const GENRES = [
   'Genre',
@@ -270,6 +272,7 @@ export default function MusicPage() {
   const { profile, isAdmin } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState('Genre');
+  const [sortBy, setSortBy] = useState<MusicSortOption>('newest');
   const [allCatalogTracks, setAllCatalogTracks] = useState<Track[]>(() => MusicCatalogService.getSSRBaselineTracks());
   const [crates, setCrates] = useState(() => MusicCatalogService.getSSRBaselineCrates());
 
@@ -302,12 +305,15 @@ export default function MusicPage() {
 
   const activeGenreMeta = GENRE_ARTWORKS[selectedGenre] || GENRE_ARTWORKS['Genre'];
 
-  const filteredTracks =
-    selectedGenre === 'Genre'
-      ? allCatalogTracks
-      : allCatalogTracks.filter((t) =>
-          isTrackMatchingGenre(t.genre, selectedGenre, t.crateId, t.artistName, t.title)
-        );
+  const filteredTracks = React.useMemo(() => {
+    const genreMatched =
+      selectedGenre === 'Genre'
+        ? allCatalogTracks
+        : allCatalogTracks.filter((t) =>
+            isTrackMatchingGenre(t.genre, selectedGenre, t.crateId, t.artistName, t.title)
+          );
+    return sortTracks(genreMatched, sortBy);
+  }, [allCatalogTracks, selectedGenre, sortBy]);
 
   const isGenrePlaying =
     isPlaying &&
@@ -596,20 +602,36 @@ export default function MusicPage() {
 
       {/* 3. Featured Grid */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
               Featured Releases
             </h2>
             <p className="text-xs text-neutral-400 mt-0.5">
               {selectedGenre === 'Genre'
-                ? 'Standard & Public Stream'
+                ? sortBy === 'newest'
+                  ? 'Newest Uploaded First · Standard & Public Stream'
+                  : `Sorted by ${MUSIC_SORT_OPTIONS.find((o) => o.value === sortBy)?.label || 'Custom'}`
                 : `Featuring authentic ${selectedGenre} records`}
             </p>
           </div>
-          <span className="text-xs text-neutral-400 font-medium">
-            Standard & Public Stream
-          </span>
+          <div className="flex items-center gap-2.5 self-start sm:self-auto">
+            <div className="relative flex items-center">
+              <ArrowUpDown className="w-3.5 h-3.5 text-brand-gold absolute left-3 pointer-events-none" />
+              <select
+                aria-label="Sort featured releases"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as MusicSortOption)}
+                className="pl-8 pr-3 py-2 rounded-xl bg-white/5 border border-brand-gold/30 text-neutral-100 text-xs font-semibold focus:border-brand-gold focus:outline-none cursor-pointer"
+              >
+                {MUSIC_SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
 
         {filteredTracks.length > 0 ? (
@@ -723,6 +745,8 @@ export default function MusicPage() {
         tracks={allCatalogTracks}
         selectedGenre={selectedGenre}
         onSelectGenre={(g) => setSelectedGenre(g)}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
       />
 
       {/* Modal: Admin Remove Track to 45-Day Recovery Vault */}

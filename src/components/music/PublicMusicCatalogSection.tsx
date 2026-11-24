@@ -9,6 +9,12 @@ import { ShareTrackModal } from '@/components/media/ShareTrackModal';
 import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
 import { isTrackMatchingGenre, PLATFORM_STANDARD_GENRES } from '@/lib/music/genreClassifier';
 import { matchesTrackSearch } from '@/lib/search/universalSearch';
+import {
+  MusicSortOption,
+  MUSIC_SORT_OPTIONS,
+  getTrackUploadedTimestamp,
+  sortTracks,
+} from '@/lib/music/trackSorting';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import {
   Music,
@@ -30,6 +36,7 @@ import {
   ChevronRight,
   Disc,
   MessageSquare,
+  ArrowUpDown,
 } from 'lucide-react';
 import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussionModal';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
@@ -39,6 +46,8 @@ interface PublicMusicCatalogSectionProps {
   tracks: Track[];
   selectedGenre?: string;
   onSelectGenre?: (genre: string) => void;
+  sortBy?: MusicSortOption;
+  onSortChange?: (sort: MusicSortOption) => void;
 }
 
 interface AlbumGroup {
@@ -46,6 +55,7 @@ interface AlbumGroup {
   coverUrl: string;
   releaseYear?: number;
   genre?: string;
+  newestUploadTs: number;
   tracks: Track[];
 }
 
@@ -54,6 +64,7 @@ interface ArtistGroup {
   avatarUrl: string;
   totalSongs: number;
   totalAlbums: number;
+  newestUploadTs: number;
   albums: AlbumGroup[];
 }
 
@@ -61,12 +72,21 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
   tracks,
   selectedGenre = 'Genre',
   onSelectGenre,
+  sortBy: externalSortBy,
+  onSortChange,
 }) => {
   const { playTrack, currentTrack, isPlaying, togglePlay } = usePlayer();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [internalGenre, setInternalGenre] = useState<string>('all');
+  const [internalSortBy, setInternalSortBy] = useState<MusicSortOption>('newest');
   const [viewMode, setViewMode] = useState<'grouped' | 'flat'>('grouped');
+
+  const activeSortBy: MusicSortOption = externalSortBy ?? internalSortBy;
+  const handleSortChange = (nextSort: MusicSortOption) => {
+    setInternalSortBy(nextSort);
+    if (onSortChange) onSortChange(nextSort);
+  };
 
   // Accordion Expand/Collapse State
   const [expandedArtists, setExpandedArtists] = useState<Record<string, boolean>>({});
@@ -130,10 +150,10 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
     return 'Oct 24, 2026';
   };
 
-  // Filtered tracks
+  // Filtered & sorted tracks (newest uploaded first by default)
   const filteredTracks = useMemo(() => {
     if (!Array.isArray(tracks)) return [];
-    return tracks.filter((t) => {
+    const matched = tracks.filter((t) => {
       if (!t) return false;
       const matchSearch = matchesTrackSearch(t, searchQuery);
 
@@ -148,9 +168,10 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
 
       return matchSearch && matchGenre;
     });
-  }, [tracks, searchQuery, internalGenre, selectedGenre]);
+    return sortTracks(matched, activeSortBy);
+  }, [tracks, searchQuery, internalGenre, selectedGenre, activeSortBy]);
 
-  // Group tracks by Artist, then by Album
+  // Group tracks by Artist, then by Album — respects newest-first default & alphabetical sort modes
   const artistGroups = useMemo(() => {
     const map = new Map<string, { artistName: string; tracks: Track[] }>();
 
@@ -179,10 +200,27 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
 
       const albums: AlbumGroup[] = [];
       albumMap.forEach((albumTracks, albumTitle) => {
-        albumTracks.sort((a, b) => {
-          if (a.trackNumber && b.trackNumber) return Number(a.trackNumber) - Number(b.trackNumber);
-          return String(a.title || '').localeCompare(String(b.title || ''));
-        });
+        if (activeSortBy === 'newest') {
+          albumTracks.sort((a, b) => {
+            const diff = getTrackUploadedTimestamp(b) - getTrackUploadedTimestamp(a);
+            if (diff !== 0) return diff;
+            if (a.trackNumber && b.trackNumber) return Number(a.trackNumber) - Number(b.trackNumber);
+            return String(a.title || '').localeCompare(String(b.title || ''));
+          });
+        } else if (activeSortBy === 'title-desc') {
+          albumTracks.sort((a, b) =>
+            String(b.title || '').localeCompare(String(a.title || ''), undefined, { sensitivity: 'base', numeric: true })
+          );
+        } else {
+          albumTracks.sort((a, b) =>
+            String(a.title || '').localeCompare(String(b.title || ''), undefined, { sensitivity: 'base', numeric: true })
+          );
+        }
+
+        const newestAlbumTs = albumTracks.reduce(
+          (max, t) => Math.max(max, getTrackUploadedTimestamp(t)),
+          0
+        );
 
         const firstTrack = albumTracks[0];
         const albumCover = MusicCatalogService.resolveAlbumCover({
@@ -196,16 +234,25 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
           coverUrl: albumCover,
           releaseYear: Number(firstTrack.releaseYear) || 2026,
           genre: String(firstTrack.genre || 'R&B / Soul'),
+          newestUploadTs: newestAlbumTs,
           tracks: albumTracks,
         });
       });
 
       albums.sort((a, b) => {
+        if (activeSortBy === 'newest') {
+          const diff = b.newestUploadTs - a.newestUploadTs;
+          if (diff !== 0) return diff;
+        }
         if (a.albumTitle === 'Singles & Vault Cuts') return 1;
         if (b.albumTitle === 'Singles & Vault Cuts') return -1;
-        return String(a.albumTitle || '').localeCompare(String(b.albumTitle || ''));
+        if (activeSortBy === 'title-desc') {
+          return String(b.albumTitle || '').localeCompare(String(a.albumTitle || ''), undefined, { sensitivity: 'base', numeric: true });
+        }
+        return String(a.albumTitle || '').localeCompare(String(b.albumTitle || ''), undefined, { sensitivity: 'base', numeric: true });
       });
 
+      const newestArtistTs = albums.reduce((max, alb) => Math.max(max, alb.newestUploadTs), 0);
       const avatarUrl = albums[0]?.coverUrl || '/images/studio_cover.jpg';
 
       groups.push({
@@ -213,13 +260,24 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
         avatarUrl,
         totalSongs: value.tracks.length,
         totalAlbums: albums.length,
+        newestUploadTs: newestArtistTs,
         albums,
       });
     });
 
-    groups.sort((a, b) => String(a.artistName || '').localeCompare(String(b.artistName || '')));
+    groups.sort((a, b) => {
+      if (activeSortBy === 'newest') {
+        const diff = b.newestUploadTs - a.newestUploadTs;
+        if (diff !== 0) return diff;
+        return String(a.artistName || '').localeCompare(String(b.artistName || ''), undefined, { sensitivity: 'base', numeric: true });
+      }
+      if (activeSortBy === 'artist-desc' || activeSortBy === 'title-desc') {
+        return String(b.artistName || '').localeCompare(String(a.artistName || ''), undefined, { sensitivity: 'base', numeric: true });
+      }
+      return String(a.artistName || '').localeCompare(String(b.artistName || ''), undefined, { sensitivity: 'base', numeric: true });
+    });
     return groups;
-  }, [filteredTracks]);
+  }, [filteredTracks, activeSortBy]);
 
   // Total metrics
   const totalSongsCount = tracks.length;
@@ -412,14 +470,30 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
               )}
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <div className="relative flex items-center w-full sm:w-auto">
+                <ArrowUpDown className="w-3.5 h-3.5 text-brand-gold absolute left-3 pointer-events-none" />
+                <select
+                  aria-label="Sort music catalog"
+                  value={activeSortBy}
+                  onChange={(e) => handleSortChange(e.target.value as MusicSortOption)}
+                  className="w-full sm:w-52 pl-8 pr-3 py-2.5 rounded-xl bg-black/40 border border-brand-gold/30 text-neutral-100 text-xs font-semibold focus:border-brand-gold focus:outline-none cursor-pointer"
+                >
+                  {MUSIC_SORT_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <select
                 value={internalGenre}
                 onChange={(e) => {
                   setInternalGenre(e.target.value);
                   if (onSelectGenre) onSelectGenre(e.target.value);
                 }}
-                className="w-full sm:w-48 px-3 py-2.5 rounded-xl bg-black/40 border border-white/15 text-neutral-200 text-xs focus:border-brand-gold focus:outline-none"
+                className="w-full sm:w-48 px-3 py-2.5 rounded-xl bg-black/40 border border-white/15 text-neutral-200 text-xs focus:border-brand-gold focus:outline-none cursor-pointer"
               >
                 <option value="all">All Genres & Crates</option>
                 {availableGenres.map((g) => (

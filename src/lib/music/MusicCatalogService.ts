@@ -27,6 +27,7 @@ import { ChangeTracker, mergeWithRemote } from '@/lib/catalog/catalogMerge';
 import { needsCloudAudioExternalization, prepareArtworkDoc, prepareTrackDoc } from '@/lib/catalog/catalogAssets';
 import { getAuthenticAudioUrl, isCrossArtistAudioMismatch, isVerifiedServerUpload, VERIFIED_SERVER_UPLOADS } from './authenticAudioMap';
 import { auditAudioAssociations, AudioFinding, logAudioDiag, unescapeIndexedDbUrl } from './audioAssetIntegrity';
+import { sortTracks } from './trackSorting';
 import {
   normalizeTrackTitle,
   normalizeArtistName,
@@ -2114,8 +2115,10 @@ class MusicCatalogServiceClass {
         likeCount: EngagementMetricsService.getLikeCount(t.id),
       };
     });
-    this.cachedAllTracks = { version: this.catalogVersion, tracks };
-    return tracks;
+    // Default catalog ordering: newly uploaded music appears at the top
+    const orderedTracks = sortTracks(tracks, 'newest');
+    this.cachedAllTracks = { version: this.catalogVersion, tracks: orderedTracks };
+    return orderedTracks;
   }
 
   public getTrackById(id: string): Track | undefined {

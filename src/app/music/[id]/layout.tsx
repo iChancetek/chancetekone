@@ -1,56 +1,60 @@
 import type { Metadata } from 'next';
-import { resolveShareMetadataById } from '@/lib/sharing/shareMetadataService';
+import { lookupTrackForShareMetadata } from '@/lib/server/shareTrackLookup';
 
 export async function generateMetadata({
   params,
 }: {
-  params: any;
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   try {
-    const resolvedParams = params ? await Promise.resolve(params) : {};
-    const id = (resolvedParams as any)?.id || '';
-    const meta = resolveShareMetadataById('song', id);
-    const rawCover = meta?.coverUrl || '/images/genres/rnb-neo-soul.jpg';
-    const image = rawCover.startsWith('http')
-      ? rawCover
-      : `https://chancetekone.us${rawCover}`;
+    const resolvedParams = await params;
+    const id = resolvedParams?.id || '';
+    const resolved = await lookupTrackForShareMetadata(id);
+    const fullTitle = `${resolved.title} — ${resolved.artist}`;
 
     return {
-      title: `${meta.title} — ${meta.creator}`,
-      description: meta.description,
+      title: `${fullTitle} | ChanceTEK One`,
+      description: resolved.description,
       openGraph: {
-        title: `${meta.title} — ${meta.creator}`,
-        description: meta.description,
-        type: 'website',
-        url: meta.canonicalUrl || `https://chancetekone.us/music/${id}`,
+        title: fullTitle,
+        description: resolved.description,
+        siteName: 'ChanceTEK One',
+        type: 'music.song',
+        url: `${resolved.origin}/music/${encodeURIComponent(id)}`,
         images: [
           {
-            url: image,
-            alt: `${meta.title} by ${meta.creator}`,
+            url: resolved.ogImageUrl,
+            secureUrl: resolved.ogImageUrl,
+            width: 1200,
+            height: 1200,
+            alt: `${resolved.title} by ${resolved.artist}`,
           },
         ],
       },
       twitter: {
         card: 'summary_large_image',
-        title: `${meta.title} — ${meta.creator}`,
-        description: meta.description,
-        images: [image],
+        title: fullTitle,
+        description: resolved.description,
+        images: [resolved.ogImageUrl],
+      },
+      other: {
+        'og:image:secure_url': resolved.ogImageUrl,
       },
     };
   } catch {
     return {
       title: 'ChanceTEK One — Master Track',
-      description: 'Stream master breakbeat music and audio on ChanceTEK One.',
+      description: 'Stream master music and audio on ChanceTEK One.',
       openGraph: {
         title: 'ChanceTEK One',
-        description: 'Stream master breakbeat music and audio on ChanceTEK One.',
+        description: 'Stream master music and audio on ChanceTEK One.',
         type: 'website',
         url: 'https://chancetekone.us',
       },
       twitter: {
         card: 'summary_large_image',
         title: 'ChanceTEK One',
-        description: 'Stream master breakbeat music and audio on ChanceTEK One.',
+        description: 'Stream master music and audio on ChanceTEK One.',
       },
     };
   }
