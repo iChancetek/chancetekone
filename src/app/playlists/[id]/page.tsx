@@ -334,10 +334,10 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                 <span className="font-bold text-white">{playlist.ownerName}</span>
               </div>
 
-              <span>•</span>
+              <span>â€¢</span>
               <span className="font-mono text-brand-neon">{playlist.itemCount} items</span>
 
-              <span>•</span>
+              <span>â€¢</span>
               <span className="flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5 text-brand-gold" />
                 <span>{formatDuration(playlist.totalDuration)}</span>
@@ -345,7 +345,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
 
               {playlist.stats.plays > 0 && (
                 <>
-                  <span>•</span>
+                  <span>â€¢</span>
                   <span>{playlist.stats.plays.toLocaleString()} plays</span>
                 </>
               )}
@@ -531,7 +531,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-white/10">
                       <Image
-                        src={item.coverUrl || item.thumbnailUrl || '/images/logo.png'}
+                        src={item.coverUrl || item.thumbnailUrl || '/images/studio_cover.jpg'}
                         alt={item.title}
                         fill
                         className="object-cover"
@@ -649,10 +649,10 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                       <div className="flex items-center gap-2 text-[11px] text-neutral-400">
                         <span className="truncate">{item.artistName}</span>
                         {item.bpm && (
-                          <span className="text-brand-neon font-mono">· {item.bpm} BPM</span>
+                          <span className="text-brand-neon font-mono">Â· {item.bpm} BPM</span>
                         )}
                         {item.genre && (
-                          <span className="hidden sm:inline text-neutral-400">· {item.genre}</span>
+                          <span className="hidden sm:inline text-neutral-400">Â· {item.genre}</span>
                         )}
                       </div>
                     </div>

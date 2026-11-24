@@ -9,7 +9,7 @@ import { SocialCommentService } from '@/lib/social/SocialCommentService';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { UserAvatar } from '@/components/navigation/UserAvatar';
 
-const QUICK_EMOJIS = ['🔥', '❤️', '👍🏿', '👎🏿', '👍', '👎', '👏🏿', '👏', '💯', '👑', '🎧', '⚡'];
+const QUICK_EMOJIS = ['ðŸ”¥', 'â¤ï¸', 'ðŸ‘ðŸ¿', 'ðŸ‘ŽðŸ¿', 'ðŸ‘', 'ðŸ‘Ž', 'ðŸ‘ðŸ¿', 'ðŸ‘', 'ðŸ’¯', 'ðŸ‘‘', 'ðŸŽ§', 'âš¡'];
 
 interface CommentComposerProps {
   contentId: string;
@@ -73,7 +73,7 @@ export const CommentComposer: React.FC<CommentComposerProps> = ({
         userName: profile?.name || user?.displayName || profile?.email?.split('@')[0] || 'ChanceTEK One MEMBER',
         userEmail: email,
         userHandle: handle,
-        userAvatar: profile?.avatarUrl || user?.photoURL || '/images/logo.png',
+        userAvatar: profile?.avatarUrl || user?.photoURL || '/images/studio_cover.jpg',
         userVideoUrl: profile?.profileVideoUrl,
         userRole: isAdmin ? 'admin' : (profile?.role as any) || 'user',
         creatorType: profile?.creatorType,

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -582,7 +582,7 @@ function LibraryContent() {
 
                     <div className="relative aspect-video rounded-xl overflow-hidden bg-neutral-900 shadow-md">
                       <Image
-                        src={pl.coverUrl || '/images/logo.png'}
+                        src={pl.coverUrl || '/images/studio_cover.jpg'}
                         alt={pl.name}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -889,7 +889,7 @@ function LibraryContent() {
                 >
                   <div className="relative aspect-video rounded-xl overflow-hidden bg-neutral-900">
                     <Image
-                      src={proj.coverUrl || '/images/chancetekone_banner.png'}
+                      src={proj.coverUrl || '/images/studio_cover.jpg'}
                       alt={proj.title}
                       fill
                       className="object-cover"
@@ -1030,7 +1030,7 @@ function LibraryContent() {
                     {/* Media Cover */}
                     <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 shadow-md border border-white/10 bg-neutral-900">
                       <Image
-                        src={item.coverUrl || '/images/logo.png'}
+                        src={item.coverUrl || '/images/studio_cover.jpg'}
                         alt={item.title}
                         fill
                         sizes="48px"

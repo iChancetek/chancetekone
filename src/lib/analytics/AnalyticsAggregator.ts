@@ -635,7 +635,7 @@ export class AnalyticsAggregator {
         id: a.id,
         title: a.title,
         artist: a.artist,
-        coverUrl: a.coverUrl || '/images/logo.png',
+        coverUrl: a.coverUrl || '/images/studio_cover.jpg',
         plays,
         uniqueListeners,
         completionRate: plays > 0 ? 100 : 0,

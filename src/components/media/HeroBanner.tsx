@@ -490,7 +490,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
               customTitle: currentSlide.heading,
               customCreator: 'ChanceTEK One',
               customDescription: currentSlide.description || currentSlide.narrationText,
-              customCoverUrl: currentSlide.bannerImage || '/images/chancetek_banner.png',
+              customCoverUrl: currentSlide.bannerImage || '/images/studio_cover.jpg',
             };
           })()}
         />
@@ -508,7 +508,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
           contentType="project"
           contentTitle={discussionSlide.heading}
           contentSubtitle={discussionSlide.description || discussionSlide.narrationText}
-          coverUrl={discussionSlide.bannerImage || '/images/chancetekone_banner.png'}
+          coverUrl={discussionSlide.bannerImage || '/images/studio_cover.jpg'}
           badgeLabel={discussionSlide.badge || 'Featured Project'}
         />
       )}

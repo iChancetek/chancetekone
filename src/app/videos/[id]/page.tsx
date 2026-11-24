@@ -39,7 +39,7 @@ export default function VideoDetailPage() {
         mediaType: 'video',
         title: video.title,
         subtitle: video.artistName || video.category || '4K Video',
-        coverUrl: video.thumbnailUrl || '/images/logo.png',
+        coverUrl: video.thumbnailUrl || '/images/studio_cover.jpg',
         duration: video.duration || 0,
         videoUrl: video.videoUrl,
       });

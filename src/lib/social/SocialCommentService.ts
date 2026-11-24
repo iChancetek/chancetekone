@@ -320,7 +320,7 @@ class SocialCommentServiceClass {
       userName: params.userName || 'Member',
       userEmail: params.userEmail,
       userHandle: params.userHandle,
-      userAvatar: params.userAvatar || '/images/logo.png',
+      userAvatar: params.userAvatar || '/images/studio_cover.jpg',
       userVideoUrl: params.userVideoUrl,
       userRole: params.userRole || 'user',
       creatorType: params.creatorType,

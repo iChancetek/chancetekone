@@ -344,7 +344,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         mediaType: 'video',
         title: video.title,
         subtitle: video.artistName || video.category || '4K Video',
-        coverUrl: video.thumbnailUrl || '/images/logo.png',
+        coverUrl: video.thumbnailUrl || '/images/studio_cover.jpg',
         duration: video.duration || 0,
         videoUrl: video.videoUrl,
       });
@@ -786,7 +786,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         mediaType: 'music',
         title: resolvedTrack.title,
         subtitle: resolvedTrack.artistName || 'ChanceTEK One',
-        coverUrl: resolvedTrack.coverUrl || '/images/logo.png',
+        coverUrl: resolvedTrack.coverUrl || '/images/studio_cover.jpg',
         duration: resolvedTrack.duration || 0,
         audioUrl: resolvedTrack.audioUrl,
       });
@@ -1068,7 +1068,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         mediaType: 'audiobook',
         title: audiobook.title,
         subtitle: `Ch. ${chapter.chapterIndex}: ${chapter.title}`,
-        coverUrl: audiobook.coverUrl || '/images/logo.png',
+        coverUrl: audiobook.coverUrl || '/images/studio_cover.jpg',
         duration: chapter.duration || 0,
         audioUrl: chapter.audioUrl,
       });

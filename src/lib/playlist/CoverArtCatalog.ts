@@ -726,10 +726,10 @@ export const COVER_ART_CATALOG: CoverArtItem[] = [
   },
   {
     id: 'cover-ab-12',
-    title: 'ChanceTEK One Gold Master Vault',
+    title: 'ChanceTEK One Studio Master Vault',
     category: 'abstract',
-    url: '/images/logo.png',
-    tags: ['logo', 'chancetekone', 'official', 'master'],
+    url: '/images/studio_cover.jpg',
+    tags: ['studio', 'chancetekone', 'official', 'master'],
   },
 ];
 

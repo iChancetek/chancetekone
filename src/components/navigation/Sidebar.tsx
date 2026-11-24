@@ -37,6 +37,8 @@ import {
   FileSignature,
   User as UserIcon,
   BarChart3,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useAI } from '@/lib/ai/AIContext';
@@ -44,6 +46,7 @@ import { UserAvatar } from '@/components/navigation/UserAvatar';
 import { usePWA } from '@/lib/pwa/PWAContext';
 import { useSidebar } from '@/lib/navigation/SidebarContext';
 import { useAccessibility } from '@/lib/accessibility/AccessibilityContext';
+import { useTheme } from '@/lib/theme/ThemeContext';
 
 interface NavItem {
   label: string;
@@ -96,6 +99,7 @@ export const Sidebar: React.FC = () => {
   const { isInstallable, installPWA } = usePWA();
   const { isCollapsed, toggleSidebar, isMobileOpen, closeMobileSidebar } = useSidebar();
   const { openModal: openAccessibilityModal, fontScale } = useAccessibility();
+  const { theme, isLight, toggleTheme } = useTheme();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const navWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prefetchedSetRef = useRef<Set<string>>(new Set());
@@ -190,22 +194,18 @@ export const Sidebar: React.FC = () => {
             href="/"
             prefetch={false}
             onClick={(e) => handleMenuNavigate(e, '/', false, false)}
-            className="group flex items-center gap-2 transition-transform hover:scale-105"
+            className="group flex items-center gap-2 transition-transform hover:scale-[1.02]"
           >
             {isCollapsed ? (
-              <div className="relative w-9 h-9 rounded-xl overflow-hidden border border-brand-gold/40 shadow-lg">
-                <Image src="/logo.png" alt="ChanceTEK One" fill sizes="36px" className="object-cover" priority />
+              <div className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/15 flex items-center justify-center font-display font-black text-sm tracking-tight text-white shadow-sm">
+                CT
               </div>
             ) : (
-              <div className="relative w-40 h-11">
-                <Image
-                  src="/logo.png"
-                  alt="ChanceTEK One"
-                  fill
-                  sizes="160px"
-                  className="object-contain drop-shadow-[0_0_15px_rgba(245,195,68,0.4)]"
-                  priority
-                />
+              <div className="flex items-center gap-2.5 pl-1 py-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-brand-gold shadow-[0_0_12px_rgba(245,195,68,0.65)] shrink-0" />
+                <span className="font-display text-lg font-black tracking-tight text-white">
+                  ChanceTEK <span className="text-brand-gold">One</span>
+                </span>
               </div>
             )}
           </Link>
@@ -427,6 +427,28 @@ export const Sidebar: React.FC = () => {
                 );
               })}
 
+              {/* Light / Dark Mode Appearance Switcher */}
+              <button
+                onClick={toggleTheme}
+                title={isCollapsed ? (isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode') : undefined}
+                className={`group relative flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3.5 py-2'
+                  } rounded-xl text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/[0.06] transition-all w-full cursor-pointer`}
+              >
+                <div className="flex items-center gap-3">
+                  {isLight ? (
+                    <Moon className="w-4 h-4 shrink-0 text-brand-gold" />
+                  ) : (
+                    <Sun className="w-4 h-4 shrink-0 text-brand-gold" />
+                  )}
+                  {!isCollapsed && <span>{isLight ? 'Light Mode' : 'Dark Mode'}</span>}
+                </div>
+                {!isCollapsed && (
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/10 text-brand-gold font-mono font-bold">
+                    {isLight ? 'Apple' : 'Dark'}
+                  </span>
+                )}
+              </button>
+
               {/* Accessibility & Font Size Controls Button */}
               <button
                 onClick={openAccessibilityModal}
@@ -593,18 +615,12 @@ export const Sidebar: React.FC = () => {
             href="/"
             prefetch={false}
             onClick={(e) => handleMenuNavigate(e, '/', false, true)}
-            className="flex items-center gap-2.5 transition-transform active:scale-95 touch-manipulation"
+            className="flex items-center gap-2.5 transition-transform active:scale-95 touch-manipulation pl-1"
           >
-            <div className="relative w-36 h-10">
-              <Image
-                src="/logo.png"
-                alt="ChanceTEK One"
-                fill
-                sizes="144px"
-                className="object-contain drop-shadow-[0_0_15px_rgba(245,195,68,0.4)]"
-                priority
-              />
-            </div>
+            <span className="w-2.5 h-2.5 rounded-full bg-brand-gold shadow-[0_0_12px_rgba(245,195,68,0.65)] shrink-0" />
+            <span className="font-display text-xl font-black tracking-tight text-white">
+              ChanceTEK <span className="text-brand-gold">One</span>
+            </span>
           </Link>
 
           {/* Close Button with generous touch target */}
@@ -768,6 +784,24 @@ export const Sidebar: React.FC = () => {
                   </Link>
                 );
               })}
+
+              {/* Apple Music Light / Dark Mode Switcher (Mobile) */}
+              <button
+                onClick={toggleTheme}
+                className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all w-full cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  {isLight ? (
+                    <Moon className="w-4 h-4 shrink-0 text-brand-gold" />
+                  ) : (
+                    <Sun className="w-4 h-4 shrink-0 text-brand-gold" />
+                  )}
+                  <span>{isLight ? 'Light Mode' : 'Dark Mode'}</span>
+                </div>
+                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-white/10 text-brand-gold font-mono font-bold">
+                  {isLight ? 'Apple' : 'Dark'}
+                </span>
+              </button>
 
               {/* Accessibility Font Scale Modal Trigger */}
               <button

@@ -236,7 +236,7 @@ export default function ProjectsPage() {
                       <span className="text-xs text-brand-gold font-bold uppercase tracking-wider">
                         {project.presenter || project.label}
                       </span>
-                      <span className="text-neutral-500">•</span>
+                      <span className="text-neutral-500">â€¢</span>
                       <span className="text-xs text-neutral-400">{project.genre}</span>
                     </div>
 
@@ -272,7 +272,7 @@ export default function ProjectsPage() {
                             <div className="space-y-0.5 min-w-0">
                               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold border border-brand-gold/40 text-[9px] font-black uppercase tracking-wider">
                                 <span>Featured Partner</span>
-                                <span>•</span>
+                                <span>â€¢</span>
                                 <span>Advertisement Ad</span>
                               </div>
                               <p className="text-xs sm:text-sm text-neutral-200 font-medium leading-relaxed">
@@ -416,7 +416,7 @@ export default function ProjectsPage() {
                                     {track.title}
                                   </p>
                                   <p className="text-[10px] text-neutral-400 font-mono">
-                                    {track.artistName} • {track.bpm} BPM
+                                    {track.artistName} â€¢ {track.bpm} BPM
                                   </p>
                                 </div>
                               </div>
@@ -544,11 +544,11 @@ export default function ProjectsPage() {
           contentKey={getProjectCanonicalKey(discussionProject)}
           contentType="project"
           contentTitle={discussionProject.title}
-          contentSubtitle={`${discussionProject.subtitle || ''} • Produced by ${discussionProject.producerName}`}
+          contentSubtitle={`${discussionProject.subtitle || ''} â€¢ Produced by ${discussionProject.producerName}`}
           coverUrl={
             discussionProject.id === 'project-1'
-              ? '/images/chancetek_banner.png'
-              : discussionProject.coverUrl || '/images/chancetek_banner.png'
+              ? '/images/studio_cover.jpg'
+              : discussionProject.coverUrl || '/images/studio_cover.jpg'
           }
           badgeLabel="Featured Project"
         />
@@ -567,8 +567,8 @@ export default function ProjectsPage() {
             customDescription: shareProject.description || shareProject.narrativeOverview,
             customCoverUrl:
               shareProject.id === 'project-1'
-                ? '/images/chancetek_banner.png'
-                : shareProject.coverUrl || '/images/chancetek_banner.png',
+                ? '/images/studio_cover.jpg'
+                : shareProject.coverUrl || '/images/studio_cover.jpg',
           }}
         />
       )}

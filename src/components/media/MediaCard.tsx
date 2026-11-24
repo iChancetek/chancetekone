@@ -112,7 +112,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, type }) => {
       : '';
 
   const getImage = () => {
-    if (isArtist) return (item as Artist).avatarUrl || '/images/logo.png';
+    if (isArtist) return (item as Artist).avatarUrl || '/images/studio_cover.jpg';
     if (isVideo) return (item as Video).thumbnailUrl || '';
     if (isAudiobook) return (item as Audiobook).coverUrl || '';
     if (hasImgError) return getDefaultCoverForTrack(item as any);

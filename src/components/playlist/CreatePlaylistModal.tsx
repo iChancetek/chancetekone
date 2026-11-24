@@ -84,7 +84,7 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
             mediaType: initialMediaItem.mediaType,
             title: item.title,
             artistName: 'artistName' in item ? item.artistName : ('author' in item ? item.author : ''),
-            coverUrl: 'coverUrl' in item ? item.coverUrl : ('thumbnailUrl' in item ? (item as any).thumbnailUrl : '/images/logo.png'),
+            coverUrl: 'coverUrl' in item ? item.coverUrl : ('thumbnailUrl' in item ? (item as any).thumbnailUrl : '/images/studio_cover.jpg'),
           },
         ];
       }
@@ -360,7 +360,7 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
                 const mediaId = item.id;
                 const title = item.title;
                 const artistName = item.artistName || item.author || '';
-                const coverUrl = item.coverUrl || item.thumbnailUrl || '/images/logo.png';
+                const coverUrl = item.coverUrl || item.thumbnailUrl || '/images/studio_cover.jpg';
                 const selected = isSelected(mediaId, catalogType);
 
                 return (

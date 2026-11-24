@@ -1,5 +1,5 @@
 /**
- * ChanceTEK One — Pure Canonical Track & Cover Catalog Data
+ * ChanceTEK One â€” Pure Canonical Track & Cover Catalog Data
  * Safe to import in both server route handlers and client services.
  */
 
@@ -581,7 +581,7 @@ export function getDefaultCoverForTrack(track?: {
     t.includes('break') ||
     (a.includes('chancetek') && (t.includes('break') || t.includes('anthem')))
   ) {
-    return '/images/chancetek_banner.png';
+    return '/images/studio_cover.jpg';
   }
 
   // Default for all R&B, Soul, Slow Jams, and general catalog
@@ -2693,7 +2693,7 @@ export const BREAKBEAT_ANTHEM_TRACK: Track = {
   albumId: 'album-1',
   albumTitle: 'Genesis of the Concrete Beat',
   audioUrl: '/audio/Fort_Apache.mp3',
-  coverUrl: '/images/chancetek_banner.png',
+  coverUrl: '/images/studio_cover.jpg',
   duration: 194,
   genre: 'Hip Hop / Big Beat',
   bpm: 130,

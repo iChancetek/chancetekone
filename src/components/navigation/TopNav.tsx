@@ -15,11 +15,14 @@ import {
   PanelLeftOpen,
   Menu,
   ArrowLeft,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useCart } from '@/lib/commerce/CartContext';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { usePWA } from '@/lib/pwa/PWAContext';
 import { useSidebar } from '@/lib/navigation/SidebarContext';
+import { useTheme } from '@/lib/theme/ThemeContext';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { GlobalVoiceSearchModal } from '@/components/navigation/GlobalVoiceSearchModal';
 import { AccessibilityButton } from '@/components/accessibility/AccessibilityButton';
@@ -34,6 +37,7 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
   const { profile, isAdmin, signOut } = useAuth();
   const { isInstallable, installPWA } = usePWA();
   const { isCollapsed, toggleSidebar, toggleMobileSidebar } = useSidebar();
+  const { isLight, toggleTheme } = useTheme();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const handleGoBack = () => {
@@ -129,6 +133,23 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
               <span className="hidden sm:inline">Install App</span>
             </button>
           )}
+
+          {/* Apple Music Light / Dark Mode Switcher */}
+          <button
+            onClick={toggleTheme}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.12] text-neutral-200 hover:text-brand-gold border border-white/[0.09] hover:border-brand-gold/40 transition-all hover:scale-105 cursor-pointer"
+            title={isLight ? 'Switch to Dark Mode' : 'Switch to Apple Music Light Mode'}
+            aria-label={isLight ? 'Switch to Dark Mode' : 'Switch to Apple Music Light Mode'}
+          >
+            {isLight ? (
+              <Moon className="w-4 h-4 text-brand-gold" />
+            ) : (
+              <Sun className="w-4 h-4 text-brand-gold" />
+            )}
+            <span className="hidden lg:inline text-xs font-bold">
+              {isLight ? 'Dark' : 'Light'}
+            </span>
+          </button>
 
           {/* Text & Font Visibility Accessibility Trigger */}
           <AccessibilityButton variant="nav" />

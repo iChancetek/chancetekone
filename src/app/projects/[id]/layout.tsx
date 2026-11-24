@@ -10,16 +10,16 @@ export async function generateMetadata({
     const resolvedParams = params ? await Promise.resolve(params) : {};
     const id = (resolvedParams as any)?.id || '';
     const meta = resolveShareMetadataById('project', id);
-    const rawCover = meta?.coverUrl || '/images/chancetek_banner.png';
+    const rawCover = meta?.coverUrl || '/images/studio_cover.jpg';
     const image = rawCover.startsWith('http')
       ? rawCover
       : `https://chancetekone.us${rawCover}`;
 
     return {
-      title: `${meta.title} — ${meta.creator}`,
+      title: `${meta.title} â€” ${meta.creator}`,
       description: meta.description,
       openGraph: {
-        title: `${meta.title} — ${meta.creator}`,
+        title: `${meta.title} â€” ${meta.creator}`,
         description: meta.description,
         type: 'website',
         url: meta.canonicalUrl || `https://chancetekone.us/projects#${id}`,
@@ -32,27 +32,25 @@ export async function generateMetadata({
       },
       twitter: {
         card: 'summary_large_image',
-        title: `${meta.title} — ${meta.creator}`,
+        title: `${meta.title} â€” ${meta.creator}`,
         description: meta.description,
         images: [image],
       },
     };
   } catch {
     return {
-      title: 'CHANCETEK ONE: THE FOUNDATION BEATS — ChanceTEK One',
+      title: 'CHANCETEK ONE: THE FOUNDATION BEATS â€” ChanceTEK One',
       description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
       openGraph: {
         title: 'CHANCETEK ONE: THE FOUNDATION BEATS',
         description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
         type: 'website',
         url: 'https://chancetekone.us/projects#project-1',
-        images: [{ url: 'https://chancetekone.us/images/chancetek_banner.png' }],
       },
       twitter: {
         card: 'summary_large_image',
         title: 'CHANCETEK ONE: THE FOUNDATION BEATS',
         description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
-        images: ['https://chancetekone.us/images/chancetek_banner.png'],
       },
     };
   }

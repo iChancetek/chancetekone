@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { resolveShareMetadataById } from '@/lib/sharing/shareMetadataService';
 
 export async function generateMetadata({
@@ -46,13 +46,11 @@ export async function generateMetadata({
         description: 'Stream author literature, master audiobooks, and chapter narratives on ChanceTEK One.',
         type: 'website',
         url: 'https://chancetekone.us',
-        images: [{ url: 'https://chancetekone.us/images/chancetek_banner.png' }],
       },
       twitter: {
         card: 'summary_large_image',
         title: 'ChanceTEK One',
         description: 'Stream author literature, master audiobooks, and chapter narratives on ChanceTEK One.',
-        images: ['https://chancetekone.us/images/chancetek_banner.png'],
       },
     };
   }

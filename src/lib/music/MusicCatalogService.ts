@@ -2724,7 +2724,7 @@ class MusicCatalogServiceClass {
             (folder.coverUrl && !folder.coverUrl.includes('images.unsplash.com') ? folder.coverUrl : undefined) ||
             first.coverUrl ||
             folder.coverUrl ||
-            '/images/logo.png';
+            '/images/studio_cover.jpg';
 
           const newAlb: Album = {
             id: folder.id,

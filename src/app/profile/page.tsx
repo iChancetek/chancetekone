@@ -390,7 +390,7 @@ export default function ProfilePage() {
         patch.profileVideoUrl = undefined;
       } else {
         patch.profileVideoUrl = durableUrl || stored.objectUrl;
-        patch.avatarUrl = avatarDataUrl || '/images/logo.png';
+        patch.avatarUrl = avatarDataUrl || '/images/studio_cover.jpg';
       }
 
       if (tempPreviewUrlRef.current && tempPreviewUrlRef.current !== stored.objectUrl) {
@@ -858,7 +858,7 @@ export default function ProfilePage() {
     : mediaType === 'video'
     ? profile.avatarUrl && !profile.avatarUrl.startsWith('blob:')
       ? profile.avatarUrl
-      : '/images/logo.png'
+      : '/images/studio_cover.jpg'
     : profile.avatarUrl;
   const activePreviewVideoUrl = pendingMediaRemoval
     ? undefined
@@ -1015,7 +1015,7 @@ export default function ProfilePage() {
                 <Clock className="w-3.5 h-3.5 text-brand-gold" />
                 Member since {new Date(profile.createdAt || Date.now()).toLocaleDateString()}
               </span>
-              <span>•</span>
+              <span>â€¢</span>
               <span className="text-brand-gold font-bold">
                 {pendingMediaRemoval
                   ? 'Removal Pending Save'
@@ -1129,7 +1129,7 @@ export default function ProfilePage() {
                   Selected: {mediaFile.name} ({(mediaFile.size / (1024 * 1024)).toFixed(2)} MB)
                 </p>
                 <p className="text-[11px] text-amber-200/80">
-                  Pending — click <strong>Save Media</strong> or <strong>Save Profile</strong> to apply across the platform.
+                  Pending â€” click <strong>Save Media</strong> or <strong>Save Profile</strong> to apply across the platform.
                 </p>
                 {previewVideoError && (
                   <p className="text-[11px] text-amber-300 font-medium pt-0.5">
@@ -1518,7 +1518,7 @@ export default function ProfilePage() {
           </div>
           {hasUnsavedChanges ? (
             <p className="text-[11px] text-amber-200/85">
-              Pending: {unsavedSummaryItems.join(' • ')}
+              Pending: {unsavedSummaryItems.join(' â€¢ ')}
             </p>
           ) : (
             <p className="text-[11px] text-neutral-400">

@@ -198,12 +198,12 @@ export function resolveAuthenticCover(type: ShareContentType, item: any): string
     case 'project': {
       const project = item as Project;
       if (project?.id === 'project-1' || project?.id === 'return-of-the-break-beats') {
-        return '/images/chancetek_banner.png';
+        return '/images/studio_cover.jpg';
       }
       if (project?.coverUrl && !isDefaultOrInvalidCover(project.coverUrl)) {
         return project.coverUrl;
       }
-      return '/images/chancetek_banner.png';
+      return '/images/studio_cover.jpg';
     }
 
     default:
@@ -408,12 +408,12 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
       case 'producer':
         description =
           cleanDescription(item?.bio) ||
-          `${title} — ${creator}. Legendary beatmaker crates, breakbeat instrumentals, and production credits on ChanceTEK One.`;
+          `${title} â€” ${creator}. Legendary beatmaker crates, breakbeat instrumentals, and production credits on ChanceTEK One.`;
         break;
       case 'artist':
         description =
           cleanDescription(item?.bio) ||
-          `${title} — ${creator}. Complete discography, stream singles, albums, and master vinyl collections on ChanceTEK One.`;
+          `${title} â€” ${creator}. Complete discography, stream singles, albums, and master vinyl collections on ChanceTEK One.`;
         break;
       case 'album':
         description =
@@ -423,7 +423,7 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
       case 'playlist':
         description =
           cleanDescription(item?.description) ||
-          `"${title}" — ${creator}. Curated playlist featuring ${item?.itemCount || 0} tracks on ChanceTEK One.`;
+          `"${title}" â€” ${creator}. Curated playlist featuring ${item?.itemCount || 0} tracks on ChanceTEK One.`;
         break;
       case 'project':
         description =
@@ -520,7 +520,7 @@ ${canonicalUrl}`;
   const whatsAppUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`*${title}* by _${creator}_\n\n${description}\n\n${canonicalUrl}`)}`;
   const telegramUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(`*${title}* by ${creator}\n${description}`)}`;
 
-  const emailSubject = `${title} by ${creator} — ChanceTEK One`;
+  const emailSubject = `${title} by ${creator} â€” ChanceTEK One`;
   const emailBody = `Hey,\n\nI wanted to share this with you on ChanceTEK One:\n\n"${title}" by ${creator}\n\n${description}\n\nStream now: ${canonicalUrl}`;
   const emailUrl = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
 

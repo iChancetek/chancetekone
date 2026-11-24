@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -47,8 +47,8 @@ function SearchContent() {
           id: `artist-${lower.replace(/[^a-z0-9]/g, '-')}`,
           name,
           bio: `Artist on ChanceTEK One`,
-          avatarUrl: t.coverUrl || t.albumCoverUrl || '/images/logo.png',
-          bannerUrl: t.albumCoverUrl || t.coverUrl || '/images/logo.png',
+          avatarUrl: t.coverUrl || t.albumCoverUrl || '/images/studio_cover.jpg',
+          bannerUrl: t.albumCoverUrl || t.coverUrl || '/images/studio_cover.jpg',
           genres: [t.genre || 'Music'],
           verified: t.audioStatus === 'verified',
           followerCount: 0,

@@ -32,21 +32,11 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-10">
           {/* Column 1: Brand & Platform Narrative (Spans 2 columns on lg) */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10 rounded-2xl overflow-hidden border border-brand-gold/40 shadow-lg shrink-0">
-                <Image
-                  src="/logo.png"
-                  alt="ChanceTEK One."
-                  fill
-                  sizes="40px"
-                  className="object-cover"
-                />
-              </div>
-              <div>
-                <h3 className="text-base sm:text-lg font-black text-white tracking-wide font-display">
-                  ChanceTEK One.
-                </h3>
-              </div>
+            <div className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-brand-gold shadow-[0_0_12px_rgba(245,195,68,0.65)] shrink-0" />
+              <h3 className="text-lg sm:text-xl font-black text-white tracking-tight font-display">
+                ChanceTEK One
+              </h3>
             </div>
 
             <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed max-w-md">

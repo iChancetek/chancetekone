@@ -457,7 +457,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             ? remoteAvatar
             : remoteNewerThanLocalPrefs
             ? prev.avatarUrl === '/images/logo.png'
-              ? '/images/logo.png'
+              ? '/images/studio_cover.jpg'
               : undefined
             : prev.avatarUrl;
 
@@ -1139,7 +1139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: cred.user.uid,
         name: displayName || cred.user.displayName || (isSuper ? 'Chancellor (Admin)' : trimmedEmail.split('@')[0]),
         email: cred.user.email || trimmedEmail,
-        avatarUrl: '/images/logo.png',
+        avatarUrl: '/images/studio_cover.jpg',
         role: extraProfile?.role || (isSuper ? 'admin' : extraProfile?.agreementStatus === 'verified_active' ? 'creator' : 'user'),
         creatorType: extraProfile?.creatorType || 'streamer',
         agreementStatus: extraProfile?.agreementStatus || 'none',
