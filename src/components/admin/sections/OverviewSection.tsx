@@ -7,6 +7,7 @@ import { AreaLineChart } from '../charts/AreaLineChart';
 import { ActivityHeatmap } from '../charts/ActivityHeatmap';
 import { DonutPieChart } from '../charts/DonutPieChart';
 import { HeartsLikesTelemetrySection } from './HeartsLikesTelemetrySection';
+import { ReplicationStatusCard } from '../ReplicationStatusCard';
 import {
   Users,
   Music,
@@ -243,6 +244,11 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
           </p>
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* 1B. LIVE CATALOG REPLICATION MONITOR                                      */}
+      {/* ========================================================================= */}
+      <ReplicationStatusCard />
 
       {/* ========================================================================= */}
       {/* 2. RAPID INGESTION & CONTENT ACTION HUB                                   */}
