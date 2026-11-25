@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { UserAvatar } from '@/components/navigation/UserAvatar';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 import SignInPresencePreview from './SignInPresencePreview';
 import {
   X,
@@ -354,12 +355,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </button>
 
         {/* Brand Header */}
-        <div className="flex flex-col items-center text-center space-y-1.5 pt-1">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-gold/15 border border-brand-gold/35 text-[10px] font-black uppercase tracking-[0.2em] text-brand-gold">
-            <Sparkles className="w-3 h-3" />
-            ChanceTEK One
-          </span>
-          <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">{title}</h3>
+        <div className="flex flex-col items-center text-center space-y-2 pt-1">
+          <BrandLogo variant="auth" showSlogan />
+          <h3 className="text-lg sm:text-xl font-black text-white tracking-tight pt-1">{title}</h3>
           <p className="text-xs text-neutral-300 max-w-sm">
             {tab === 'signup' && description === 'Access custom crates, AI memory sync, exclusive vinyl, and high-fidelity streaming.'
               ? GUEST_SIGNUP_GATE_MESSAGE

@@ -242,20 +242,25 @@ export const TrackRow: React.FC<TrackRowProps> = ({
 
           {/* Discussion trigger with comment count (Universal on both mobile & desktop) */}
           <button
+            type="button"
             onClick={() => setShowDiscussion(true)}
-            className="group/btn flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 hover:bg-brand-gold/15 border border-white/10 hover:border-brand-gold/40 text-neutral-300 hover:text-brand-gold transition-all duration-200 cursor-pointer shadow-sm"
+            className="group/btn flex items-center gap-1 px-2 py-1 rounded-full bg-white/5 hover:bg-brand-gold/15 border border-white/10 hover:border-brand-gold/40 text-neutral-300 hover:text-brand-gold transition-all duration-200 cursor-pointer shadow-sm min-h-[32px]"
             title={`${commentCount} Discussion Comments & Threads`}
           >
             <MessageSquare className="w-3.5 h-3.5 text-brand-gold transition-transform group-hover/btn:scale-110" />
             <span className="text-[10px] sm:text-[11px] font-mono font-bold">{commentCount}</span>
           </button>
 
+          {/* Always-visible Share Song button (Mobile, PWA & Desktop) */}
           <button
+            type="button"
             onClick={() => setShowShare(true)}
-            className="hidden sm:flex p-1.5 rounded-full hover:bg-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer"
-            title="Share track & text message"
+            className="flex items-center justify-center gap-1 px-2 sm:px-2.5 py-1 rounded-full bg-brand-gold/12 hover:bg-brand-gold/25 border border-brand-gold/35 hover:border-brand-gold/70 text-brand-gold hover:text-white transition-all cursor-pointer shadow-sm min-w-[32px] min-h-[32px] touch-manipulation"
+            title="Share song via SMS, WhatsApp, Social or Copy Link"
+            aria-label={`Share ${track.title}`}
           >
-            <Share2 className="w-3.5 h-3.5 hover:text-brand-gold transition-colors" />
+            <Share2 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline text-[11px] font-sans font-bold">Share</span>
           </button>
         </div>
 

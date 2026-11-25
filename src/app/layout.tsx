@@ -39,9 +39,9 @@ export const metadata: Metadata = {
     'Independent Artists',
   ],
   icons: {
-    icon: '/images/chancetekone_logo.jpg',
-    shortcut: '/images/chancetekone_logo.jpg',
-    apple: '/images/chancetekone_logo.jpg',
+    icon: '/images/chancetekone_icon.png',
+    shortcut: '/images/chancetekone_icon.png',
+    apple: '/images/chancetekone_icon.png',
   },
   openGraph: {
     title: 'ChanceTEK One — Listen. Watch. Discover.',

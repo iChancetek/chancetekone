@@ -24,6 +24,7 @@ import {
   X,
   GripVertical,
   MessageSquare,
+  Share2,
 } from 'lucide-react';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { useAI } from '@/lib/ai/AIContext';
@@ -32,6 +33,7 @@ import { ContextualAIRecommendations } from '@/components/ai/ContextualAIRecomme
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 import { SampleGenealogyModal } from '@/components/ai/SampleGenealogyModal';
 import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussionModal';
+import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
 
 export const GlobalMusicPlayer: React.FC = () => {
@@ -39,6 +41,7 @@ export const GlobalMusicPlayer: React.FC = () => {
   const [showAIPocket, setShowAIPocket] = useState(false);
   const [showSampleModal, setShowSampleModal] = useState(false);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const {
     currentTrack,
@@ -146,7 +149,7 @@ export const GlobalMusicPlayer: React.FC = () => {
     setIsDragging(true);
     try {
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    } catch {}
+    } catch { }
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -173,7 +176,7 @@ export const GlobalMusicPlayer: React.FC = () => {
     if (pointerStartRef.current) {
       try {
         (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-      } catch {}
+      } catch { }
       pointerStartRef.current = null;
       setIsDragging(false);
     }
@@ -211,18 +214,16 @@ export const GlobalMusicPlayer: React.FC = () => {
           top: dragPosition ? `${dragPosition.y}px` : undefined,
           touchAction: 'none',
         }}
-        className={`fixed z-40 select-none cursor-grab active:cursor-grabbing transition-shadow duration-200 animate-in fade-in slide-in-from-bottom-2 ${
-          !dragPosition ? 'bottom-20 md:bottom-6 left-4 md:left-72' : ''
-        }`}
+        className={`fixed z-40 select-none cursor-grab active:cursor-grabbing transition-shadow duration-200 animate-in fade-in slide-in-from-bottom-2 ${!dragPosition ? 'bottom-20 md:bottom-6 left-4 md:left-72' : ''
+          }`}
       >
         <div
-          className={`flex items-center gap-2 p-1.5 pr-3.5 rounded-full bg-[#090913]/92 backdrop-blur-2xl border transition-all group shadow-2xl ${
-            isDragging
+          className={`flex items-center gap-2 p-1.5 pr-3.5 rounded-full bg-[#090913]/92 backdrop-blur-2xl border transition-all group shadow-2xl ${isDragging
               ? 'border-brand-gold shadow-[0_0_30px_rgba(245,195,68,0.55)] scale-[1.03]'
               : isPlaying
                 ? 'border-brand-gold/35 hover:border-brand-gold/60 shadow-[0_14px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(245,195,68,0.16)]'
                 : 'border-white/15 hover:border-brand-neon/50 shadow-[0_14px_40px_rgba(0,0,0,0.8)]'
-          }`}
+            }`}
         >
           {/* Drag Handle Icon */}
           <div
@@ -278,21 +279,33 @@ export const GlobalMusicPlayer: React.FC = () => {
             </p>
           </div>
 
-          {/* Quick Controls */}
-          <div className="hidden sm:flex items-center gap-1">
+          {/* Quick Controls — Mobile & Desktop with comfortable touch spacing */}
+          <div className="flex items-center gap-2 sm:gap-1.5">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 togglePlay();
               }}
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-brand-gold to-brand-amber text-black flex items-center justify-center shadow-md hover:scale-110 transition-transform cursor-pointer"
+              className="w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-brand-gold to-brand-amber text-black flex items-center justify-center shadow-md hover:scale-110 transition-transform cursor-pointer touch-manipulation"
               title={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? (
-                <Pause className="w-3.5 h-3.5 fill-current text-black" />
+                <Pause className="w-4 h-4 sm:w-3.5 sm:h-3.5 fill-current text-black" />
               ) : (
-                <Play className="w-3.5 h-3.5 fill-current text-black ml-0.5" />
+                <Play className="w-4 h-4 sm:w-3.5 sm:h-3.5 fill-current text-black ml-0.5" />
               )}
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowShareModal(true);
+              }}
+              className="w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 text-brand-gold hover:text-white border border-brand-gold/35 flex items-center justify-center transition-colors cursor-pointer touch-manipulation"
+              title="Share what's playing"
+              aria-label={`Share ${currentTrack.title}`}
+            >
+              <Share2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
             </button>
 
             <button
@@ -300,7 +313,7 @@ export const GlobalMusicPlayer: React.FC = () => {
                 e.stopPropagation();
                 playNext();
               }}
-              className="p-1.5 rounded-full text-neutral-400 hover:text-white transition-colors cursor-pointer"
+              className="hidden sm:flex p-1.5 rounded-full text-neutral-400 hover:text-white transition-colors cursor-pointer"
               title="Next Track"
             >
               <SkipForward className="w-3.5 h-3.5" />
@@ -312,11 +325,10 @@ export const GlobalMusicPlayer: React.FC = () => {
                 e.stopPropagation();
                 toggleRepeat();
               }}
-              className={`p-1.5 rounded-full transition-colors cursor-pointer ${
-                repeatMode !== 'off'
+              className={`hidden sm:flex p-1.5 rounded-full transition-colors cursor-pointer ${repeatMode !== 'off'
                   ? 'text-brand-gold bg-brand-gold/15'
                   : 'text-neutral-400 hover:text-white'
-              }`}
+                }`}
               title={`Repeat: ${repeatMode === 'off' ? 'Off' : repeatMode === 'all' ? 'Repeat All' : 'Repeat Current Track'}`}
             >
               {repeatMode === 'one' ? (
@@ -331,11 +343,10 @@ export const GlobalMusicPlayer: React.FC = () => {
                 e.stopPropagation();
                 setShowAIPocket(!showAIPocket);
               }}
-              className={`p-1.5 rounded-full transition-colors cursor-pointer ${
-                showAIPocket
+              className={`hidden sm:flex p-1.5 rounded-full transition-colors cursor-pointer ${showAIPocket
                   ? 'bg-brand-gold text-black'
                   : 'bg-brand-purple/30 text-brand-gold hover:text-white'
-              }`}
+                }`}
               title="Toggle AI Recommendations"
             >
               <Brain className="w-3.5 h-3.5" />
@@ -347,7 +358,7 @@ export const GlobalMusicPlayer: React.FC = () => {
                 e.stopPropagation();
                 setShowDiscussionModal(true);
               }}
-              className="relative p-1.5 rounded-full text-neutral-400 hover:text-brand-gold hover:bg-white/5 transition-colors cursor-pointer flex items-center gap-1"
+              className="hidden sm:flex relative p-1.5 rounded-full text-neutral-400 hover:text-brand-gold hover:bg-white/5 transition-colors cursor-pointer items-center gap-1"
               title={`${trackCommentCount} Discussion Threads & Comments`}
             >
               <MessageSquare className="w-3.5 h-3.5 text-brand-gold" />
@@ -361,10 +372,10 @@ export const GlobalMusicPlayer: React.FC = () => {
                 e.stopPropagation();
                 expandPlayer();
               }}
-              className="p-1.5 rounded-full text-neutral-400 hover:text-brand-gold transition-colors ml-0.5 cursor-pointer"
+              className="w-9 h-9 sm:w-auto sm:h-auto sm:p-1.5 rounded-full bg-white/5 sm:bg-transparent text-neutral-300 hover:text-brand-gold flex items-center justify-center transition-colors cursor-pointer touch-manipulation"
               title="Expand Full Music Player"
             >
-              <ChevronUp className="w-3.5 h-3.5" />
+              <ChevronUp className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
             </button>
 
             {/* Close Music Player Option */}
@@ -373,7 +384,7 @@ export const GlobalMusicPlayer: React.FC = () => {
                 e.stopPropagation();
                 closePlayer();
               }}
-              className="p-1.5 rounded-full text-neutral-400 hover:text-red-400 hover:bg-white/10 transition-colors ml-0.5 cursor-pointer"
+              className="hidden sm:flex p-1.5 rounded-full text-neutral-400 hover:text-red-400 hover:bg-white/10 transition-colors ml-0.5 cursor-pointer"
               title="Close Music Player from screen"
             >
               <X className="w-3.5 h-3.5" />
@@ -384,9 +395,8 @@ export const GlobalMusicPlayer: React.FC = () => {
         {/* AI Crate Pocket Popover (When in collapsed mode, adaptive direction) */}
         {showAIPocket && (
           <div
-            className={`absolute ${
-              isTopHalf ? 'top-16' : 'bottom-16'
-            } left-0 w-[90vw] sm:w-[460px] max-h-[65vh] overflow-y-auto rounded-3xl glass-panel border border-brand-purple/50 shadow-2xl p-2 bg-[#0c0a18]/98 animate-in fade-in slide-in-from-bottom-2 z-50`}
+            className={`absolute ${isTopHalf ? 'top-16' : 'bottom-16'
+              } left-0 w-[90vw] sm:w-[460px] max-h-[65vh] overflow-y-auto rounded-3xl glass-panel border border-brand-purple/50 shadow-2xl p-2 bg-[#0c0a18]/98 animate-in fade-in slide-in-from-bottom-2 z-50`}
           >
             <div className="flex justify-end p-1">
               <button
@@ -407,6 +417,14 @@ export const GlobalMusicPlayer: React.FC = () => {
               }}
             />
           </div>
+        )}
+
+        {showShareModal && currentTrack && (
+          <UniversalShareModal
+            isOpen={showShareModal}
+            onClose={() => setShowShareModal(false)}
+            entity={{ type: 'song', item: currentTrack }}
+          />
         )}
       </div>
     );
@@ -445,8 +463,169 @@ export const GlobalMusicPlayer: React.FC = () => {
         </div>
       )}
 
-      {/* Main Bottom Docked Player (Elevated above MobileNav on mobile viewports) */}
-      <div className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 h-20 md:h-[5.5rem] border-t border-white/[0.1] z-40 px-2.5 sm:px-5 md:px-8 flex items-center justify-between gap-2 sm:gap-3 md:gap-4 bg-[#07070f]/92 backdrop-blur-2xl shadow-[0_-18px_50px_rgba(0,0,0,0.85)] overflow-hidden max-w-full touch-manipulation">
+      {/* ========================================================================= */}
+      {/* MOBILE / PWA PORTRAIT DOCKED PLAYER (< md) — Spacious 2-row touch layout  */}
+      {/* ========================================================================= */}
+      <div className="md:hidden fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-0 right-0 border-t border-white/[0.12] z-40 px-3.5 pt-2.5 pb-2.5 flex flex-col gap-2 bg-[#07070f]/96 backdrop-blur-2xl shadow-[0_-18px_50px_rgba(0,0,0,0.88)] max-w-full touch-manipulation">
+        {/* Top Ambient Hairline Progress Glow */}
+        <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-white/[0.06] pointer-events-none">
+          <div
+            className="h-full bg-gradient-to-r from-brand-purple via-brand-gold to-cyan-400 transition-all duration-150 shadow-[0_0_10px_rgba(245,195,68,0.7)]"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+
+        {/* Row 1: Artwork + Title/Artist + Spacious Quick Actions (Share, Expand, Close) */}
+        <div className="flex items-center justify-between gap-3 min-w-0">
+          <div
+            onClick={openFullScreen}
+            className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+          >
+            <div
+              className={`relative w-11 h-11 rounded-xl overflow-hidden shrink-0 border ${isPlaying
+                  ? 'border-brand-gold/55 shadow-[0_0_18px_rgba(245,195,68,0.28)]'
+                  : 'border-white/15'
+                }`}
+            >
+              <Image
+                src={currentTrack.coverUrl}
+                alt={currentTrack.title}
+                fill
+                sizes="44px"
+                className="object-cover"
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-white truncate">{currentTrack.title}</p>
+              <p className="text-[11px] text-neutral-400 truncate">{currentTrack.artistName}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowShareModal(true)}
+              className="w-10 h-10 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 text-brand-gold border border-brand-gold/40 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+              title="Share what's playing"
+              aria-label={`Share ${currentTrack.title}`}
+            >
+              <Share2 className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={openFullScreen}
+              className="w-10 h-10 rounded-full bg-white/[0.07] hover:bg-white/15 text-neutral-200 border border-white/10 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+              title="Open Full Screen Player"
+              aria-label="Open Full Screen Player"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={closePlayer}
+              className="w-10 h-10 rounded-full bg-white/[0.07] hover:bg-red-500/20 text-neutral-300 hover:text-red-400 border border-white/10 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+              title="Close Music Player"
+              aria-label="Close Music Player"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Row 2: Scrubber + Generously Spaced Transport Controls */}
+        <div className="space-y-1.5">
+          <div className="w-full flex items-center gap-2.5 text-[10px] text-neutral-400 font-mono">
+            <span className="w-8 text-right shrink-0">{formatTime(currentTime)}</span>
+            <div
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                seek(pos * duration);
+              }}
+              className="flex-1 h-2 bg-white/12 rounded-full cursor-pointer relative py-0"
+            >
+              <div
+                className="h-full bg-gradient-to-r from-brand-purple via-brand-gold to-amber-300 rounded-full"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <span className="w-8 shrink-0">{formatTime(duration)}</span>
+          </div>
+
+          <div className="flex items-center justify-between gap-2 px-1">
+            <button
+              type="button"
+              onClick={() => toggleLikeTrack(currentTrack.id)}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-95 cursor-pointer ${isLiked ? 'text-red-500 bg-red-500/15' : 'text-neutral-300 bg-white/[0.06]'
+                }`}
+              title="Like"
+              aria-label="Like"
+            >
+              <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={playPrev}
+              className="w-10 h-10 rounded-full bg-white/[0.06] text-neutral-200 hover:text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+              title="Previous"
+              aria-label="Previous"
+            >
+              <SkipBack className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={togglePlay}
+              className="w-11 h-11 rounded-full bg-gradient-to-br from-[#f7cf62] via-brand-gold to-amber-500 text-[#050509] flex items-center justify-center shadow-[0_0_24px_rgba(245,195,68,0.45)] active:scale-95 transition-all cursor-pointer"
+              title={isPlaying ? 'Pause' : 'Play'}
+              aria-label={isPlaying ? 'Pause' : 'Play'}
+            >
+              {isPlaying ? (
+                <Pause className="w-5 h-5 fill-current text-[#050509]" />
+              ) : (
+                <Play className="w-5 h-5 fill-current text-[#050509] ml-0.5" />
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={playNext}
+              className="w-10 h-10 rounded-full bg-white/[0.06] text-neutral-200 hover:text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+              title="Next"
+              aria-label="Next"
+            >
+              <SkipForward className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowDiscussionModal(true)}
+              className="h-10 px-3 rounded-full bg-white/[0.06] text-neutral-200 border border-white/10 flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+              title="Discussions"
+              aria-label="Discussions"
+            >
+              <MessageSquare className="w-4 h-4 text-brand-gold" />
+              <span className="text-[11px] font-mono font-bold">{trackCommentCount}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={collapsePlayer}
+              className="w-10 h-10 rounded-full bg-white/[0.06] text-neutral-300 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
+              title="Minimize Player"
+              aria-label="Minimize Player"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* DESKTOP FULL-WIDTH DOCKED PLAYER (>= md)                                  */}
+      {/* ========================================================================= */}
+      <div className="hidden md:flex fixed bottom-0 left-0 right-0 h-[5.5rem] border-t border-white/[0.1] z-40 px-5 lg:px-8 items-center justify-between gap-4 bg-[#07070f]/92 backdrop-blur-2xl shadow-[0_-18px_50px_rgba(0,0,0,0.85)] overflow-hidden max-w-full touch-manipulation">
         {/* Top Ambient Hairline Progress Glow */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/[0.05] pointer-events-none">
           <div
@@ -459,11 +638,10 @@ export const GlobalMusicPlayer: React.FC = () => {
         <div className="flex items-center gap-2.5 md:gap-4 w-auto sm:w-1/3 md:w-1/4 min-w-0 max-w-[42%] sm:max-w-none">
           <div
             onClick={openFullScreen}
-            className={`relative w-10 h-10 sm:w-11 sm:h-11 md:w-14 md:h-14 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0 cursor-pointer border transition-all group ${
-              isPlaying
+            className={`relative w-10 h-10 sm:w-11 sm:h-11 md:w-14 md:h-14 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0 cursor-pointer border transition-all group ${isPlaying
                 ? 'border-brand-gold/50 shadow-[0_0_24px_rgba(245,195,68,0.28)]'
                 : 'border-white/15 shadow-lg'
-            }`}
+              }`}
             title="Open Full Screen Player"
           >
             <Image
@@ -471,9 +649,8 @@ export const GlobalMusicPlayer: React.FC = () => {
               alt={currentTrack.title}
               fill
               sizes="(max-width: 768px) 44px, 56px"
-              className={`object-cover transition-transform group-hover:scale-105 ${
-                isPlaying ? 'animate-spin-slow' : ''
-              }`}
+              className={`object-cover transition-transform group-hover:scale-105 ${isPlaying ? 'animate-spin-slow' : ''
+                }`}
             />
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <Maximize2 className="w-4 h-4 text-white" />
@@ -510,9 +687,8 @@ export const GlobalMusicPlayer: React.FC = () => {
           <div className="flex items-center gap-1">
             <button
               onClick={() => toggleLikeTrack(currentTrack.id)}
-              className={`p-1.5 rounded-full transition-colors ${
-                isLiked ? 'text-red-500 bg-red-500/10' : 'text-neutral-400 hover:text-white'
-              }`}
+              className={`p-1.5 rounded-full transition-colors ${isLiked ? 'text-red-500 bg-red-500/10' : 'text-neutral-400 hover:text-white'
+                }`}
               title="Like"
             >
               <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
@@ -548,9 +724,8 @@ export const GlobalMusicPlayer: React.FC = () => {
           <div className="flex items-center gap-1.5 sm:gap-3 md:gap-5">
             <button
               onClick={toggleShuffle}
-              className={`p-1.5 rounded-full text-xs transition-colors hidden sm:block ${
-                isShuffled ? 'text-brand-gold' : 'text-neutral-400 hover:text-white'
-              }`}
+              className={`p-1.5 rounded-full text-xs transition-colors hidden sm:block ${isShuffled ? 'text-brand-gold' : 'text-neutral-400 hover:text-white'
+                }`}
               title="Shuffle"
             >
               <Shuffle className="w-3.5 h-3.5" />
@@ -586,9 +761,8 @@ export const GlobalMusicPlayer: React.FC = () => {
 
             <button
               onClick={toggleRepeat}
-              className={`p-1.5 rounded-full text-xs transition-colors cursor-pointer hidden sm:block ${
-                repeatMode !== 'off' ? 'text-brand-gold bg-brand-gold/15' : 'text-neutral-400 hover:text-white'
-              }`}
+              className={`p-1.5 rounded-full text-xs transition-colors cursor-pointer hidden sm:block ${repeatMode !== 'off' ? 'text-brand-gold bg-brand-gold/15' : 'text-neutral-400 hover:text-white'
+                }`}
               title={`Repeat: ${repeatMode === 'off' ? 'Off' : repeatMode === 'all' ? 'Repeat All' : 'Repeat Current Track'}`}
             >
               {repeatMode === 'one' ? (
@@ -621,8 +795,19 @@ export const GlobalMusicPlayer: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: AI Pocket, Volume, Collapse & Expand */}
-        <div className="flex items-center justify-end gap-1 sm:gap-1.5 md:gap-3 shrink-0">
+        {/* Right: Share, Discussion, AI Pocket, Volume, Collapse & Expand */}
+        <div className="flex items-center justify-end gap-2 lg:gap-3 shrink-0">
+          {/* Universal Share Button for Anything Currently Playing */}
+          <button
+            type="button"
+            onClick={() => setShowShareModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 text-brand-gold hover:text-white transition-all border border-brand-gold/40 cursor-pointer shadow-sm"
+            title="Share playing song or audio via SMS, Social, or Link"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span className="text-xs font-bold hidden xl:inline">Share</span>
+          </button>
+
           {/* Discussion & Community Threads Trigger */}
           <button
             onClick={() => setShowDiscussionModal(true)}
@@ -639,11 +824,10 @@ export const GlobalMusicPlayer: React.FC = () => {
           {/* Autonomous AI Recommendations Trigger */}
           <button
             onClick={() => setShowAIPocket(!showAIPocket)}
-            className={`hidden lg:flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold transition-all border shadow-sm ${
-              showAIPocket
+            className={`hidden lg:flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold transition-all border shadow-sm ${showAIPocket
                 ? 'bg-brand-gold text-black border-brand-gold'
                 : 'bg-brand-purple/30 hover:bg-brand-purple/50 text-brand-gold border-brand-purple/50 hover:text-white'
-            }`}
+              }`}
             title="Open Autonomous AI Crate Recommendations"
           >
             <Brain className="w-3.5 h-3.5 text-brand-neon" />
@@ -749,6 +933,15 @@ export const GlobalMusicPlayer: React.FC = () => {
           contentSubtitle={`${currentTrack.artistName} • ${currentTrack.albumTitle || currentTrack.genre || 'Single'}`}
           coverUrl={currentTrack.coverUrl}
           badgeLabel="Song"
+        />
+      )}
+
+      {/* Share Currently Playing Content Modal */}
+      {showShareModal && currentTrack && (
+        <UniversalShareModal
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          entity={{ type: 'song', item: currentTrack }}
         />
       )}
     </>

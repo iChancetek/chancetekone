@@ -59,16 +59,16 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
   return (
     <>
       <header
-        className={`h-[calc(4.25rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] fixed top-0 right-0 left-0 border-b border-white/[0.07] z-30 px-3 md:px-6 flex items-center justify-between gap-3 bg-[#050509]/80 backdrop-blur-2xl shadow-[0_10px_30px_-15px_rgba(0,0,0,0.8)] transition-all duration-300 ease-in-out ${
+        className={`h-[calc(4.25rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] fixed top-0 right-0 left-0 border-b border-white/[0.07] z-30 px-2.5 sm:px-4 md:px-6 flex items-center justify-between gap-2 sm:gap-3 bg-[#050509]/85 backdrop-blur-2xl shadow-[0_10px_30px_-15px_rgba(0,0,0,0.8)] transition-all duration-300 ease-in-out ${
           isCollapsed ? 'md:left-20' : 'md:left-72'
         }`}
       >
-        {/* Left Side: Back Navigation Button, Mobile Menu Button, Desktop Collapse Toggle & Natural Search */}
-        <div className="flex items-center gap-2.5 flex-1 max-w-2xl">
-          {/* Universal Back Navigation Arrow Button (Navigates to previous page across all pages) */}
+        {/* Left Side: Back Navigation Button, Mobile Menu Button, Brand Emblem, Desktop Collapse Toggle & Natural Search */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 flex-1 min-w-0 max-w-2xl">
+          {/* Universal Back Navigation Arrow Button */}
           <button
             onClick={handleGoBack}
-            className="p-2 rounded-full bg-white/[0.05] hover:bg-white/[0.12] active:bg-white/20 text-brand-gold hover:text-white border border-white/[0.09] hover:border-brand-gold/40 transition-all hover:scale-105 shrink-0 flex items-center justify-center cursor-pointer min-w-[40px] min-h-[40px] md:min-w-[42px] md:min-h-[42px] touch-manipulation group"
+            className="p-1.5 sm:p-2 rounded-full bg-white/[0.05] hover:bg-white/[0.12] active:bg-white/20 text-brand-gold hover:text-white border border-white/[0.09] hover:border-brand-gold/40 transition-all hover:scale-105 shrink-0 flex items-center justify-center cursor-pointer w-9 h-9 sm:w-10 sm:h-10 md:w-[42px] md:h-[42px] touch-manipulation group"
             title="Go Back to Previous Page"
             aria-label="Go Back to Previous Page"
           >
@@ -78,34 +78,26 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
           {/* Mobile Drawer Hamburger Button (Visible on phones & vertical mobile viewports) */}
           <button
             onClick={toggleMobileSidebar}
-            className="md:hidden p-2 rounded-full bg-white/[0.05] hover:bg-white/[0.12] active:bg-white/20 text-brand-gold hover:text-white border border-white/[0.09] transition-colors shrink-0 flex items-center justify-center cursor-pointer min-w-[42px] min-h-[42px] touch-manipulation"
+            className="md:hidden p-1.5 sm:p-2 rounded-full bg-white/[0.05] hover:bg-white/[0.12] active:bg-white/20 text-brand-gold hover:text-white border border-white/[0.09] transition-colors shrink-0 flex items-center justify-center cursor-pointer w-9 h-9 sm:w-10 sm:h-10 touch-manipulation"
             title="Open Navigation Menu"
             aria-label="Open Navigation Menu"
           >
-            <Menu className="w-5 h-5 text-brand-gold" />
+            <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-brand-gold" />
           </button>
 
-          {/* Mobile Compact Brand Logo */}
+          {/* Mobile Compact Brand Emblem (transparent, seamless) */}
           <Link href="/" className="md:hidden shrink-0" aria-label="ChanceTEK One — Listen. Watch. Discover.">
-            <BrandLogo variant="compact" showSlogan={false} className="w-9 h-9" />
+            <BrandLogo variant="compact" showSlogan={false} className="[&_img]:w-8 [&_img]:h-8" />
           </Link>
 
-          {/* Desktop Header Brand Lockup + Slogan (visible when sidebar is collapsed) */}
+          {/* Desktop Header Transparent Brand Lockup + Slogan (visible when sidebar is collapsed) */}
           {isCollapsed && (
             <Link
               href="/"
-              className="hidden md:flex items-center gap-2.5 shrink-0 pr-1 group"
+              className="hidden md:flex items-center shrink-0 pr-2 hover:opacity-95 transition-opacity"
               aria-label="ChanceTEK One — Listen. Watch. Discover."
             >
-              <BrandLogo variant="compact" showSlogan={false} className="w-10 h-10" />
-              <div className="hidden lg:flex flex-col leading-tight">
-                <span className="font-display text-sm font-black tracking-tight text-white group-hover:text-brand-gold transition-colors">
-                  ChanceTEK <span className="text-brand-gold">One</span>
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r from-brand-gold via-amber-300 to-brand-neon bg-clip-text text-transparent">
-                  Listen. Watch. Discover.
-                </span>
-              </div>
+              <BrandLogo variant="sidebar" showSlogan className="scale-90 origin-left" />
             </Link>
           )}
 
@@ -123,46 +115,46 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
           </button>
 
           {/* Global Natural Language Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="flex-1 relative">
+          <form onSubmit={handleSearchSubmit} className="flex-1 min-w-0 relative">
             <div className="relative flex items-center group">
-              <Search className="w-4 h-4 text-neutral-400 group-focus-within:text-brand-gold absolute left-4 pointer-events-none transition-colors" />
+              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-400 group-focus-within:text-brand-gold absolute left-3 sm:left-4 pointer-events-none transition-colors" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder='Search music, 4K cinema, audiobooks, BPMs or vibes...'
-                className="w-full pl-11 pr-11 py-2.5 rounded-full bg-white/[0.05] hover:bg-white/[0.08] focus:bg-[#0e0e18] border border-white/[0.1] focus:border-brand-gold/50 focus:outline-none focus:ring-2 focus:ring-brand-gold/20 text-xs md:text-sm text-white placeholder-neutral-400 transition-all shadow-inner"
+                placeholder="Search music, videos..."
+                className="w-full min-w-0 pl-8 sm:pl-11 pr-8 sm:pr-11 py-2 sm:py-2.5 rounded-full bg-white/[0.05] hover:bg-white/[0.08] focus:bg-[#0e0e18] border border-white/[0.1] focus:border-brand-gold/50 focus:outline-none focus:ring-2 focus:ring-brand-gold/20 text-xs md:text-sm text-white placeholder-neutral-400 transition-all shadow-inner"
               />
               <button
                 type="button"
                 onClick={() => setIsVoiceSearchOpen(true)}
                 title="Whisper Voice Search & Agent Commands"
-                className="absolute right-2 p-1.5 rounded-full bg-white/[0.05] hover:bg-brand-purple/40 text-brand-gold hover:text-white transition-all cursor-pointer"
+                className="absolute right-1.5 sm:right-2 p-1.5 rounded-full bg-white/[0.05] hover:bg-brand-purple/40 text-brand-gold hover:text-white transition-all cursor-pointer"
               >
-                <Mic className="w-4 h-4" />
+                <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
           </form>
         </div>
 
-        {/* Right Action Controls */}
-        <div className="flex items-center gap-2 md:gap-2.5 shrink-0">
+        {/* Right Action Controls — Portrait phones keep Sign In 100% visible & unobstructed; secondary utilities stay in Mobile Menu / sm+ */}
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-2.5 shrink-0">
           {/* PWA Install Trigger */}
           {isInstallable && (
             <button
               onClick={installPWA}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/[0.05] hover:bg-brand-gold/15 text-brand-gold text-xs font-bold border border-brand-gold/30 hover:border-brand-gold/60 transition-all hover:scale-105 cursor-pointer"
-              title="Install Break Beats Application"
+              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/[0.05] hover:bg-brand-gold/15 text-brand-gold text-xs font-bold border border-brand-gold/30 hover:border-brand-gold/60 transition-all hover:scale-105 cursor-pointer"
+              title="Install ChanceTEK One Application"
             >
               <Download className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Install App</span>
+              <span className="hidden md:inline">Install App</span>
             </button>
           )}
 
-          {/* Apple Music Light / Dark Mode Switcher */}
+          {/* Apple Music Light / Dark Mode Switcher (available in Mobile Drawer on vertical phones) */}
           <button
             onClick={toggleTheme}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.12] text-neutral-200 hover:text-brand-gold border border-white/[0.09] hover:border-brand-gold/40 transition-all hover:scale-105 cursor-pointer"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.12] text-neutral-200 hover:text-brand-gold border border-white/[0.09] hover:border-brand-gold/40 transition-all hover:scale-105 cursor-pointer"
             title={isLight ? 'Switch to Dark Mode' : 'Switch to Apple Music Light Mode'}
             aria-label={isLight ? 'Switch to Dark Mode' : 'Switch to Apple Music Light Mode'}
           >
@@ -176,22 +168,24 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
             </span>
           </button>
 
-          {/* Text & Font Visibility Accessibility Trigger */}
-          <AccessibilityButton variant="nav" />
+          {/* Text & Font Visibility Accessibility Trigger (available in Mobile Drawer on vertical phones) */}
+          <div className="hidden sm:flex">
+            <AccessibilityButton variant="nav" />
+          </div>
 
-          {/* ChanceTEK One AI Assistant Button */}
+          {/* ChanceTEK One AI Assistant Button (available in MobileNav bottom bar on vertical phones) */}
           <button
             onClick={onOpenAI}
-            className="shimmer-cta flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-brand-purple via-violet-600 to-indigo-600 hover:from-brand-purple hover:to-brand-gold text-white text-xs font-bold shadow-[0_4px_20px_rgba(157,78,221,0.4)] transition-all border border-white/20 hover:scale-105 cursor-pointer"
+            className="hidden sm:flex shimmer-cta items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-brand-purple via-violet-600 to-indigo-600 hover:from-brand-purple hover:to-brand-gold text-white text-xs font-bold shadow-[0_4px_20px_rgba(157,78,221,0.4)] transition-all border border-white/20 hover:scale-105 cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5 text-brand-gold animate-spin-slow" />
-            <span className="hidden sm:inline">ChanceTEK One AI</span>
+            <span className="hidden md:inline">ChanceTEK One AI</span>
           </button>
 
           {/* Shopping Cart Trigger */}
           <button
             onClick={openCart}
-            className="relative p-2.5 rounded-full bg-white/[0.05] hover:bg-white/[0.12] text-neutral-200 hover:text-white border border-white/[0.09] transition-all cursor-pointer"
+            className="relative p-2 sm:p-2.5 rounded-full bg-white/[0.05] hover:bg-white/[0.12] text-neutral-200 hover:text-white border border-white/[0.09] transition-all cursor-pointer w-9 h-9 sm:w-auto sm:h-auto flex items-center justify-center shrink-0"
             title="Merch Cart"
           >
             <ShoppingBag className="w-4 h-4" />
@@ -202,8 +196,8 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
             )}
           </button>
 
-          {/* User Account / Profile */}
-          <div className="relative">
+          {/* User Account / Profile — Always visible on portrait mobile PWA & desktop */}
+          <div className="relative shrink-0">
             {profile ? (
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -227,7 +221,7 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="shimmer-cta px-4 py-2 rounded-full bg-gradient-to-r from-[#f7cf62] via-brand-gold to-amber-500 hover:scale-105 text-[#050509] text-xs font-extrabold border border-amber-200/40 transition-all shadow-[0_4px_20px_rgba(245,195,68,0.35)] cursor-pointer"
+                className="shimmer-cta px-3.5 sm:px-4 py-2 rounded-full bg-gradient-to-r from-[#f7cf62] via-brand-gold to-amber-500 hover:scale-105 text-[#050509] text-xs font-extrabold border border-amber-200/40 transition-all shadow-[0_4px_20px_rgba(245,195,68,0.35)] cursor-pointer whitespace-nowrap min-h-[36px] flex items-center justify-center touch-manipulation"
               >
                 Sign In
               </button>

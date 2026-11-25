@@ -1,10 +1,15 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import { useTheme } from '@/lib/theme/ThemeContext';
 
 export const PLATFORM_NAME = 'ChanceTEK One';
 export const PLATFORM_SLOGAN = 'Listen. Watch. Discover.';
+export const PLATFORM_LOGO_DARK = '/images/chancetekone_logo.png';
+export const PLATFORM_LOGO_LIGHT = '/images/chancetekone_logo_light.png';
+export const PLATFORM_ICON_DARK = '/images/chancetekone_icon.png';
+export const PLATFORM_ICON_LIGHT = '/images/chancetekone_icon_light.png';
+/** Full 16:9 dark banner reserved for OpenGraph / Twitter social preview cards */
 export const PLATFORM_LOGO_SRC = '/images/chancetekone_logo.jpg';
 
 export type BrandLogoVariant = 'sidebar' | 'compact' | 'mobile-drawer' | 'footer' | 'hero' | 'auth';
@@ -20,38 +25,53 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   showSlogan = true,
   className = '',
 }) => {
+  const { isLight } = useTheme();
+  const wordmarkSrc = isLight ? PLATFORM_LOGO_LIGHT : PLATFORM_LOGO_DARK;
+  const iconSrc = isLight ? PLATFORM_ICON_LIGHT : PLATFORM_ICON_DARK;
+
+  const sloganClass = isLight
+    ? 'bg-gradient-to-r from-[#b87300] via-[#7b2cbf] to-[#d60017] bg-clip-text text-transparent'
+    : 'bg-gradient-to-r from-brand-gold via-amber-200 to-brand-neon bg-clip-text text-transparent';
+
+  // Seamless transparent C-Play emblem (zero box, zero border, zero sticker frame)
   if (variant === 'compact') {
     return (
-      <div
-        className={`relative w-11 h-11 rounded-xl overflow-hidden bg-[#050509] border border-brand-gold/30 shadow-[0_0_16px_rgba(245,195,68,0.2)] flex items-center justify-center shrink-0 ${className}`}
+      <span
+        className={`inline-flex items-center justify-center shrink-0 select-none ${className}`}
         title={`${PLATFORM_NAME} — ${PLATFORM_SLOGAN}`}
       >
-        <Image
-          src={PLATFORM_LOGO_SRC}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={iconSrc}
           alt={PLATFORM_NAME}
-          width={88}
-          height={50}
-          className="w-full h-full object-cover scale-125"
-          priority
+          className={`w-9 h-9 object-contain transition-transform duration-200 ${
+            isLight
+              ? 'drop-shadow-[0_2px_6px_rgba(123,44,191,0.18)]'
+              : 'drop-shadow-[0_0_12px_rgba(245,195,68,0.28)]'
+          }`}
+          draggable={false}
         />
-      </div>
+      </span>
     );
   }
 
+  // Global Footer — floating transparent wordmark + slogan integrated directly on glass surface
   if (variant === 'footer') {
     return (
-      <div className={`inline-flex flex-col gap-2 ${className}`}>
-        <div className="relative w-52 sm:w-60 aspect-[16/9] rounded-2xl overflow-hidden bg-[#050509] border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.65)]">
-          <Image
-            src={PLATFORM_LOGO_SRC}
-            alt={PLATFORM_NAME}
-            fill
-            sizes="240px"
-            className="object-cover"
-          />
-        </div>
+      <div className={`inline-flex flex-col items-start gap-2 select-none ${className}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={wordmarkSrc}
+          alt={`${PLATFORM_NAME} — ${PLATFORM_SLOGAN}`}
+          className={`h-11 sm:h-12 w-auto object-contain object-left ${
+            isLight
+              ? 'drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+              : 'drop-shadow-[0_4px_20px_rgba(157,78,221,0.28)]'
+          }`}
+          draggable={false}
+        />
         {showSlogan && (
-          <p className="text-xs sm:text-sm font-bold tracking-wide bg-gradient-to-r from-brand-gold via-amber-300 to-brand-neon bg-clip-text text-transparent">
+          <p className={`text-xs sm:text-sm font-extrabold uppercase tracking-[0.2em] pl-0.5 ${sloganClass}`}>
             {PLATFORM_SLOGAN}
           </p>
         )}
@@ -59,26 +79,27 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     );
   }
 
+  // Hero / Auth Modal / Sign-Up / Shared Link — centered transparent lockup
   if (variant === 'hero' || variant === 'auth') {
     return (
-      <div className={`inline-flex flex-col items-center gap-2 ${className}`}>
-        <div
-          className={`relative overflow-hidden bg-[#050509] border border-brand-gold/25 shadow-[0_12px_36px_rgba(0,0,0,0.7)] ${variant === 'hero'
-              ? 'w-56 sm:w-72 aspect-[16/9] rounded-2xl'
-              : 'w-44 sm:w-52 aspect-[16/9] rounded-2xl'
-            }`}
-        >
-          <Image
-            src={PLATFORM_LOGO_SRC}
-            alt={PLATFORM_NAME}
-            fill
-            sizes={variant === 'hero' ? '288px' : '208px'}
-            className="object-cover"
-            priority
-          />
-        </div>
+      <div className={`inline-flex flex-col items-center gap-2 select-none ${className}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={wordmarkSrc}
+          alt={`${PLATFORM_NAME} — ${PLATFORM_SLOGAN}`}
+          className={`w-auto object-contain ${
+            variant === 'hero' ? 'h-12 sm:h-16' : 'h-10 sm:h-12'
+          } ${
+            isLight
+              ? 'drop-shadow-[0_2px_10px_rgba(0,0,0,0.08)]'
+              : 'drop-shadow-[0_4px_24px_rgba(245,195,68,0.22)]'
+          }`}
+          draggable={false}
+        />
         {showSlogan && (
-          <p className="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.18em] bg-gradient-to-r from-brand-gold via-amber-200 to-brand-neon bg-clip-text text-transparent text-center">
+          <p
+            className={`text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.22em] text-center ${sloganClass}`}
+          >
             {PLATFORM_SLOGAN}
           </p>
         )}
@@ -86,30 +107,29 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     );
   }
 
-  // 'sidebar' | 'mobile-drawer'
+  // 'sidebar' | 'mobile-drawer' — sleek native navigation header wordmark (zero sticker box)
   return (
-    <div className={`flex flex-col gap-1 min-w-0 ${className}`}>
-      <div
-        className={`relative overflow-hidden bg-[#050509] border border-white/10 shadow-[0_4px_18px_rgba(0,0,0,0.55)] ${variant === 'mobile-drawer'
-            ? 'w-44 aspect-[16/9] rounded-xl'
-            : 'w-44 aspect-[16/9] rounded-xl'
-          }`}
-      >
-        <Image
-          src={PLATFORM_LOGO_SRC}
-          alt={PLATFORM_NAME}
-          fill
-          sizes="180px"
-          className="object-cover"
-          priority
-        />
-      </div>
+    <div className={`flex flex-col items-start gap-1 min-w-0 select-none ${className}`}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={wordmarkSrc}
+        alt={`${PLATFORM_NAME} — ${PLATFORM_SLOGAN}`}
+        className={`w-auto object-contain object-left ${
+          variant === 'mobile-drawer' ? 'h-10' : 'h-9'
+        } max-w-[185px] ${
+          isLight
+            ? 'drop-shadow-[0_1px_4px_rgba(0,0,0,0.08)]'
+            : 'drop-shadow-[0_2px_14px_rgba(157,78,221,0.28)]'
+        }`}
+        draggable={false}
+      />
       {showSlogan && (
-        <span className="text-[10px] font-bold tracking-wider uppercase bg-gradient-to-r from-brand-gold via-amber-300 to-brand-neon bg-clip-text text-transparent leading-tight pl-0.5 truncate">
+        <span
+          className={`text-[10px] font-extrabold tracking-[0.18em] uppercase leading-tight pl-0.5 truncate ${sloganClass}`}
+        >
           {PLATFORM_SLOGAN}
         </span>
       )}
     </div>
   );
 };
-

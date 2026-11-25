@@ -14,7 +14,8 @@ import { AccessibilityProvider } from '@/lib/accessibility/AccessibilityContext'
 import { ThemeProvider } from '@/lib/theme/ThemeContext';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { useAI } from '@/lib/ai/AIContext';
-import { X } from 'lucide-react';
+import { UniversalShareModal } from '@/components/social/UniversalShareModal';
+import { X, Share2 } from 'lucide-react';
 
 const FullScreenPlayer = dynamic(
   () => import('@/components/player/FullScreenPlayer').then((m) => m.FullScreenPlayer),
@@ -41,6 +42,7 @@ const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const { isOpen: isAIOpen, closeAI, openAI } = useAI();
   const { isPlayerCollapsed, isPlayerVisible, currentTrack, activeVideoModal, closeVideoModal } = usePlayer();
   const { isCollapsed } = useSidebar();
+  const [showVideoShare, setShowVideoShare] = React.useState(false);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#050509] relative">
@@ -72,7 +74,7 @@ const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         {/* Global Page Footer */}
         <div
           className={`transition-all duration-300 ${
-            !currentTrack || !isPlayerVisible || isPlayerCollapsed ? 'pb-24 md:pb-10' : 'pb-44 md:pb-32'
+            !currentTrack || !isPlayerVisible || isPlayerCollapsed ? 'pb-24 md:pb-10' : 'pb-56 md:pb-32'
           }`}
         >
           <Footer />
@@ -92,25 +94,44 @@ const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {activeVideoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/90 backdrop-blur-xl animate-in fade-in">
           <div className="relative w-full max-w-5xl rounded-3xl overflow-hidden glass-panel border border-brand-purple/40 bg-[#0a0a12] shadow-[0_25px_80px_rgba(0,0,0,0.9)]">
-            <div className="p-4 flex items-center justify-between border-b border-white/10 bg-[#12121e]">
-              <div>
+            <div className="p-4 flex items-center justify-between gap-3 border-b border-white/10 bg-[#12121e]">
+              <div className="min-w-0 flex-1">
                 <h3 className="text-sm font-bold text-white truncate max-w-xl">
                   {activeVideoModal.title}
                 </h3>
-                <p className="text-xs text-brand-neon">{activeVideoModal.artistName}</p>
+                <p className="text-xs text-brand-neon truncate">{activeVideoModal.artistName}</p>
               </div>
-              <button
-                onClick={closeVideoModal}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-                title="Close Video"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowVideoShare(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 text-brand-gold hover:text-white border border-brand-gold/40 text-xs font-bold transition-all cursor-pointer"
+                  title="Share playing video"
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span>Share</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={closeVideoModal}
+                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                  title="Close Video"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
             <div className="p-2 sm:p-4">
               <VideoPlayer video={activeVideoModal} />
             </div>
           </div>
+          {showVideoShare && (
+            <UniversalShareModal
+              isOpen={showVideoShare}
+              onClose={() => setShowVideoShare(false)}
+              entity={{ type: 'video', item: activeVideoModal }}
+            />
+          )}
         </div>
       )}
 

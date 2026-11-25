@@ -367,15 +367,17 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, type }) => {
             </button>
           )}
 
-          {/* Universal Share Quick Button */}
+          {/* Universal Share Quick Button — Always visible on mobile, PWA & desktop */}
           <button
+            type="button"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               setShowShareModal(true);
             }}
-            className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-black/70 hover:bg-brand-gold text-neutral-300 hover:text-black border border-white/10 opacity-0 group-hover:opacity-100 transition-all shadow-md z-10 cursor-pointer"
+            className="absolute bottom-2 right-2 p-2 rounded-full bg-black/80 hover:bg-brand-gold text-brand-gold hover:text-black border border-brand-gold/40 transition-all shadow-lg z-10 cursor-pointer touch-manipulation"
             title={`Share ${type}`}
+            aria-label={`Share ${getTitle()}`}
           >
             <Share2 className="w-3.5 h-3.5" />
           </button>

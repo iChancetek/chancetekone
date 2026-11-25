@@ -23,6 +23,7 @@ import {
   Disc3,
   Mic2,
   MessageSquare,
+  Share2,
 } from 'lucide-react';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
@@ -30,6 +31,7 @@ import { ContextualAIRecommendations } from '@/components/ai/ContextualAIRecomme
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 import { SampleGenealogyCard } from '@/components/ai/SampleGenealogyCard';
 import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussionModal';
+import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
 
 /** Apple-Music-style lyrics that follow playback. Uses [mm:ss.xx] LRC tags when present, else paces lines across the track. */
@@ -97,13 +99,12 @@ const LiveLyrics: React.FC<{
             lineRefs.current[i] = el;
           }}
           onClick={() => onSeek(l.time)}
-          className={`block w-full text-left py-1.5 font-extrabold leading-tight transition-all duration-500 origin-left cursor-pointer ${
-            i === active
+          className={`block w-full text-left py-1.5 font-extrabold leading-tight transition-all duration-500 origin-left cursor-pointer ${i === active
               ? 'text-white text-2xl sm:text-3xl scale-100 opacity-100'
               : i < active
-              ? 'text-white/30 text-xl sm:text-2xl blur-[0.5px] hover:text-white/60'
-              : 'text-white/45 text-xl sm:text-2xl blur-[0.5px] hover:text-white/70'
-          }`}
+                ? 'text-white/30 text-xl sm:text-2xl blur-[0.5px] hover:text-white/60'
+                : 'text-white/45 text-xl sm:text-2xl blur-[0.5px] hover:text-white/70'
+            }`}
         >
           {l.text}
         </button>
@@ -140,6 +141,7 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
   const [activeTab, setActiveTab] = useState<'live-lyrics' | 'lyrics' | 'queue' | 'ai-crate' | 'sample-dna'>('sample-dna');
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [showDiscussion, setShowDiscussion] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const canonicalKey = React.useMemo(() => {
     return currentTrack ? buildCanonicalContentKey('song', currentTrack.title, currentTrack.artistName) : '';
@@ -221,9 +223,8 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
               src={currentTrack.coverUrl}
               alt={currentTrack.title}
               fill
-              className={`object-cover transition-transform duration-700 ${
-                isPlaying ? 'scale-105' : 'scale-100'
-              }`}
+              className={`object-cover transition-transform duration-700 ${isPlaying ? 'scale-105' : 'scale-100'
+                }`}
               priority
             />
             <div className="absolute inset-0 bg-gradient-to-tr from-brand-purple/20 via-transparent to-brand-gold/20 pointer-events-none" />
@@ -271,6 +272,15 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
               variant="pill"
               voice="onyx"
             />
+
+            <button
+              type="button"
+              onClick={() => setShowShareModal(true)}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 border border-brand-gold/45 text-brand-gold hover:text-white text-xs font-bold shadow-lg transition-all hover:scale-105 cursor-pointer"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Share</span>
+            </button>
           </div>
         </div>
 
@@ -280,11 +290,10 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
           <div className="flex items-center gap-2 border-b border-white/10 pb-3 mb-3 shrink-0 overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveTab('live-lyrics')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                activeTab === 'live-lyrics'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${activeTab === 'live-lyrics'
                   ? 'bg-white text-black shadow-md'
                   : 'text-neutral-400 hover:text-white'
-              }`}
+                }`}
               title="Follow the lyrics as the song plays"
             >
               <Mic2 className="w-3.5 h-3.5" />
@@ -292,11 +301,10 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
             </button>
             <button
               onClick={() => setActiveTab('sample-dna')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'sample-dna'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'sample-dna'
                   ? 'bg-gradient-to-r from-brand-gold to-brand-amber text-black shadow-md border border-brand-gold'
                   : 'text-neutral-400 hover:text-white'
-              }`}
+                }`}
             >
               <Disc3 className="w-3.5 h-3.5 text-black animate-spin-slow" />
               <span>Sample DNA</span>
@@ -304,11 +312,10 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
             </button>
             <button
               onClick={() => setActiveTab('ai-crate')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'ai-crate'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'ai-crate'
                   ? 'bg-gradient-to-r from-brand-purple to-brand-violet text-white shadow-md border border-brand-purple/50'
                   : 'text-neutral-400 hover:text-white'
-              }`}
+                }`}
             >
               <Brain className="w-3.5 h-3.5 text-brand-neon" />
               <span>AI Crate Pocket</span>
@@ -316,22 +323,20 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
             </button>
             <button
               onClick={() => setActiveTab('lyrics')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === 'lyrics'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${activeTab === 'lyrics'
                   ? 'bg-brand-purple text-white shadow-md'
                   : 'text-neutral-400 hover:text-white'
-              }`}
+                }`}
             >
               <FileText className="w-3.5 h-3.5" />
               <span>Liner Notes</span>
             </button>
             <button
               onClick={() => setActiveTab('queue')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === 'queue'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${activeTab === 'queue'
                   ? 'bg-brand-purple text-white shadow-md'
                   : 'text-neutral-400 hover:text-white'
-              }`}
+                }`}
             >
               <ListMusic className="w-3.5 h-3.5" />
               <span>Up Next ({queue.length})</span>
@@ -448,54 +453,34 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
           <span>{formatTime(duration)}</span>
         </div>
 
-        {/* Buttons */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        {/* Buttons — Spacious 2-row layout on mobile portrait, single wide row on sm+ */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          {/* Primary Transport Controls (Top centered row on mobile, middle on desktop) */}
+          <div className="order-1 sm:order-2 flex items-center justify-center gap-5 sm:gap-6">
             <button
-              onClick={() => toggleLikeTrack(currentTrack.id)}
-              className={`p-3 rounded-full transition-colors ${
-                isLiked ? 'text-red-500 bg-red-500/10' : 'text-neutral-400 hover:text-white bg-white/5'
-              }`}
-              title="Like track"
-            >
-              <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-            </button>
-
-            <button
-              onClick={() => setShowPlaylistModal(true)}
-              className="p-3 rounded-full bg-white/5 hover:bg-brand-purple/30 text-neutral-400 hover:text-white transition-colors"
-              title="Add track to playlist"
-            >
-              <ListPlus className="w-5 h-5" />
-            </button>
-
-            <button
-              onClick={() => setShowDiscussion(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/5 hover:bg-brand-purple/30 text-neutral-300 hover:text-brand-gold transition-colors cursor-pointer border border-white/10"
-              title={`${trackCommentCount} Discussion Threads & Community Comments`}
-            >
-              <MessageSquare className="w-5 h-5 text-brand-gold" />
-              <span className="font-mono text-xs font-bold">{trackCommentCount}</span>
-            </button>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <button
+              type="button"
               onClick={toggleShuffle}
-              className={`p-2 rounded-full transition-colors ${
-                isShuffled ? 'text-brand-gold' : 'text-neutral-400 hover:text-white'
-              }`}
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors cursor-pointer ${isShuffled ? 'text-brand-gold bg-brand-gold/15' : 'text-neutral-400 hover:text-white bg-white/5 sm:bg-transparent'
+                }`}
+              title="Shuffle"
             >
               <Shuffle className="w-5 h-5" />
             </button>
 
-            <button onClick={playPrev} className="p-3 text-white hover:text-brand-gold transition-colors">
+            <button
+              type="button"
+              onClick={playPrev}
+              className="w-12 h-12 rounded-full flex items-center justify-center text-white hover:text-brand-gold bg-white/5 sm:bg-transparent transition-colors cursor-pointer"
+              title="Previous"
+            >
               <SkipBack className="w-7 h-7" />
             </button>
 
             <button
+              type="button"
               onClick={togglePlay}
-              className="w-16 h-16 rounded-full bg-gradient-to-r from-brand-gold to-brand-amber text-black flex items-center justify-center shadow-2xl hover:scale-105 transition-transform"
+              className="w-16 h-16 rounded-full bg-gradient-to-r from-brand-gold to-brand-amber text-black flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+              title={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? (
                 <Pause className="w-8 h-8 fill-current" />
@@ -504,22 +489,70 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
               )}
             </button>
 
-            <button onClick={playNext} className="p-3 text-white hover:text-brand-gold transition-colors">
+            <button
+              type="button"
+              onClick={playNext}
+              className="w-12 h-12 rounded-full flex items-center justify-center text-white hover:text-brand-gold bg-white/5 sm:bg-transparent transition-colors cursor-pointer"
+              title="Next"
+            >
               <SkipForward className="w-7 h-7" />
             </button>
 
             <button
+              type="button"
               onClick={toggleRepeat}
-              className={`p-2 rounded-full transition-colors ${
-                repeatMode !== 'off' ? 'text-brand-gold' : 'text-neutral-400 hover:text-white'
-              }`}
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors cursor-pointer ${repeatMode !== 'off' ? 'text-brand-gold bg-brand-gold/15' : 'text-neutral-400 hover:text-white bg-white/5 sm:bg-transparent'
+                }`}
+              title="Repeat"
             >
               {repeatMode === 'one' ? <Repeat1 className="w-5 h-5" /> : <Repeat className="w-5 h-5" />}
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button onClick={toggleMute} className="p-2 text-neutral-400 hover:text-white">
+          {/* Secondary Actions: Like, Playlist, Share, Discuss (Spaced evenly across width on mobile) */}
+          <div className="order-2 sm:order-1 flex items-center justify-around sm:justify-start gap-3">
+            <button
+              type="button"
+              onClick={() => toggleLikeTrack(currentTrack.id)}
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors cursor-pointer ${isLiked ? 'text-red-500 bg-red-500/15' : 'text-neutral-300 hover:text-white bg-white/5'
+                }`}
+              title="Like track"
+            >
+              <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowPlaylistModal(true)}
+              className="w-11 h-11 rounded-full flex items-center justify-center bg-white/5 hover:bg-brand-purple/30 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+              title="Add track to playlist"
+            >
+              <ListPlus className="w-5 h-5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowShareModal(true)}
+              className="w-11 h-11 rounded-full flex items-center justify-center bg-brand-gold/15 hover:bg-brand-gold/30 text-brand-gold hover:text-white border border-brand-gold/40 transition-colors cursor-pointer"
+              title="Share what's playing"
+              aria-label={`Share ${currentTrack.title}`}
+            >
+              <Share2 className="w-5 h-5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowDiscussion(true)}
+              className="h-11 flex items-center gap-1.5 px-3.5 rounded-full bg-white/5 hover:bg-brand-purple/30 text-neutral-200 hover:text-brand-gold transition-colors cursor-pointer border border-white/10"
+              title={`${trackCommentCount} Discussion Threads & Community Comments`}
+            >
+              <MessageSquare className="w-5 h-5 text-brand-gold" />
+              <span className="font-mono text-xs font-bold">{trackCommentCount}</span>
+            </button>
+          </div>
+
+          <div className="order-3 hidden sm:flex items-center gap-2">
+            <button onClick={toggleMute} className="p-2 text-neutral-400 hover:text-white cursor-pointer">
               {isMuted || volume === 0 ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
             </button>
             <input
@@ -529,7 +562,7 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
               step="0.01"
               value={isMuted ? 0 : volume}
               onChange={(e) => setVolume(parseFloat(e.target.value))}
-              className="w-24 h-1 bg-white/20 rounded-full accent-brand-gold cursor-pointer hidden sm:block"
+              className="w-24 h-1 bg-white/20 rounded-full accent-brand-gold cursor-pointer"
             />
           </div>
         </div>
@@ -561,6 +594,14 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
           contentSubtitle={`${currentTrack.artistName} • ${currentTrack.albumTitle || currentTrack.genre || 'Single'}`}
           coverUrl={currentTrack.coverUrl}
           badgeLabel="Song"
+        />
+      )}
+
+      {showShareModal && currentTrack && (
+        <UniversalShareModal
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          entity={{ type: 'song', item: currentTrack }}
         />
       )}
     </div>

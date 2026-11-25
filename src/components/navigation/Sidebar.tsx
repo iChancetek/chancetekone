@@ -904,16 +904,26 @@ export const Sidebar: React.FC = () => {
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => {
-                signInAsDemo();
-                closeMobileSidebar();
-              }}
-              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-purple to-brand-violet active:scale-98 text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4 text-brand-gold" />
-              Demo Session
-            </button>
+            <div className="space-y-2">
+              <Link
+                href="/signup"
+                onClick={(e) => handleMenuNavigate(e, '/signup', false, true)}
+                className="shimmer-cta w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#f7cf62] via-brand-gold to-amber-500 active:scale-98 text-[#050509] text-xs font-extrabold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <UserIcon className="w-4 h-4" />
+                Sign In / Create Account
+              </Link>
+              <button
+                onClick={() => {
+                  signInAsDemo();
+                  closeMobileSidebar();
+                }}
+                className="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-brand-purple to-brand-violet active:scale-98 text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4 text-brand-gold" />
+                Demo Session
+              </button>
+            </div>
           )}
         </div>
       </aside>

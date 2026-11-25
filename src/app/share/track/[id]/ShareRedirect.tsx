@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Music, Sparkles, Headphones, UserPlus } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 import {
   GUEST_SIGNUP_GATE_MESSAGE,
   MAX_GUEST_SHARED_LISTENS,
@@ -64,6 +65,10 @@ export const ShareRedirect: React.FC<ShareRedirectProps> = ({
   return (
     <div className="min-h-[70vh] flex items-center justify-center p-4 animate-in fade-in duration-300">
       <div className="w-full max-w-md glass-panel p-6 sm:p-8 rounded-3xl border border-brand-gold/40 bg-gradient-to-b from-[#17102a]/95 via-[#0f0a1d]/95 to-[#08060f]/95 shadow-2xl text-center space-y-5">
+        <div className="flex justify-center">
+          <BrandLogo variant="auth" showSlogan />
+        </div>
+
         <div className="relative w-40 h-40 mx-auto rounded-2xl overflow-hidden border-2 border-brand-gold/50 shadow-2xl bg-neutral-900">
           <Image
             src={coverUrl}
