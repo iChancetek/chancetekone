@@ -332,10 +332,21 @@ class MusicCatalogServiceClass {
       }
 
       const c = snap.collections;
+      const fixInternalOrigin = (u?: string): string => {
+        if (!u) return '';
+        const cleaned = unescapeIndexedDbUrl(u);
+        if (/^https?:\/\/(0\.0\.0\.0|127\.0\.0\.1|localhost)(:\d+)?(\/|$)/i.test(cleaned)) {
+          return cleaned.replace(
+            /^https?:\/\/(0\.0\.0\.0|127\.0\.0\.1|localhost)(:\d+)?/i,
+            'https://8ofspadesworks.us'
+          );
+        }
+        return cleaned;
+      };
       const remoteTracksSanitized = ((c.tracks as unknown as Track[]) || []).map((t) => ({
         ...t,
-        audioUrl: unescapeIndexedDbUrl(t.audioUrl),
-        coverUrl: t.coverUrl ? unescapeIndexedDbUrl(t.coverUrl) : t.coverUrl,
+        audioUrl: fixInternalOrigin(t.audioUrl),
+        coverUrl: t.coverUrl ? fixInternalOrigin(t.coverUrl) : t.coverUrl,
       }));
       const tracks = mergeWithRemote<Track>({
         seenKey: 'music_tracks',

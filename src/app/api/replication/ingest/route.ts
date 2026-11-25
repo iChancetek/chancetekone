@@ -114,6 +114,28 @@ function parseDurationSeconds(value: unknown): number {
   return 0;
 }
 
+const SOURCE_PUBLIC_ORIGIN = (
+  process.env.EIGHT_OF_SPADES_PUBLIC_URL || 'https://8ofspadesworks.us'
+).replace(/\/+$/, '');
+
+/**
+ * Rewrites unreachable internal container origins (e.g. https://0.0.0.0:8080/...,
+ * http://localhost:3000/...) sent by Cloud Run / Next.js into the public source origin
+ * so cover art and media streams load reliably on ChanceTEKOne.us.
+ */
+function normalizeReplicatedAssetUrl(raw: unknown): string {
+  if (typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+  if (/^https?:\/\/(0\.0\.0\.0|127\.0\.0\.1|localhost)(:\d+)?(\/|$)/i.test(trimmed)) {
+    return trimmed.replace(
+      /^https?:\/\/(0\.0\.0\.0|127\.0\.0\.1|localhost)(:\d+)?/i,
+      SOURCE_PUBLIC_ORIGIN
+    );
+  }
+  return trimmed;
+}
+
 function slugifyId(prefix: string, raw: string): string {
   const slug = raw
     .toLowerCase()
@@ -164,7 +186,9 @@ function buildCatalogRecord(params: {
   };
 
   if (mapping.catalogCollection === 'audiobooks') {
-    const audioUrl = item.audioUrl || item.streamUrl || '';
+    const audioUrl = normalizeReplicatedAssetUrl(item.audioUrl || item.streamUrl || '');
+    const videoUrl = normalizeReplicatedAssetUrl(item.videoUrl || '');
+    const pdfUrl = normalizeReplicatedAssetUrl(item.pdfUrl || '');
     const rawChapters = Array.isArray(item.chapters) ? item.chapters : [];
     const normalizedChapters =
       rawChapters.length > 0
@@ -173,8 +197,8 @@ function buildCatalogRecord(params: {
           chapterIndex: Number(ch?.chapterIndex || idx + 1),
           title: String(ch?.title || `Chapter ${idx + 1}`),
           duration: parseDurationSeconds(ch?.duration),
-          audioUrl: String(ch?.audioUrl || ch?.streamUrl || audioUrl || ''),
-          ...(ch?.pdfUrl ? { pdfUrl: String(ch.pdfUrl) } : {}),
+          audioUrl: normalizeReplicatedAssetUrl(ch?.audioUrl || ch?.streamUrl || audioUrl || ''),
+          ...(ch?.pdfUrl ? { pdfUrl: normalizeReplicatedAssetUrl(ch.pdfUrl) } : {}),
         }))
         : audioUrl
           ? [
@@ -183,15 +207,15 @@ function buildCatalogRecord(params: {
               chapterIndex: 1,
               title,
               duration,
-              audioUrl: String(audioUrl),
-              ...(item.pdfUrl ? { pdfUrl: String(item.pdfUrl) } : {}),
+              audioUrl,
+              ...(pdfUrl ? { pdfUrl } : {}),
             },
           ]
           : [];
 
-    const coverUrl = String(
-      item.coverUrl || item.thumbnailUrl || '/images/genres/literature.jpg'
-    );
+    const coverUrl =
+      normalizeReplicatedAssetUrl(item.coverUrl || item.thumbnailUrl) ||
+      '/images/genres/literature.jpg';
 
     return {
       id,
@@ -199,17 +223,17 @@ function buildCatalogRecord(params: {
       author: String(item.author || artistName),
       narrator: String(item.narrator || item.author || artistName),
       coverUrl,
-      thumbnailUrl: String(item.thumbnailUrl || coverUrl),
+      thumbnailUrl: normalizeReplicatedAssetUrl(item.thumbnailUrl) || coverUrl,
       duration,
       genre: String(item.genre || 'Audiobook'),
       description,
       chapters: normalizedChapters,
       audioUrl: audioUrl || null,
-      videoUrl: item.videoUrl || null,
-      streamUrl: item.streamUrl || audioUrl || item.videoUrl || null,
-      ...(item.pdfUrl ? { pdfUrl: String(item.pdfUrl) } : {}),
+      videoUrl: videoUrl || null,
+      streamUrl: normalizeReplicatedAssetUrl(item.streamUrl) || audioUrl || videoUrl || null,
+      ...(pdfUrl ? { pdfUrl } : {}),
       mediaFormat:
-        item.mediaFormat || (item.videoUrl ? 'video' : item.pdfUrl ? 'pdf' : 'audio'),
+        item.mediaFormat || (videoUrl ? 'video' : pdfUrl ? 'pdf' : 'audio'),
       likeCount: Number(item.likeCount || 0),
       rating: Number(item.rating || 5.0),
       releaseYear,
@@ -218,16 +242,16 @@ function buildCatalogRecord(params: {
   }
 
   if (mapping.catalogCollection === 'podcasts') {
-    const mediaUrl = String(
+    const mediaUrl = normalizeReplicatedAssetUrl(
       item.mediaUrl || item.streamUrl || item.audioUrl || item.videoUrl || ''
     );
     const isVideo =
       item.mediaType === 'video' ||
       Boolean(item.videoUrl) ||
       /\.(mp4|mov|webm)(\?|$)/i.test(mediaUrl);
-    const coverUrl = String(
-      item.coverUrl || item.thumbnailUrl || '/images/genres/podcast.jpg'
-    );
+    const coverUrl =
+      normalizeReplicatedAssetUrl(item.coverUrl || item.thumbnailUrl) ||
+      '/images/genres/podcast.jpg';
 
     return {
       id,
@@ -237,11 +261,11 @@ function buildCatalogRecord(params: {
       description,
       mediaUrl,
       mediaType: isVideo ? 'video' : 'audio',
-      audioUrl: item.audioUrl || (!isVideo ? mediaUrl || null : null),
-      videoUrl: item.videoUrl || (isVideo ? mediaUrl || null : null),
+      audioUrl: normalizeReplicatedAssetUrl(item.audioUrl) || (!isVideo ? mediaUrl || null : null),
+      videoUrl: normalizeReplicatedAssetUrl(item.videoUrl) || (isVideo ? mediaUrl || null : null),
       streamUrl: mediaUrl || null,
       coverUrl,
-      thumbnailUrl: String(item.thumbnailUrl || coverUrl),
+      thumbnailUrl: normalizeReplicatedAssetUrl(item.thumbnailUrl) || coverUrl,
       duration,
       releaseDate: String(item.releaseDate || uploadedAt.slice(0, 10)),
       category: String(item.category || item.genre || 'Culture & Tech'),
@@ -252,10 +276,10 @@ function buildCatalogRecord(params: {
   }
 
   if (mapping.catalogCollection === 'videos') {
-    const videoUrl = String(item.videoUrl || item.streamUrl || '');
-    const thumbnailUrl = String(
-      item.thumbnailUrl || item.coverUrl || '/images/genres/cinema.jpg'
-    );
+    const videoUrl = normalizeReplicatedAssetUrl(item.videoUrl || item.streamUrl || '');
+    const thumbnailUrl =
+      normalizeReplicatedAssetUrl(item.thumbnailUrl || item.coverUrl) ||
+      '/images/genres/cinema.jpg';
 
     return {
       id,
@@ -265,7 +289,7 @@ function buildCatalogRecord(params: {
       videoUrl,
       streamUrl: videoUrl || null,
       thumbnailUrl,
-      coverUrl: String(item.coverUrl || thumbnailUrl),
+      coverUrl: normalizeReplicatedAssetUrl(item.coverUrl) || thumbnailUrl,
       duration,
       views: Number(item.views || item.playCount || 0),
       likeCount: Number(item.likeCount || 0),
@@ -279,11 +303,12 @@ function buildCatalogRecord(params: {
   }
 
   // Default: Music Track → ChanceTEKOne Music Area (`catalog_tracks`)
-  const audioUrl = String(item.audioUrl || item.streamUrl || '');
-  const coverUrl = String(
-    item.coverUrl || item.thumbnailUrl || '/images/genres/rnb-neo-soul.jpg'
+  const audioUrl = normalizeReplicatedAssetUrl(item.audioUrl || item.streamUrl || '');
+  const rawCover = normalizeReplicatedAssetUrl(
+    item.coverUrl || item.thumbnailUrl || item.artworkUrl || item.albumCoverUrl
   );
-  const hasExplicitCover = Boolean(item.coverUrl || item.thumbnailUrl);
+  const coverUrl = rawCover || '/images/genres/rnb-neo-soul.jpg';
+  const hasExplicitCover = Boolean(rawCover);
 
   return {
     id,

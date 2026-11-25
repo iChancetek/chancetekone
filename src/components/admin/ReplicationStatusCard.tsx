@@ -111,6 +111,13 @@ export const ReplicationStatusCard: React.FC = () => {
 
           const repAt = String(d.replicatedAt || d.uploadedAt || d.updatedAt || '');
           const repMs = repAt ? Date.parse(repAt) : 0;
+          const rawCover = String(d.coverUrl || d.thumbnailUrl || '').trim();
+          const coverUrl = rawCover
+            ? rawCover.replace(
+                /^https?:\/\/(0\.0\.0\.0|127\.0\.0\.1|localhost)(:\d+)?/i,
+                'https://8ofspadesworks.us'
+              )
+            : undefined;
           matched.push({
             id: String(d.id || ''),
             title: String(d.title || 'Untitled'),
@@ -118,7 +125,7 @@ export const ReplicationStatusCard: React.FC = () => {
               d.artistName || d.author || d.host || d.showTitle || 'Catalog Item'
             ),
             area,
-            coverUrl: d.coverUrl || d.thumbnailUrl || undefined,
+            coverUrl,
             replicatedAt: repAt,
             replicatedMs: Number.isFinite(repMs) ? repMs : 0,
             runId: d.replicationRunId || null,
