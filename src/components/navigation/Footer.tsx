@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useAI } from '@/lib/ai/AIContext';
 import { AccessibilityButton } from '@/components/accessibility/AccessibilityButton';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 export const Footer: React.FC = () => {
   const { openAI } = useAI();
@@ -32,12 +33,9 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-10">
           {/* Column 1: Brand & Platform Narrative (Spans 2 columns on lg) */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-brand-gold shadow-[0_0_12px_rgba(245,195,68,0.65)] shrink-0" />
-              <h3 className="text-lg sm:text-xl font-black text-white tracking-tight font-display">
-                ChanceTEK One
-              </h3>
-            </div>
+            <Link href="/" className="inline-block transition-transform hover:scale-[1.02]">
+              <BrandLogo variant="footer" showSlogan />
+            </Link>
 
             <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed max-w-md">
               The definitive breakbeat ecosystem uniting master-quality audio streaming, 4K cultural documentaries, narrated audiobooks, limited collector vinyl pressings, and autonomous AI crate digging.

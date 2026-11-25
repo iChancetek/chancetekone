@@ -27,6 +27,7 @@ import { AuthModal } from '@/components/auth/AuthModal';
 import { GlobalVoiceSearchModal } from '@/components/navigation/GlobalVoiceSearchModal';
 import { AccessibilityButton } from '@/components/accessibility/AccessibilityButton';
 import { UserAvatar } from '@/components/navigation/UserAvatar';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
   const router = useRouter();
@@ -83,6 +84,30 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
           >
             <Menu className="w-5 h-5 text-brand-gold" />
           </button>
+
+          {/* Mobile Compact Brand Logo */}
+          <Link href="/" className="md:hidden shrink-0" aria-label="ChanceTEK One — Listen. Watch. Discover.">
+            <BrandLogo variant="compact" showSlogan={false} className="w-9 h-9" />
+          </Link>
+
+          {/* Desktop Header Brand Lockup + Slogan (visible when sidebar is collapsed) */}
+          {isCollapsed && (
+            <Link
+              href="/"
+              className="hidden md:flex items-center gap-2.5 shrink-0 pr-1 group"
+              aria-label="ChanceTEK One — Listen. Watch. Discover."
+            >
+              <BrandLogo variant="compact" showSlogan={false} className="w-10 h-10" />
+              <div className="hidden lg:flex flex-col leading-tight">
+                <span className="font-display text-sm font-black tracking-tight text-white group-hover:text-brand-gold transition-colors">
+                  ChanceTEK <span className="text-brand-gold">One</span>
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r from-brand-gold via-amber-300 to-brand-neon bg-clip-text text-transparent">
+                  Listen. Watch. Discover.
+                </span>
+              </div>
+            </Link>
+          )}
 
           {/* Desktop Sidebar Toggle Button */}
           <button

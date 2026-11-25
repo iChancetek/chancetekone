@@ -20,25 +20,51 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://chancetekone.us'),
   applicationName: 'ChanceTEK One',
   title: {
-    default: 'ChanceTEK One — Agentic AI Entertainment Platform',
+    default: 'ChanceTEK One — Listen. Watch. Discover.',
     template: '%s · ChanceTEK One',
   },
   description:
-    'Experience next-generation breakbeat music, 4K videos, audiobooks, exclusive vinyl merch, and Agentic AI curation with ChanceTEK One.',
+    'Listen. Watch. Discover. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and Agentic AI curation with ChanceTEK One.',
+  keywords: [
+    'ChanceTEK One',
+    'Listen. Watch. Discover.',
+    'Music Streaming',
+    '4K Videos',
+    'Audiobooks',
+    'Podcasts',
+    'AI Radio',
+    'Independent Artists',
+  ],
+  icons: {
+    icon: '/images/chancetekone_logo.jpg',
+    shortcut: '/images/chancetekone_logo.jpg',
+    apple: '/images/chancetekone_logo.jpg',
+  },
   openGraph: {
-    title: 'ChanceTEK One — Agentic AI Entertainment Platform',
+    title: 'ChanceTEK One — Listen. Watch. Discover.',
     description:
-      'Experience next-generation breakbeat music, 4K videos, audiobooks, exclusive vinyl merch, and Agentic AI curation.',
+      'Listen. Watch. Discover. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and Agentic AI curation.',
     siteName: 'ChanceTEK One',
+    url: 'https://chancetekone.us',
     type: 'website',
+    images: [
+      {
+        url: '/images/chancetekone_logo.jpg',
+        width: 1200,
+        height: 675,
+        alt: 'ChanceTEK One — Listen. Watch. Discover.',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChanceTEK One — Agentic AI Entertainment Platform',
+    title: 'ChanceTEK One — Listen. Watch. Discover.',
     description:
-      'Experience next-generation breakbeat music, 4K videos, audiobooks, exclusive vinyl merch, and Agentic AI curation.',
+      'Listen. Watch. Discover. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and Agentic AI curation.',
+    images: ['/images/chancetekone_logo.jpg'],
   },
   manifest: '/manifest.webmanifest',
   appleWebApp: {

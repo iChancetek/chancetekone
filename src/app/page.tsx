@@ -25,6 +25,7 @@ import {
 import { HeroBanner } from '@/components/media/HeroBanner';
 import { TrackRow } from '@/components/media/TrackRow';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
+import { BrandLogo, PLATFORM_SLOGAN } from '@/components/brand/BrandLogo';
 import { MOCK_TRACKS } from '@/lib/mockData';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
 import { Track } from '@/types/media';
@@ -68,19 +69,17 @@ export default function HomePage() {
         {/* Top Music Licensing & Discovery Ribbon */}
         <div className="specular-edge flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-5 py-3 rounded-2xl bg-[#0c0c16]/80 backdrop-blur-2xl border border-white/[0.08] shadow-[0_12px_40px_-14px_rgba(0,0,0,0.8)]">
           <div className="flex items-center gap-3 text-center sm:text-left">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-gold/25 to-amber-500/10 border border-brand-gold/35 flex items-center justify-center shrink-0 shadow-[0_0_18px_rgba(245,195,68,0.2)]">
-              <ShieldCheck className="w-4 h-4 text-brand-gold" />
-            </div>
+            <BrandLogo variant="compact" showSlogan={false} />
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2.5 gap-y-0.5">
               <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-extrabold text-white tracking-tight">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
                 <span className="gold-gradient-text uppercase tracking-wide">
-                  Music Curated by ASCAP &amp; BMI Publishing
+                  {PLATFORM_SLOGAN}
                 </span>
               </span>
               <span className="text-white/20 hidden md:inline">•</span>
               <span className="text-xs text-neutral-300/90 hidden md:inline">
-                Discover independent artists, producers, and next-gen spatial audio
+                Music Curated by ASCAP &amp; BMI Publishing
               </span>
             </div>
           </div>

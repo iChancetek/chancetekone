@@ -47,6 +47,7 @@ import { usePWA } from '@/lib/pwa/PWAContext';
 import { useSidebar } from '@/lib/navigation/SidebarContext';
 import { useAccessibility } from '@/lib/accessibility/AccessibilityContext';
 import { useTheme } from '@/lib/theme/ThemeContext';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 interface NavItem {
   label: string;
@@ -197,16 +198,9 @@ export const Sidebar: React.FC = () => {
             className="group flex items-center gap-2 transition-transform hover:scale-[1.02]"
           >
             {isCollapsed ? (
-              <div className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/15 flex items-center justify-center font-display font-black text-sm tracking-tight text-white shadow-sm">
-                CT
-              </div>
+              <BrandLogo variant="compact" showSlogan={false} />
             ) : (
-              <div className="flex items-center gap-2.5 pl-1 py-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-brand-gold shadow-[0_0_12px_rgba(245,195,68,0.65)] shrink-0" />
-                <span className="font-display text-lg font-black tracking-tight text-white">
-                  ChanceTEK <span className="text-brand-gold">One</span>
-                </span>
-              </div>
+              <BrandLogo variant="sidebar" showSlogan />
             )}
           </Link>
 
@@ -615,12 +609,9 @@ export const Sidebar: React.FC = () => {
             href="/"
             prefetch={false}
             onClick={(e) => handleMenuNavigate(e, '/', false, true)}
-            className="flex items-center gap-2.5 transition-transform active:scale-95 touch-manipulation pl-1"
+            className="flex items-center gap-2.5 transition-transform active:scale-95 touch-manipulation"
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-brand-gold shadow-[0_0_12px_rgba(245,195,68,0.65)] shrink-0" />
-            <span className="font-display text-xl font-black tracking-tight text-white">
-              ChanceTEK <span className="text-brand-gold">One</span>
-            </span>
+            <BrandLogo variant="mobile-drawer" showSlogan />
           </Link>
 
           {/* Close Button with generous touch target */}
@@ -659,8 +650,8 @@ export const Sidebar: React.FC = () => {
                     onTouchStart={() => handleIntentPrefetch(item.href, item.isExternal)}
                     onClick={(e) => handleMenuNavigate(e, item.href, item.isExternal, true)}
                     className={`flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-[15px] font-semibold transition-all touch-manipulation ${isActive
-                        ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
-                        : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
+                      ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
+                      : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
                       }`}
                   >
                     <div className="flex items-center gap-3 min-w-0 mr-1.5">
@@ -702,8 +693,8 @@ export const Sidebar: React.FC = () => {
                     onTouchStart={() => handleIntentPrefetch(item.href)}
                     onClick={(e) => handleMenuNavigate(e, item.href, false, true)}
                     className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[15px] font-semibold transition-all touch-manipulation ${isActive
-                        ? 'bg-white/10 text-white border border-white/15'
-                        : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
+                      ? 'bg-white/10 text-white border border-white/15'
+                      : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
                       }`}
                   >
                     <Icon className="w-5 h-5 text-neutral-400 shrink-0" />
@@ -775,8 +766,8 @@ export const Sidebar: React.FC = () => {
                     onTouchStart={() => handleIntentPrefetch(item.href)}
                     onClick={(e) => handleMenuNavigate(e, item.href, false, true)}
                     className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all touch-manipulation ${isActive
-                        ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
-                        : 'text-neutral-300 hover:text-white hover:bg-white/5 active:bg-white/10'
+                      ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
+                      : 'text-neutral-300 hover:text-white hover:bg-white/5 active:bg-white/10'
                       }`}
                   >
                     <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400'}`} />

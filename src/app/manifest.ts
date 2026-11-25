@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'ChanceTEK One',
     short_name: 'ChanceTEK One',
     description:
-      'Agentic AI Breakbeat Streaming, 4K Video Sessions, Cultural Audiobooks, Exclusive Vinyl & Merchandise Operating System.',
+      'Listen. Watch. Discover. Agentic AI Music Streaming, 4K Video Sessions, Cultural Audiobooks, Podcasts & Merchandise Operating System.',
     start_url: '/',
     display: 'standalone',
     background_color: '#08080c',
@@ -16,6 +16,14 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ['music', 'entertainment', 'audio'],
     lang: 'en',
     dir: 'ltr',
+    icons: [
+      {
+        src: '/images/chancetekone_logo.jpg',
+        sizes: '512x512',
+        type: 'image/jpeg',
+        purpose: 'any',
+      },
+    ],
     display_override: ['window-controls-overlay', 'standalone', 'minimal-ui', 'browser'],
     shortcuts: [
       {

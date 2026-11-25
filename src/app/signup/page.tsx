@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Sparkles, Headphones, ArrowLeft, UserPlus } from 'lucide-react';
 import { AuthModal } from '@/components/auth/AuthModal';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
 import { Track } from '@/types/media';
@@ -52,6 +53,10 @@ function SignupRedirectContent() {
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center py-10 px-4 animate-in fade-in duration-300">
       <div className="w-full max-w-lg glass-panel p-6 sm:p-8 rounded-3xl border border-brand-gold/40 bg-gradient-to-b from-[#17102a]/95 via-[#0e0a1c]/95 to-[#08060f]/95 shadow-2xl text-center space-y-5">
+        <div className="flex justify-center">
+          <BrandLogo variant="auth" showSlogan />
+        </div>
+
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-gold/15 border border-brand-gold/40 text-brand-gold text-xs font-black uppercase tracking-wider">
           <Headphones className="w-4 h-4" />
           <span>
