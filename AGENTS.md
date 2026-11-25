@@ -1993,3 +1993,14 @@ esolvedAudioUrl is reset to '' (zero tolerance).
   - `ShareRedirect.tsx`: branded preview card that sends authenticated users to `/music/{id}`, sends guests to `/music/{id}?shared=1`, and sends guests who have used their listens to `/signup?from=shared&track={id}`.
   - `PlayerContext.tsx`: `authorizeTrackPlayback()` gives members unlimited playback. Shared-link guests consume 1 listen per new track start (resuming the same active track is free). On the 3rd attempt, or when the 2nd listen ends (`handleTrackEndedRef` avoids stale closures), playback pauses and `router.push` goes to `/signup`. Non-shared guests get the sign-up modal. The guest session is cleared on login.
   - New `/signup` page (auto-opens `AuthModal` with `initialTab="signup"`). The exact message appears on `/music/[id]` (guest banner), `ShareRedirect`, `/signup`, the `PlayerContext` AuthModal, the `AuthPromptModal` default, and the `AuthModal` signup tab.
+
+### 84. Cross-Platform Replication Ingest Endpoint (`/api/replication/ingest`)
+- **Route**: `src/app/api/replication/ingest/route.ts` (`dynamic = 'force-dynamic'`, `Cache-Control: no-store`).
+- **Authentication**: Validates `Authorization: Bearer <key>` or `x-api-key: <key>` using constant-time comparison (`crypto.timingSafeEqual`) against comma-separated keys from `EIGHT_OF_SPADES_API_KEY` or `8ofspadesworks_API_KEYS`.
+- **Health Check (`GET`)**: Returns `{ ok: true, platform: 'ChanceTEKOne.us', areas: ['music', 'audiobooks', 'podcasts', 'videos'], ready: true, timestamp }`.
+- **Content Ingestion (`POST`)**:
+  - Maps incoming `mediaType`/`targetArea` directly into ChanceTEKOne's live shared cloud catalog collections via `applyCatalogOps()` (`catalog_tracks`, `catalog_audiobooks`, `catalog_podcasts`, `catalog_videos`) and increments `catalog_meta/state` revision so all connected clients immediately receive replicated items in real time without manual refresh.
+  - Checks existing items via strongly-consistent Firestore lookup + `readCatalogSnapshot()` to respect `overrideDuplicates` (`skipped_duplicate` vs `overwritten` vs `replicated`).
+  - Normalizes each media type (`Track`, `Audiobook` with chapter synthesis, `PodcastEpisode` with safe `mediaUrl`/`mediaType`, `Video`) and lifts matching removal tombstones from `catalog_removed`.
+  - Preserves `uploadedAt` so newly replicated songs sort to the top of the Music area by default.
+
