@@ -2004,3 +2004,19 @@ esolvedAudioUrl is reset to '' (zero tolerance).
   - Normalizes each media type (`Track`, `Audiobook` with chapter synthesis, `PodcastEpisode` with safe `mediaUrl`/`mediaType`, `Video`) and lifts matching removal tombstones from `catalog_removed`.
   - Preserves `uploadedAt` so newly replicated songs sort to the top of the Music area by default.
 
+
+### 85. Resilient Social Media, Messenger & Famio.us Sharing with Guaranteed Cover Art Attachment
+- **Root Causes Eliminated**:
+  1. `src/lib/server/shareTrackLookup.ts` previously imported the browser-singleton `MusicCatalogService`, causing server-side `generateMetadata` on `/share/track/[id]` to throw (emitting zero `<title>`/`og:*` tags) and `/api/share/cover/[id]` to return `404 {"error":"Unable to resolve track cover art"}`.
+  2. Next.js 16 streams async `generateMetadata` into `<body>` for non-standard bots (`famio.us`, Messenger, SMS/iMessage previewers) unless `htmlLimitedBots: /.*/` is configured in `next.config.ts`.
+  3. Song share URLs appended 400+ character double-encoded query parameters (`?t=...&a=...&c=https%3A%2F%2F...`) that broke or got truncated in Messenger, Facebook, SMS, and Famio.us.
+  4. `UniversalShareModal` and `SharePlaylistModal` lacked dedicated Messenger and Famio.us share actions, used desktop popup geometry (`width=600,height=500`) blocked in mobile PWAs, and called `window.open` inside `setTimeout` after `await`.
+  5. Cold-start snapshot reads (`readCatalogSnapshot()`) used a 2000ms timeout scanning all collections instead of an O(1) single-document lookup, and `/music/[id]` flashed `MOCK_TRACKS[0]` on fresh recipient browsers before the full catalog hydrated.
+- **Architectural Implementation**:
+  - `next.config.ts`: Configured `htmlLimitedBots: /.*/` so synchronous `<head>` OpenGraph/Twitter meta tags render for every crawler.
+  - `src/lib/server/catalogStore.ts`: Added fast O(1) `readCatalogDocById(collection, id)` single-document Firestore lookup and hardened `readCatalogSnapshot()` timeout (5000ms) without caching empty timed-out snapshots.
+  - `src/lib/server/shareTrackLookup.ts`: Pure 100% server-safe resolver (tracks, audiobooks, podcasts, videos) that resolves local `/public/images/...` assets directly and generates clean, query-less, extensioned OG cover URLs (`/api/share/cover/<id>.jpg`, `/api/share/cover/audiobook--<id>.jpg`, `/api/share/cover/podcast--<id>.jpg`, `/api/share/cover/video--<id>.jpg`).
+  - `src/app/api/share/cover/[id]/route.ts`: Supports `GET`, `HEAD`, and `OPTIONS` with `HTTP 200 OK`, `Access-Control-Allow-Origin: *`, exact binary image bytes, clean extensioned slugs plus legacy `?type=...`, and guaranteed local binary fallback (never 404 JSON).
+  - `src/app/api/share/item/route.ts`: Public O(1) single-item hydrator so recipients opening shared links on fresh devices immediately load and play the exact shared track without flashing `MOCK_TRACKS[0]`.
+  - `src/app/share/track/[id]/page.tsx`, `src/app/music/[id]/layout.tsx`, `src/app/audiobooks/[id]/layout.tsx`, `src/app/podcasts/[id]/layout.tsx`, `src/app/videos/[id]/layout.tsx`: Added `export const dynamic = 'force-dynamic'`, `og:image:type`, `og:image:secure_url`, and resilient `try/catch` fallbacks.
+  - `src/lib/sharing/shareMetadataService.ts`, `src/components/social/UniversalShareModal.tsx`, `src/components/playlist/SharePlaylistModal.tsx`: Short clean `/share/track/[id]` links, dedicated **Famio.us** and **Messenger** buttons, prominent native device share sheet, iOS/Android-aware SMS links (`sms:&body=` vs `sms:?body=`), synchronous non-popup-blocked external tab launches, and portaled mobile-safe rendering.

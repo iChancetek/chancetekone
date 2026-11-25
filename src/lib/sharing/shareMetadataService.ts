@@ -36,6 +36,8 @@ export interface ResolvedShareMetadata {
   textMessageBody: string;
   smsUrl: string;
   facebookUrl: string;
+  messengerUrl: string;
+  famioUrl: string;
   twitterUrl: string;
   linkedInUrl: string;
   whatsAppUrl: string;
@@ -494,23 +496,10 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
   switch (type) {
     case 'song':
     case 'beat': {
-      // Route shared songs through /share/track/[id] so social/SMS bots receive exact song OG cover art
-      // AND unauthenticated visitors enter the 2-listen guest preview flow seamlessly.
-      const qp = new URLSearchParams();
-      if (title && title !== 'Featured Track') qp.set('t', title);
-      if (creator && creator !== 'ChanceTEK One') qp.set('a', creator);
-      if (
-        coverUrl &&
-        !coverUrl.startsWith('data:') &&
-        !coverUrl.startsWith('blob:') &&
-        !isDefaultOrInvalidCover(coverUrl) &&
-        !isGenericGenreCover(coverUrl) &&
-        coverUrl.length <= 360
-      ) {
-        qp.set('c', coverUrl);
-      }
-      const qs = qp.toString();
-      relativePath = `/share/track/${encodeURIComponent(effectiveId)}${qs ? `?${qs}` : ''}`;
+      // Clean, short, unbreakable canonical URL — /share/track/[id] resolves exact song cover art
+      // server-side directly from Firestore so Facebook, Messenger, iMessage, WhatsApp, and Famio.us
+      // never break on long double-encoded query strings.
+      relativePath = `/share/track/${encodeURIComponent(effectiveId)}`;
       break;
     }
     case 'video':
@@ -577,10 +566,12 @@ ${canonicalUrl}`;
 
   const smsUrl = `sms:?&body=${encodedSms}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
-  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out "${title}" by ${creator} on @chancetekone\n\n${description.slice(0, 130)}`)}&url=${encodedUrl}`;
+  const messengerUrl = `fb-messenger://share/?link=${encodedUrl}`;
+  const famioUrl = `https://famio.us/?share=${encodedUrl}&title=${encodeURIComponent(`${title} — ${creator}`)}&text=${encodeURIComponent(`Listen to "${title}" by ${creator} on ChanceTEK One`)}`;
+  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out "${title}" by ${creator} on ChanceTEK One`)}&url=${encodedUrl}`;
   const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
-  const whatsAppUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`*${title}* by _${creator}_\n\n${description}\n\n${canonicalUrl}`)}`;
-  const telegramUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(`*${title}* by ${creator}\n${description}`)}`;
+  const whatsAppUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`*${title}* by _${creator}_\n\n${canonicalUrl}`)}`;
+  const telegramUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(`${title} by ${creator} on ChanceTEK One`)}`;
 
   const emailSubject = `${title} by ${creator} — ChanceTEK One`;
   const emailBody = `Hey,\n\nI wanted to share this with you on ChanceTEK One:\n\n"${title}" by ${creator}\n\n${description}\n\nStream now: ${canonicalUrl}`;
@@ -600,6 +591,8 @@ ${canonicalUrl}`;
     textMessageBody,
     smsUrl,
     facebookUrl,
+    messengerUrl,
+    famioUrl,
     twitterUrl,
     linkedInUrl,
     whatsAppUrl,
@@ -620,34 +613,37 @@ export function resolveShareMetadataById(type: ShareContentType, id: string): Re
   } catch (err) {
     const relPath =
       type === 'song' || type === 'beat'
-        ? `/music/${id}`
+        ? `/share/track/${encodeURIComponent(id)}`
         : type === 'project'
         ? `/projects#${id}`
         : type === 'merch'
         ? `/merch/${id}`
         : `/${type}s/${id}`;
     const canonicalUrl = `https://chancetekone.us${relPath}`;
+    const encodedUrl = encodeURIComponent(canonicalUrl);
     return {
       id: id || 'item',
       type,
       typeLabel: 'Featured Media',
       title: 'ChanceTEK One',
       creator: 'ChanceTEK One',
-      description: 'Stream master breakbeat music, 4K videos, audiobooks, and culture on ChanceTEK One.',
+      description: 'Stream master music, 4K videos, audiobooks, and podcasts on ChanceTEK One.',
       coverUrl: '/images/genres/rnb-neo-soul.jpg',
       canonicalUrl,
       directUrl: canonicalUrl,
       shareText: 'Check out ChanceTEK One',
-      textMessageBody: 'Check out ChanceTEK One',
-      smsUrl: '',
-      facebookUrl: '',
-      twitterUrl: '',
-      linkedInUrl: '',
-      whatsAppUrl: '',
-      telegramUrl: '',
+      textMessageBody: `Check out ChanceTEK One\n${canonicalUrl}`,
+      smsUrl: `sms:?&body=${encodeURIComponent(canonicalUrl)}`,
+      facebookUrl: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+      messengerUrl: `fb-messenger://share/?link=${encodedUrl}`,
+      famioUrl: `https://famio.us/?share=${encodedUrl}`,
+      twitterUrl: `https://twitter.com/intent/tweet?url=${encodedUrl}`,
+      linkedInUrl: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+      whatsAppUrl: `https://api.whatsapp.com/send?text=${encodedUrl}`,
+      telegramUrl: `https://t.me/share/url?url=${encodedUrl}`,
       emailSubject: 'ChanceTEK One',
-      emailBody: '',
-      emailUrl: '',
+      emailBody: canonicalUrl,
+      emailUrl: `mailto:?subject=ChanceTEK%20One&body=${encodedUrl}`,
       metadataBadges: [],
     };
   }

@@ -1,6 +1,7 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { X, Copy, Check, Share2, MessageCircle, Send, Users, UserPlus, Trash2, Lock, Globe, ShieldCheck, Mail, Smartphone } from 'lucide-react';
 import { Playlist } from '@/types/playlist';
@@ -25,7 +26,8 @@ export const SharePlaylistModal: React.FC<SharePlaylistModalProps> = ({
   const { profile, user, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState<'link' | 'members'>('link');
   const [copied, setCopied] = useState(false);
-  const [instagramNotice, setInstagramNotice] = useState(false);
+  const [copiedTextMsg, setCopiedTextMsg] = useState(false);
+  const [shareNotice, setShareNotice] = useState<string | null>(null);
   const [sharedList, setSharedList] = useState<string[]>(playlist.sharedWith || []);
   const [memberInput, setMemberInput] = useState('');
   const [memberError, setMemberError] = useState<string | null>(null);
@@ -49,7 +51,7 @@ export const SharePlaylistModal: React.FC<SharePlaylistModalProps> = ({
     }
   }, [playlist, profile?.id]);
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://chancetekone.us';
   const isLocalhost = typeof window !== 'undefined' && (
@@ -57,31 +59,34 @@ export const SharePlaylistModal: React.FC<SharePlaylistModalProps> = ({
     window.location.hostname === '127.0.0.1' ||
     window.location.hostname.endsWith('.local')
   );
-  // Canonical public URL required by Facebook, LinkedIn, Twitter crawlers:
+  // Canonical public URL required by Facebook, Messenger, Famio.us, LinkedIn, Twitter crawlers:
   const publicShareUrl = isLocalhost ? `https://chancetekone.us/playlists/${playlist.id}` : `${origin}/playlists/${playlist.id}`;
-  const shareUrl = `${origin}/playlists/${playlist.id}`;
+  const shareUrl = publicShareUrl;
   const shareText = `Listen to "${playlist.name}" on ChanceTEK One: ${playlist.description || 'Curated music and media crate.'}`;
-  const textMessageBody = `Listen to "${playlist.name}" on ChanceTEK One!
+  const textMessageBody = `Listen to "${playlist.name}" on ChanceTEK One!\n\n${playlist.description || 'Curated music and media crate.'}\n\nStream crate here:\n${publicShareUrl}`;
 
-${playlist.description || 'Curated music and media crate.'}
+  const showToast = (msg: string) => {
+    setShareNotice(msg);
+    setTimeout(() => setShareNotice((prev) => (prev === msg ? null : prev)), 4500);
+  };
 
-Stream crate here:
-${publicShareUrl}`;
-  const smsUrl = `sms:?&body=${encodeURIComponent(textMessageBody)}`;
-  const [copiedTextMsg, setCopiedTextMsg] = useState(false);
+  const openSafely = (url: string) => {
+    const popup = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!popup) window.location.href = url;
+  };
 
-  const handleTextMessageShare = async () => {
+  const handleTextMessageShare = () => {
     PlaylistService.recordPlaylistShare(playlist.id);
-    if (typeof window !== 'undefined') {
-      try {
-        window.location.href = smsUrl;
-      } catch (e) { }
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(textMessageBody).catch(() => {});
     }
+    setCopiedTextMsg(true);
+    setTimeout(() => setCopiedTextMsg(false), 3000);
+    const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const encoded = encodeURIComponent(textMessageBody);
     try {
-      await navigator.clipboard.writeText(textMessageBody);
-      setCopiedTextMsg(true);
-      setTimeout(() => setCopiedTextMsg(false), 3000);
-    } catch (e) { }
+      window.location.href = isIOS ? `sms:&body=${encoded}` : `sms:?body=${encoded}`;
+    } catch {}
   };
 
   const handleCopyLink = async () => {
@@ -110,57 +115,62 @@ ${publicShareUrl}`;
     }
   };
 
+  const handleFamioShare = () => {
+    PlaylistService.recordPlaylistShare(playlist.id);
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(`${playlist.name} — ChanceTEK One\n${publicShareUrl}`).catch(() => {});
+    }
+    showToast('Copied for Famio.us! Opening famio.us — paste into your post or chat.');
+    openSafely(`https://famio.us/?share=${encodeURIComponent(publicShareUrl)}&title=${encodeURIComponent(playlist.name)}`);
+  };
+
+  const handleMessengerShare = () => {
+    PlaylistService.recordPlaylistShare(playlist.id);
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(publicShareUrl).catch(() => {});
+    }
+    const isMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    if (isMobile) {
+      showToast('Opening Messenger — link is also copied to clipboard.');
+      window.location.href = `fb-messenger://share/?link=${encodeURIComponent(publicShareUrl)}`;
+    } else {
+      showToast('Link copied! Paste directly into your Messenger chat.');
+      openSafely('https://www.messenger.com/');
+    }
+  };
+
   const handleFacebookShare = () => {
     PlaylistService.recordPlaylistShare(playlist.id);
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(publicShareUrl)}`;
-    window.open(url, '_blank', 'noopener,noreferrer,width=600,height=500');
+    openSafely(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(publicShareUrl)}`);
   };
 
   const handleLinkedInShare = () => {
     PlaylistService.recordPlaylistShare(playlist.id);
-    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(publicShareUrl)}`;
-    window.open(url, '_blank', 'noopener,noreferrer,width=600,height=600');
+    openSafely(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(publicShareUrl)}`);
   };
 
-  const handleInstagramShare = async () => {
+  const handleInstagramShare = () => {
     PlaylistService.recordPlaylistShare(playlist.id);
-    // On mobile devices, native share integrates with Instagram app
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
-        await navigator.share({
-          title: playlist.name,
-          text: shareText,
-          url: publicShareUrl,
-        });
-        return;
-      } catch (e) {
-        // User dismissed sheet or not supported; proceed to copy & web open
-      }
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(publicShareUrl).catch(() => {});
     }
-    try {
-      await navigator.clipboard.writeText(publicShareUrl);
-    } catch (err) { }
-    setInstagramNotice(true);
-    setTimeout(() => setInstagramNotice(false), 4000);
-    window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
+    showToast('Link copied! Opening Instagram to share via Story, Post, or DM.');
+    openSafely('https://www.instagram.com/');
   };
 
   const handleTwitterShare = () => {
     PlaylistService.recordPlaylistShare(playlist.id);
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(publicShareUrl)}`;
-    window.open(url, '_blank', 'noopener,noreferrer,width=600,height=500');
+    openSafely(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(publicShareUrl)}`);
   };
 
   const handleWhatsAppShare = () => {
     PlaylistService.recordPlaylistShare(playlist.id);
-    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareText} ${publicShareUrl}`)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    openSafely(`https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareText} ${publicShareUrl}`)}`);
   };
 
   const handleTelegramShare = () => {
     PlaylistService.recordPlaylistShare(playlist.id);
-    const url = `https://t.me/share/url?url=${encodeURIComponent(publicShareUrl)}&text=${encodeURIComponent(shareText)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    openSafely(`https://t.me/share/url?url=${encodeURIComponent(publicShareUrl)}&text=${encodeURIComponent(shareText)}`);
   };
 
   const handleEmailShare = () => {
@@ -198,9 +208,15 @@ ${publicShareUrl}`;
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg glass-panel p-6 sm:p-8 rounded-3xl border border-brand-purple/40 space-y-6 bg-gradient-to-b from-[#141024]/98 via-[#0c0916]/98 to-[#08080c]/98 shadow-[0_25px_70px_rgba(0,0,0,0.85)]">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9992] w-screen max-w-[100vw] h-[100dvh] overflow-x-hidden flex items-center justify-center p-3 sm:p-4 bg-black/85 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-lg max-h-[90dvh] overflow-y-auto overflow-x-hidden glass-panel p-5 sm:p-8 rounded-3xl border border-brand-purple/40 space-y-6 bg-gradient-to-b from-[#141024]/98 via-[#0c0916]/98 to-[#08080c]/98 shadow-[0_25px_70px_rgba(0,0,0,0.85)]"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-2.5">
@@ -360,18 +376,39 @@ ${publicShareUrl}`;
             {/* Social Sharing Buttons */}
             <div className="space-y-2">
               <p className="text-xs font-bold uppercase tracking-wider text-neutral-300">
-                Share to Social Platforms
+                Share to Social Platforms, Messenger & Famio.us
               </p>
 
-              {instagramNotice && (
-                <div className="p-3 rounded-2xl bg-amber-500/20 border border-brand-gold/40 text-brand-gold text-xs font-bold animate-in fade-in duration-200 flex items-center gap-2">
-                  <Check className="w-4 h-4 shrink-0 text-brand-gold" />
-                  <span>Link copied! Opening Instagram to share via Story, Post or DM...</span>
+              {shareNotice && (
+                <div className="p-3 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-100 text-xs font-bold animate-in fade-in duration-200 flex items-center gap-2">
+                  <Check className="w-4 h-4 shrink-0 text-emerald-400" />
+                  <span>{shareNotice}</span>
                 </div>
               )}
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 <button
+                  type="button"
+                  onClick={handleFamioShare}
+                  className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-400/40 text-white transition-all cursor-pointer"
+                  title="Share to Famio.us"
+                >
+                  <Users className="w-5 h-5 text-indigo-300" />
+                  <span className="text-[11px] font-bold">Famio.us</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleMessengerShare}
+                  className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl bg-[#0084FF]/15 hover:bg-[#0084FF]/25 border border-[#0084FF]/40 text-white transition-all cursor-pointer"
+                  title="Send via Facebook Messenger"
+                >
+                  <MessageCircle className="w-5 h-5 text-[#38a3ff]" />
+                  <span className="text-[11px] font-bold">Messenger</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={handleFacebookShare}
                   className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl bg-white/5 hover:bg-blue-600/20 border border-white/5 hover:border-blue-500/30 text-neutral-200 hover:text-white transition-all cursor-pointer"
                   title="Share to Facebook"
@@ -568,6 +605,7 @@ ${publicShareUrl}`;
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

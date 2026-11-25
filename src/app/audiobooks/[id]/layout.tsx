@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { lookupAudiobookForShareMetadata } from '@/lib/server/shareTrackLookup';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({
   params,
 }: {
@@ -9,11 +11,12 @@ export async function generateMetadata({
   try {
     const { id } = await params;
     const resolved = await lookupAudiobookForShareMetadata(id);
-    const pageUrl = `${resolved.origin}/audiobooks/${encodeURIComponent(id)}`;
+    const pageUrl = `${resolved.origin}/audiobooks/${encodeURIComponent(resolved.id)}`;
 
     return {
       title: `${resolved.title} — ${resolved.artist}`,
       description: resolved.description,
+      alternates: { canonical: pageUrl },
       openGraph: {
         title: `${resolved.title} — ${resolved.artist}`,
         description: resolved.description,
@@ -24,6 +27,7 @@ export async function generateMetadata({
           {
             url: resolved.ogImageUrl,
             secureUrl: resolved.ogImageUrl,
+            type: resolved.ogImageType,
             width: 1200,
             height: 1200,
             alt: `${resolved.title} by ${resolved.artist}`,
@@ -34,7 +38,16 @@ export async function generateMetadata({
         card: 'summary_large_image',
         title: `${resolved.title} — ${resolved.artist}`,
         description: resolved.description,
-        images: [resolved.ogImageUrl],
+        images: [
+          {
+            url: resolved.ogImageUrl,
+            alt: `${resolved.title} by ${resolved.artist}`,
+          },
+        ],
+      },
+      other: {
+        'og:image:secure_url': resolved.ogImageUrl,
+        'og:image:type': resolved.ogImageType,
       },
     };
   } catch {
@@ -46,7 +59,15 @@ export async function generateMetadata({
         description: 'Stream author literature, master audiobooks, and chapter narratives on ChanceTEK One.',
         type: 'website',
         url: 'https://chancetekone.us/audiobooks',
-        images: [{ url: 'https://chancetekone.us/images/audiobooks/famio.jpg', width: 1200, height: 1200 }],
+        images: [
+          {
+            url: 'https://chancetekone.us/images/audiobooks/famio.jpg',
+            secureUrl: 'https://chancetekone.us/images/audiobooks/famio.jpg',
+            type: 'image/jpeg',
+            width: 1200,
+            height: 1200,
+          },
+        ],
       },
       twitter: {
         card: 'summary_large_image',

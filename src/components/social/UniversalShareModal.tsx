@@ -14,13 +14,12 @@ import {
   Send,
   Sparkles,
   Smartphone,
-  ExternalLink,
+  Users,
 } from 'lucide-react';
 import {
   resolveShareMetadata,
   ShareableInput,
   ResolvedShareMetadata,
-  ShareContentType,
   isDefaultOrInvalidCover,
   isGenericGenreCover,
 } from '@/lib/sharing/shareMetadataService';
@@ -33,6 +32,54 @@ export interface UniversalShareModalProps {
   meta?: ResolvedShareMetadata;
 }
 
+function copyTextReliably(text: string): Promise<boolean> {
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    return navigator.clipboard
+      .writeText(text)
+      .then(() => true)
+      .catch(() => fallbackCopy(text));
+  }
+  return Promise.resolve(fallbackCopy(text));
+}
+
+function fallbackCopy(text: string): boolean {
+  try {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    textarea.style.pointerEvents = 'none';
+    document.body.appendChild(textarea);
+    textarea.select();
+    textarea.setSelectionRange(0, text.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
+function isMobileDevice(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
+
+function isIOSDevice(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+function openExternalUrlSafely(url: string) {
+  if (typeof window === 'undefined') return;
+  const popup = window.open(url, '_blank', 'noopener,noreferrer');
+  if (!popup) {
+    // Fallback if a strict PWA webview blocks window.open
+    window.location.href = url;
+  }
+}
+
 export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
   isOpen,
   onClose,
@@ -41,9 +88,10 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedTextMsg, setCopiedTextMsg] = useState(false);
-  const [instagramNotice, setInstagramNotice] = useState(false);
+  const [shareNotice, setShareNotice] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
   const [hydratedIdbCover, setHydratedIdbCover] = useState<string | null>(null);
+  const [supportsNativeShare, setSupportsNativeShare] = useState(false);
 
   const meta = useMemo(() => {
     if (explicitMeta) return explicitMeta;
@@ -51,10 +99,15 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
     return resolveShareMetadata({ type: 'song', id: 'default' });
   }, [explicitMeta, entity]);
 
+  useEffect(() => {
+    setSupportsNativeShare(typeof navigator !== 'undefined' && typeof navigator.share === 'function');
+  }, []);
+
   // Reset image error and hydrate any IndexedDB embedded APIC artwork for the exact shared song
   useEffect(() => {
     setImgError(false);
     setHydratedIdbCover(null);
+    setShareNotice(null);
     if (!isOpen || (meta.type !== 'song' && meta.type !== 'beat') || !meta.id) return;
     let cancelled = false;
     AudioStorageService.getCoverArt(meta.id)
@@ -71,90 +124,99 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(meta.canonicalUrl);
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2500);
-    } catch {
-      const input = document.createElement('input');
-      input.value = meta.canonicalUrl;
-      document.body.appendChild(input);
-      input.select();
-      document.execCommand('copy');
-      document.body.removeChild(input);
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2500);
-    }
+  const showToast = (msg: string) => {
+    setShareNotice(msg);
+    setTimeout(() => {
+      setShareNotice((prev) => (prev === msg ? null : prev));
+    }, 4500);
   };
 
-  const handleTextMessageShare = async () => {
-    // Attempt to open device SMS app:
-    if (typeof window !== 'undefined') {
-      try {
-        // Try to trigger native SMS protocol:
-        window.location.href = meta.smsUrl;
-      } catch (e) {
-        // Fallback
-      }
-    }
-    // Also copy formatted text message to clipboard for seamless pasting:
+  const handleCopyLink = async () => {
+    await copyTextReliably(meta.canonicalUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
+
+  const handleTextMessageShare = () => {
+    // Copy formatted text message synchronously for seamless pasting
+    void copyTextReliably(meta.textMessageBody);
+    setCopiedTextMsg(true);
+    setTimeout(() => setCopiedTextMsg(false), 3000);
+
+    // iOS uses `sms:&body=...`; Android & desktop use `sms:?body=...`
+    const encodedBody = encodeURIComponent(meta.textMessageBody);
+    const platformSmsUrl = isIOSDevice() ? `sms:&body=${encodedBody}` : `sms:?body=${encodedBody}`;
     try {
-      await navigator.clipboard.writeText(meta.textMessageBody);
-      setCopiedTextMsg(true);
-      setTimeout(() => setCopiedTextMsg(false), 3000);
+      window.location.href = platformSmsUrl;
     } catch {
-      // Ignored
+      // Clipboard already holds the formatted message
     }
   };
 
   const handleNativeShare = async () => {
-    if (typeof navigator !== 'undefined' && navigator.share) {
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
         await navigator.share({
-          title: `${meta.title} - ${meta.creator}`,
-          text: meta.shareText,
+          title: `${meta.title} — ${meta.creator}`,
+          text: `${meta.title} by ${meta.creator} on ChanceTEK One`,
           url: meta.canonicalUrl,
         });
-      } catch {
-        // User cancelled or sheet closed
+        return;
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return;
       }
-    } else {
-      handleCopyLink();
     }
+    await handleCopyLink();
+    showToast('Share link copied! Paste anywhere — the song cover art attaches automatically.');
   };
 
   const handleFacebookShare = () => {
-    window.open(meta.facebookUrl, '_blank', 'noopener,noreferrer,width=600,height=500');
+    void copyTextReliably(meta.canonicalUrl);
+    openExternalUrlSafely(meta.facebookUrl);
+  };
+
+  const handleMessengerShare = () => {
+    void copyTextReliably(meta.canonicalUrl);
+    if (isMobileDevice()) {
+      showToast('Opening Messenger — link is also copied so you can paste into any chat with cover art.');
+      window.location.href = meta.messengerUrl;
+    } else {
+      showToast('Link copied for Messenger! Paste into your Messenger chat — cover art attaches automatically.');
+      openExternalUrlSafely('https://www.messenger.com/');
+    }
+  };
+
+  const handleFamioShare = () => {
+    const famioPost = `${meta.title} by ${meta.creator} — Listen on ChanceTEK One\n${meta.canonicalUrl}`;
+    void copyTextReliably(famioPost);
+    showToast('Copied for Famio.us! Opening famio.us — paste into your Famio post or chat and the cover art attaches automatically.');
+    openExternalUrlSafely(meta.famioUrl);
   };
 
   const handleTwitterShare = () => {
-    window.open(meta.twitterUrl, '_blank', 'noopener,noreferrer,width=600,height=500');
+    openExternalUrlSafely(meta.twitterUrl);
   };
 
   const handleLinkedInShare = () => {
-    window.open(meta.linkedInUrl, '_blank', 'noopener,noreferrer,width=600,height=600');
+    openExternalUrlSafely(meta.linkedInUrl);
   };
 
   const handleWhatsAppShare = () => {
-    window.open(meta.whatsAppUrl, '_blank', 'noopener,noreferrer');
+    openExternalUrlSafely(meta.whatsAppUrl);
   };
 
   const handleTelegramShare = () => {
-    window.open(meta.telegramUrl, '_blank', 'noopener,noreferrer');
+    openExternalUrlSafely(meta.telegramUrl);
   };
 
   const handleEmailShare = () => {
     window.location.href = meta.emailUrl;
   };
 
-  const handleInstagramShare = async () => {
-    await handleCopyLink();
-    setInstagramNotice(true);
-    setTimeout(() => {
-      setInstagramNotice(false);
-      window.open('https://instagram.com', '_blank', 'noopener,noreferrer');
-    }, 1500);
+  const handleInstagramShare = () => {
+    void copyTextReliably(meta.canonicalUrl);
+    showToast('Link copied for Instagram! Opening Instagram — paste into your Story, Bio, or DM.');
+    openExternalUrlSafely('https://www.instagram.com/');
   };
 
   // Resilient fallback image if image loading errors out:
@@ -199,7 +261,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
                 <Sparkles className="w-4 h-4 text-brand-gold" />
               </h3>
               <p className="text-xs text-neutral-400">
-                Share authentic media across social media, text messages, and direct links
+                Cover art attaches automatically on social media, Messenger, SMS, and Famio.us
               </p>
             </div>
           </div>
@@ -222,7 +284,12 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
               fill
               className="object-cover"
               onError={() => setImgError(true)}
-              unoptimized={resolvedCoverSrc.startsWith('http') || resolvedCoverSrc.startsWith('blob:') || resolvedCoverSrc.startsWith('data:')}
+              unoptimized={
+                resolvedCoverSrc.startsWith('http') ||
+                resolvedCoverSrc.startsWith('/api/') ||
+                resolvedCoverSrc.startsWith('blob:') ||
+                resolvedCoverSrc.startsWith('data:')
+              }
             />
           </div>
 
@@ -255,6 +322,18 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
           </div>
         </div>
 
+        {/* Mobile/Device Native Share Sheet (1-Tap Share to Messenger, Messages, Famio, WhatsApp, etc.) */}
+        {supportsNativeShare && (
+          <button
+            type="button"
+            onClick={handleNativeShare}
+            className="relative z-10 w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-brand-gold to-brand-amber text-black font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-brand-gold/25 flex items-center justify-center gap-2 hover:brightness-105 active:scale-[0.99] transition-all cursor-pointer"
+          >
+            <Share2 className="w-4 h-4" />
+            <span>Share via Device Apps (Messenger, Messages, Social)</span>
+          </button>
+        )}
+
         {/* Direct Link Section */}
         <div className="space-y-2 relative z-10">
           <label className="text-xs font-bold uppercase tracking-wider text-neutral-300 flex items-center gap-1.5">
@@ -269,6 +348,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
               className="flex-1 bg-black/60 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-neutral-300 font-mono focus:outline-none focus:border-brand-gold/60 select-all"
             />
             <button
+              type="button"
               onClick={handleCopyLink}
               className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-md shrink-0 cursor-pointer ${
                 copiedLink
@@ -307,128 +387,163 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
                 )}
               </h5>
               <p className="text-[11px] text-neutral-400 truncate">
-                Pre-formatted with title, creator, description, and stream link
+                Pre-formatted with title, cover preview link & stream URL
               </p>
             </div>
           </div>
 
           <button
+            type="button"
             onClick={handleTextMessageShare}
             className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition-all flex items-center gap-1.5 shrink-0 shadow-lg shadow-emerald-500/20 hover:scale-105 cursor-pointer"
             title="Open in Text Messages or Copy Formatted SMS"
           >
             {copiedTextMsg ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : <Send className="w-3.5 h-3.5" />}
-            <span>{copiedTextMsg ? 'Ready to Send!' : 'Send Text'}</span>
+            <span>{copiedTextMsg ? 'Ready!' : 'Send Text'}</span>
           </button>
         </div>
 
-        {/* Instagram Notice Toast */}
-        {instagramNotice && (
-          <div className="p-3 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-pink-500/40 text-[11px] text-pink-200 animate-in fade-in flex items-center gap-2 relative z-10">
-            <Sparkles className="w-4 h-4 text-brand-gold shrink-0" />
-            <span>Link copied to clipboard! Paste it into your Instagram Story, Bio, or DM.</span>
+        {/* Share Toast Notification */}
+        {shareNotice && (
+          <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-400/40 text-xs text-emerald-100 animate-in fade-in flex items-center gap-2 relative z-10">
+            <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{shareNotice}</span>
           </div>
         )}
 
         {/* Social Media Channels Grid */}
         <div className="space-y-2 relative z-10 pt-0.5">
           <label className="text-xs font-bold uppercase tracking-wider text-neutral-300">
-            Post Directly to Social Media
+            Share to Social Media, Messenger & Famio.us
           </label>
 
-          <div className="grid grid-cols-4 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            {/* Famio.us */}
+            <button
+              type="button"
+              onClick={handleFamioShare}
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-400/40 hover:border-indigo-300 text-white transition-all group cursor-pointer"
+              title="Share to Famio.us"
+            >
+              <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white mb-1 shadow-md shadow-indigo-600/40 group-hover:scale-110 transition-transform">
+                <Users className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] font-bold">Famio.us</span>
+            </button>
+
+            {/* Facebook Messenger */}
+            <button
+              type="button"
+              onClick={handleMessengerShare}
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#0084FF]/15 hover:bg-[#0084FF]/25 border border-[#0084FF]/40 hover:border-[#0084FF] text-white transition-all group cursor-pointer"
+              title="Send via Facebook Messenger"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0084FF] to-[#A033FF] flex items-center justify-center text-white mb-1 shadow-md shadow-[#0084FF]/30 group-hover:scale-110 transition-transform">
+                <MessageCircle className="w-4 h-4 fill-white" />
+              </div>
+              <span className="text-[10px] font-bold">Messenger</span>
+            </button>
+
             {/* Facebook */}
             <button
+              type="button"
               onClick={handleFacebookShare}
-              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-[#1877F2]/20 border border-white/10 hover:border-[#1877F2]/50 text-neutral-300 hover:text-white transition-all group cursor-pointer"
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-[#1877F2]/20 border border-white/10 hover:border-[#1877F2]/50 text-neutral-200 hover:text-white transition-all group cursor-pointer"
               title="Post to Facebook"
             >
-              <div className="w-7 h-7 rounded-full bg-[#1877F2] flex items-center justify-center text-white mb-1 shadow-md shadow-[#1877F2]/30 group-hover:scale-110 transition-transform font-bold text-xs">
+              <div className="w-8 h-8 rounded-full bg-[#1877F2] flex items-center justify-center text-white mb-1 shadow-md shadow-[#1877F2]/30 group-hover:scale-110 transition-transform font-black text-sm">
                 f
               </div>
               <span className="text-[10px] font-semibold">Facebook</span>
             </button>
 
-            {/* X / Twitter */}
-            <button
-              onClick={handleTwitterShare}
-              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-neutral-800 border border-white/10 hover:border-neutral-500 text-neutral-300 hover:text-white transition-all group cursor-pointer"
-              title="Post to X (Twitter)"
-            >
-              <div className="w-7 h-7 rounded-full bg-black border border-white/30 flex items-center justify-center text-white mb-1 shadow-md group-hover:scale-110 transition-transform font-bold text-xs">
-                𝕏
-              </div>
-              <span className="text-[10px] font-semibold">X (Twitter)</span>
-            </button>
-
-            {/* LinkedIn */}
-            <button
-              onClick={handleLinkedInShare}
-              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-[#0A66C2]/20 border border-white/10 hover:border-[#0A66C2]/50 text-neutral-300 hover:text-white transition-all group cursor-pointer"
-              title="Share to LinkedIn"
-            >
-              <div className="w-7 h-7 rounded-full bg-[#0A66C2] flex items-center justify-center text-white mb-1 shadow-md shadow-[#0A66C2]/30 group-hover:scale-110 transition-transform font-bold text-[11px]">
-                in
-              </div>
-              <span className="text-[10px] font-semibold">LinkedIn</span>
-            </button>
-
             {/* WhatsApp */}
             <button
+              type="button"
               onClick={handleWhatsAppShare}
-              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-[#25D366]/20 border border-white/10 hover:border-[#25D366]/50 text-neutral-300 hover:text-white transition-all group cursor-pointer"
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-[#25D366]/20 border border-white/10 hover:border-[#25D366]/50 text-neutral-200 hover:text-white transition-all group cursor-pointer"
               title="Share via WhatsApp"
             >
-              <div className="w-7 h-7 rounded-full bg-[#25D366] flex items-center justify-center text-white mb-1 shadow-md shadow-[#25D366]/30 group-hover:scale-110 transition-transform">
-                <MessageCircle className="w-3.5 h-3.5 fill-white" />
+              <div className="w-8 h-8 rounded-full bg-[#25D366] flex items-center justify-center text-white mb-1 shadow-md shadow-[#25D366]/30 group-hover:scale-110 transition-transform">
+                <MessageCircle className="w-4 h-4 fill-white" />
               </div>
               <span className="text-[10px] font-semibold">WhatsApp</span>
             </button>
 
+            {/* X / Twitter */}
+            <button
+              type="button"
+              onClick={handleTwitterShare}
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-neutral-800 border border-white/10 hover:border-neutral-500 text-neutral-200 hover:text-white transition-all group cursor-pointer"
+              title="Post to X (Twitter)"
+            >
+              <div className="w-8 h-8 rounded-full bg-black border border-white/30 flex items-center justify-center text-white mb-1 shadow-md group-hover:scale-110 transition-transform font-bold text-xs">
+                X
+              </div>
+              <span className="text-[10px] font-semibold">X / Twitter</span>
+            </button>
+
             {/* Instagram */}
             <button
+              type="button"
               onClick={handleInstagramShare}
-              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-pink-500/20 border border-white/10 hover:border-pink-500/50 text-neutral-300 hover:text-white transition-all group cursor-pointer"
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-pink-500/20 border border-white/10 hover:border-pink-500/50 text-neutral-200 hover:text-white transition-all group cursor-pointer"
               title="Share to Instagram"
             >
-              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-white mb-1 shadow-md shadow-pink-500/30 group-hover:scale-110 transition-transform font-bold text-[10px]">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-white mb-1 shadow-md shadow-pink-500/30 group-hover:scale-110 transition-transform font-bold text-[10px]">
                 IG
               </div>
               <span className="text-[10px] font-semibold">Instagram</span>
             </button>
 
+            {/* LinkedIn */}
+            <button
+              type="button"
+              onClick={handleLinkedInShare}
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-[#0A66C2]/20 border border-white/10 hover:border-[#0A66C2]/50 text-neutral-200 hover:text-white transition-all group cursor-pointer"
+              title="Share to LinkedIn"
+            >
+              <div className="w-8 h-8 rounded-full bg-[#0A66C2] flex items-center justify-center text-white mb-1 shadow-md shadow-[#0A66C2]/30 group-hover:scale-110 transition-transform font-bold text-[11px]">
+                in
+              </div>
+              <span className="text-[10px] font-semibold">LinkedIn</span>
+            </button>
+
             {/* Telegram */}
             <button
+              type="button"
               onClick={handleTelegramShare}
-              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-[#229ED9]/20 border border-white/10 hover:border-[#229ED9]/50 text-neutral-300 hover:text-white transition-all group cursor-pointer"
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-[#229ED9]/20 border border-white/10 hover:border-[#229ED9]/50 text-neutral-200 hover:text-white transition-all group cursor-pointer"
               title="Share to Telegram"
             >
-              <div className="w-7 h-7 rounded-full bg-[#229ED9] flex items-center justify-center text-white mb-1 shadow-md shadow-[#229ED9]/30 group-hover:scale-110 transition-transform">
-                <Send className="w-3.5 h-3.5" />
+              <div className="w-8 h-8 rounded-full bg-[#229ED9] flex items-center justify-center text-white mb-1 shadow-md shadow-[#229ED9]/30 group-hover:scale-110 transition-transform">
+                <Send className="w-4 h-4" />
               </div>
               <span className="text-[10px] font-semibold">Telegram</span>
             </button>
 
             {/* Email */}
             <button
+              type="button"
               onClick={handleEmailShare}
-              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-500/50 text-neutral-300 hover:text-white transition-all group cursor-pointer"
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-500/50 text-neutral-200 hover:text-white transition-all group cursor-pointer"
               title="Share via Email"
             >
-              <div className="w-7 h-7 rounded-full bg-amber-600 flex items-center justify-center text-white mb-1 shadow-md shadow-amber-600/30 group-hover:scale-110 transition-transform">
-                <Mail className="w-3.5 h-3.5" />
+              <div className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white mb-1 shadow-md shadow-amber-600/30 group-hover:scale-110 transition-transform">
+                <Mail className="w-4 h-4" />
               </div>
               <span className="text-[10px] font-semibold">Email</span>
             </button>
 
-            {/* Device Native Share */}
+            {/* More / Copy */}
             <button
+              type="button"
               onClick={handleNativeShare}
-              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-brand-gold/20 border border-white/10 hover:border-brand-gold/50 text-neutral-300 hover:text-white transition-all group cursor-pointer"
-              title="More Share Options (Device Sheet)"
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/5 hover:bg-brand-gold/20 border border-white/10 hover:border-brand-gold/50 text-neutral-200 hover:text-white transition-all group cursor-pointer"
+              title="More Share Options"
             >
-              <div className="w-7 h-7 rounded-full bg-gradient-to-r from-brand-gold to-brand-amber flex items-center justify-center text-black mb-1 shadow-md shadow-brand-gold/30 group-hover:scale-110 transition-transform">
-                <Share2 className="w-3.5 h-3.5" />
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-brand-gold to-brand-amber flex items-center justify-center text-black mb-1 shadow-md shadow-brand-gold/30 group-hover:scale-110 transition-transform">
+                <Share2 className="w-4 h-4" />
               </div>
               <span className="text-[10px] font-semibold">More...</span>
             </button>
@@ -439,6 +554,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
         <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400 relative z-10">
           <span className="text-[11px] font-mono text-neutral-400">ChanceTEK One Universal Social Suite</span>
           <button
+            type="button"
             onClick={onClose}
             className="px-4 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition-colors cursor-pointer"
           >
@@ -450,4 +566,3 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
     document.body
   );
 };
-

@@ -549,6 +549,7 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
         >
           {/* Header & Drag Handle Bar */}
           <div
+            data-ai-header="true"
             onPointerDown={handlePanelPointerDown}
             onPointerMove={handlePanelPointerMove}
             onPointerUp={handlePanelPointerUp}
@@ -566,7 +567,7 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
                 <GripHorizontal className="w-4 h-4" />
               </div>
 
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-purple to-brand-gold flex items-center justify-center border border-brand-gold/50 shadow-md shrink-0">
+              <div data-solid-icon-badge="true" className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-purple to-brand-gold flex items-center justify-center border border-brand-gold/50 shadow-md shrink-0">
                 <Sparkles className="w-4 h-4 text-white animate-spin-slow" />
               </div>
 
@@ -693,6 +694,7 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
 
               {/* Input Bar with Voice Button */}
               <form
+                data-ai-footer="true"
                 onSubmit={(e) => {
                   e.preventDefault();
                   sendMessage();
@@ -711,8 +713,9 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
 
                 <button
                   type="submit"
+                  data-solid-cta="true"
                   disabled={!input.trim() || loading}
-                  className="p-2 rounded-xl bg-gradient-to-r from-brand-purple to-brand-gold text-white disabled:opacity-40 hover:scale-105 transition-all shadow-md"
+                  className="p-2 rounded-xl bg-gradient-to-r from-brand-purple to-brand-gold text-white disabled:opacity-40 hover:scale-105 transition-all shadow-md cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
                 </button>

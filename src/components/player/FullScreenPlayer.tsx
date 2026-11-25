@@ -184,7 +184,10 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
     `${currentTrack.title} by ${currentTrack.artistName}. Engineered with authentic syncopated drum breaks at ${currentTrack.bpm || 120} BPM. Analog bassline and classic sampler grit crafted for elite DJ sets.`;
 
   return (
-    <div className="fixed inset-0 z-[80] bg-[#050509]/98 backdrop-blur-3xl flex flex-col justify-between p-4 sm:p-6 md:p-10 overflow-y-auto animate-in fade-in zoom-in-95 duration-300">
+    <div
+      data-fullscreen-player="true"
+      className="fixed inset-0 z-[80] bg-[#050509]/98 backdrop-blur-3xl flex flex-col justify-between p-4 sm:p-6 md:p-10 overflow-y-auto animate-in fade-in zoom-in-95 duration-300"
+    >
       {/* Dynamic Album-Art Adaptive Color Wash */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {currentTrack.coverUrl && (

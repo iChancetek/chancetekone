@@ -451,8 +451,10 @@ html.light [class*="bg-[#0e0e18]"],
 html.light [class*="bg-[#10101c]"],
 html.light [class*="bg-[#12121e]"],
 html.light [class*="bg-[#0a0a12]"],
-html.light [data-drawer-footer="true"] {
-  background: rgba(255, 255, 255, 0.84) !important;
+html.light [data-drawer-header="true"],
+html.light [data-drawer-footer="true"],
+html.light [data-ai-footer="true"] {
+  background: rgba(255, 255, 255, 0.90) !important;
   background-image: none !important;
   backdrop-filter: blur(36px) saturate(210%) brightness(1.04) !important;
   -webkit-backdrop-filter: blur(36px) saturate(210%) brightness(1.04) !important;
@@ -460,6 +462,73 @@ html.light [data-drawer-footer="true"] {
   box-shadow:
     inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
     0 10px 34px -10px rgba(15, 23, 42, 0.12) !important;
+}
+
+/* Crisp Apple Liquid Glass AI Assistant Header & Embedded Cards (ZERO black-on-red!) */
+html.light [data-ai-header="true"],
+html.light [data-light-card="true"] {
+  background: #ffffff !important;
+  background-image: none !important;
+  border: 1px solid rgba(15, 23, 42, 0.10) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 8px 24px -10px rgba(15, 23, 42, 0.10) !important;
+  color: #1d1d1f !important;
+}
+
+html.light [data-ai-header="true"] h3,
+html.light [data-ai-header="true"] span,
+html.light [data-light-card="true"] p,
+html.light [data-light-card="true"] .text-white {
+  color: #1d1d1f !important;
+}
+
+html.light [data-ai-header="true"] p,
+html.light [data-light-card="true"] .text-neutral-400,
+html.light [data-light-card="true"] .text-neutral-300 {
+  color: #52525b !important;
+}
+
+html.light [data-ai-header="true"] button {
+  background: #ebebf0 !important;
+  background-image: none !important;
+  border-color: rgba(15, 23, 42, 0.10) !important;
+  color: #1d1d1f !important;
+}
+
+html.light [data-ai-header="true"] button:hover {
+  background: #dcdce3 !important;
+}
+
+html.light [data-ai-header="true"] button svg,
+html.light [data-ai-header="true"] button span {
+  color: #1d1d1f !important;
+}
+
+html.light [data-ai-header="true"] [data-solid-icon-badge="true"],
+html.light [data-light-card="true"] [data-solid-icon-badge="true"],
+html.light [data-step-badge="true"] {
+  background: #fa233b !important;
+  background-image: none !important;
+  border-color: #fa233b !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px -4px rgba(250, 35, 59, 0.45) !important;
+}
+
+html.light [data-ai-header="true"] [data-solid-icon-badge="true"] svg,
+html.light [data-light-card="true"] [data-solid-icon-badge="true"] svg,
+html.light [data-step-badge="true"] * {
+  color: #ffffff !important;
+}
+
+html.light [data-ai-footer="true"] button:not([data-solid-cta="true"]) {
+  background: #e8e8ed !important;
+  border-color: rgba(15, 23, 42, 0.10) !important;
+  color: #1d1d1f !important;
+}
+
+html.light [data-ai-footer="true"] button:not([data-solid-cta="true"]) svg {
+  color: #fa233b !important;
 }
 
 /* ============================================================================
@@ -563,6 +632,55 @@ html.light .text-neutral-500 {
   color: #636366 !important;
 }
 
+/* Deepen dark-mode pastel status colors for razor-sharp Light Mode readability */
+html.light .text-red-400,
+html.light .text-red-300 {
+  color: #c81e1e !important;
+}
+
+html.light .text-cyan-400,
+html.light .text-cyan-300 {
+  color: #0369a1 !important;
+}
+
+html.light .text-emerald-400,
+html.light .text-emerald-300,
+html.light .text-emerald-200,
+html.light .text-emerald-100 {
+  color: #047857 !important;
+}
+
+html.light .text-amber-400,
+html.light .text-amber-300 {
+  color: #b45309 !important;
+}
+
+html.light .text-pink-400,
+html.light .text-pink-300,
+html.light .text-pink-200,
+html.light .text-pink-100 {
+  color: #be185d !important;
+}
+
+html.light .text-indigo-400,
+html.light .text-indigo-300 {
+  color: #3730a3 !important;
+}
+
+html.light .text-violet-400,
+html.light .text-violet-300,
+html.light .text-purple-400,
+html.light .text-purple-300 {
+  color: #6d28d9 !important;
+}
+
+html.light .text-sky-400,
+html.light .text-sky-300,
+html.light .text-blue-400,
+html.light .text-blue-300 {
+  color: #0369a1 !important;
+}
+
 /* ============================================================================
    4. NAVIGATION MENU HOVER & SELECTED STATES (SOLID, SLEEK, PROFESSIONAL)
    ============================================================================ */
@@ -604,6 +722,57 @@ html.light [data-nav-item="true"][data-nav-active="true"] svg {
   color: #ffffff !important;
 }
 
+/* Side Menu Admin Ops: 100% SOLID Executive Crimson + Pure White Text & Icon (6.1:1 Contrast) */
+html.light [data-nav-admin="true"] {
+  background: #c81e1e !important;
+  background-image: none !important;
+  border-color: #c81e1e !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px -4px rgba(200, 30, 30, 0.45) !important;
+}
+
+html.light [data-nav-admin="true"]:hover {
+  background: #991b1b !important;
+  border-color: #991b1b !important;
+}
+
+html.light [data-nav-admin="true"] span,
+html.light [data-nav-admin="true"] svg {
+  color: #ffffff !important;
+}
+
+/* Side Menu API Management: 100% SOLID Apple Pro Blue + Pure White Text & Icon (5.6:1 Contrast) */
+html.light [data-nav-api="true"] {
+  background: #0066cc !important;
+  background-image: none !important;
+  border-color: #0066cc !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px -4px rgba(0, 102, 204, 0.45) !important;
+}
+
+html.light [data-nav-api="true"]:hover {
+  background: #004c99 !important;
+  border-color: #004c99 !important;
+}
+
+html.light [data-nav-api="true"] span,
+html.light [data-nav-api="true"] svg {
+  color: #ffffff !important;
+}
+
+/* Eliminate muddy dark-950 translucent badges anywhere else in Light Mode */
+html.light .bg-red-950\/30,
+html.light .bg-red-950\/40 {
+  background-color: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+}
+
+html.light .bg-cyan-950\/30,
+html.light .bg-cyan-950\/40 {
+  background-color: #e0f2fe !important;
+  border-color: #7dd3fc !important;
+}
+
 /* Crisp Solid Badges inside Nav & Sidebar (ZERO washed-out pink) */
 html.light [data-nav-badge="true"] {
   background: #1d1d1f !important;
@@ -636,11 +805,11 @@ html.light [data-create-playlist="true"] svg {
   color: #ffffff !important;
 }
 
-/* Crisp Visible Mobile Drawer Close "X" Button */
+/* Crisp Visible Mobile Drawer & Modal Close "X" Button */
 html.light [data-drawer-close="true"] {
   background: #e8e8ed !important;
   color: #1d1d1f !important;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  border: 1px solid rgba(15, 23, 42, 0.10) !important;
 }
 
 html.light [data-drawer-close="true"]:hover {
@@ -655,16 +824,23 @@ html.light [data-drawer-close="true"] svg {
    5. 100% SOLID BUTTONS (ZERO FADING GRADIENTS — CRYSTAL CLEAR WHITE TEXT)
    ============================================================================ */
 html.light .shimmer-cta,
+html.light [data-solid-cta="true"],
 html.light button[class*="bg-gradient-to-r"][class*="from-[#f7cf62]"],
 html.light button[class*="bg-gradient-to-br"][class*="from-[#f7cf62]"],
 html.light a[class*="bg-gradient-to-r"][class*="from-[#f7cf62]"],
 html.light a[class*="bg-gradient-to-br"][class*="from-[#f7cf62]"],
+html.light button[class*="bg-gradient-to-r"][class*="from-[#f5c344]"],
+html.light a[class*="bg-gradient-to-r"][class*="from-[#f5c344]"],
 html.light button[class*="bg-gradient-to-r"][class*="from-brand-gold"],
+html.light a[class*="bg-gradient-to-r"][class*="from-brand-gold"],
 html.light button[class*="bg-gradient-to-r"][class*="from-[#ffd700]"],
+html.light a[class*="bg-gradient-to-r"][class*="from-[#ffd700]"],
 html.light button[class*="bg-gradient-to-r"][class*="from-brand-purple"],
 html.light a[class*="bg-gradient-to-r"][class*="from-brand-purple"],
+html.light button[class*="bg-brand-purple"],
 html.light button[class*="bg-gradient-to-r"][class*="from-rose-"],
 html.light button[class*="bg-gradient-to-r"][class*="from-red-"],
+html.light button[class*="bg-gradient-to-r"][class*="from-amber-"],
 html.light [data-genre-active="true"],
 html.light [data-genre-banner="true"] button {
   background: #fa233b !important;
@@ -675,24 +851,62 @@ html.light [data-genre-banner="true"] button {
 }
 
 html.light .shimmer-cta:hover,
+html.light [data-solid-cta="true"]:hover,
 html.light button[class*="bg-gradient-to-r"][class*="from-[#f7cf62]"]:hover,
+html.light button[class*="bg-gradient-to-r"][class*="from-[#f5c344]"]:hover,
 html.light button[class*="bg-gradient-to-r"][class*="from-brand-purple"]:hover,
+html.light button[class*="bg-brand-purple"]:hover,
 html.light [data-genre-banner="true"] button:hover {
   background: #d60017 !important;
   border-color: #d60017 !important;
 }
 
 html.light .shimmer-cta *,
+html.light [data-solid-cta="true"] *,
 html.light button[class*="bg-gradient-to-r"][class*="from-[#f7cf62]"] *,
 html.light button[class*="bg-gradient-to-br"][class*="from-[#f7cf62]"] *,
 html.light a[class*="bg-gradient-to-r"][class*="from-[#f7cf62]"] *,
+html.light button[class*="bg-gradient-to-r"][class*="from-[#f5c344]"] *,
+html.light a[class*="bg-gradient-to-r"][class*="from-[#f5c344]"] *,
 html.light button[class*="bg-gradient-to-r"][class*="from-brand-gold"] *,
+html.light a[class*="bg-gradient-to-r"][class*="from-brand-gold"] *,
 html.light button[class*="bg-gradient-to-r"][class*="from-[#ffd700]"] *,
+html.light a[class*="bg-gradient-to-r"][class*="from-[#ffd700]"] *,
 html.light button[class*="bg-gradient-to-r"][class*="from-brand-purple"] *,
 html.light a[class*="bg-gradient-to-r"][class*="from-brand-purple"] *,
+html.light button[class*="bg-brand-purple"] *,
 html.light button[class*="bg-gradient-to-r"][class*="from-rose-"] *,
+html.light button[class*="bg-gradient-to-r"][class*="from-red-"] *,
+html.light button[class*="bg-gradient-to-r"][class*="from-amber-"] *,
 html.light [data-genre-active="true"] *,
 html.light [data-genre-banner="true"] button * {
+  color: #ffffff !important;
+}
+
+/* Secondary Solid Charcoal Buttons (e.g. Demo Session) */
+html.light [data-solid-cta-secondary="true"] {
+  background: #1d1d1f !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-color: #1d1d1f !important;
+  box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.25) !important;
+}
+
+html.light [data-solid-cta-secondary="true"]:hover {
+  background: #3a3a3c !important;
+  border-color: #3a3a3c !important;
+}
+
+html.light [data-solid-cta-secondary="true"] * {
+  color: #ffffff !important;
+}
+
+/* Solid Emerald Action Buttons (e.g. Send Text / Copied) */
+html.light button.bg-emerald-500 {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+}
+html.light button.bg-emerald-500 * {
   color: #ffffff !important;
 }
 
@@ -775,12 +989,9 @@ html.light nav.fixed button[title="ChanceTEK One AI"] span {
 
 /* ============================================================================
    6. PRESERVE CINEMA-DARK VIDEO HEROES, FULL-SCREEN PLAYER & MEDIA OVERLAYS
+      (NEVER bleed white text into white .glass-panel modals or mobile drawer!)
    ============================================================================ */
 html.light [data-cinema-dark="true"],
-html.light [class*="bg-black/6"],
-html.light [class*="bg-black/7"],
-html.light [class*="bg-black/8"],
-html.light [class*="bg-black/9"],
 html.light .bg-black {
   color: #ffffff !important;
 }
@@ -791,12 +1002,64 @@ html.light [data-cinema-dark="true"] {
 
 html.light [data-cinema-dark="true"] .text-white,
 html.light [data-cinema-dark="true"] .text-brand-gold,
-html.light [class*="bg-black/6"] .text-white,
-html.light [class*="bg-black/7"] .text-white,
-html.light [class*="bg-black/8"] .text-white,
-html.light [class*="bg-black/9"] .text-white,
 html.light .bg-black .text-white,
-html.light .z-\[80\].fixed .text-white {
+html.light [data-fullscreen-player="true"] .text-white {
+  color: #ffffff !important;
+}
+
+/* Guarantee modal & drawer glass-panels ALWAYS have crisp readable dark ink in Light Mode */
+html.light .glass-panel .text-white,
+html.light aside .text-white {
+  color: #1d1d1f !important;
+}
+
+/* Re-affirm pure white text inside solid accent buttons/nav items inside glass-panels & sidebars */
+html.light .glass-panel .shimmer-cta,
+html.light .glass-panel .shimmer-cta *,
+html.light .glass-panel [data-solid-cta="true"],
+html.light .glass-panel [data-solid-cta="true"] *,
+html.light .glass-panel [data-solid-cta-secondary="true"],
+html.light .glass-panel [data-solid-cta-secondary="true"] *,
+html.light .glass-panel [data-nav-admin="true"],
+html.light .glass-panel [data-nav-admin="true"] *,
+html.light .glass-panel [data-nav-api="true"],
+html.light .glass-panel [data-nav-api="true"] *,
+html.light .glass-panel [data-nav-item="true"][data-nav-active="true"],
+html.light .glass-panel [data-nav-item="true"][data-nav-active="true"] *,
+html.light .glass-panel [data-create-playlist="true"],
+html.light .glass-panel [data-create-playlist="true"] *,
+html.light aside .shimmer-cta,
+html.light aside .shimmer-cta *,
+html.light aside [data-solid-cta="true"],
+html.light aside [data-solid-cta="true"] *,
+html.light aside [data-solid-cta-secondary="true"],
+html.light aside [data-solid-cta-secondary="true"] *,
+html.light aside [data-nav-admin="true"],
+html.light aside [data-nav-admin="true"] *,
+html.light aside [data-nav-api="true"],
+html.light aside [data-nav-api="true"] *,
+html.light aside [data-nav-item="true"][data-nav-active="true"],
+html.light aside [data-nav-item="true"][data-nav-active="true"] *,
+html.light aside [data-create-playlist="true"],
+html.light aside [data-create-playlist="true"] *,
+html.light .glass-panel .bg-indigo-600,
+html.light .glass-panel .bg-indigo-600 *,
+html.light .glass-panel .bg-amber-600,
+html.light .glass-panel .bg-amber-600 *,
+html.light .glass-panel .bg-black,
+html.light .glass-panel .bg-black *,
+html.light .glass-panel [class*="bg-[#1877F2]"],
+html.light .glass-panel [class*="bg-[#1877F2]"] *,
+html.light .glass-panel [class*="bg-[#25D366]"],
+html.light .glass-panel [class*="bg-[#25D366]"] *,
+html.light .glass-panel [class*="bg-[#0A66C2]"],
+html.light .glass-panel [class*="bg-[#0A66C2]"] *,
+html.light .glass-panel [class*="bg-[#229ED9]"],
+html.light .glass-panel [class*="bg-[#229ED9]"] *,
+html.light .glass-panel [class*="from-[#0084FF]"],
+html.light .glass-panel [class*="from-[#0084FF]"] *,
+html.light .glass-panel [class*="from-amber-500"][class*="to-purple-600"],
+html.light .glass-panel [class*="from-amber-500"][class*="to-purple-600"] * {
   color: #ffffff !important;
 }
 
@@ -810,14 +1073,14 @@ html.light [data-cinema-dark="true"] [class*="bg-brand-gold/15"] span {
   color: #f5c344 !important;
 }
 
-/* Keep Immersive Full-Screen Player Cinema-Dark */
-html.light .fixed.inset-0.z-\[80\] {
+/* Keep Immersive Full-Screen Player Cinema-Dark (NEVER the mobile sidebar drawer!) */
+html.light [data-fullscreen-player="true"] {
   background: rgba(12, 12, 18, 0.96) !important;
   color: #f5f5f7 !important;
 }
 
-html.light .fixed.inset-0.z-\[80\] .text-neutral-300,
-html.light .fixed.inset-0.z-\[80\] .text-neutral-400 {
+html.light [data-fullscreen-player="true"] .text-neutral-300,
+html.light [data-fullscreen-player="true"] .text-neutral-400 {
   color: #d1d1d6 !important;
 }
 

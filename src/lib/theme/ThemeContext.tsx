@@ -53,7 +53,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       applyThemeToDOM(mode);
       try {
         localStorage.setItem(STORAGE_KEY_THEME, mode);
-      } catch {}
+      } catch { }
     },
     [applyThemeToDOM]
   );
@@ -76,11 +76,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
+const FALLBACK_THEME_CTX: ThemeContextType = {
+  theme: 'dark',
+  isLight: false,
+  setTheme: () => { },
+  toggleTheme: () => { },
+};
+
 export const useTheme = (): ThemeContextType => {
   const ctx = useContext(ThemeContext);
-  if (!ctx) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return ctx;
+  return ctx ?? FALLBACK_THEME_CTX;
 };
 

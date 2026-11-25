@@ -11,7 +11,6 @@ import { PWAInstallBanner } from '@/components/pwa/PWAInstallBanner';
 import { Footer } from '@/components/navigation/Footer';
 import { SidebarProvider, useSidebar } from '@/lib/navigation/SidebarContext';
 import { AccessibilityProvider } from '@/lib/accessibility/AccessibilityContext';
-import { ThemeProvider } from '@/lib/theme/ThemeContext';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { useAI } from '@/lib/ai/AIContext';
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
@@ -155,12 +154,10 @@ const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
 export const AppShellClient: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <ThemeProvider>
-      <AccessibilityProvider>
-        <SidebarProvider>
-          <AppShellInner>{children}</AppShellInner>
-        </SidebarProvider>
-      </AccessibilityProvider>
-    </ThemeProvider>
+    <AccessibilityProvider>
+      <SidebarProvider>
+        <AppShellInner>{children}</AppShellInner>
+      </SidebarProvider>
+    </AccessibilityProvider>
   );
 };

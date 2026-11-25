@@ -1,36 +1,33 @@
 /**
- * ChanceTEK One — Server-Side Shared Song Metadata & Exact Cover Art Resolver
+ * ChanceTEK One — Pure Server-Side Shared Media Metadata & Exact Cover Art Resolver
  *
- * Used by /share/track/[id], /music/[id]/layout.tsx, and /api/share/cover/[id]
- * so SMS/iMessage, WhatsApp, Facebook, X/Twitter, LinkedIn, and Telegram crawlers
- * ALWAYS receive the exact cover art of the shared song (never generic artwork).
+ * 100% server-safe (ZERO browser/client-only service imports like MusicCatalogService).
+ * Uses ultra-fast single-document Firestore reads (`readCatalogDocById`) with snapshot
+ * fallback so SMS/iMessage, WhatsApp, Facebook, Messenger, X/Twitter, LinkedIn,
+ * Telegram, and Famio.us crawlers ALWAYS receive the exact cover art of the shared
+ * song, audiobook, podcast, or video.
  */
 
 import fs from 'fs';
 import path from 'path';
-import { readCatalogSnapshot } from '@/lib/server/catalogStore';
-import { MOCK_ALBUMS, MOCK_AUDIOBOOKS, MOCK_TRACKS } from '@/lib/mockData';
+import { readCatalogDocById, readCatalogSnapshot } from '@/lib/server/catalogStore';
+import { MOCK_ALBUMS, MOCK_AUDIOBOOKS, MOCK_TRACKS, MOCK_VIDEOS } from '@/lib/mockData';
 import { SEED_PODCASTS } from '@/lib/media/seedMediaData';
-import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
-import { Audiobook, PodcastEpisode, Track } from '@/types/media';
+import {
+  PLATFORM_CANONICAL_TRACKS,
+  getAuthenticCoverForTrack,
+  getDefaultCoverForTrack,
+  knownAlbumCover,
+} from '@/lib/music/canonicalCatalogData';
+import { Audiobook, PodcastEpisode, Track, Video } from '@/types/media';
 
-const PRODUCTION_ORIGIN = (process.env.NEXT_PUBLIC_APP_URL || 'https://chancetekone.us').replace(/\/+$/, '');
+const PRODUCTION_ORIGIN = (
+  process.env.NEXT_PUBLIC_APP_URL || 'https://chancetekone.us'
+).replace(/\/+$/, '');
+
 const SOURCE_PUBLIC_ORIGIN = (
   process.env.EIGHT_OF_SPADES_PUBLIC_URL || 'https://8ofspadesworks.us'
 ).replace(/\/+$/, '');
-
-export function normalizeExternalCoverOrigin(url?: string | null): string {
-  if (!url || typeof url !== 'string') return '';
-  const trimmed = url.trim();
-  if (!trimmed) return '';
-  if (/^https?:\/\/(0\.0\.0\.0|127\.0\.0\.1|localhost)(:\d+)?(\/|$)/i.test(trimmed)) {
-    return trimmed.replace(
-      /^https?:\/\/(0\.0\.0\.0|127\.0\.0\.1|localhost)(:\d+)?/i,
-      SOURCE_PUBLIC_ORIGIN
-    );
-  }
-  return trimmed;
-}
 
 export interface ShareTrackHints {
   title?: string;
@@ -47,11 +44,60 @@ export interface ServerResolvedTrackShare {
   description: string;
   /** Raw cover source (could be /images/..., https://..., or data:image/...) */
   rawCover: string;
-  /** Crawlable absolute HTTPS URL guaranteed to return image bytes for social/SMS bots */
+  /** Crawlable absolute HTTPS URL guaranteed to return image bytes for social/SMS bots (no query params!) */
   ogImageUrl: string;
-  /** Relative or absolute image URL suitable for client <Image> rendering */
+  /** MIME type hint for og:image:type */
+  ogImageType: string;
+  /** Relative or absolute image URL suitable for client rendering */
   clientCoverUrl: string;
   origin: string;
+}
+
+export function publicFileExists(relUrl: string): boolean {
+  try {
+    const cleanRel = decodeURIComponent(relUrl.split('?')[0].split('#')[0]).replace(/^\/+/, '');
+    const publicRoot = path.resolve(process.cwd(), 'public');
+    const fullPath = path.resolve(publicRoot, cleanRel);
+    if (!fullPath.startsWith(publicRoot + path.sep) && fullPath !== publicRoot) return false;
+    return fs.existsSync(fullPath) && fs.statSync(fullPath).isFile();
+  } catch {
+    return false;
+  }
+}
+
+export function inferImageMimeType(urlOrPath: string): string {
+  const lower = String(urlOrPath || '').toLowerCase();
+  if (lower.startsWith('data:image/png') || /\.png(\?|$)/i.test(lower)) return 'image/png';
+  if (lower.startsWith('data:image/webp') || /\.webp(\?|$)/i.test(lower)) return 'image/webp';
+  if (lower.startsWith('data:image/gif') || /\.gif(\?|$)/i.test(lower)) return 'image/gif';
+  return 'image/jpeg';
+}
+
+export function normalizeExternalCoverOrigin(url?: string | null): string {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+
+  // If a replicated/local URL points to an /images/... asset that physically exists in our own /public folder,
+  // serve it directly from chancetekone.us (zero external hop, guaranteed 200 OK!).
+  const originMatch = trimmed.match(
+    /^https?:\/\/(0\.0\.0\.0|127\.0\.0\.1|localhost|8ofspadesworks\.us|www\.8ofspadesworks\.us|chancetekone\.us|www\.chancetekone\.us)(:\d+)?(\/images\/[^?#]+.*)$/i
+  );
+  if (originMatch) {
+    const relPath = originMatch[3];
+    if (publicFileExists(relPath)) {
+      return relPath;
+    }
+  }
+
+  // Rewrite any internal Cloud Run / localhost origin to public source domain
+  if (/^https?:\/\/(0\.0\.0\.0|127\.0\.0\.1|localhost)(:\d+)?(\/|$)/i.test(trimmed)) {
+    return trimmed.replace(
+      /^https?:\/\/(0\.0\.0\.0|127\.0\.0\.1|localhost)(:\d+)?/i,
+      SOURCE_PUBLIC_ORIGIN
+    );
+  }
+  return trimmed;
 }
 
 export function isGenericOrInvalidTrackCover(url?: string | null): boolean {
@@ -62,7 +108,9 @@ export function isGenericOrInvalidTrackCover(url?: string | null): boolean {
     lower === 'null' ||
     lower === 'undefined' ||
     lower.startsWith('blob:') ||
+    lower.startsWith('indexeddb:') ||
     lower.includes('chancetekone_banner.png') ||
+    lower.includes('chancetek_banner.png') ||
     lower.includes('the_lounge_ambient.jpg') ||
     lower.includes('/images/logo') ||
     lower.endsWith('/logo.png') ||
@@ -95,28 +143,49 @@ function isSafeCoverParam(url?: string | null): boolean {
   return false;
 }
 
-function publicFileExists(relUrl: string): boolean {
-  try {
-    const cleanRel = decodeURIComponent(relUrl.split('?')[0].split('#')[0]).replace(/^\/+/, '');
-    const publicRoot = path.resolve(process.cwd(), 'public');
-    const fullPath = path.resolve(publicRoot, cleanRel);
-    if (!fullPath.startsWith(publicRoot + path.sep) && fullPath !== publicRoot) return false;
-    return fs.existsSync(fullPath) && fs.statSync(fullPath).isFile();
-  } catch {
-    return false;
-  }
-}
-
 function normalizeLookupKey(s?: string): string {
   return String(s || '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '');
 }
 
-/**
- * Finds the authoritative track document from server Firestore/local snapshot + canonical/mock catalog.
- */
-async function findAuthoritativeTrack(rawId: string): Promise<{
+function safeResolveAuthenticCover(track: Partial<Track>): string {
+  try {
+    const fromAuthentic = getAuthenticCoverForTrack(
+      track.artistName || '',
+      track.albumTitle || '',
+      track.title || ''
+    );
+    if (fromAuthentic && !isGenericOrInvalidTrackCover(fromAuthentic)) {
+      return fromAuthentic;
+    }
+  } catch {}
+
+  try {
+    if (track.albumTitle || track.artistName) {
+      const fromKnownAlbum = knownAlbumCover(
+        track.artistName || '',
+        track.albumTitle || '',
+        track.title || ''
+      );
+      if (fromKnownAlbum && !isGenericOrInvalidTrackCover(fromKnownAlbum)) {
+        return fromKnownAlbum;
+      }
+    }
+  } catch {}
+
+  try {
+    return getDefaultCoverForTrack({
+      genre: track.genre,
+      crateId: track.crateId,
+      artistName: track.artistName,
+    });
+  } catch {
+    return '/images/genres/rnb-neo-soul.jpg';
+  }
+}
+
+export async function findAuthoritativeTrack(rawId: string): Promise<{
   track: Partial<Track> | null;
   albumCover?: string;
 }> {
@@ -128,43 +197,58 @@ async function findAuthoritativeTrack(rawId: string): Promise<{
   let serverTrack: Partial<Track> | null = null;
   let albumCover: string | undefined;
 
+  // 1. Fast O(1) direct Firestore document lookup (~40ms)
   try {
-    const snapshot = await readCatalogSnapshot();
-    const serverTracks = (snapshot.collections.tracks || []) as Partial<Track>[];
-    const serverAlbums = (snapshot.collections.albums || []) as any[];
-
-    serverTrack =
-      serverTracks.find((t) => t.id === rawId || t.id === decodedId) ||
-      serverTracks.find((t) => normalizeLookupKey(t.id) === normalizeLookupKey(decodedId)) ||
-      null;
-
-    if (serverTrack) {
-      const matchingAlbum = serverAlbums.find(
-        (a) =>
-          (serverTrack?.albumId && a.id === serverTrack.albumId) ||
-          (serverTrack?.albumTitle &&
-            normalizeLookupKey(a.title) === normalizeLookupKey(serverTrack.albumTitle) &&
-            normalizeLookupKey(a.artistName) === normalizeLookupKey(serverTrack.artistName))
-      );
-      if (matchingAlbum?.coverUrl && !isGenericOrInvalidTrackCover(matchingAlbum.coverUrl)) {
-        albumCover = matchingAlbum.coverUrl;
+    const directDoc = (await readCatalogDocById('tracks', decodedId)) as Partial<Track> | null;
+    if (directDoc) {
+      serverTrack = directDoc;
+      if (directDoc.albumId) {
+        const directAlbum = (await readCatalogDocById('albums', directDoc.albumId)) as any;
+        if (directAlbum?.coverUrl && !isGenericOrInvalidTrackCover(directAlbum.coverUrl)) {
+          albumCover = normalizeExternalCoverOrigin(directAlbum.coverUrl);
+        }
       }
     }
-  } catch {
-    // Continue gracefully to canonical/mock fallback
+  } catch {}
+
+  // 2. Snapshot fallback if direct ID didn't hit (e.g. case-insensitive / normalized ID lookup)
+  if (!serverTrack) {
+    try {
+      const snapshot = await readCatalogSnapshot();
+      const serverTracks = (snapshot.collections.tracks || []) as Partial<Track>[];
+      const serverAlbums = (snapshot.collections.albums || []) as any[];
+
+      serverTrack =
+        serverTracks.find((t) => t.id === rawId || t.id === decodedId) ||
+        serverTracks.find((t) => normalizeLookupKey(t.id) === normalizeLookupKey(decodedId)) ||
+        null;
+
+      if (serverTrack) {
+        const matchingAlbum = serverAlbums.find(
+          (a) =>
+            (serverTrack?.albumId && a.id === serverTrack.albumId) ||
+            (serverTrack?.albumTitle &&
+              normalizeLookupKey(a.title) === normalizeLookupKey(serverTrack.albumTitle) &&
+              normalizeLookupKey(a.artistName) === normalizeLookupKey(serverTrack.artistName))
+        );
+        if (matchingAlbum?.coverUrl && !isGenericOrInvalidTrackCover(matchingAlbum.coverUrl)) {
+          albumCover = normalizeExternalCoverOrigin(matchingAlbum.coverUrl);
+        }
+      }
+    } catch {
+      // Continue gracefully to canonical/mock catalogs
+    }
   }
 
-  // Fallback to canonical & mock catalogs (safe on SSR)
-  const localTrack =
-    MusicCatalogService.getTrackById(decodedId) ||
-    MusicCatalogService.getTrackById(rawId) ||
+  const canonicalTrack =
+    PLATFORM_CANONICAL_TRACKS.find((t) => t.id === decodedId || t.id === rawId) ||
     MOCK_TRACKS.find((t) => t.id === decodedId || t.id === rawId) ||
     null;
 
   const merged: Partial<Track> | null =
-    serverTrack || localTrack
+    serverTrack || canonicalTrack
       ? {
-          ...(localTrack || {}),
+          ...(canonicalTrack || {}),
           ...(serverTrack || {}),
         }
       : null;
@@ -185,9 +269,6 @@ async function findAuthoritativeTrack(rawId: string): Promise<{
   return { track: merged, albumCover };
 }
 
-/**
- * Picks the exact best cover source for a track, preferring song-specific art over generic art.
- */
 function pickExactRawCover(
   track: Partial<Track> | null,
   albumCover: string | undefined,
@@ -195,32 +276,28 @@ function pickExactRawCover(
 ): string {
   const candidates: (string | undefined)[] = [];
 
-  // 1. Track's own uploaded/custom cover (if not generic and not genre fallback)
-  if (track?.coverUrl && !isGenericOrInvalidTrackCover(track.coverUrl) && !isGenreFallbackCover(track.coverUrl)) {
-    candidates.push(track.coverUrl);
+  const trackCover = normalizeExternalCoverOrigin(track?.coverUrl || (track as any)?.thumbnailUrl);
+  if (trackCover && !isGenericOrInvalidTrackCover(trackCover) && !isGenreFallbackCover(trackCover)) {
+    candidates.push(trackCover);
   }
 
-  // 2. Explicit share query param cover (validated safe, non-generic, non-genre)
-  if (hintCover && isSafeCoverParam(hintCover) && !isGenericOrInvalidTrackCover(hintCover) && !isGenreFallbackCover(hintCover)) {
-    candidates.push(hintCover);
+  const normHint = normalizeExternalCoverOrigin(hintCover);
+  if (normHint && isSafeCoverParam(normHint) && !isGenericOrInvalidTrackCover(normHint) && !isGenreFallbackCover(normHint)) {
+    candidates.push(normHint);
   }
 
-  // 3. Album cover from server/mock catalog
-  if (albumCover && !isGenericOrInvalidTrackCover(albumCover) && !isGenreFallbackCover(albumCover)) {
-    candidates.push(albumCover);
+  const normAlbumCover = normalizeExternalCoverOrigin(albumCover);
+  if (normAlbumCover && !isGenericOrInvalidTrackCover(normAlbumCover) && !isGenreFallbackCover(normAlbumCover)) {
+    candidates.push(normAlbumCover);
   }
 
-  // 4. MusicCatalogService authentic cover registry (matches exact artist/album artwork)
   if (track && (track.title || track.artistName)) {
-    try {
-      const resolved = MusicCatalogService.resolveTrackCover(track as Track);
-      if (resolved && !isGenericOrInvalidTrackCover(resolved) && !isGenreFallbackCover(resolved)) {
-        candidates.push(resolved);
-      }
-    } catch {}
+    const resolved = safeResolveAuthenticCover(track);
+    if (resolved && !isGenericOrInvalidTrackCover(resolved) && !isGenreFallbackCover(resolved)) {
+      candidates.push(resolved);
+    }
   }
 
-  // Validate candidates: verify local /images/ paths exist on disk when possible
   for (const c of candidates) {
     if (!c) continue;
     if (c.startsWith('data:image/') || c.startsWith('https://')) {
@@ -231,28 +308,61 @@ function pickExactRawCover(
     }
   }
 
-  // Secondary pass: accept explicit hintCover or track cover even if it's a genre artwork
-  if (hintCover && isSafeCoverParam(hintCover) && !isGenericOrInvalidTrackCover(hintCover)) {
-    return hintCover;
+  if (normHint && isSafeCoverParam(normHint) && !isGenericOrInvalidTrackCover(normHint)) {
+    return normHint;
   }
-  if (track?.coverUrl && !isGenericOrInvalidTrackCover(track.coverUrl)) {
-    return track.coverUrl;
+  if (trackCover && !isGenericOrInvalidTrackCover(trackCover)) {
+    return trackCover;
   }
   if (track && (track.title || track.artistName)) {
-    try {
-      const fallbackResolved = MusicCatalogService.resolveTrackCover(track as Track);
-      if (fallbackResolved && !isGenericOrInvalidTrackCover(fallbackResolved)) {
-        return fallbackResolved;
-      }
-    } catch {}
+    const fallbackResolved = safeResolveAuthenticCover(track);
+    if (fallbackResolved && !isGenericOrInvalidTrackCover(fallbackResolved)) {
+      return fallbackResolved;
+    }
   }
 
   return '/images/genres/rnb-neo-soul.jpg';
 }
 
-/**
- * Resolves full server-side share metadata for a track ID (with optional query hints).
- */
+function buildOgImageResult(
+  safeOrigin: string,
+  rawCover: string,
+  decodedId: string,
+  kind: 'song' | 'audiobook' | 'podcast' | 'video'
+): { ogImageUrl: string; ogImageType: string; clientCoverUrl: string } {
+  const ogImageType = inferImageMimeType(rawCover);
+  const ext = ogImageType === 'image/png' ? '.png' : ogImageType === 'image/webp' ? '.webp' : '.jpg';
+  const prefix = kind === 'song' ? '' : `${kind}--`;
+
+  // Clean static local image in /public -> serve directly from chancetekone.us/images/...
+  if (rawCover.startsWith('/') && publicFileExists(rawCover)) {
+    return {
+      ogImageUrl: `${safeOrigin}${encodeURI(rawCover)}`,
+      ogImageType,
+      clientCoverUrl: rawCover,
+    };
+  }
+
+  // Embedded base64 data URI OR remote HTTPS image (Firebase Storage, 8ofspadesworks.us, etc.)
+  // -> serve via clean, query-less, extensioned /api/share/cover/<id>.jpg so EVERY crawler
+  // (Facebook, Messenger, iMessage, WhatsApp, Famio.us, X, LinkedIn, Telegram) accepts it!
+  if (rawCover.startsWith('data:image/') || rawCover.startsWith('https://') || rawCover.startsWith('http://')) {
+    const apiPath = `/api/share/cover/${prefix}${encodeURIComponent(decodedId)}${ext}`;
+    return {
+      ogImageUrl: `${safeOrigin}${apiPath}`,
+      ogImageType,
+      clientCoverUrl: rawCover.startsWith('data:') ? apiPath : rawCover,
+    };
+  }
+
+  const normalizedPath = rawCover.startsWith('/') ? rawCover : `/${rawCover}`;
+  return {
+    ogImageUrl: `${safeOrigin}${encodeURI(normalizedPath)}`,
+    ogImageType,
+    clientCoverUrl: normalizedPath,
+  };
+}
+
 export async function lookupTrackForShareMetadata(
   id: string,
   hints: ShareTrackHints = {}
@@ -262,7 +372,12 @@ export async function lookupTrackForShareMetadata(
       ? hints.origin.trim().replace(/\/+$/, '')
       : PRODUCTION_ORIGIN;
 
-  const { track, albumCover } = await findAuthoritativeTrack(id);
+  let decodedId = id;
+  try {
+    decodedId = decodeURIComponent(id);
+  } catch {}
+
+  const { track, albumCover } = await findAuthoritativeTrack(decodedId);
 
   const title = (track?.title || hints.title || 'Featured Track').trim();
   const artist = (track?.artistName || hints.artist || 'ChanceTEK One').trim();
@@ -272,10 +387,9 @@ export async function lookupTrackForShareMetadata(
     (track?.lyrics && track.lyrics.replace(/\s+/g, ' ').trim().slice(0, 180)) ||
     `Listen to "${title}" by ${artist} on ChanceTEK One. High-fidelity streaming & authentic studio masters.`;
 
-  // Synthesize partial track with hint title/artist so authentic cover lookup works even for newly uploaded IDs
   const trackForArt: Partial<Track> = {
     ...(track || {}),
-    id,
+    id: decodedId,
     title,
     artistName: artist,
     albumTitle,
@@ -285,49 +399,27 @@ export async function lookupTrackForShareMetadata(
     pickExactRawCover(trackForArt, albumCover, hints.cover)
   );
 
-  // Build crawlable OG/Twitter image URL:
-  // - data:image/... OR third-party external URLs (e.g., 8ofspadesworks.us / long signed Firebase tokens)
-  //   are proxied via our clean same-origin /api/share/cover/[id] endpoint so iMessage, SMS/RCS,
-  //   WhatsApp, Facebook, X/Twitter, LinkedIn, and Telegram ALWAYS attach the exact song cover art!
-  // - Verified local /images/... files become https://chancetekone.us/images/...
-  let ogImageUrl: string;
-  let clientCoverUrl: string;
-
-  if (rawCover.startsWith('data:image/')) {
-    const apiPath = `/api/share/cover/${encodeURIComponent(id)}?type=song`;
-    ogImageUrl = `${safeOrigin}${apiPath}`;
-    clientCoverUrl = apiPath;
-  } else if (rawCover.startsWith('https://') || rawCover.startsWith('http://')) {
-    const coverHintParam =
-      hints.cover && isSafeCoverParam(hints.cover)
-        ? `&c=${encodeURIComponent(normalizeExternalCoverOrigin(hints.cover))}`
-        : '';
-    const apiPath = `/api/share/cover/${encodeURIComponent(id)}?type=song${coverHintParam}`;
-    ogImageUrl = `${safeOrigin}${apiPath}`;
-    clientCoverUrl = rawCover;
-  } else {
-    const normalizedPath = rawCover.startsWith('/') ? rawCover : `/${rawCover}`;
-    ogImageUrl = `${safeOrigin}${encodeURI(normalizedPath)}`;
-    clientCoverUrl = normalizedPath;
-  }
+  const { ogImageUrl, ogImageType, clientCoverUrl } = buildOgImageResult(
+    safeOrigin,
+    rawCover,
+    decodedId,
+    'song'
+  );
 
   return {
-    id,
+    id: decodedId,
     title,
     artist,
     albumTitle,
     description,
     rawCover,
     ogImageUrl,
+    ogImageType,
     clientCoverUrl,
     origin: safeOrigin,
   };
 }
 
-/**
- * Resolves server-side share metadata & exact cover art for an Audiobook (live Firestore + mocks)
- * so SMS/iMessage, WhatsApp, Facebook, X, LinkedIn, and Telegram always attach the audiobook's cover art.
- */
 export async function lookupAudiobookForShareMetadata(
   rawId: string,
   hints: ShareTrackHints = {}
@@ -344,12 +436,15 @@ export async function lookupAudiobookForShareMetadata(
 
   let serverAb: Partial<Audiobook> | null = null;
   try {
-    const snapshot = await readCatalogSnapshot();
-    const list = (snapshot.collections.audiobooks || []) as Partial<Audiobook>[];
-    serverAb =
-      list.find((a) => a.id === rawId || a.id === decodedId) ||
-      list.find((a) => normalizeLookupKey(a.id) === normalizeLookupKey(decodedId)) ||
-      null;
+    serverAb = (await readCatalogDocById('audiobooks', decodedId)) as Partial<Audiobook> | null;
+    if (!serverAb) {
+      const snapshot = await readCatalogSnapshot();
+      const list = (snapshot.collections.audiobooks || []) as Partial<Audiobook>[];
+      serverAb =
+        list.find((a) => a.id === rawId || a.id === decodedId) ||
+        list.find((a) => normalizeLookupKey(a.id) === normalizeLookupKey(decodedId)) ||
+        null;
+    }
   } catch {}
 
   const mockAb =
@@ -375,17 +470,12 @@ export async function lookupAudiobookForShareMetadata(
       ? candidateCover
       : '/images/audiobooks/famio.jpg';
 
-  let ogImageUrl: string;
-  let clientCoverUrl: string;
-  if (rawCover.startsWith('data:image/') || rawCover.startsWith('https://') || rawCover.startsWith('http://')) {
-    const apiPath = `/api/share/cover/${encodeURIComponent(decodedId)}?type=audiobook`;
-    ogImageUrl = `${safeOrigin}${apiPath}`;
-    clientCoverUrl = rawCover.startsWith('data:') ? apiPath : rawCover;
-  } else {
-    const normalizedPath = rawCover.startsWith('/') ? rawCover : `/${rawCover}`;
-    ogImageUrl = `${safeOrigin}${encodeURI(normalizedPath)}`;
-    clientCoverUrl = normalizedPath;
-  }
+  const { ogImageUrl, ogImageType, clientCoverUrl } = buildOgImageResult(
+    safeOrigin,
+    rawCover,
+    decodedId,
+    'audiobook'
+  );
 
   return {
     id: decodedId,
@@ -394,15 +484,12 @@ export async function lookupAudiobookForShareMetadata(
     description,
     rawCover,
     ogImageUrl,
+    ogImageType,
     clientCoverUrl,
     origin: safeOrigin,
   };
 }
 
-/**
- * Resolves server-side share metadata & exact cover art for a Podcast Episode (live Firestore + seeds)
- * so SMS/iMessage, WhatsApp, Facebook, X, LinkedIn, and Telegram always attach the podcast's cover art.
- */
 export async function lookupPodcastForShareMetadata(
   rawId: string,
   hints: ShareTrackHints = {}
@@ -419,12 +506,15 @@ export async function lookupPodcastForShareMetadata(
 
   let serverPod: Partial<PodcastEpisode> | null = null;
   try {
-    const snapshot = await readCatalogSnapshot();
-    const list = (snapshot.collections.podcasts || []) as Partial<PodcastEpisode>[];
-    serverPod =
-      list.find((p) => p.id === rawId || p.id === decodedId) ||
-      list.find((p) => normalizeLookupKey(p.id) === normalizeLookupKey(decodedId)) ||
-      null;
+    serverPod = (await readCatalogDocById('podcasts', decodedId)) as Partial<PodcastEpisode> | null;
+    if (!serverPod) {
+      const snapshot = await readCatalogSnapshot();
+      const list = (snapshot.collections.podcasts || []) as Partial<PodcastEpisode>[];
+      serverPod =
+        list.find((p) => p.id === rawId || p.id === decodedId) ||
+        list.find((p) => normalizeLookupKey(p.id) === normalizeLookupKey(decodedId)) ||
+        null;
+    }
   } catch {}
 
   const seedPod =
@@ -450,17 +540,12 @@ export async function lookupPodcastForShareMetadata(
       ? candidateCover
       : '/images/genres/hip-hop.jpg';
 
-  let ogImageUrl: string;
-  let clientCoverUrl: string;
-  if (rawCover.startsWith('data:image/') || rawCover.startsWith('https://') || rawCover.startsWith('http://')) {
-    const apiPath = `/api/share/cover/${encodeURIComponent(decodedId)}?type=podcast`;
-    ogImageUrl = `${safeOrigin}${apiPath}`;
-    clientCoverUrl = rawCover.startsWith('data:') ? apiPath : rawCover;
-  } else {
-    const normalizedPath = rawCover.startsWith('/') ? rawCover : `/${rawCover}`;
-    ogImageUrl = `${safeOrigin}${encodeURI(normalizedPath)}`;
-    clientCoverUrl = normalizedPath;
-  }
+  const { ogImageUrl, ogImageType, clientCoverUrl } = buildOgImageResult(
+    safeOrigin,
+    rawCover,
+    decodedId,
+    'podcast'
+  );
 
   return {
     id: decodedId,
@@ -469,8 +554,77 @@ export async function lookupPodcastForShareMetadata(
     description,
     rawCover,
     ogImageUrl,
+    ogImageType,
     clientCoverUrl,
     origin: safeOrigin,
   };
 }
 
+export async function lookupVideoForShareMetadata(
+  rawId: string,
+  hints: ShareTrackHints = {}
+): Promise<ServerResolvedTrackShare> {
+  const safeOrigin =
+    hints.origin && /^https?:\/\/[^/\s]+$/i.test(hints.origin.trim())
+      ? hints.origin.trim().replace(/\/+$/, '')
+      : PRODUCTION_ORIGIN;
+
+  let decodedId = rawId;
+  try {
+    decodedId = decodeURIComponent(rawId);
+  } catch {}
+
+  let serverVid: Partial<Video> | null = null;
+  try {
+    serverVid = (await readCatalogDocById('videos', decodedId)) as Partial<Video> | null;
+    if (!serverVid) {
+      const snapshot = await readCatalogSnapshot();
+      const list = (snapshot.collections.videos || []) as Partial<Video>[];
+      serverVid =
+        list.find((v) => v.id === rawId || v.id === decodedId) ||
+        list.find((v) => normalizeLookupKey(v.id) === normalizeLookupKey(decodedId)) ||
+        null;
+    }
+  } catch {}
+
+  const mockVid = MOCK_VIDEOS.find((v) => v.id === rawId || v.id === decodedId) || null;
+  const merged = serverVid || mockVid ? { ...(mockVid || {}), ...(serverVid || {}) } : null;
+
+  const title = (merged?.title || hints.title || 'Featured 4K Video').trim();
+  const artist = (merged?.artistName || hints.artist || 'ChanceTEK One').trim();
+  const description =
+    (merged?.description && merged.description.replace(/\s+/g, ' ').trim().slice(0, 180)) ||
+    `Watch "${title}" by ${artist} in 4K Ultra HD on ChanceTEK One.`;
+
+  const candidateCover = normalizeExternalCoverOrigin(
+    (!isGenericOrInvalidTrackCover(merged?.thumbnailUrl) ? merged?.thumbnailUrl : '') ||
+      (!isGenericOrInvalidTrackCover(hints.cover) ? hints.cover : '') ||
+      '/images/genres/hip-hop.jpg'
+  );
+
+  const rawCover =
+    candidateCover.startsWith('data:image/') ||
+    candidateCover.startsWith('https://') ||
+    (candidateCover.startsWith('/') && publicFileExists(candidateCover))
+      ? candidateCover
+      : '/images/genres/hip-hop.jpg';
+
+  const { ogImageUrl, ogImageType, clientCoverUrl } = buildOgImageResult(
+    safeOrigin,
+    rawCover,
+    decodedId,
+    'video'
+  );
+
+  return {
+    id: decodedId,
+    title,
+    artist,
+    description,
+    rawCover,
+    ogImageUrl,
+    ogImageType,
+    clientCoverUrl,
+    origin: safeOrigin,
+  };
+}

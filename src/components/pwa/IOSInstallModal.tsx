@@ -1,8 +1,10 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
-import Image from 'next/image';
-import { X, Share, PlusSquare, Sparkles, Smartphone, Check } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, Share, PlusSquare, Sparkles, Check } from 'lucide-react';
+import { useTheme } from '@/lib/theme/ThemeContext';
+import { PLATFORM_ICON_DARK, PLATFORM_ICON_LIGHT } from '@/components/brand/BrandLogo';
 
 interface IOSInstallModalProps {
   isOpen: boolean;
@@ -10,16 +12,26 @@ interface IOSInstallModalProps {
 }
 
 export const IOSInstallModal: React.FC<IOSInstallModalProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
+  const { isLight } = useTheme();
+  if (!isOpen || typeof document === 'undefined') return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md glass-panel p-6 sm:p-8 rounded-3xl border border-brand-purple/40 space-y-6 bg-gradient-to-b from-[#141024]/98 via-[#0c0916]/98 to-[#08080c]/98 shadow-[0_25px_70px_rgba(0,0,0,0.85)]">
+  const iconSrc = isLight ? PLATFORM_ICON_LIGHT : PLATFORM_ICON_DARK;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9993] w-screen max-w-[100vw] h-[100dvh] overflow-x-hidden flex items-center justify-center p-4 bg-black/80 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-md max-h-[90dvh] overflow-y-auto glass-panel p-6 sm:p-8 rounded-3xl border border-brand-purple/40 space-y-6 bg-gradient-to-b from-[#141024]/98 via-[#0c0916]/98 to-[#08080c]/98 shadow-[0_25px_70px_rgba(0,0,0,0.85)]"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-brand-gold/40 shrink-0">
-              <Image src="/logo.png" alt="ChanceTEK One" fill sizes="40px" className="object-cover" />
+            <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-brand-gold/40 shrink-0 flex items-center justify-center bg-white/5 p-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={iconSrc} alt="ChanceTEK One" className="w-full h-full object-contain" />
             </div>
             <div>
               <p className="text-[11px] font-bold text-brand-gold tracking-tight">ChanceTEK One</p>
@@ -31,17 +43,20 @@ export const IOSInstallModal: React.FC<IOSInstallModalProps> = ({ isOpen, onClos
           </div>
 
           <button
+            type="button"
+            data-drawer-close="true"
             onClick={onClose}
-            className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition-colors"
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Steps */}
-        <div className="space-y-4">
-          <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/5">
-            <div className="w-8 h-8 rounded-xl bg-brand-purple/30 text-brand-neon flex items-center justify-center font-bold text-sm shrink-0">
+        <div className="space-y-3.5">
+          <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/10">
+            <div data-step-badge="true" className="w-8 h-8 rounded-xl bg-brand-purple/30 text-brand-neon flex items-center justify-center font-bold text-sm shrink-0">
               1
             </div>
             <div className="space-y-1">
@@ -55,8 +70,8 @@ export const IOSInstallModal: React.FC<IOSInstallModalProps> = ({ isOpen, onClos
             </div>
           </div>
 
-          <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/5">
-            <div className="w-8 h-8 rounded-xl bg-brand-purple/30 text-brand-neon flex items-center justify-center font-bold text-sm shrink-0">
+          <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/10">
+            <div data-step-badge="true" className="w-8 h-8 rounded-xl bg-brand-purple/30 text-brand-neon flex items-center justify-center font-bold text-sm shrink-0">
               2
             </div>
             <div className="space-y-1">
@@ -70,8 +85,8 @@ export const IOSInstallModal: React.FC<IOSInstallModalProps> = ({ isOpen, onClos
             </div>
           </div>
 
-          <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/5">
-            <div className="w-8 h-8 rounded-xl bg-brand-purple/30 text-brand-neon flex items-center justify-center font-bold text-sm shrink-0">
+          <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/10">
+            <div data-step-badge="true" className="w-8 h-8 rounded-xl bg-brand-purple/30 text-brand-neon flex items-center justify-center font-bold text-sm shrink-0">
               3
             </div>
             <div className="space-y-1">
@@ -94,12 +109,15 @@ export const IOSInstallModal: React.FC<IOSInstallModalProps> = ({ isOpen, onClos
 
         {/* Dismiss Button */}
         <button
+          type="button"
+          data-solid-cta="true"
           onClick={onClose}
-          className="w-full py-3 rounded-full bg-gradient-to-r from-[#f5c344] via-[#ff9f1c] to-[#f5c344] text-[#08080c] font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(245,195,68,0.6)] hover:shadow-[0_0_30px_rgba(245,195,68,0.9)] border border-amber-200/60 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+          className="w-full py-3 rounded-full bg-gradient-to-r from-[#f5c344] via-[#ff9f1c] to-[#f5c344] text-[#08080c] font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(245,195,68,0.6)] hover:shadow-[0_0_30px_rgba(245,195,68,0.9)] border border-amber-200/60 hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer"
         >
           Got It!
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

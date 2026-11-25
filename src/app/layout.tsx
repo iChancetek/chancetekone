@@ -5,6 +5,7 @@ import { PlayerProvider } from '@/lib/player/PlayerContext';
 import { CartProvider } from '@/lib/commerce/CartContext';
 import { AIProvider } from '@/lib/ai/AIContext';
 import { PWAProvider } from '@/lib/pwa/PWAContext';
+import { ThemeProvider } from '@/lib/theme/ThemeContext';
 import { AppShellClient } from './AppShellClient';
 import { CatalogSyncBootstrap } from '@/components/catalog/CatalogSyncBootstrap';
 
@@ -98,18 +99,20 @@ export default function RootLayout({
         suppressHydrationWarning
         className="bg-[#050509] text-neutral-100 min-h-screen antialiased selection:bg-brand-purple/80 selection:text-white"
       >
-        <PWAProvider>
-          <AuthProvider>
-            <CatalogSyncBootstrap />
-            <PlayerProvider>
-              <CartProvider>
-                <AIProvider>
-                  <AppShellClient>{children}</AppShellClient>
-                </AIProvider>
-              </CartProvider>
-            </PlayerProvider>
-          </AuthProvider>
-        </PWAProvider>
+        <ThemeProvider>
+          <PWAProvider>
+            <AuthProvider>
+              <CatalogSyncBootstrap />
+              <PlayerProvider>
+                <CartProvider>
+                  <AIProvider>
+                    <AppShellClient>{children}</AppShellClient>
+                  </AIProvider>
+                </CartProvider>
+              </PlayerProvider>
+            </AuthProvider>
+          </PWAProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

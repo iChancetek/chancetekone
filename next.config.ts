@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["firebase-admin"],
+  // Force synchronous <head> OpenGraph & Twitter metadata for ALL crawlers
+  // (Facebook, Messenger, iMessage/SMS, WhatsApp, X, LinkedIn, Telegram, and Famio.us)
+  htmlLimitedBots: /.*/,
   images: {
     remotePatterns: [
       {

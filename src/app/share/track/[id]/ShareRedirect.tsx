@@ -31,6 +31,9 @@ export const ShareRedirect: React.FC<ShareRedirectProps> = ({
   const router = useRouter();
   const { profile, user, isAdmin, loading } = useAuth();
   const [statusNote, setStatusNote] = useState('Opening shared song preview...');
+  const [imgError, setImgError] = useState(false);
+
+  const safeCoverUrl = imgError || !coverUrl ? '/images/genres/rnb-neo-soul.jpg' : coverUrl;
 
   useEffect(() => {
     if (loading) return;
@@ -49,7 +52,7 @@ export const ShareRedirect: React.FC<ShareRedirectProps> = ({
       setStatusNote(GUEST_SIGNUP_GATE_MESSAGE);
       const timer = setTimeout(() => {
         router.replace(buildGuestSignupRedirectUrl(id));
-      }, 900);
+      }, 650);
       return () => clearTimeout(timer);
     }
 
@@ -58,7 +61,7 @@ export const ShareRedirect: React.FC<ShareRedirectProps> = ({
     );
     const timer = setTimeout(() => {
       router.replace(`/music/${encodeURIComponent(id)}?shared=1`);
-    }, 450);
+    }, 250);
     return () => clearTimeout(timer);
   }, [id, router, profile, user, isAdmin, loading]);
 
@@ -71,12 +74,18 @@ export const ShareRedirect: React.FC<ShareRedirectProps> = ({
 
         <div className="relative w-40 h-40 mx-auto rounded-2xl overflow-hidden border-2 border-brand-gold/50 shadow-2xl bg-neutral-900">
           <Image
-            src={coverUrl}
+            src={safeCoverUrl}
             alt={title}
             fill
             priority
             className="object-cover"
-            unoptimized={coverUrl.startsWith('http') || coverUrl.startsWith('/api/share/cover')}
+            onError={() => setImgError(true)}
+            unoptimized={
+              safeCoverUrl.startsWith('http') ||
+              safeCoverUrl.startsWith('/api/') ||
+              safeCoverUrl.startsWith('data:') ||
+              safeCoverUrl.startsWith('blob:')
+            }
           />
         </div>
 

@@ -107,6 +107,55 @@ export async function getCatalogRevision(): Promise<number> {
   return Math.max(cloudRev, localRev);
 }
 
+export async function readCatalogDocById(
+  collection: CatalogCollection,
+  id: string
+): Promise<CatalogDoc | null> {
+  const cleanId = String(id || '').trim();
+  if (!cleanId) return null;
+
+  // 1. Check warm in-memory snapshot cache first (0ms)
+  if (snapshotCache && Date.now() - snapshotCache.timestamp < SNAPSHOT_CACHE_TTL_MS * 4) {
+    const cached = (snapshotCache.snapshot.collections[collection] || []).find(
+      (d) => d.id === cleanId
+    );
+    if (cached) return cached;
+  }
+
+  // 2. Direct single-document Firestore lookup (~30-120ms vs scanning all collections)
+  if (canUseFirebaseAdmin()) {
+    try {
+      const doc = await withTimeout<CatalogDoc | null>(
+        (async () => {
+          const { adminDb } = await getFirebaseAdmin();
+          const snap = await adminDb
+            .collection(firestoreCollectionName(collection))
+            .doc(encodeDocId(cleanId))
+            .get();
+          if (!snap.exists) return null;
+          const { _updatedAt, ...data } = snap.data() || {};
+          const docId = typeof data.id === 'string' && data.id ? data.id : safeDecode(snap.id);
+          return { ...data, id: docId } as CatalogDoc;
+        })(),
+        3500,
+        null
+      );
+      if (doc) return doc;
+    } catch {
+      // Fall through to local snapshot
+    }
+  }
+
+  // 3. Check local snapshot fallback
+  const local = readLocalCatalogSnapshot();
+  if (local?.collections?.[collection]) {
+    const localDoc = local.collections[collection].find((d) => d.id === cleanId);
+    if (localDoc) return localDoc;
+  }
+
+  return null;
+}
+
 /**
  * Reads the full catalog across Firestore and local snapshot.
  * Ensures newly added tracks, audiobooks, and podcasts are picked up in real time.
@@ -122,10 +171,12 @@ export async function readCatalogSnapshot(): Promise<CatalogSnapshot> {
   const snapshot = emptySnapshot();
   snapshot.revision = revision;
 
-  // 1. Load cloud snapshot if Firebase Admin is available (capped with 2000ms timeout for ultra-fast API response)
+  let cloudLoaded = false;
+
+  // 1. Load cloud snapshot if Firebase Admin is available (capped with 5000ms timeout so cold starts still succeed)
   if (canUseFirebaseAdmin()) {
     try {
-      await withTimeout(
+      cloudLoaded = await withTimeout(
         (async () => {
           const { adminDb } = await getFirebaseAdmin();
           await Promise.all(
@@ -138,9 +189,10 @@ export async function readCatalogSnapshot(): Promise<CatalogSnapshot> {
               });
             })
           );
+          return true;
         })(),
-        2000,
-        undefined,
+        5000,
+        false,
       );
     } catch (err: any) {
       // Fallback gracefully to local snapshot
@@ -164,7 +216,11 @@ export async function readCatalogSnapshot(): Promise<CatalogSnapshot> {
     }
   }
 
-  snapshotCache = { revision, snapshot, timestamp: now };
+  // Never poison cache with an empty timed-out snapshot if Firebase Admin is configured
+  const hasAnyDocs = CATALOG_COLLECTIONS.some((c) => (snapshot.collections[c] || []).length > 0);
+  if (cloudLoaded || hasAnyDocs || !canUseFirebaseAdmin()) {
+    snapshotCache = { revision, snapshot, timestamp: now };
+  }
   return snapshot;
 }
 

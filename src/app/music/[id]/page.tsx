@@ -30,7 +30,14 @@ import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/Soc
 export default function TrackDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const trackId = params.id as string;
+  const rawTrackId = String(params.id || '');
+  const trackId = React.useMemo(() => {
+    try {
+      return decodeURIComponent(rawTrackId);
+    } catch {
+      return rawTrackId;
+    }
+  }, [rawTrackId]);
   const { currentTrack, isPlaying, playTrack, togglePlay } = usePlayer();
   const { profile, user, isAdmin } = useAuth();
   const isAuthenticated = Boolean(profile || user || isAdmin);
@@ -57,18 +64,58 @@ export default function TrackDetailPage() {
     return subscribeGuestPreview(refreshGuest);
   }, [trackId, isAuthenticated]);
 
+  const [fetchedServerTrack, setFetchedServerTrack] = useState<Track | null>(null);
+  const [loadingSharedTrack, setLoadingSharedTrack] = useState<boolean>(() => {
+    return !MusicCatalogService.getTrackById(trackId) && !MOCK_TRACKS.some((t) => t.id === trackId);
+  });
+
   const [track, setTrack] = useState<Track>(() => {
     return MusicCatalogService.getTrackById(trackId) || MOCK_TRACKS.find((t) => t.id === trackId) || MOCK_TRACKS[0];
   });
 
   React.useEffect(() => {
-    const t = MusicCatalogService.getTrackById(trackId) || MOCK_TRACKS.find((t) => t.id === trackId) || MOCK_TRACKS[0];
-    setTrack(t);
+    let cancelled = false;
+    setHasImgError(false);
+
+    const resolveFromLocal = () =>
+      MusicCatalogService.getTrackById(trackId) || MOCK_TRACKS.find((t) => t.id === trackId) || null;
+
+    const initial = resolveFromLocal();
+    if (initial) {
+      setTrack(initial);
+      setLoadingSharedTrack(false);
+    } else {
+      setLoadingSharedTrack(true);
+      // Fast O(1) server fetch so shared links on fresh mobile/desktop browsers load the exact song immediately
+      fetch(`/api/share/item?type=song&id=${encodeURIComponent(trackId)}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (cancelled) return;
+          if (data?.ok && data.item) {
+            const hydrated = data.item as Track;
+            setFetchedServerTrack(hydrated);
+            setTrack(hydrated);
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (!cancelled) setLoadingSharedTrack(false);
+        });
+    }
+
     const unsub = MusicCatalogService.subscribe(() => {
-      const updated = MusicCatalogService.getTrackById(trackId) || MOCK_TRACKS.find((t) => t.id === trackId) || MOCK_TRACKS[0];
-      setTrack(updated);
+      const updated = resolveFromLocal();
+      if (updated) {
+        setTrack(updated);
+        setLoadingSharedTrack(false);
+      } else if (fetchedServerTrack && fetchedServerTrack.id === trackId) {
+        setTrack(fetchedServerTrack);
+      }
     });
-    return () => unsub();
+    return () => {
+      cancelled = true;
+      unsub();
+    };
   }, [trackId]);
   const isCurrent = currentTrack?.id === track.id;
   const [hasImgError, setHasImgError] = useState(false);
@@ -139,6 +186,12 @@ export default function TrackDetailPage() {
       )}
 
       {/* Hero Header */}
+      {loadingSharedTrack ? (
+        <div className="glass-panel p-8 sm:p-12 rounded-3xl border border-white/10 flex flex-col items-center justify-center gap-4 bg-white/5 shadow-2xl min-h-[260px]">
+          <Disc3 className="w-10 h-10 text-brand-gold animate-spin" />
+          <p className="text-sm font-semibold text-neutral-300">Loading shared track...</p>
+        </div>
+      ) : (
       <div className="glass-panel p-6 sm:p-10 rounded-3xl border border-white/10 flex flex-col md:flex-row items-center gap-8 bg-white/5 shadow-2xl">
         <div className="relative w-48 h-48 sm:w-64 sm:h-64 rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex-shrink-0 bg-black/80">
           <Image
@@ -148,6 +201,12 @@ export default function TrackDetailPage() {
             className="object-cover"
             priority
             onError={() => setHasImgError(true)}
+            unoptimized={
+              resolvedCover.startsWith('http') ||
+              resolvedCover.startsWith('/api/') ||
+              resolvedCover.startsWith('data:') ||
+              resolvedCover.startsWith('blob:')
+            }
           />
         </div>
 
@@ -260,6 +319,7 @@ export default function TrackDetailPage() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Sample Detective & Break Genealogist Section */}
       <SampleGenealogyCard track={track} />

@@ -348,6 +348,7 @@ export const Sidebar: React.FC = () => {
               {isAdmin && (
                 <>
                   <Link
+                    data-nav-admin="true"
                     href="/admin"
                     prefetch={false}
                     onMouseEnter={() => handleIntentPrefetch('/admin')}
@@ -368,6 +369,7 @@ export const Sidebar: React.FC = () => {
                   </Link>
 
                   <Link
+                    data-nav-api="true"
                     href="/admin?tab=api-management"
                     prefetch={false}
                     onMouseEnter={() => handleIntentPrefetch('/admin?tab=api-management')}
@@ -494,9 +496,15 @@ export const Sidebar: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="specular-edge p-3.5 rounded-2xl bg-gradient-to-br from-brand-purple/25 via-[#131024] to-brand-gold/10 border border-white/10 space-y-2.5 shadow-xl">
+            <div
+              data-light-card="true"
+              className="specular-edge p-3.5 rounded-2xl bg-gradient-to-br from-brand-purple/25 via-[#131024] to-brand-gold/10 border border-white/10 space-y-2.5 shadow-xl"
+            >
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-brand-gold to-amber-500 flex items-center justify-center text-[#050509] shadow-[0_0_16px_rgba(245,195,68,0.4)]">
+                <div
+                  data-solid-icon-badge="true"
+                  className="w-7 h-7 rounded-xl bg-gradient-to-br from-brand-gold to-amber-500 flex items-center justify-center text-[#050509] shadow-[0_0_16px_rgba(245,195,68,0.4)]"
+                >
                   <Sparkles className="w-4 h-4 fill-current" />
                 </div>
                 <div>
@@ -508,6 +516,7 @@ export const Sidebar: React.FC = () => {
                 Crate digger &amp; culture assistant with dual memory.
               </p>
               <button
+                data-solid-cta="true"
                 onClick={() => openAI()}
                 className="shimmer-cta w-full py-2 px-3 rounded-xl bg-gradient-to-r from-brand-purple to-violet-600 hover:from-brand-purple hover:to-brand-gold text-white hover:text-[#050509] text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md hover:scale-[1.02] cursor-pointer"
               >
@@ -519,7 +528,7 @@ export const Sidebar: React.FC = () => {
 
           {/* PWA Install Card (when applicable) */}
           {isInstallable && !isCollapsed && (
-            <div className="p-2.5 rounded-2xl bg-white/5 border border-brand-gold/30 space-y-1.5">
+            <div data-light-card="true" className="p-2.5 rounded-2xl bg-white/5 border border-brand-gold/30 space-y-1.5">
               <div className="flex items-center gap-2">
                 <div className="w-5 h-5 rounded-full bg-brand-gold/20 flex items-center justify-center text-brand-gold">
                   <Download className="w-3 h-3" />
@@ -530,6 +539,7 @@ export const Sidebar: React.FC = () => {
                 Standalone audio & lock-screen controls.
               </p>
               <button
+                data-solid-cta="true"
                 onClick={installPWA}
                 aria-label="Install ChanceTEK One App"
                 className="w-full py-1.5 px-2 rounded-lg bg-gradient-to-r from-[#f5c344] via-[#ff9f1c] to-[#f5c344] text-[#08080c] text-[11px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(245,195,68,0.5)] hover:shadow-[0_0_22px_rgba(245,195,68,0.8)] border border-amber-200/60 hover:scale-[1.03] active:scale-95 cursor-pointer"
@@ -542,7 +552,7 @@ export const Sidebar: React.FC = () => {
         </div>
 
         {/* User Footer Profile */}
-        <div className="p-2.5 border-t border-white/5 bg-[#08080c]/60">
+        <div data-drawer-footer="true" className="p-2.5 border-t border-white/5 bg-[#08080c]/60">
           {profile ? (
             <div
               className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'
@@ -585,11 +595,12 @@ export const Sidebar: React.FC = () => {
           ) : (
             !isCollapsed && (
               <button
+                data-solid-cta-secondary="true"
                 onClick={signInAsDemo}
                 className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-brand-purple to-brand-violet hover:from-brand-violet hover:to-brand-purple text-white text-xs font-semibold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
-                Demo Session
+                <span>Demo Session</span>
               </button>
             )
           )}
@@ -614,7 +625,7 @@ export const Sidebar: React.FC = () => {
         aria-label="Mobile Navigation Menu"
       >
         {/* Mobile Drawer Header */}
-        <div className="p-4 pt-[calc(1rem+env(safe-area-inset-top))] border-b border-white/10 flex items-center justify-between bg-[#10101c]/80">
+        <div data-drawer-header="true" className="p-4 pt-[calc(1rem+env(safe-area-inset-top))] border-b border-white/10 flex items-center justify-between bg-[#10101c]/80">
           <Link
             href="/"
             prefetch={false}
@@ -739,6 +750,7 @@ export const Sidebar: React.FC = () => {
               {isAdmin && (
                 <>
                   <Link
+                    data-nav-admin="true"
                     href="/admin"
                     prefetch={false}
                     onMouseEnter={() => handleIntentPrefetch('/admin')}
@@ -751,6 +763,7 @@ export const Sidebar: React.FC = () => {
                   </Link>
 
                   <Link
+                    data-nav-api="true"
                     href="/admin?tab=api-management"
                     prefetch={false}
                     onMouseEnter={() => handleIntentPrefetch('/admin?tab=api-management')}
@@ -835,9 +848,9 @@ export const Sidebar: React.FC = () => {
           </div>
 
           {/* ChanceTEK One AI Assistant Interactive Card */}
-          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-brand-purple/30 via-brand-dark to-brand-gold/10 border border-brand-purple/40 space-y-2 shadow-lg">
+          <div data-light-card="true" className="p-3.5 rounded-2xl bg-gradient-to-br from-brand-purple/30 via-brand-dark to-brand-gold/10 border border-brand-purple/40 space-y-2 shadow-lg">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-brand-gold flex items-center justify-center text-black">
+              <div data-solid-icon-badge="true" className="w-7 h-7 rounded-full bg-brand-gold flex items-center justify-center text-black">
                 <Sparkles className="w-4 h-4 fill-current" />
               </div>
               <div>
@@ -849,6 +862,7 @@ export const Sidebar: React.FC = () => {
               Crate digger & culture assistant with dual memory.
             </p>
             <button
+              data-solid-cta="true"
               onClick={() => {
                 closeMobileSidebar();
                 openAI();
@@ -862,7 +876,7 @@ export const Sidebar: React.FC = () => {
 
           {/* PWA Cross-Platform Install Action */}
           {isInstallable && (
-            <div className="p-3 rounded-2xl bg-white/5 border border-brand-gold/40 space-y-2">
+            <div data-light-card="true" className="p-3 rounded-2xl bg-white/5 border border-brand-gold/40 space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full bg-brand-gold/20 flex items-center justify-center text-brand-gold">
                   <Download className="w-3.5 h-3.5" />
@@ -873,6 +887,7 @@ export const Sidebar: React.FC = () => {
                 </div>
               </div>
               <button
+                data-solid-cta="true"
                 onClick={() => {
                   closeMobileSidebar();
                   installPWA();
@@ -938,6 +953,7 @@ export const Sidebar: React.FC = () => {
                 Sign In / Create Account
               </Link>
               <button
+                data-solid-cta-secondary="true"
                 onClick={() => {
                   signInAsDemo();
                   closeMobileSidebar();
@@ -945,7 +961,7 @@ export const Sidebar: React.FC = () => {
                 className="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-brand-purple to-brand-violet active:scale-98 text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Sparkles className="w-4 h-4 text-brand-gold" />
-                Demo Session
+                <span>Demo Session</span>
               </button>
             </div>
           )}
