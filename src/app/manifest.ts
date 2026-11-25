@@ -18,8 +18,8 @@ export default function manifest(): MetadataRoute.Manifest {
     dir: 'ltr',
     icons: [
       {
-        src: '/images/chancetekone_icon.png',
-        sizes: '256x256',
+        src: '/images/chancetekone_icon.png?v=2',
+        sizes: '512x512',
         type: 'image/png',
         purpose: 'any',
       },

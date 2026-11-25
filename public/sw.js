@@ -1,12 +1,12 @@
-﻿// ChanceTEK One - 2026 Progressive Web App Service Worker (Real-Time Platform Sync)
-const CACHE_NAME = 'chancetekone-pwa-v2.4.0';
-const RUNTIME_CACHE = 'chancetekone-runtime-v2.4.0';
+// ChanceTEK One - 2026 Progressive Web App Service Worker (Real-Time Platform Sync)
+const CACHE_NAME = 'chancetekone-pwa-v2.5.0';
+const RUNTIME_CACHE = 'chancetekone-runtime-v2.5.0';
 // Audio files are never cached by the SW — browser handles native Range-request streaming directly
 
 // Pre-cache only offline fallback shell assets; dynamic pages are fetched network-first to ensure real-time platform sync
 const PRECACHE_URLS = [
   '/offline',
-  '/logo.png',
+  '/images/chancetekone_icon.png?v=2',
   '/manifest.webmanifest',
 ];
 

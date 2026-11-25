@@ -42,9 +42,9 @@ export const metadata: Metadata = {
     'Independent Artists',
   ],
   icons: {
-    icon: '/images/chancetekone_icon.png',
-    shortcut: '/images/chancetekone_icon.png',
-    apple: '/images/chancetekone_icon.png',
+    icon: '/images/chancetekone_icon.png?v=2',
+    shortcut: '/images/chancetekone_icon.png?v=2',
+    apple: '/images/chancetekone_icon.png?v=2',
   },
   openGraph: {
     title: 'ChanceTEK One — Listen. Watch. Discover.',
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/images/chancetekone_logo.jpg',
+        url: '/images/chancetekone_logo.jpg?v=2',
         width: 1200,
         height: 675,
         alt: 'ChanceTEK One — Listen. Watch. Discover.',
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     title: 'ChanceTEK One — Listen. Watch. Discover.',
     description:
       'Listen. Watch. Discover. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and Agentic AI curation.',
-    images: ['/images/chancetekone_logo.jpg'],
+    images: ['/images/chancetekone_logo.jpg?v=2'],
   },
   manifest: '/manifest.webmanifest',
   appleWebApp: {
