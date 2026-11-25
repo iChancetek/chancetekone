@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import {
   X,
@@ -172,13 +173,15 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
 
   const resolvedCoverSrc = imgError ? fallbackCover : preferredSongCover;
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9992] w-screen max-w-[100vw] h-[100dvh] overflow-x-hidden flex items-center justify-center p-3 sm:p-4 bg-black/80 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg glass-panel p-6 sm:p-7 rounded-3xl border border-brand-gold/40 space-y-5 bg-gradient-to-b from-[#161026]/98 via-[#0e0a1a]/98 to-[#07050d]/98 shadow-[0_25px_70px_rgba(0,0,0,0.85)] overflow-hidden"
+        className="relative w-full max-w-lg max-h-[90dvh] overflow-y-auto overflow-x-hidden glass-panel p-5 sm:p-7 rounded-3xl border border-brand-gold/40 space-y-5 bg-gradient-to-b from-[#161026]/98 via-[#0e0a1a]/98 to-[#07050d]/98 shadow-[0_25px_70px_rgba(0,0,0,0.85)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Glow backdrop */}
@@ -443,7 +446,8 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

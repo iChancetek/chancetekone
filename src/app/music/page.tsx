@@ -369,7 +369,10 @@ export default function MusicPage() {
       </div>
 
       {/* 1. The Lounge Header Banner */}
-      <div className="relative overflow-hidden rounded-[2.5rem] border border-amber-500/40 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.85)] p-6 sm:p-10 md:p-12 text-center flex flex-col items-center justify-center group space-y-4 min-h-[220px] sm:min-h-[260px]">
+      <div
+        data-cinema-dark="true"
+        className="relative overflow-hidden rounded-[2.5rem] border border-amber-500/40 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.85)] p-6 sm:p-10 md:p-12 text-center flex flex-col items-center justify-center group space-y-4 min-h-[220px] sm:min-h-[260px]"
+      >
         {/* Top & bottom polished gold hairline highlights */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 max-w-2xl h-[1px] bg-gradient-to-r from-transparent via-brand-gold/70 to-transparent pointer-events-none" />
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 max-w-lg h-[1px] bg-gradient-to-r from-transparent via-brand-gold/40 to-transparent pointer-events-none" />
@@ -453,25 +456,27 @@ export default function MusicPage() {
           </div>
         )}
 
-        {/* Single-line row spanning 100% width */}
-        <div className="w-full flex items-center justify-between gap-1 sm:gap-1.5 lg:gap-2">
+        {/* Horizontally scrollable pill rail on mobile/tablet so full genre labels never truncate to 2 letters; full-width row on desktop */}
+        <div className="w-full flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 lg:justify-between lg:gap-1.5">
           {GENRES.map((g) => {
             const isSelected = selectedGenre === g;
             return (
               <button
                 key={g}
+                data-genre-pill="true"
+                data-genre-active={isSelected ? 'true' : undefined}
                 onClick={() => setSelectedGenre(g)}
                 title={g}
-                className={`flex-1 min-w-0 flex items-center justify-center text-center px-1 sm:px-1.5 md:px-2 py-2 rounded-xl text-[10px] sm:text-[11px] xl:text-xs font-bold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                className={`shrink-0 lg:flex-1 lg:min-w-0 flex items-center justify-center text-center px-3.5 sm:px-4 lg:px-2 py-2 rounded-xl text-xs lg:text-[11px] xl:text-xs font-bold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer ${
                   isSelected
-                    ? 'bg-gradient-to-r from-[#ffd700] via-[#f59e0b] to-[#fbbf24] text-black font-black shadow-[0_0_15px_rgba(245,158,11,0.4)] scale-[1.03] border border-brand-gold z-10'
+                    ? 'bg-gradient-to-r from-[#ffd700] via-[#f59e0b] to-[#fbbf24] text-black font-black shadow-[0_0_15px_rgba(245,158,11,0.4)] border border-brand-gold z-10'
                     : 'bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 hover:border-brand-gold/40'
                 }`}
               >
                 {g === 'Genre' && (
-                  <Disc3 className={`w-3 h-3 mr-1 shrink-0 hidden md:inline-block ${isSelected ? 'text-black' : 'text-brand-gold'}`} />
+                  <Disc3 className={`w-3.5 h-3.5 mr-1.5 shrink-0 ${isSelected ? 'text-black' : 'text-brand-gold'}`} />
                 )}
-                <span className="truncate">{g}</span>
+                <span className="lg:truncate">{g}</span>
               </button>
             );
           })}
@@ -479,7 +484,10 @@ export default function MusicPage() {
       </div>
 
       {/* 2b. Dynamic Genre Artwork Showcase Banner (Directly associated with the active genre selection) */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-br from-[#120a1f] via-[#090610] to-[#040208] shadow-[0_12px_45px_rgba(0,0,0,0.65)] group">
+      <div
+        data-genre-banner="true"
+        className="relative overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-br from-[#120a1f] via-[#090610] to-[#040208] shadow-[0_12px_45px_rgba(0,0,0,0.65)] group"
+      >
         {/* Background Artwork with cinematic dark gradients */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <Image

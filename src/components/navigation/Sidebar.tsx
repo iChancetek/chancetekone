@@ -244,6 +244,8 @@ export const Sidebar: React.FC = () => {
                     onTouchStart={() => handleIntentPrefetch(item.href, item.isExternal)}
                     onClick={(e) => handleMenuNavigate(e, item.href, item.isExternal, false)}
                     title={isCollapsed ? item.label : undefined}
+                    data-nav-item="true"
+                    data-nav-active={isActive ? 'true' : undefined}
                     className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'justify-between gap-3 px-3.5 py-2.5'
                       } rounded-xl text-[15px] font-semibold transition-all duration-200 ${isActive
                         ? 'bg-gradient-to-r from-brand-purple/30 via-brand-violet/15 to-transparent text-white border border-brand-purple/40 shadow-[inset_3px_0_0_#f5c344,0_4px_20px_rgba(157,78,221,0.15)]'
@@ -256,7 +258,10 @@ export const Sidebar: React.FC = () => {
                     </div>
 
                     {!isCollapsed && item.badge && (
-                      <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 shrink-0 ml-auto whitespace-nowrap">
+                      <span
+                        data-nav-badge="true"
+                        className="text-[11px] px-2.5 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 shrink-0 ml-auto whitespace-nowrap"
+                      >
                         {item.badge}
                       </span>
                     )}
@@ -297,6 +302,8 @@ export const Sidebar: React.FC = () => {
                     onTouchStart={() => handleIntentPrefetch(item.href)}
                     onClick={(e) => handleMenuNavigate(e, item.href, false, false)}
                     title={isCollapsed ? item.label : undefined}
+                    data-nav-item="true"
+                    data-nav-active={isActive ? 'true' : undefined}
                     className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'
                       } rounded-xl text-[15px] font-semibold transition-all ${isActive
                         ? 'bg-white/10 text-white border border-white/10'
@@ -317,6 +324,7 @@ export const Sidebar: React.FC = () => {
 
               {/* Quick Create Playlist Shortcut */}
               <Link
+                data-create-playlist="true"
                 href="/playlists"
                 prefetch={false}
                 onMouseEnter={() => handleIntentPrefetch('/playlists')}
@@ -403,6 +411,8 @@ export const Sidebar: React.FC = () => {
                     onTouchStart={() => handleIntentPrefetch(item.href)}
                     onClick={(e) => handleMenuNavigate(e, item.href, false, false)}
                     title={isCollapsed ? item.label : undefined}
+                    data-nav-item="true"
+                    data-nav-active={isActive ? 'true' : undefined}
                     className={`group relative flex items-center touch-manipulation ${isCollapsed ? 'justify-center p-2.5' : 'justify-start gap-3 px-3.5 py-2'
                       } rounded-xl text-sm font-medium transition-all duration-200 ${isActive
                         ? 'bg-gradient-to-r from-brand-purple/30 to-transparent text-white border border-brand-purple/40 shadow-[inset_3px_0_0_#f5c344]'
@@ -616,6 +626,7 @@ export const Sidebar: React.FC = () => {
 
           {/* Close Button with generous touch target */}
           <button
+            data-drawer-close="true"
             onClick={closeMobileSidebar}
             className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-neutral-300 hover:text-white transition-colors flex items-center justify-center cursor-pointer touch-manipulation"
             title="Close Menu"
@@ -649,6 +660,8 @@ export const Sidebar: React.FC = () => {
                     onMouseEnter={() => handleIntentPrefetch(item.href, item.isExternal)}
                     onTouchStart={() => handleIntentPrefetch(item.href, item.isExternal)}
                     onClick={(e) => handleMenuNavigate(e, item.href, item.isExternal, true)}
+                    data-nav-item="true"
+                    data-nav-active={isActive ? 'true' : undefined}
                     className={`flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-[15px] font-semibold transition-all touch-manipulation ${isActive
                       ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
                       : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
@@ -660,7 +673,10 @@ export const Sidebar: React.FC = () => {
                     </div>
 
                     {item.badge && (
-                      <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 shrink-0 ml-auto whitespace-nowrap">
+                      <span
+                        data-nav-badge="true"
+                        className="text-[11px] px-2.5 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 shrink-0 ml-auto whitespace-nowrap"
+                      >
                         {item.badge}
                       </span>
                     )}
@@ -692,6 +708,8 @@ export const Sidebar: React.FC = () => {
                     onMouseEnter={() => handleIntentPrefetch(item.href)}
                     onTouchStart={() => handleIntentPrefetch(item.href)}
                     onClick={(e) => handleMenuNavigate(e, item.href, false, true)}
+                    data-nav-item="true"
+                    data-nav-active={isActive ? 'true' : undefined}
                     className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[15px] font-semibold transition-all touch-manipulation ${isActive
                       ? 'bg-white/10 text-white border border-white/15'
                       : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
@@ -705,6 +723,7 @@ export const Sidebar: React.FC = () => {
 
               {/* Create Playlist Button */}
               <Link
+                data-create-playlist="true"
                 href="/playlists"
                 prefetch={false}
                 onMouseEnter={() => handleIntentPrefetch('/playlists')}
@@ -765,6 +784,8 @@ export const Sidebar: React.FC = () => {
                     onMouseEnter={() => handleIntentPrefetch(item.href)}
                     onTouchStart={() => handleIntentPrefetch(item.href)}
                     onClick={(e) => handleMenuNavigate(e, item.href, false, true)}
+                    data-nav-item="true"
+                    data-nav-active={isActive ? 'true' : undefined}
                     className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all touch-manipulation ${isActive
                       ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
                       : 'text-neutral-300 hover:text-white hover:bg-white/5 active:bg-white/10'
@@ -866,7 +887,10 @@ export const Sidebar: React.FC = () => {
         </div>
 
         {/* Mobile Drawer Footer with User Profile & Sign Out */}
-        <div className="p-3.5 border-t border-white/10 bg-[#08080c]/90 pb-safe">
+        <div
+          data-drawer-footer="true"
+          className="p-3.5 border-t border-white/10 bg-[#08080c]/90 pb-safe"
+        >
           {profile ? (
             <div className="flex items-center justify-between p-2 rounded-2xl bg-white/5 border border-white/10 hover:border-brand-gold/40 transition-all">
               <Link

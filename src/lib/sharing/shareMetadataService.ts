@@ -455,12 +455,12 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
       case 'producer':
         description =
           cleanDescription(item?.bio) ||
-          `${title} â€” ${creator}. Legendary beatmaker crates, breakbeat instrumentals, and production credits on ChanceTEK One.`;
+          `${title} — ${creator}. Legendary beatmaker crates, breakbeat instrumentals, and production credits on ChanceTEK One.`;
         break;
       case 'artist':
         description =
           cleanDescription(item?.bio) ||
-          `${title} â€” ${creator}. Complete discography, stream singles, albums, and master vinyl collections on ChanceTEK One.`;
+          `${title} — ${creator}. Complete discography, stream singles, albums, and master vinyl collections on ChanceTEK One.`;
         break;
       case 'album':
         description =
@@ -470,7 +470,7 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
       case 'playlist':
         description =
           cleanDescription(item?.description) ||
-          `"${title}" â€” ${creator}. Curated playlist featuring ${item?.itemCount || 0} tracks on ChanceTEK One.`;
+          `"${title}" — ${creator}. Curated playlist featuring ${item?.itemCount || 0} tracks on ChanceTEK One.`;
         break;
       case 'project':
         description =

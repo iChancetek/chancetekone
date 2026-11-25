@@ -1,40 +1,40 @@
 import type { Metadata } from 'next';
-import { resolveShareMetadataById } from '@/lib/sharing/shareMetadataService';
+import { lookupPodcastForShareMetadata } from '@/lib/server/shareTrackLookup';
 
 export async function generateMetadata({
   params,
 }: {
-  params: any;
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   try {
-    const resolvedParams = params ? await Promise.resolve(params) : {};
-    const id = (resolvedParams as any)?.id || '';
-    const meta = resolveShareMetadataById('podcast', id);
-    const rawCover = meta?.coverUrl || '/images/genres/hip-hop.jpg';
-    const image = rawCover.startsWith('http')
-      ? rawCover
-      : `https://chancetekone.us${rawCover}`;
+    const { id } = await params;
+    const resolved = await lookupPodcastForShareMetadata(id);
+    const pageUrl = `${resolved.origin}/podcasts/${encodeURIComponent(id)}`;
 
     return {
-      title: `${meta.title} — ${meta.creator}`,
-      description: meta.description,
+      title: `${resolved.title} — ${resolved.artist}`,
+      description: resolved.description,
       openGraph: {
-        title: `${meta.title} — ${meta.creator}`,
-        description: meta.description,
-        type: 'website',
-        url: meta.canonicalUrl || `https://chancetekone.us/podcasts/${id}`,
+        title: `${resolved.title} — ${resolved.artist}`,
+        description: resolved.description,
+        type: 'article',
+        url: pageUrl,
+        siteName: 'ChanceTEK One',
         images: [
           {
-            url: image,
-            alt: `${meta.title} hosted by ${meta.creator}`,
+            url: resolved.ogImageUrl,
+            secureUrl: resolved.ogImageUrl,
+            width: 1200,
+            height: 1200,
+            alt: `${resolved.title} hosted by ${resolved.artist}`,
           },
         ],
       },
       twitter: {
         card: 'summary_large_image',
-        title: `${meta.title} — ${meta.creator}`,
-        description: meta.description,
-        images: [image],
+        title: `${resolved.title} — ${resolved.artist}`,
+        description: resolved.description,
+        images: [resolved.ogImageUrl],
       },
     };
   } catch {
@@ -42,15 +42,17 @@ export async function generateMetadata({
       title: 'ChanceTEK One — Master Podcast Series',
       description: 'Stream master audio podcast broadcasts and discussions on ChanceTEK One.',
       openGraph: {
-        title: 'ChanceTEK One',
+        title: 'ChanceTEK One — Podcasts',
         description: 'Stream master audio podcast broadcasts and discussions on ChanceTEK One.',
         type: 'website',
-        url: 'https://chancetekone.us',
+        url: 'https://chancetekone.us/podcasts',
+        images: [{ url: 'https://chancetekone.us/images/genres/hip-hop.jpg', width: 1200, height: 1200 }],
       },
       twitter: {
         card: 'summary_large_image',
-        title: 'ChanceTEK One',
+        title: 'ChanceTEK One — Podcasts',
         description: 'Stream master audio podcast broadcasts and discussions on ChanceTEK One.',
+        images: ['https://chancetekone.us/images/genres/hip-hop.jpg'],
       },
     };
   }

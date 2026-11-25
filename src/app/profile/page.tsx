@@ -1015,7 +1015,7 @@ export default function ProfilePage() {
                 <Clock className="w-3.5 h-3.5 text-brand-gold" />
                 Member since {new Date(profile.createdAt || Date.now()).toLocaleDateString()}
               </span>
-              <span>â€¢</span>
+              <span>•</span>
               <span className="text-brand-gold font-bold">
                 {pendingMediaRemoval
                   ? 'Removal Pending Save'
@@ -1129,7 +1129,7 @@ export default function ProfilePage() {
                   Selected: {mediaFile.name} ({(mediaFile.size / (1024 * 1024)).toFixed(2)} MB)
                 </p>
                 <p className="text-[11px] text-amber-200/80">
-                  Pending â€” click <strong>Save Media</strong> or <strong>Save Profile</strong> to apply across the platform.
+                  Pending — click <strong>Save Media</strong> or <strong>Save Profile</strong> to apply across the platform.
                 </p>
                 {previewVideoError && (
                   <p className="text-[11px] text-amber-300 font-medium pt-0.5">
@@ -1518,7 +1518,7 @@ export default function ProfilePage() {
           </div>
           {hasUnsavedChanges ? (
             <p className="text-[11px] text-amber-200/85">
-              Pending: {unsavedSummaryItems.join(' â€¢ ')}
+              Pending: {unsavedSummaryItems.join(' • ')}
             </p>
           ) : (
             <p className="text-[11px] text-neutral-400">

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import Link from 'next/link';
 import { UserAvatar } from '@/components/navigation/UserAvatar';
@@ -339,12 +340,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   const isWideAgreementStep = tab === 'signup' && (signupStep === 'agreement' || signupStep === 'confirmed');
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+  if (!isOpen || typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="fixed inset-0 z-[9995] w-screen max-w-[100vw] h-[100dvh] overflow-x-hidden flex items-center justify-center p-3 sm:p-4 bg-black/80 animate-in fade-in duration-200"
+    >
       <div
         className={`relative w-full ${
           isWideAgreementStep ? 'max-w-3xl' : 'max-w-md'
-        } glass-panel p-5 sm:p-7 rounded-3xl border border-brand-purple/40 space-y-5 bg-gradient-to-b from-[#141024]/98 via-[#0c0916]/98 to-[#08080c]/98 shadow-[0_25px_70px_rgba(0,0,0,0.85)] max-h-[92vh] overflow-y-auto transition-all`}
+        } glass-panel p-5 sm:p-7 rounded-3xl border border-brand-purple/40 space-y-5 bg-gradient-to-b from-[#141024]/98 via-[#0c0916]/98 to-[#08080c]/98 shadow-[0_25px_70px_rgba(0,0,0,0.85)] max-h-[90dvh] overflow-y-auto overflow-x-hidden transition-all`}
       >
         {/* Close Button */}
         <button
@@ -1161,6 +1167,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

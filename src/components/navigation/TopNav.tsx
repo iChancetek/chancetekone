@@ -32,6 +32,7 @@ import { BrandLogo } from '@/components/brand/BrandLogo';
 export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
   const router = useRouter();
   const [query, setQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isVoiceSearchOpen, setIsVoiceSearchOpen] = useState(false);
   const { itemCount, openCart } = useCart();
@@ -68,7 +69,7 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
           {/* Universal Back Navigation Arrow Button */}
           <button
             onClick={handleGoBack}
-            className="p-1.5 sm:p-2 rounded-full bg-white/[0.05] hover:bg-white/[0.12] active:bg-white/20 text-brand-gold hover:text-white border border-white/[0.09] hover:border-brand-gold/40 transition-all hover:scale-105 shrink-0 flex items-center justify-center cursor-pointer w-9 h-9 sm:w-10 sm:h-10 md:w-[42px] md:h-[42px] touch-manipulation group"
+            className={`${isSearchFocused ? 'hidden md:flex' : 'flex'} p-1.5 sm:p-2 rounded-full bg-white/[0.05] hover:bg-white/[0.12] active:bg-white/20 text-brand-gold hover:text-white border border-white/[0.09] hover:border-brand-gold/40 transition-all hover:scale-105 shrink-0 items-center justify-center cursor-pointer w-9 h-9 sm:w-10 sm:h-10 md:w-[42px] md:h-[42px] touch-manipulation group`}
             title="Go Back to Previous Page"
             aria-label="Go Back to Previous Page"
           >
@@ -78,7 +79,7 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
           {/* Mobile Drawer Hamburger Button (Visible on phones & vertical mobile viewports) */}
           <button
             onClick={toggleMobileSidebar}
-            className="md:hidden p-1.5 sm:p-2 rounded-full bg-white/[0.05] hover:bg-white/[0.12] active:bg-white/20 text-brand-gold hover:text-white border border-white/[0.09] transition-colors shrink-0 flex items-center justify-center cursor-pointer w-9 h-9 sm:w-10 sm:h-10 touch-manipulation"
+            className={`${isSearchFocused ? 'hidden' : 'flex md:hidden'} p-1.5 sm:p-2 rounded-full bg-white/[0.05] hover:bg-white/[0.12] active:bg-white/20 text-brand-gold hover:text-white border border-white/[0.09] transition-colors shrink-0 items-center justify-center cursor-pointer w-9 h-9 sm:w-10 sm:h-10 touch-manipulation`}
             title="Open Navigation Menu"
             aria-label="Open Navigation Menu"
           >
@@ -86,7 +87,11 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
           </button>
 
           {/* Mobile Compact Brand Emblem (transparent, seamless) */}
-          <Link href="/" className="md:hidden shrink-0" aria-label="ChanceTEK One — Listen. Watch. Discover.">
+          <Link
+            href="/"
+            className={`${isSearchFocused ? 'hidden' : 'inline-flex md:hidden'} shrink-0`}
+            aria-label="ChanceTEK One — Listen. Watch. Discover."
+          >
             <BrandLogo variant="compact" showSlogan={false} className="[&_img]:w-8 [&_img]:h-8" />
           </Link>
 
@@ -114,31 +119,58 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
             )}
           </button>
 
-          {/* Global Natural Language Search Bar */}
+          {/* Global Natural Language Search Bar — Expands full-width on mobile when typing so every character is crystal clear */}
           <form onSubmit={handleSearchSubmit} className="flex-1 min-w-0 relative">
             <div className="relative flex items-center group">
-              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-400 group-focus-within:text-brand-gold absolute left-3 sm:left-4 pointer-events-none transition-colors" />
+              <Search className="w-4 h-4 text-neutral-400 group-focus-within:text-brand-gold absolute left-3 sm:left-4 pointer-events-none transition-colors" />
               <input
-                type="text"
+                type="search"
                 value={query}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search music, videos..."
-                className="w-full min-w-0 pl-8 sm:pl-11 pr-8 sm:pr-11 py-2 sm:py-2.5 rounded-full bg-white/[0.05] hover:bg-white/[0.08] focus:bg-[#0e0e18] border border-white/[0.1] focus:border-brand-gold/50 focus:outline-none focus:ring-2 focus:ring-brand-gold/20 text-xs md:text-sm text-white placeholder-neutral-400 transition-all shadow-inner"
+                placeholder={isSearchFocused ? 'Search songs, artists, videos, audiobooks...' : 'Search...'}
+                aria-label="Search ChanceTEK One"
+                className="w-full min-w-0 pl-9 sm:pl-11 pr-10 sm:pr-11 py-2 sm:py-2.5 rounded-full bg-white/[0.07] hover:bg-white/[0.1] focus:bg-[#0e0e18] border border-white/[0.12] focus:border-brand-gold/60 focus:outline-none focus:ring-2 focus:ring-brand-gold/25 text-base sm:text-sm text-white caret-brand-gold placeholder-neutral-400 transition-all shadow-inner"
               />
-              <button
-                type="button"
-                onClick={() => setIsVoiceSearchOpen(true)}
-                title="Whisper Voice Search & Agent Commands"
-                className="absolute right-1.5 sm:right-2 p-1.5 rounded-full bg-white/[0.05] hover:bg-brand-purple/40 text-brand-gold hover:text-white transition-all cursor-pointer"
-              >
-                <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              </button>
+              {isSearchFocused && query ? (
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => setQuery('')}
+                  title="Clear search"
+                  className="absolute right-2 px-2 py-1 rounded-full bg-white/10 text-xs font-bold text-neutral-300 hover:text-white cursor-pointer"
+                >
+                  Clear
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsVoiceSearchOpen(true)}
+                  title="Whisper Voice Search & Agent Commands"
+                  className="absolute right-1.5 sm:right-2 p-1.5 rounded-full bg-white/[0.05] hover:bg-brand-purple/40 text-brand-gold hover:text-white transition-all cursor-pointer"
+                >
+                  <Mic className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </form>
+
+          {isSearchFocused && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsSearchFocused(false);
+              }}
+              className="md:hidden shrink-0 px-2.5 py-1.5 text-xs font-bold text-brand-gold cursor-pointer"
+            >
+              Done
+            </button>
+          )}
         </div>
 
-        {/* Right Action Controls — Portrait phones keep Sign In 100% visible & unobstructed; secondary utilities stay in Mobile Menu / sm+ */}
-        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-2.5 shrink-0">
+        {/* Right Action Controls — Portrait phones keep Sign In 100% visible & unobstructed; collapses while typing in search so text has full width */}
+        <div className={`${isSearchFocused ? 'hidden md:flex' : 'flex'} items-center gap-1.5 sm:gap-2 md:gap-2.5 shrink-0`}>
           {/* PWA Install Trigger */}
           {isInstallable && (
             <button

@@ -11,12 +11,14 @@ import { CatalogSyncBootstrap } from '@/components/catalog/CatalogSyncBootstrap'
 export const viewport: Viewport = {
   themeColor: [
     { media: '(prefers-color-scheme: dark)', color: '#050509' },
-    { media: '(prefers-color-scheme: light)', color: '#050509' },
+    { media: '(prefers-color-scheme: light)', color: '#f2f2f7' },
   ],
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 5,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: 'cover',
+  interactiveWidget: 'resizes-content',
 };
 
 export const metadata: Metadata = {

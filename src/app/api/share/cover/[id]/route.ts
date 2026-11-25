@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { lookupTrackForShareMetadata } from '@/lib/server/shareTrackLookup';
+import {
+  lookupAudiobookForShareMetadata,
+  lookupPodcastForShareMetadata,
+  lookupTrackForShareMetadata,
+  normalizeExternalCoverOrigin,
+} from '@/lib/server/shareTrackLookup';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,13 +48,21 @@ export async function GET(
   try {
     const { id } = await context.params;
     const sp = request.nextUrl.searchParams;
-    const resolved = await lookupTrackForShareMetadata(id, {
+    const mediaType = (sp.get('type') || 'song').toLowerCase();
+    const hints = {
       title: sp.get('t') || undefined,
       artist: sp.get('a') || undefined,
       cover: sp.get('c') || undefined,
-    });
+    };
 
-    const rawCover = resolved.rawCover;
+    const resolved =
+      mediaType === 'audiobook' || mediaType === 'book'
+        ? await lookupAudiobookForShareMetadata(id, hints)
+        : mediaType === 'podcast'
+          ? await lookupPodcastForShareMetadata(id, hints)
+          : await lookupTrackForShareMetadata(id, hints);
+
+    const rawCover = normalizeExternalCoverOrigin(resolved.rawCover);
 
     // 1. Embedded data:image/... URI -> decode & stream real binary image
     if (rawCover.startsWith('data:image/')) {

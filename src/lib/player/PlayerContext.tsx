@@ -109,12 +109,21 @@ const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
  */
 function toAbsoluteMediaUrl(url?: string | null): string {
   if (!url) {
-    return typeof window !== 'undefined' ? `${window.location.origin}/logo.png` : 'https://chancetekone.us/logo.png';
+    return typeof window !== 'undefined'
+      ? `${window.location.origin}/images/chancetekone_icon.png`
+      : 'https://chancetekone.us/images/chancetekone_icon.png';
   }
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
+  const trimmed = url.trim();
+  if (/^https?:\/\/(0\.0\.0\.0|127\.0\.0\.1|localhost)(:\d+)?(\/|$)/i.test(trimmed)) {
+    return trimmed.replace(
+      /^https?:\/\/(0\.0\.0\.0|127\.0\.0\.1|localhost)(:\d+)?/i,
+      'https://8ofspadesworks.us'
+    );
   }
-  const clean = url.startsWith('/') ? url : `/${url}`;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  const clean = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
   return typeof window !== 'undefined' ? `${window.location.origin}${clean}` : `https://chancetekone.us${clean}`;
 }
 
@@ -286,6 +295,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [activeVideoModal, setActiveVideoModal] = useState<Video | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const isPlayingRef = useRef<boolean>(false);
+  const userPausedRef = useRef<boolean>(true);
   useEffect(() => {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
@@ -363,18 +373,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
         const exists = active.find((t) => t.id === prev.id);
         if (exists) return exists;
-        // Track no longer exists in active catalog (permanently removed or purged)
-        if (audioRef.current) {
-          try {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
-            audioRef.current.src = '';
-          } catch {
-            // ignore
-          }
-        }
-        setIsPlaying(false);
-        return active[0] || null;
+        // Never kill active playback (podcasts, audiobooks, radio, or live replicated tracks)
+        // during background catalog syncs unless the track was explicitly permanently deleted above.
+        return prev;
       });
       setQueue((prevQueue) => {
         const activeIds = new Set(active.map((t) => t.id));
@@ -465,7 +466,15 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         } else {
           audio = new Audio();
           audio.id = 'spades-global-audio';
-          audio.style.display = 'none';
+          // Keep in DOM render tree (1x1 invisible) rather than display:none so iOS WebKit
+          // & Android PWA maintain uninterrupted background audio when switching apps/screens.
+          audio.style.position = 'fixed';
+          audio.style.width = '1px';
+          audio.style.height = '1px';
+          audio.style.opacity = '0.001';
+          audio.style.pointerEvents = 'none';
+          audio.style.left = '-10px';
+          audio.style.top = '-10px';
           document.body.appendChild(audio);
         }
       } else {
@@ -531,6 +540,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const onEnded = () => handleTrackEndedRef.current?.();
     const onPlay = () => {
+      userPausedRef.current = false;
       setIsPlaying(true);
       if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
         try {
@@ -539,6 +549,27 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
     };
     const onPause = () => {
+      // If the browser throttled/paused playback merely because the user switched screens/apps
+      // (and NOT because the user pressed Pause or the track ended), keep MediaSession alive
+      // and attempt immediate seamless background resume.
+      if (
+        !userPausedRef.current &&
+        audio &&
+        !audio.ended &&
+        audio.src &&
+        typeof document !== 'undefined' &&
+        document.hidden
+      ) {
+        if ('mediaSession' in navigator) {
+          try {
+            navigator.mediaSession.playbackState = 'playing';
+          } catch {}
+        }
+        audio.play().catch(() => {
+          setIsPlaying(false);
+        });
+        return;
+      }
       setIsPlaying(false);
       if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
         try {
@@ -547,6 +578,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
     };
     const onPlaying = () => {
+      userPausedRef.current = false;
       setIsPlaying(true);
       if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
         try {
@@ -647,6 +679,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // Register this player's pause function with the radio orchestrator so
     // that tuning in to any radio station automatically pauses catalog playback.
     radioOrchestrator.setPauseCatalogPlayer(() => {
+      userPausedRef.current = true;
       audio.pause();
       setIsPlaying(false);
     });
@@ -660,7 +693,30 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       audio.removeEventListener('playing', onPlaying);
       audio.removeEventListener('waiting', onWaiting);
       audio.removeEventListener('error', onError);
-      audio.pause();
+      // Keep audio running seamlessly across screen/route transitions!
+    };
+  }, []);
+
+  // Background & Screen-Switch Audio Continuity Guard (keeps music playing when switching apps/screens)
+  useEffect(() => {
+    if (typeof document === 'undefined' || typeof window === 'undefined') return;
+    const ensureContinuousPlayback = () => {
+      const audio = audioRef.current;
+      if (!audio || userPausedRef.current || !audio.src || audio.ended) return;
+      if ('mediaSession' in navigator) {
+        try {
+          navigator.mediaSession.playbackState = 'playing';
+        } catch {}
+      }
+      if (audio.paused && isPlayingRef.current) {
+        audio.play().catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', ensureContinuousPlayback);
+    window.addEventListener('pageshow', ensureContinuousPlayback);
+    return () => {
+      document.removeEventListener('visibilitychange', ensureContinuousPlayback);
+      window.removeEventListener('pageshow', ensureContinuousPlayback);
     };
   }, []);
 
@@ -676,12 +732,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           artist: currentTrack.artistName || 'ChanceTEK One',
           album: currentTrack.albumTitle || (currentTrack.genre ? `${currentTrack.genre} · ChanceTEK One` : 'ChanceTEK One'),
           artwork: [
-            { src: coverUrl, sizes: '96x96', type: 'image/png' },
-            { src: coverUrl, sizes: '128x128', type: 'image/png' },
-            { src: coverUrl, sizes: '192x192', type: 'image/png' },
-            { src: coverUrl, sizes: '256x256', type: 'image/png' },
-            { src: coverUrl, sizes: '384x384', type: 'image/png' },
-            { src: coverUrl, sizes: '512x512', type: 'image/png' },
+            { src: coverUrl, sizes: '96x96' },
+            { src: coverUrl, sizes: '128x128' },
+            { src: coverUrl, sizes: '192x192' },
+            { src: coverUrl, sizes: '256x256' },
+            { src: coverUrl, sizes: '384x384' },
+            { src: coverUrl, sizes: '512x512' },
           ],
         });
       } catch (err) {
@@ -695,8 +751,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           artist: currentAudiobook.narrator || currentAudiobook.author || 'ChanceTEK One',
           album: currentAudiobook.title,
           artwork: [
-            { src: coverUrl, sizes: '192x192', type: 'image/png' },
-            { src: coverUrl, sizes: '512x512', type: 'image/png' },
+            { src: coverUrl, sizes: '192x192' },
+            { src: coverUrl, sizes: '512x512' },
           ],
         });
       } catch (err) {
@@ -724,12 +780,14 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     setActionHandler('play', () => {
+      userPausedRef.current = false;
       if (audioRef.current && !isPlayingRef.current) {
         audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
       }
     });
 
     setActionHandler('pause', () => {
+      userPausedRef.current = true;
       if (audioRef.current) {
         audioRef.current.pause();
         setIsPlaying(false);
@@ -737,6 +795,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
 
     setActionHandler('stop', () => {
+      userPausedRef.current = true;
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -1270,6 +1329,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const pause = () => {
+    userPausedRef.current = true;
     if (audioRef.current) {
       audioRef.current.pause();
       setIsPlaying(false);
@@ -1277,6 +1337,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const resume = () => {
+    userPausedRef.current = false;
     if (!checkIsMemberOrAdmin()) {
       if (isSharedMusicGuestSession()) {
         const isResumingSameActivePreview =

@@ -16,10 +16,10 @@ export async function generateMetadata({
       : `https://chancetekone.us${rawCover}`;
 
     return {
-      title: `${meta.title} â€” ${meta.creator}`,
+      title: `${meta.title} — ${meta.creator}`,
       description: meta.description,
       openGraph: {
-        title: `${meta.title} â€” ${meta.creator}`,
+        title: `${meta.title} — ${meta.creator}`,
         description: meta.description,
         type: 'website',
         url: meta.canonicalUrl || `https://chancetekone.us/projects#${id}`,
@@ -32,14 +32,14 @@ export async function generateMetadata({
       },
       twitter: {
         card: 'summary_large_image',
-        title: `${meta.title} â€” ${meta.creator}`,
+        title: `${meta.title} — ${meta.creator}`,
         description: meta.description,
         images: [image],
       },
     };
   } catch {
     return {
-      title: 'CHANCETEK ONE: THE FOUNDATION BEATS â€” ChanceTEK One',
+      title: 'CHANCETEK ONE: THE FOUNDATION BEATS — ChanceTEK One',
       description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
       openGraph: {
         title: 'CHANCETEK ONE: THE FOUNDATION BEATS',

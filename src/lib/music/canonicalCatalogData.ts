@@ -1,5 +1,5 @@
 /**
- * ChanceTEK One â€” Pure Canonical Track & Cover Catalog Data
+ * ChanceTEK One — Pure Canonical Track & Cover Catalog Data
  * Safe to import in both server route handlers and client services.
  */
 

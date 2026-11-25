@@ -334,10 +334,10 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                 <span className="font-bold text-white">{playlist.ownerName}</span>
               </div>
 
-              <span>â€¢</span>
+              <span>•</span>
               <span className="font-mono text-brand-neon">{playlist.itemCount} items</span>
 
-              <span>â€¢</span>
+              <span>•</span>
               <span className="flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5 text-brand-gold" />
                 <span>{formatDuration(playlist.totalDuration)}</span>
@@ -345,7 +345,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
 
               {playlist.stats.plays > 0 && (
                 <>
-                  <span>â€¢</span>
+                  <span>•</span>
                   <span>{playlist.stats.plays.toLocaleString()} plays</span>
                 </>
               )}

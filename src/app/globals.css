@@ -52,14 +52,34 @@
     user-select: auto;
   }
 
+  /* Prevent iOS Safari / Android PWA auto-zoom when focusing inputs on mobile & tablets */
+  @media (max-width: 1024px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overscroll-behavior: none;
+    overflow-x: clip;
+  }
+
   html, body {
     background-color: #050509;
     color: #f4f4f8;
     font-family: var(--font-sans);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    overflow-x: hidden;
+    overflow-x: clip;
+    overscroll-behavior: none;
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: none;
     max-width: 100vw;
     width: 100%;
+    touch-action: pan-y;
     scroll-behavior: smooth;
   }
 
@@ -344,69 +364,80 @@ html.loose-spacing h3 {
 }
 
 /* ============================================================================
-   APPLE MUSIC COLOR-STYLE LIGHT MODE (STRICTLY SCOPED TO html.light)
-   Dark mode remains 100% untouched when html.dark is active.
+   APPLE LIQUID GLASS LIGHT MODE (STRICTLY SCOPED TO html.light)
+   Real-time lensing • Dynamic adaptation • System-wide presence
+   Solid high-contrast buttons, cards & active selections (ZERO fading washes).
+   Dark mode (html.dark) remains 100% untouched.
    ============================================================================ */
 html.light {
-  --background: #ffffff;
+  --background: #f2f2f7;
   --foreground: #1d1d1f;
-  --color-background: #ffffff;
+  --color-background: #f2f2f7;
   --color-foreground: #1d1d1f;
-  --color-surface: #f5f5f7;
-  --color-surface-muted: #ebebf0;
-  --color-surface-card: rgba(255, 255, 255, 0.9);
-  --color-surface-hover: #f2f2f7;
-  --color-border: rgba(0, 0, 0, 0.08);
+  --color-surface: #ffffff;
+  --color-surface-muted: #e8e8ed;
+  --color-surface-card: rgba(255, 255, 255, 0.78);
+  --color-surface-hover: #e8e8ed;
+  --color-border: rgba(15, 23, 42, 0.09);
 
-  /* Iconic Apple Music Coral-Crimson & Rose Palette */
+  /* Crisp Solid Apple Music Signature Accents */
   --color-brand-gold: #fa233b;
-  --color-brand-amber: #ff375f;
-  --color-brand-purple: #d60017;
+  --color-brand-amber: #e01a31;
+  --color-brand-purple: #1d1d1f;
   --color-brand-violet: #fa233b;
-  --color-brand-neon: #e11d48;
-  --color-brand-dark: #fff1f3;
+  --color-brand-neon: #fa233b;
+  --color-brand-dark: #f2f2f7;
 }
 
 html.light,
 html.light body {
-  background-color: #ffffff !important;
+  background-color: #f2f2f7 !important;
   color: #1d1d1f !important;
 }
 
 html.light ::selection {
-  background-color: rgba(250, 35, 59, 0.22);
-  color: #1d1d1f;
+  background-color: #fa233b;
+  color: #ffffff;
 }
 
-/* Base Canvas & Ambient Atmosphere */
+/* System-Wide Adaptive Canvas & Subtle Ambient Light Field for Real-Time Glass Lensing */
 html.light .bg-\[\#050509\],
 html.light .bg-\[\#08080c\],
 html.light .bg-\[\#08080c\]\/60 {
-  background-color: #ffffff !important;
+  background-color: #f2f2f7 !important;
 }
 
 html.light .spatial-canvas-grid {
   background-image:
-    linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-  opacity: 0.55;
+    radial-gradient(circle at 18% 12%, rgba(250, 35, 59, 0.065) 0%, transparent 45%),
+    radial-gradient(circle at 82% 24%, rgba(94, 92, 230, 0.06) 0%, transparent 48%),
+    radial-gradient(circle at 50% 85%, rgba(245, 195, 68, 0.06) 0%, transparent 50%),
+    linear-gradient(to right, rgba(15, 23, 42, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.025) 1px, transparent 1px);
+  opacity: 1;
 }
 
-/* Frosted Translucent Apple Porcelain Sidebar, TopNav, MobileNav & Player Dock */
+/* ============================================================================
+   1. REAL-TIME LENSING LIQUID GLASS CHROME (Sidebar, TopNav, MobileNav, Docks)
+   ============================================================================ */
 html.light aside {
-  background: rgba(245, 245, 247, 0.88) !important;
-  backdrop-filter: blur(28px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 8px 0 32px -12px rgba(0, 0, 0, 0.08) !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(38px) saturate(210%) brightness(1.04) !important;
+  -webkit-backdrop-filter: blur(38px) saturate(210%) brightness(1.04) !important;
+  border-color: rgba(15, 23, 42, 0.09) !important;
+  box-shadow:
+    inset -1px 0 0 rgba(255, 255, 255, 0.9),
+    10px 0 36px -14px rgba(15, 23, 42, 0.12) !important;
 }
 
 html.light header {
-  background: rgba(255, 255, 255, 0.84) !important;
-  backdrop-filter: blur(28px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 4px 24px -10px rgba(0, 0, 0, 0.08) !important;
+  background: rgba(255, 255, 255, 0.76) !important;
+  backdrop-filter: blur(36px) saturate(210%) brightness(1.04) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(210%) brightness(1.04) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow:
+    inset 0 -1px 0 rgba(255, 255, 255, 0.85),
+    0 6px 28px -12px rgba(15, 23, 42, 0.1) !important;
 }
 
 html.light nav.fixed,
@@ -415,106 +446,337 @@ html.light [class*="bg-[#07070f]"],
 html.light [class*="bg-[#07070e]"],
 html.light [class*="bg-[#090913]"],
 html.light [class*="bg-[#0c0c16]"],
+html.light [class*="bg-[#0d0914]"],
 html.light [class*="bg-[#0e0e18]"],
-html.light [class*="bg-[#10101c]"] {
-  background: rgba(255, 255, 255, 0.9) !important;
-  backdrop-filter: blur(28px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 8px 30px -10px rgba(0, 0, 0, 0.09) !important;
+html.light [class*="bg-[#10101c]"],
+html.light [class*="bg-[#12121e]"],
+html.light [class*="bg-[#0a0a12]"],
+html.light [data-drawer-footer="true"] {
+  background: rgba(255, 255, 255, 0.84) !important;
+  background-image: none !important;
+  backdrop-filter: blur(36px) saturate(210%) brightness(1.04) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(210%) brightness(1.04) !important;
+  border-color: rgba(15, 23, 42, 0.09) !important;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
+    0 10px 34px -10px rgba(15, 23, 42, 0.12) !important;
 }
 
-/* Elevated Pure White Apple Music Glass Panels & Cards */
-html.light .glass-panel {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(249, 249, 251, 0.92) 100%) !important;
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+/* ============================================================================
+   2. LIQUID GLASS CARDS & PANELS (ZERO dark fading cards with unreadable text!)
+   ============================================================================ */
+html.light .glass-panel,
+html.light [class*="from-[#1"]:not([data-cinema-dark="true"]):not([data-cinema-dark="true"] *),
+html.light [class*="from-[#0"]:not([data-cinema-dark="true"]):not([data-cinema-dark="true"] *),
+html.light [class*="from-[#2"]:not([data-cinema-dark="true"]):not([data-cinema-dark="true"] *),
+html.light [class*="from-amber-950"]:not([data-cinema-dark="true"]),
+html.light [class*="from-rose-950"]:not([data-cinema-dark="true"]),
+html.light [class*="from-brand-purple/2"]:not([data-cinema-dark="true"]),
+html.light [class*="from-brand-purple/3"]:not([data-cinema-dark="true"]),
+html.light [data-genre-banner="true"] {
+  background: rgba(255, 255, 255, 0.80) !important;
+  background-image: none !important;
+  backdrop-filter: blur(32px) saturate(200%) brightness(1.04) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(200%) brightness(1.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 1),
-    0 12px 36px -12px rgba(0, 0, 0, 0.08) !important;
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.98),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.55),
+    0 12px 36px -12px rgba(15, 23, 42, 0.11),
+    0 0 0 1px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Soften dark internal vignettes inside Dynamic Genre Showcase Banner so Liquid Glass shines */
+html.light [data-genre-banner="true"] > div:first-child > div[class*="from-[#08050e]"] {
+  background: rgba(255, 255, 255, 0.78) !important;
+  background-image: none !important;
+}
+html.light [data-genre-banner="true"] h2 {
+  color: #1d1d1f !important;
+}
+html.light [data-genre-banner="true"] p {
+  color: #3a3a3c !important;
 }
 
 html.light .glass-card {
-  background: #ffffff !important;
-  border: 1px solid rgba(0, 0, 0, 0.075) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  background-image: none !important;
+  backdrop-filter: blur(24px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
   box-shadow:
-    0 4px 18px -6px rgba(0, 0, 0, 0.07),
-    0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 6px 20px -8px rgba(15, 23, 42, 0.09),
+    0 0 0 1px rgba(15, 23, 42, 0.06) !important;
 }
 
 html.light .glass-card:hover {
   background: #ffffff !important;
-  border-color: rgba(250, 35, 59, 0.32) !important;
+  border-color: rgba(250, 35, 59, 0.35) !important;
   box-shadow:
-    0 18px 42px -12px rgba(250, 35, 59, 0.14),
-    0 8px 24px -8px rgba(0, 0, 0, 0.09) !important;
+    0 16px 36px -12px rgba(15, 23, 42, 0.14),
+    0 0 0 1px rgba(250, 35, 59, 0.25) !important;
 }
 
 html.light .specular-edge::before {
   background: linear-gradient(
     135deg,
-    rgba(250, 35, 59, 0.24) 0%,
-    rgba(251, 92, 116, 0.16) 45%,
-    rgba(0, 0, 0, 0.06) 100%
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(15, 23, 42, 0.06) 100%
   );
 }
 
-/* Apple Music Gradient Headings & Text */
+/* ============================================================================
+   3. CRISP TYPOGRAPHY INKS (100% READABLE EVERYWHERE)
+   ============================================================================ */
 html.light .gold-gradient-text {
-  background: linear-gradient(135deg, #d60017 0%, #fa233b 50%, #ff4e6a 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: #fa233b !important;
+  color: #fa233b !important;
 }
 
 html.light .studio-heading-gradient {
-  background: linear-gradient(180deg, #1d1d1f 0%, #3a3a3c 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: #1d1d1f !important;
+  color: #1d1d1f !important;
 }
 
-/* Crisp Apple Typography Inks */
 html.light .text-white {
   color: #1d1d1f !important;
 }
 
 html.light .text-neutral-100,
 html.light .text-neutral-200 {
-  color: #2c2c2e !important;
+  color: #1d1d1f !important;
 }
 
 html.light .text-neutral-300,
 html.light .text-neutral-300\/90 {
-  color: #48484a !important;
+  color: #3a3a3c !important;
 }
 
 html.light .text-neutral-400,
 html.light .text-neutral-500 {
-  color: #6e6e73 !important;
+  color: #636366 !important;
 }
 
-/* Preserve Crisp White Ink inside Vivid Coral/Red/Gradient Buttons & Dark Scrims */
+/* ============================================================================
+   4. NAVIGATION MENU HOVER & SELECTED STATES (SOLID, SLEEK, PROFESSIONAL)
+   ============================================================================ */
+html.light [data-nav-item="true"] {
+  background: transparent !important;
+  background-image: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: #1d1d1f !important;
+}
+
+html.light [data-nav-item="true"] svg {
+  color: #636366 !important;
+}
+
+/* Sleek Solid Apple Neutral Hover (ZERO muddy pink!) */
+html.light [data-nav-item="true"]:hover {
+  background: #e8e8ed !important;
+  background-image: none !important;
+  color: #1d1d1f !important;
+}
+
+html.light [data-nav-item="true"]:hover svg {
+  color: #fa233b !important;
+}
+
+/* Active / Selected Menu Option: 100% SOLID Crimson #FA233B + Pure White Text & Icon */
+html.light [data-nav-item="true"][data-nav-active="true"],
+html.light [data-nav-item="true"][data-nav-active="true"]:hover {
+  background: #fa233b !important;
+  background-image: none !important;
+  border-color: #fa233b !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px -6px rgba(250, 35, 59, 0.5) !important;
+}
+
+html.light [data-nav-item="true"][data-nav-active="true"] span,
+html.light [data-nav-item="true"][data-nav-active="true"] svg {
+  color: #ffffff !important;
+}
+
+/* Crisp Solid Badges inside Nav & Sidebar (ZERO washed-out pink) */
+html.light [data-nav-badge="true"] {
+  background: #1d1d1f !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-color: #1d1d1f !important;
+}
+
+html.light [data-nav-item="true"][data-nav-active="true"] [data-nav-badge="true"] {
+  background: #ffffff !important;
+  color: #fa233b !important;
+  border-color: #ffffff !important;
+}
+
+/* Solid "+ Create Playlist" Button (ZERO muddy beige gradient) */
+html.light [data-create-playlist="true"] {
+  background: #1d1d1f !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-color: #1d1d1f !important;
+  box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.25) !important;
+}
+
+html.light [data-create-playlist="true"]:hover {
+  background: #3a3a3c !important;
+}
+
+html.light [data-create-playlist="true"] span,
+html.light [data-create-playlist="true"] svg {
+  color: #ffffff !important;
+}
+
+/* Crisp Visible Mobile Drawer Close "X" Button */
+html.light [data-drawer-close="true"] {
+  background: #e8e8ed !important;
+  color: #1d1d1f !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+html.light [data-drawer-close="true"]:hover {
+  background: #dcdce3 !important;
+}
+
+html.light [data-drawer-close="true"] svg {
+  color: #1d1d1f !important;
+}
+
+/* ============================================================================
+   5. 100% SOLID BUTTONS (ZERO FADING GRADIENTS — CRYSTAL CLEAR WHITE TEXT)
+   ============================================================================ */
 html.light .shimmer-cta,
-html.light .shimmer-cta span,
-html.light .shimmer-cta svg,
-html.light [class*="bg-gradient-to-r"][class*="from-[#f7cf62]"],
-html.light [class*="bg-gradient-to-br"][class*="from-[#f7cf62]"],
-html.light [class*="bg-gradient-to-r"][class*="from-brand-purple"],
-html.light [class*="bg-gradient-to-r"][class*="from-rose-"],
-html.light [class*="bg-gradient-to-r"][class*="from-red-"] {
-  background: linear-gradient(135deg, #fa233b 0%, #fb5c74 100%) !important;
+html.light button[class*="bg-gradient-to-r"][class*="from-[#f7cf62]"],
+html.light button[class*="bg-gradient-to-br"][class*="from-[#f7cf62]"],
+html.light a[class*="bg-gradient-to-r"][class*="from-[#f7cf62]"],
+html.light a[class*="bg-gradient-to-br"][class*="from-[#f7cf62]"],
+html.light button[class*="bg-gradient-to-r"][class*="from-brand-gold"],
+html.light button[class*="bg-gradient-to-r"][class*="from-[#ffd700]"],
+html.light button[class*="bg-gradient-to-r"][class*="from-brand-purple"],
+html.light a[class*="bg-gradient-to-r"][class*="from-brand-purple"],
+html.light button[class*="bg-gradient-to-r"][class*="from-rose-"],
+html.light button[class*="bg-gradient-to-r"][class*="from-red-"],
+html.light [data-genre-active="true"],
+html.light [data-genre-banner="true"] button {
+  background: #fa233b !important;
+  background-image: none !important;
   color: #ffffff !important;
-  border-color: rgba(250, 35, 59, 0.4) !important;
-  box-shadow: 0 8px 24px -6px rgba(250, 35, 59, 0.42) !important;
+  border-color: #fa233b !important;
+  box-shadow: 0 6px 18px -6px rgba(250, 35, 59, 0.45) !important;
 }
 
-html.light .shimmer-cta svg,
-html.light [class*="bg-gradient-to-br"][class*="from-[#f7cf62]"] svg,
-html.light [class*="bg-gradient-to-r"][class*="from-[#f7cf62]"] svg {
+html.light .shimmer-cta:hover,
+html.light button[class*="bg-gradient-to-r"][class*="from-[#f7cf62]"]:hover,
+html.light button[class*="bg-gradient-to-r"][class*="from-brand-purple"]:hover,
+html.light [data-genre-banner="true"] button:hover {
+  background: #d60017 !important;
+  border-color: #d60017 !important;
+}
+
+html.light .shimmer-cta *,
+html.light button[class*="bg-gradient-to-r"][class*="from-[#f7cf62]"] *,
+html.light button[class*="bg-gradient-to-br"][class*="from-[#f7cf62]"] *,
+html.light a[class*="bg-gradient-to-r"][class*="from-[#f7cf62]"] *,
+html.light button[class*="bg-gradient-to-r"][class*="from-brand-gold"] *,
+html.light button[class*="bg-gradient-to-r"][class*="from-[#ffd700]"] *,
+html.light button[class*="bg-gradient-to-r"][class*="from-brand-purple"] *,
+html.light a[class*="bg-gradient-to-r"][class*="from-brand-purple"] *,
+html.light button[class*="bg-gradient-to-r"][class*="from-rose-"] *,
+html.light [data-genre-active="true"] *,
+html.light [data-genre-banner="true"] button * {
   color: #ffffff !important;
 }
 
-/* Keep White Text inside Dark Media Overlays, Video Theater & FullScreenPlayer */
+/* Unselected Genre Pills: Clean Solid White/Silver Pills with Crisp Dark Ink */
+html.light [data-genre-pill="true"]:not([data-genre-active="true"]) {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #1d1d1f !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+}
+
+html.light [data-genre-pill="true"]:not([data-genre-active="true"]):hover {
+  background: #e8e8ed !important;
+  border-color: rgba(15, 23, 42, 0.22) !important;
+}
+
+/* Secondary Translucent Dark Surfaces & Tinted Pill Badges -> Crisp Solid Porcelain/White (ZERO washed-out pink) */
+html.light .bg-brand-gold\/10,
+html.light .bg-brand-gold\/12,
+html.light .bg-brand-gold\/15,
+html.light .bg-brand-gold\/20,
+html.light .bg-brand-purple\/15,
+html.light .bg-brand-purple\/20,
+html.light .bg-brand-purple\/30 {
+  background-color: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.14) !important;
+  color: #1d1d1f !important;
+}
+
+html.light .bg-brand-gold\/10 svg,
+html.light .bg-brand-gold\/12 svg,
+html.light .bg-brand-gold\/15 svg,
+html.light .bg-brand-gold\/20 svg,
+html.light .bg-brand-purple\/15 svg,
+html.light .bg-brand-purple\/20 svg,
+html.light .bg-brand-purple\/30 svg {
+  color: #fa233b !important;
+}
+
+html.light .bg-white\/5,
+html.light .bg-white\/\[0\.03\],
+html.light .bg-white\/\[0\.05\],
+html.light .bg-white\/\[0\.06\],
+html.light .bg-white\/\[0\.07\],
+html.light .bg-white\/10,
+html.light .bg-black\/40,
+html.light .bg-black\/45,
+html.light .bg-black\/50 {
+  background-color: #ebebf0 !important;
+}
+
+html.light .hover\:bg-white\/5:hover,
+html.light .hover\:bg-white\/\[0\.05\]:hover,
+html.light .hover\:bg-white\/\[0\.06\]:hover,
+html.light .hover\:bg-white\/10:hover,
+html.light .hover\:bg-white\/\[0\.12\]:hover,
+html.light .hover\:bg-white\/\[0\.14\]:hover {
+  background-color: #dcdce3 !important;
+}
+
+/* MobileNav Bottom Dock Solid Active State & Solid AI Trigger */
+html.light nav.fixed a.text-brand-gold {
+  background-color: #fa233b !important;
+  color: #ffffff !important;
+}
+html.light nav.fixed a.text-brand-gold svg,
+html.light nav.fixed a.text-brand-gold span {
+  color: #ffffff !important;
+}
+html.light nav.fixed button[title="ChanceTEK One AI"] {
+  background: #1d1d1f !important;
+  border-color: #1d1d1f !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+html.light nav.fixed button[title="ChanceTEK One AI"] svg,
+html.light nav.fixed button[title="ChanceTEK One AI"] span {
+  color: #ffffff !important;
+}
+
+/* ============================================================================
+   6. PRESERVE CINEMA-DARK VIDEO HEROES, FULL-SCREEN PLAYER & MEDIA OVERLAYS
+   ============================================================================ */
+html.light [data-cinema-dark="true"],
 html.light [class*="bg-black/6"],
 html.light [class*="bg-black/7"],
 html.light [class*="bg-black/8"],
@@ -523,6 +785,12 @@ html.light .bg-black {
   color: #ffffff !important;
 }
 
+html.light [data-cinema-dark="true"] {
+  background-color: #050509 !important;
+}
+
+html.light [data-cinema-dark="true"] .text-white,
+html.light [data-cinema-dark="true"] .text-brand-gold,
 html.light [class*="bg-black/6"] .text-white,
 html.light [class*="bg-black/7"] .text-white,
 html.light [class*="bg-black/8"] .text-white,
@@ -530,6 +798,16 @@ html.light [class*="bg-black/9"] .text-white,
 html.light .bg-black .text-white,
 html.light .z-\[80\].fixed .text-white {
   color: #ffffff !important;
+}
+
+html.light [data-cinema-dark="true"] [class*="bg-brand-gold/15"] {
+  background-color: #1d1d1f !important;
+  border-color: #f5c344 !important;
+  color: #f5c344 !important;
+}
+html.light [data-cinema-dark="true"] [class*="bg-brand-gold/15"] svg,
+html.light [data-cinema-dark="true"] [class*="bg-brand-gold/15"] span {
+  color: #f5c344 !important;
 }
 
 /* Keep Immersive Full-Screen Player Cinema-Dark */
@@ -543,28 +821,6 @@ html.light .fixed.inset-0.z-\[80\] .text-neutral-400 {
   color: #d1d1d6 !important;
 }
 
-/* Translucent Dark Surfaces -> Soft Apple Porcelain Surfaces */
-html.light .bg-white\/5,
-html.light .bg-white\/\[0\.03\],
-html.light .bg-white\/\[0\.05\],
-html.light .bg-white\/\[0\.06\],
-html.light .bg-white\/\[0\.07\],
-html.light .bg-white\/10,
-html.light .bg-black\/40,
-html.light .bg-black\/45,
-html.light .bg-black\/50 {
-  background-color: rgba(118, 118, 128, 0.08) !important;
-}
-
-html.light .hover\:bg-white\/5:hover,
-html.light .hover\:bg-white\/\[0\.05\]:hover,
-html.light .hover\:bg-white\/\[0\.06\]:hover,
-html.light .hover\:bg-white\/10:hover,
-html.light .hover\:bg-white\/\[0\.12\]:hover,
-html.light .hover\:bg-white\/\[0\.14\]:hover {
-  background-color: rgba(250, 35, 59, 0.08) !important;
-}
-
 /* Borders & Dividers in Light Mode */
 html.light .border-white\/5,
 html.light .border-white\/\[0\.07\],
@@ -572,31 +828,34 @@ html.light .border-white\/\[0\.08\],
 html.light .border-white\/\[0\.09\],
 html.light .border-white\/10,
 html.light .border-white\/15 {
-  border-color: rgba(0, 0, 0, 0.08) !important;
+  border-color: rgba(15, 23, 42, 0.09) !important;
 }
 
 html.light .divide-white\/5 > :not([hidden]) ~ :not([hidden]) {
-  border-color: rgba(0, 0, 0, 0.06) !important;
+  border-color: rgba(15, 23, 42, 0.07) !important;
 }
 
-/* Apple Music Active Navigation & TrackRow Highlight */
+/* Active TrackRow Highlight — Clean Solid Subtle Tint + Crisp Solid Crimson Accent Bar */
 html.light [class*="shadow-[inset_3px_0_0_#f5c344"] {
-  background: rgba(250, 35, 59, 0.1) !important;
-  border-color: rgba(250, 35, 59, 0.25) !important;
-  box-shadow: inset 3px 0 0 #fa233b !important;
-  color: #fa233b !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  border-color: rgba(250, 35, 59, 0.35) !important;
+  box-shadow: inset 4px 0 0 #fa233b, 0 6px 20px -8px rgba(15, 23, 42, 0.1) !important;
+  color: #1d1d1f !important;
 }
 
-/* Inputs & Search Pill in Apple Light Mode */
+/* Inputs & Search Pill in Liquid Glass Light Mode — Crystal-Clear Visible Typed Characters */
 html.light input[type="text"],
 html.light input[type="search"],
 html.light input[type="email"],
 html.light input[type="password"],
 html.light textarea,
 html.light select {
-  background-color: rgba(118, 118, 128, 0.1) !important;
+  background-color: #ffffff !important;
   color: #1d1d1f !important;
-  border-color: rgba(0, 0, 0, 0.1) !important;
+  -webkit-text-fill-color: #1d1d1f !important;
+  caret-color: #fa233b !important;
+  border-color: rgba(15, 23, 42, 0.14) !important;
 }
 
 html.light input::placeholder,
@@ -607,21 +866,21 @@ html.light textarea::placeholder {
 html.light input:focus,
 html.light textarea:focus {
   background-color: #ffffff !important;
-  border-color: rgba(250, 35, 59, 0.55) !important;
-  box-shadow: 0 0 0 3px rgba(250, 35, 59, 0.14) !important;
+  border-color: #fa233b !important;
+  box-shadow: 0 0 0 3px rgba(250, 35, 59, 0.16) !important;
 }
 
 /* Light Mode Scrollbar */
 html.light ::-webkit-scrollbar-track {
-  background: #f5f5f7;
+  background: #f2f2f7;
 }
 
 html.light ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(15, 23, 42, 0.2);
 }
 
 html.light ::-webkit-scrollbar-thumb:hover {
-  background: rgba(250, 35, 59, 0.65);
+  background: #fa233b;
 }
 
 

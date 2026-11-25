@@ -9,7 +9,7 @@ import { SocialCommentService } from '@/lib/social/SocialCommentService';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { UserAvatar } from '@/components/navigation/UserAvatar';
 
-const QUICK_EMOJIS = ['ðŸ”¥', 'â¤ï¸', 'ðŸ‘ðŸ¿', 'ðŸ‘ŽðŸ¿', 'ðŸ‘', 'ðŸ‘Ž', 'ðŸ‘ðŸ¿', 'ðŸ‘', 'ðŸ’¯', 'ðŸ‘‘', 'ðŸŽ§', 'âš¡'];
+const QUICK_EMOJIS = ['🔥', '❤️', '👍🏿', '👎🏿', '👍', '👎', '👏🏿', '👏', '💯', '👑', '🎧', '⚡'];
 
 interface CommentComposerProps {
   contentId: string;
@@ -108,7 +108,7 @@ export const CommentComposer: React.FC<CommentComposerProps> = ({
             borderClassName="border border-brand-purple/50"
           />
 
-          <div className="flex-1 space-y-2">
+          <div className="flex-1 min-w-0 space-y-2">
             {replyToName && (
               <div className="flex items-center justify-between text-[11px] text-brand-gold font-medium">
                 <span>Replying to @{replyToName}</span>
@@ -130,23 +130,23 @@ export const CommentComposer: React.FC<CommentComposerProps> = ({
               placeholder={placeholder || defaultPlaceholder}
               rows={parentCommentId ? 2 : 3}
               autoFocus={autoFocus}
-              className="w-full bg-transparent text-xs text-white placeholder-neutral-400 focus:outline-none resize-none leading-relaxed font-sans"
+              className="w-full min-w-0 bg-transparent text-base sm:text-sm text-white placeholder-neutral-400 focus:outline-none resize-none leading-relaxed font-sans"
             />
           </div>
         </div>
 
         {/* Quick Emojis & Submit Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/5">
-          <div className="flex items-center gap-1 overflow-x-auto py-0.5 no-scrollbar">
-            <span className="text-[10px] text-neutral-400 mr-1 flex items-center gap-0.5 font-mono">
-              <Sparkles className="w-2.5 h-2.5 text-brand-gold" />
+        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-white/5">
+          <div className="flex items-center gap-1.5 overflow-x-auto max-w-full py-0.5 no-scrollbar">
+            <span className="text-[10px] text-neutral-400 mr-0.5 flex items-center shrink-0">
+              <Sparkles className="w-3 h-3 text-brand-gold" />
             </span>
             {QUICK_EMOJIS.map((emoji) => (
               <button
                 key={emoji}
                 type="button"
                 onClick={() => handleAddEmoji(emoji)}
-                className="w-6 h-6 rounded-lg bg-white/5 hover:bg-white/15 text-xs flex items-center justify-center transition-transform hover:scale-125 active:scale-95 cursor-pointer"
+                className="shrink-0 w-8 h-8 rounded-lg bg-white/5 hover:bg-white/15 text-base flex items-center justify-center transition-transform active:scale-95 cursor-pointer touch-manipulation"
                 title={`Insert ${emoji}`}
               >
                 {emoji}

@@ -9,11 +9,28 @@
 import fs from 'fs';
 import path from 'path';
 import { readCatalogSnapshot } from '@/lib/server/catalogStore';
-import { MOCK_ALBUMS, MOCK_TRACKS } from '@/lib/mockData';
+import { MOCK_ALBUMS, MOCK_AUDIOBOOKS, MOCK_TRACKS } from '@/lib/mockData';
+import { SEED_PODCASTS } from '@/lib/media/seedMediaData';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
-import { Track } from '@/types/media';
+import { Audiobook, PodcastEpisode, Track } from '@/types/media';
 
 const PRODUCTION_ORIGIN = (process.env.NEXT_PUBLIC_APP_URL || 'https://chancetekone.us').replace(/\/+$/, '');
+const SOURCE_PUBLIC_ORIGIN = (
+  process.env.EIGHT_OF_SPADES_PUBLIC_URL || 'https://8ofspadesworks.us'
+).replace(/\/+$/, '');
+
+export function normalizeExternalCoverOrigin(url?: string | null): string {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  if (/^https?:\/\/(0\.0\.0\.0|127\.0\.0\.1|localhost)(:\d+)?(\/|$)/i.test(trimmed)) {
+    return trimmed.replace(
+      /^https?:\/\/(0\.0\.0\.0|127\.0\.0\.1|localhost)(:\d+)?/i,
+      SOURCE_PUBLIC_ORIGIN
+    );
+  }
+  return trimmed;
+}
 
 export interface ShareTrackHints {
   title?: string;
@@ -264,21 +281,29 @@ export async function lookupTrackForShareMetadata(
     albumTitle,
   };
 
-  const rawCover = pickExactRawCover(trackForArt, albumCover, hints.cover);
+  const rawCover = normalizeExternalCoverOrigin(
+    pickExactRawCover(trackForArt, albumCover, hints.cover)
+  );
 
   // Build crawlable OG/Twitter image URL:
-  // - data:image/... MUST be served via /api/share/cover/[id] so bots get real JPEG/PNG bytes
-  // - https://... is already an absolute image URL (use directly)
-  // - /images/... becomes https://chancetekone.us/images/... (properly URI-encoded for spaces/parens)
+  // - data:image/... OR third-party external URLs (e.g., 8ofspadesworks.us / long signed Firebase tokens)
+  //   are proxied via our clean same-origin /api/share/cover/[id] endpoint so iMessage, SMS/RCS,
+  //   WhatsApp, Facebook, X/Twitter, LinkedIn, and Telegram ALWAYS attach the exact song cover art!
+  // - Verified local /images/... files become https://chancetekone.us/images/...
   let ogImageUrl: string;
   let clientCoverUrl: string;
 
   if (rawCover.startsWith('data:image/')) {
-    const apiPath = `/api/share/cover/${encodeURIComponent(id)}`;
+    const apiPath = `/api/share/cover/${encodeURIComponent(id)}?type=song`;
     ogImageUrl = `${safeOrigin}${apiPath}`;
     clientCoverUrl = apiPath;
   } else if (rawCover.startsWith('https://') || rawCover.startsWith('http://')) {
-    ogImageUrl = rawCover;
+    const coverHintParam =
+      hints.cover && isSafeCoverParam(hints.cover)
+        ? `&c=${encodeURIComponent(normalizeExternalCoverOrigin(hints.cover))}`
+        : '';
+    const apiPath = `/api/share/cover/${encodeURIComponent(id)}?type=song${coverHintParam}`;
+    ogImageUrl = `${safeOrigin}${apiPath}`;
     clientCoverUrl = rawCover;
   } else {
     const normalizedPath = rawCover.startsWith('/') ? rawCover : `/${rawCover}`;
@@ -291,6 +316,156 @@ export async function lookupTrackForShareMetadata(
     title,
     artist,
     albumTitle,
+    description,
+    rawCover,
+    ogImageUrl,
+    clientCoverUrl,
+    origin: safeOrigin,
+  };
+}
+
+/**
+ * Resolves server-side share metadata & exact cover art for an Audiobook (live Firestore + mocks)
+ * so SMS/iMessage, WhatsApp, Facebook, X, LinkedIn, and Telegram always attach the audiobook's cover art.
+ */
+export async function lookupAudiobookForShareMetadata(
+  rawId: string,
+  hints: ShareTrackHints = {}
+): Promise<ServerResolvedTrackShare> {
+  const safeOrigin =
+    hints.origin && /^https?:\/\/[^/\s]+$/i.test(hints.origin.trim())
+      ? hints.origin.trim().replace(/\/+$/, '')
+      : PRODUCTION_ORIGIN;
+
+  let decodedId = rawId;
+  try {
+    decodedId = decodeURIComponent(rawId);
+  } catch {}
+
+  let serverAb: Partial<Audiobook> | null = null;
+  try {
+    const snapshot = await readCatalogSnapshot();
+    const list = (snapshot.collections.audiobooks || []) as Partial<Audiobook>[];
+    serverAb =
+      list.find((a) => a.id === rawId || a.id === decodedId) ||
+      list.find((a) => normalizeLookupKey(a.id) === normalizeLookupKey(decodedId)) ||
+      null;
+  } catch {}
+
+  const mockAb =
+    MOCK_AUDIOBOOKS.find((a) => a.id === rawId || a.id === decodedId) || null;
+  const merged = serverAb || mockAb ? { ...(mockAb || {}), ...(serverAb || {}) } : null;
+
+  const title = (merged?.title || hints.title || 'Featured Audiobook').trim();
+  const artist = (merged?.author || merged?.narrator || hints.artist || 'ChanceTEK One').trim();
+  const description =
+    (merged?.description && merged.description.replace(/\s+/g, ' ').trim().slice(0, 180)) ||
+    `Listen to "${title}" by ${artist} on ChanceTEK One — Spoken Literature & Audiobooks.`;
+
+  const candidateCover = normalizeExternalCoverOrigin(
+    (!isGenericOrInvalidTrackCover(merged?.coverUrl) ? merged?.coverUrl : '') ||
+      (!isGenericOrInvalidTrackCover(hints.cover) ? hints.cover : '') ||
+      '/images/audiobooks/famio.jpg'
+  );
+
+  const rawCover =
+    candidateCover.startsWith('data:image/') ||
+    candidateCover.startsWith('https://') ||
+    (candidateCover.startsWith('/') && publicFileExists(candidateCover))
+      ? candidateCover
+      : '/images/audiobooks/famio.jpg';
+
+  let ogImageUrl: string;
+  let clientCoverUrl: string;
+  if (rawCover.startsWith('data:image/') || rawCover.startsWith('https://') || rawCover.startsWith('http://')) {
+    const apiPath = `/api/share/cover/${encodeURIComponent(decodedId)}?type=audiobook`;
+    ogImageUrl = `${safeOrigin}${apiPath}`;
+    clientCoverUrl = rawCover.startsWith('data:') ? apiPath : rawCover;
+  } else {
+    const normalizedPath = rawCover.startsWith('/') ? rawCover : `/${rawCover}`;
+    ogImageUrl = `${safeOrigin}${encodeURI(normalizedPath)}`;
+    clientCoverUrl = normalizedPath;
+  }
+
+  return {
+    id: decodedId,
+    title,
+    artist,
+    description,
+    rawCover,
+    ogImageUrl,
+    clientCoverUrl,
+    origin: safeOrigin,
+  };
+}
+
+/**
+ * Resolves server-side share metadata & exact cover art for a Podcast Episode (live Firestore + seeds)
+ * so SMS/iMessage, WhatsApp, Facebook, X, LinkedIn, and Telegram always attach the podcast's cover art.
+ */
+export async function lookupPodcastForShareMetadata(
+  rawId: string,
+  hints: ShareTrackHints = {}
+): Promise<ServerResolvedTrackShare> {
+  const safeOrigin =
+    hints.origin && /^https?:\/\/[^/\s]+$/i.test(hints.origin.trim())
+      ? hints.origin.trim().replace(/\/+$/, '')
+      : PRODUCTION_ORIGIN;
+
+  let decodedId = rawId;
+  try {
+    decodedId = decodeURIComponent(rawId);
+  } catch {}
+
+  let serverPod: Partial<PodcastEpisode> | null = null;
+  try {
+    const snapshot = await readCatalogSnapshot();
+    const list = (snapshot.collections.podcasts || []) as Partial<PodcastEpisode>[];
+    serverPod =
+      list.find((p) => p.id === rawId || p.id === decodedId) ||
+      list.find((p) => normalizeLookupKey(p.id) === normalizeLookupKey(decodedId)) ||
+      null;
+  } catch {}
+
+  const seedPod =
+    SEED_PODCASTS.find((p) => p.id === rawId || p.id === decodedId) || null;
+  const merged = serverPod || seedPod ? { ...(seedPod || {}), ...(serverPod || {}) } : null;
+
+  const title = (merged?.title || hints.title || 'Featured Podcast').trim();
+  const artist = (merged?.host || merged?.showTitle || hints.artist || 'ChanceTEK One').trim();
+  const description =
+    (merged?.description && merged.description.replace(/\s+/g, ' ').trim().slice(0, 180)) ||
+    `Listen to "${title}" hosted by ${artist} on ChanceTEK One Podcasts.`;
+
+  const candidateCover = normalizeExternalCoverOrigin(
+    (!isGenericOrInvalidTrackCover(merged?.coverUrl) ? merged?.coverUrl : '') ||
+      (!isGenericOrInvalidTrackCover(hints.cover) ? hints.cover : '') ||
+      '/images/genres/hip-hop.jpg'
+  );
+
+  const rawCover =
+    candidateCover.startsWith('data:image/') ||
+    candidateCover.startsWith('https://') ||
+    (candidateCover.startsWith('/') && publicFileExists(candidateCover))
+      ? candidateCover
+      : '/images/genres/hip-hop.jpg';
+
+  let ogImageUrl: string;
+  let clientCoverUrl: string;
+  if (rawCover.startsWith('data:image/') || rawCover.startsWith('https://') || rawCover.startsWith('http://')) {
+    const apiPath = `/api/share/cover/${encodeURIComponent(decodedId)}?type=podcast`;
+    ogImageUrl = `${safeOrigin}${apiPath}`;
+    clientCoverUrl = rawCover.startsWith('data:') ? apiPath : rawCover;
+  } else {
+    const normalizedPath = rawCover.startsWith('/') ? rawCover : `/${rawCover}`;
+    ogImageUrl = `${safeOrigin}${encodeURI(normalizedPath)}`;
+    clientCoverUrl = normalizedPath;
+  }
+
+  return {
+    id: decodedId,
+    title,
+    artist,
     description,
     rawCover,
     ogImageUrl,
