@@ -51,6 +51,7 @@ const GENRES = [
 interface GenreArtworkInfo {
   name: string;
   artwork: string;
+  video?: string;
   tagline: string;
   description: string;
   accent: string;
@@ -63,6 +64,7 @@ const GENRE_ARTWORKS: Record<string, GenreArtworkInfo> = {
   Genre: {
     name: 'The Algorithm of Timeless Music',
     artwork: '/images/genres/all-genres.jpg',
+    video: '/videos/timeless_music_algorithm.mp4',
     tagline: 'ChanceTEK One Master Audio Catalog',
     description:
       'Explore authentic vinyl chops, heavyweight breakbeats, soulful chord progressions, and modern club anthems across the entire multi-genre sound spectrum.',
@@ -441,15 +443,30 @@ export default function MusicPage() {
         data-genre-banner="true"
         className="relative overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-br from-[#120a1f] via-[#090610] to-[#040208] shadow-[0_12px_45px_rgba(0,0,0,0.65)] group"
       >
-        {/* Background Artwork with cinematic dark gradients */}
+        {/* Background Artwork / Ambient Motion Video with cinematic dark gradients */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <Image
-            src={activeGenreMeta.artwork}
-            alt={activeGenreMeta.name}
-            fill
-            priority
-            className="object-cover object-center opacity-30 md:opacity-35 scale-105 group-hover:scale-110 transition-transform duration-700 filter blur-sm md:blur-[2px]"
-          />
+          {activeGenreMeta.video ? (
+            <video
+              key={`bg-${activeGenreMeta.video}`}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              poster={activeGenreMeta.artwork}
+              className="w-full h-full object-cover object-center opacity-30 md:opacity-35 scale-105 group-hover:scale-110 transition-transform duration-700 filter blur-sm md:blur-[2px]"
+            >
+              <source src={activeGenreMeta.video} type="video/mp4" />
+            </video>
+          ) : (
+            <Image
+              src={activeGenreMeta.artwork}
+              alt={activeGenreMeta.name}
+              fill
+              priority
+              className="object-cover object-center opacity-30 md:opacity-35 scale-105 group-hover:scale-110 transition-transform duration-700 filter blur-sm md:blur-[2px]"
+            />
+          )}
           {/* Multi-layered directional vignette to ensure pristine text readability */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#08050e] via-[#08050e]/90 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#08050e] via-transparent to-[#08050e]/60" />
@@ -540,19 +557,34 @@ export default function MusicPage() {
             </div>
           </div>
 
-          {/* Right Column: Framed Genre Artwork Card */}
-          <div className="relative shrink-0 w-full sm:w-auto self-center md:self-auto flex flex-col items-center">
+          {/* Right Column: Framed Genre Artwork / Video Showcase Card */}
+          <div className="relative shrink-0 w-full md:w-auto self-center md:self-auto flex flex-col items-center">
             <div
-              className="relative group/art w-72 sm:w-88 md:w-[420px] lg:w-[460px] aspect-[16/9] rounded-2xl overflow-hidden border-2 bg-black shadow-[0_12px_40px_rgba(0,0,0,0.9)] transition-all duration-300 hover:scale-[1.02]"
+              className="relative group/art w-full sm:w-96 md:w-[440px] lg:w-[480px] aspect-[16/9] rounded-2xl overflow-hidden border-2 bg-black shadow-[0_12px_40px_rgba(0,0,0,0.9)] transition-all duration-300 hover:scale-[1.02]"
               style={{ borderColor: `${activeGenreMeta.accent}90` }}
             >
-              <Image
-                src={activeGenreMeta.artwork}
-                alt={`${activeGenreMeta.name} Artwork`}
-                fill
-                priority
-                className="object-cover object-center w-full h-full"
-              />
+              {activeGenreMeta.video ? (
+                <video
+                  key={activeGenreMeta.video}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  poster={activeGenreMeta.artwork}
+                  className="object-cover object-center w-full h-full block"
+                >
+                  <source src={activeGenreMeta.video} type="video/mp4" />
+                </video>
+              ) : (
+                <Image
+                  src={activeGenreMeta.artwork}
+                  alt={`${activeGenreMeta.name} Artwork`}
+                  fill
+                  priority
+                  className="object-cover object-center w-full h-full"
+                />
+              )}
             </div>
             <span className="text-[11px] text-neutral-400 mt-2.5 font-medium tracking-wide">
               Selected Genre: <span className="text-white font-bold">{selectedGenre === 'Genre' ? 'All Movements' : selectedGenre}</span>
