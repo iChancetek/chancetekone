@@ -61,13 +61,13 @@ interface GenreArtworkInfo {
 
 const GENRE_ARTWORKS: Record<string, GenreArtworkInfo> = {
   Genre: {
-    name: 'The Crates & Diggin Vault',
+    name: 'The Algorithm of Timeless Music',
     artwork: '/images/genres/all-genres.jpg',
-    tagline: 'ChanceTEK One Master Audio Vault',
+    tagline: 'ChanceTEK One Master Audio Catalog',
     description:
       'Explore authentic vinyl chops, heavyweight breakbeats, soulful chord progressions, and modern club anthems across the entire multi-genre sound spectrum.',
     accent: '#ffd700',
-    badge: 'Full Crate Archive',
+    badge: 'Timeless Music Archive',
     bpmRange: '84 - 174 BPM',
     roots: 'All Urban & Club Movements',
   },
@@ -368,82 +368,35 @@ export default function MusicPage() {
         </button>
       </div>
 
-      {/* 1. The Lounge Header Banner */}
+      {/* 1. Music Area Hero Video Showcase */}
       <div
         data-cinema-dark="true"
-        className="relative overflow-hidden rounded-[2.5rem] border border-amber-500/40 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.85)] p-6 sm:p-10 md:p-12 text-center flex flex-col items-center justify-center group space-y-4 min-h-[220px] sm:min-h-[260px]"
+        className="relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] border border-white/15 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.85)] group"
       >
-        {/* Top & bottom polished gold hairline highlights */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 max-w-2xl h-[1px] bg-gradient-to-r from-transparent via-brand-gold/70 to-transparent pointer-events-none" />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 max-w-lg h-[1px] bg-gradient-to-r from-transparent via-brand-gold/40 to-transparent pointer-events-none" />
-
-        {/* Background Atmospheric Lounge Video — 100% visible for all visitors */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Full-Bleed 16:9 HD Brand Video (100% unobstructed) */}
+        <div className="relative w-full aspect-video max-h-[540px] bg-black overflow-hidden">
           <video
             autoPlay
             loop
             muted
             playsInline
-            preload="metadata"
-            className="w-full h-full object-cover object-center opacity-100 scale-100 group-hover:scale-105 transition-all duration-1000 filter brightness-100 contrast-105"
-            poster="/images/the_lounge_ambient.jpg"
+            preload="auto"
+            className="w-full h-full object-cover object-center block"
           >
-            <source src="/videos/Lounge.MP4" type="video/mp4" />
+            <source src="/videos/chancetekone1.mp4" type="video/mp4" />
           </video>
-          {/* Gentle edge tint so text remains crisp without obscuring the background video */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_60%,_rgba(0,0,0,0.5)_100%)] pointer-events-none" />
         </div>
 
-        {/* The Lounge - Prominent Centered Title (Exciting, Brilliant & Polished) */}
-        <div className="relative z-10 max-w-3xl flex flex-col items-center justify-center space-y-2">
-          <div className="flex items-center justify-center gap-3 sm:gap-6">
-            {/* Left animated golden audio visualizer waves */}
-            <div className="hidden sm:flex items-end gap-1 h-9 pb-2 opacity-85 pointer-events-none" aria-hidden="true">
-              <span className="w-1 bg-gradient-to-t from-amber-600 to-amber-300 rounded-full animate-pulse h-3.5" />
-              <span className="w-1 bg-gradient-to-t from-amber-600 to-amber-300 rounded-full animate-pulse delay-100 h-6.5" />
-              <span className="w-1 bg-gradient-to-t from-amber-600 to-amber-300 rounded-full animate-pulse delay-200 h-4.5" />
-              <span className="w-1 bg-gradient-to-t from-amber-600 to-amber-300 rounded-full animate-pulse delay-300 h-8" />
-              <span className="w-1 bg-gradient-to-t from-amber-600 to-amber-300 rounded-full animate-pulse delay-150 h-5.5" />
-            </div>
-
-            {/* Title with metallic mirror gold specular sheen & radiant glow */}
-            <div className="relative inline-block filter drop-shadow-[0_0_30px_rgba(245,158,11,0.4)] drop-shadow-[0_8px_32px_rgba(0,0,0,0.98)] drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
-              {/* Deep contrast halo behind the text so every stroke and descender stands out with 100% clarity */}
-              <div className="absolute inset-0 -inset-x-10 -inset-y-6 bg-black/65 rounded-full blur-2xl pointer-events-none -z-10" />
-              <h1 className="relative inline-block px-3 sm:px-6 pt-1 pb-4 sm:pb-5 text-5xl sm:text-7xl md:text-8xl font-black tracking-normal sm:tracking-[0.03em] leading-normal sm:leading-tight text-transparent bg-clip-text bg-gradient-to-b from-[#ffffff] via-[#fff1a8] via-[#ffd700] via-[#f59e0b] to-[#b45309] select-none">
-                The Lounge
-              </h1>
-            </div>
-
-            {/* Right animated golden audio visualizer waves */}
-            <div className="hidden sm:flex items-end gap-1 h-9 pb-2 opacity-85 pointer-events-none" aria-hidden="true">
-              <span className="w-1 bg-gradient-to-t from-amber-600 to-amber-300 rounded-full animate-pulse delay-150 h-5.5" />
-              <span className="w-1 bg-gradient-to-t from-amber-600 to-amber-300 rounded-full animate-pulse delay-300 h-8" />
-              <span className="w-1 bg-gradient-to-t from-amber-600 to-amber-300 rounded-full animate-pulse delay-200 h-4.5" />
-              <span className="w-1 bg-gradient-to-t from-amber-600 to-amber-300 rounded-full animate-pulse delay-100 h-6.5" />
-              <span className="w-1 bg-gradient-to-t from-amber-600 to-amber-300 rounded-full animate-pulse h-3.5" />
-            </div>
-          </div>
-
-          {/* Polished gold filigree divider with central sparkle accent */}
-          <div className="flex items-center justify-center gap-3 w-full max-w-sm sm:max-w-md mx-auto pt-0.5">
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-brand-gold/50 to-brand-gold/80" />
-            <Sparkles className="w-3.5 h-3.5 text-brand-gold animate-pulse" />
-            <div className="h-px flex-1 bg-gradient-to-l from-transparent via-brand-gold/50 to-brand-gold/80" />
-          </div>
-        </div>
-
-        {/* Badge directly beneath The Lounge */}
-        <div className="relative z-10 flex flex-wrap items-center justify-center pt-1">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-brand-gold/15 border border-brand-gold/50 text-brand-gold text-xs font-black uppercase tracking-wider backdrop-blur-sm shadow-[0_0_20px_rgba(245,158,11,0.25)]">
-            <ShieldCheck className="w-3.5 h-3.5 text-brand-gold" />
-            <span>Music Curated by ASCAP & BMI Publishing</span>
+        {/* Clean Licensing Bar directly beneath the video */}
+        <div className="relative z-10 flex items-center justify-center px-4 py-3 bg-[#08080e]/95 border-t border-white/10">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-brand-gold/15 border border-brand-gold/50 text-brand-gold text-xs font-black uppercase tracking-wider shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+            <ShieldCheck className="w-3.5 h-3.5 text-brand-gold shrink-0" />
+            <span>Music Curated by ASCAP &amp; BMI Publishing</span>
           </div>
         </div>
       </div>
 
-      {/* 2. Genres Bar — Directly below the Crates and Diggin area (Fits on one line, no arrow keys needed) */}
+      {/* 2. Genres Bar — Directly below the Hero Video */}
       <div className="glass-panel px-3 sm:px-4 py-3 sm:py-3.5 rounded-3xl border border-white/10 bg-gradient-to-r from-[#140e24]/90 via-[#0e0a1a]/85 to-[#08080f]/90 shadow-xl space-y-2">
         {selectedGenre !== 'Genre' && (
           <div className="flex items-center justify-end px-1">

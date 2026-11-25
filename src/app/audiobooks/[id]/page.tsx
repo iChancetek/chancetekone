@@ -69,7 +69,7 @@ export default function AudiobookDetailPage() {
                   contentKey={abKey}
                   contentType="audiobook"
                   contentTitle={`${audiobook.title} (by ${audiobook.author})`}
-                  contextLocation="Audiobook Lounge Page"
+                  contextLocation="Audiobook Showcase Page"
                   initialLikes={audiobook.likeCount}
                 />
 

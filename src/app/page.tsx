@@ -31,7 +31,7 @@ import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
 import { Track } from '@/types/media';
 
 const QUICK_DESTINATIONS = [
-  { label: 'The Lounge', sub: 'Music & Crates', href: '/music', icon: Music, glow: 'from-brand-gold/25 to-amber-500/10', iconColor: 'text-brand-gold' },
+  { label: 'Music', sub: 'Timeless Music', href: '/music', icon: Music, glow: 'from-brand-gold/25 to-amber-500/10', iconColor: 'text-brand-gold' },
   { label: '4K Cinema', sub: 'Visual Vault', href: '/videos', icon: VideoIcon, glow: 'from-rose-500/25 to-red-500/10', iconColor: 'text-rose-400' },
   { label: 'Audiobooks', sub: 'Spoken Works', href: '/audiobooks', icon: BookOpen, glow: 'from-brand-purple/25 to-fuchsia-500/10', iconColor: 'text-brand-neon' },
   { label: 'Podcasts', sub: 'Studio Talks', href: '/podcasts', icon: Mic, glow: 'from-cyan-500/25 to-sky-500/10', iconColor: 'text-cyan-400' },
@@ -90,7 +90,7 @@ export default function HomePage() {
             className="shimmer-cta inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/[0.06] hover:bg-brand-gold text-xs font-bold text-white hover:text-[#050509] border border-white/15 hover:border-brand-gold transition-all duration-300 shrink-0 cursor-pointer shadow-sm"
           >
             <Headphones className="w-3.5 h-3.5" />
-            <span>The Lounge &amp; Music Catalog</span>
+            <span>The Algorithm of Timeless Music</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>

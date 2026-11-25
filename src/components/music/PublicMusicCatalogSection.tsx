@@ -364,7 +364,7 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
                 </div>
                 <div>
                   <h3 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
-                    The Lounge Discography
+                    The Algorithm of Timeless Music
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-brand-gold/15 text-brand-gold border border-brand-gold/30">
                       Artist & Album Format
                     </span>
@@ -427,8 +427,8 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
                 <button
                   onClick={() => setViewMode('grouped')}
                   className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${viewMode === 'grouped'
-                      ? 'bg-brand-gold text-black shadow-md'
-                      : 'text-neutral-400 hover:text-white'
+                    ? 'bg-brand-gold text-black shadow-md'
+                    : 'text-neutral-400 hover:text-white'
                     }`}
                 >
                   <Layers className="w-3.5 h-3.5" />
@@ -438,8 +438,8 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
                 <button
                   onClick={() => setViewMode('flat')}
                   className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${viewMode === 'flat'
-                      ? 'bg-brand-gold text-black shadow-md'
-                      : 'text-neutral-400 hover:text-white'
+                    ? 'bg-brand-gold text-black shadow-md'
+                    : 'text-neutral-400 hover:text-white'
                     }`}
                 >
                   <ListFilter className="w-3.5 h-3.5" />
@@ -651,7 +651,7 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
                                           contentKey={canonicalAlbumKey}
                                           contentType="album"
                                           contentTitle={`${album.albumTitle} (${artist.artistName})`}
-                                          contextLocation="The Lounge Discography - Album Header"
+                                          contextLocation="The Algorithm of Timeless Music - Album Header"
                                           variant="compact"
                                           showShare={false}
                                         />
@@ -744,8 +744,8 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
                                               <button
                                                 onClick={() => handlePlaySong(track, album.tracks)}
                                                 className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer ${isCurrentPlaying
-                                                    ? 'bg-brand-gold text-black shadow-lg shadow-brand-gold/30 scale-105'
-                                                    : 'bg-white/5 group-hover:bg-brand-gold group-hover:text-black text-neutral-400'
+                                                  ? 'bg-brand-gold text-black shadow-lg shadow-brand-gold/30 scale-105'
+                                                  : 'bg-white/5 group-hover:bg-brand-gold group-hover:text-black text-neutral-400'
                                                   }`}
                                                 title={isCurrentPlaying ? 'Pause song' : 'Play song'}
                                               >
@@ -775,8 +775,8 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
                                                     <p
                                                       onClick={() => handlePlaySong(track, album.tracks)}
                                                       className={`font-bold truncate text-xs sm:text-sm cursor-pointer ${isCurrentActive
-                                                          ? 'text-brand-gold font-extrabold'
-                                                          : 'text-white group-hover:text-brand-gold'
+                                                        ? 'text-brand-gold font-extrabold'
+                                                        : 'text-white group-hover:text-brand-gold'
                                                         } transition-colors`}
                                                     >
                                                       {track.title}
@@ -828,8 +828,8 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
                                                   type="button"
                                                   onClick={() => handlePlaySong(track, album.tracks)}
                                                   className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${isCurrentPlaying
-                                                      ? 'bg-brand-gold text-black border-brand-gold shadow-md'
-                                                      : 'bg-white/5 hover:bg-brand-gold/20 text-neutral-300 hover:text-brand-gold border-white/10'
+                                                    ? 'bg-brand-gold text-black border-brand-gold shadow-md'
+                                                    : 'bg-white/5 hover:bg-brand-gold/20 text-neutral-300 hover:text-brand-gold border-white/10'
                                                     }`}
                                                   title={isCurrentPlaying ? 'Pause song' : 'Play song'}
                                                 >
@@ -874,7 +874,7 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
                                                         contentKey={trackKey}
                                                         contentType="music"
                                                         contentTitle={`${track.title} (${track.artistName})`}
-                                                        contextLocation="The Lounge Discography - Grouped Table"
+                                                        contextLocation="The Algorithm of Timeless Music - Grouped Table"
                                                         initialLikes={track.likeCount}
                                                         variant="minimal"
                                                         showShare={false}
@@ -957,8 +957,8 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
                           <button
                             onClick={() => handlePlaySong(t, filteredTracks)}
                             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer ${isCurrentPlaying
-                                ? 'bg-brand-gold text-black shadow-lg shadow-brand-gold/30'
-                                : 'bg-white/5 group-hover:bg-brand-gold group-hover:text-black text-neutral-400'
+                              ? 'bg-brand-gold text-black shadow-lg shadow-brand-gold/30'
+                              : 'bg-white/5 group-hover:bg-brand-gold group-hover:text-black text-neutral-400'
                               }`}
                           >
                             {isCurrentPlaying ? (
@@ -1048,7 +1048,7 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
                                     contentKey={trackKey}
                                     contentType="music"
                                     contentTitle={`${t.title} (${t.artistName})`}
-                                    contextLocation="The Lounge Discography - Flat Table"
+                                    contextLocation="The Algorithm of Timeless Music - Flat Table"
                                     initialLikes={t.likeCount}
                                     variant="minimal"
                                     showShare={false}

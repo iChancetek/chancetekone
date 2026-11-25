@@ -97,7 +97,7 @@ export default function CrateDetailPage() {
         title="Return to Previous Page"
       >
         <ChevronLeft className="w-4 h-4 text-brand-gold group-hover:-translate-x-1 transition-transform" />
-        <span>Back to The Crates & Diggin Vault</span>
+        <span>Back to The Algorithm of Timeless Music</span>
       </button>
 
       {/* Apple Music Inspired Hero Showcase Banner */}

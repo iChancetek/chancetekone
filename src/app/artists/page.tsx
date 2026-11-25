@@ -25,7 +25,7 @@ export default function ArtistsPage() {
           label: t.label || 'ChanceTEK One',
           bio: `Featured artist on ChanceTEK One.`,
           avatarUrl: t.coverUrl || '/images/studio_cover.jpg',
-          bannerUrl: t.coverUrl || '/images/the_lounge_ambient.jpg',
+          bannerUrl: t.coverUrl || '/images/genres/all-genres.jpg',
           genres: [t.genre || 'R&B / Soul'],
           followerCount: 0,
           popularTrackIds: [t.id],
