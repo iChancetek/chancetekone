@@ -43,6 +43,7 @@ const CommentsModerationSection = dynamic(() => import('@/components/admin/secti
 const StrideIqIntegrationCard = dynamic(() => import('@/components/admin/StrideIqIntegrationCard').then((m) => m.StrideIqIntegrationCard));
 const ApiUsageMonitorSection = dynamic(() => import('@/components/admin/ApiUsageMonitorSection').then((m) => m.ApiUsageMonitorSection));
 const MusicDownloadExporterSection = dynamic(() => import('@/components/admin/sections/MusicDownloadExporterSection').then((m) => m.MusicDownloadExporterSection));
+const ReplicationStatusCard = dynamic(() => import('@/components/admin/ReplicationStatusCard').then((m) => m.ReplicationStatusCard));
 import { MusicRecoveryService } from '@/lib/music/MusicRecoveryService';
 import { PlaylistService } from '@/lib/playlist/PlaylistService';
 import { DistributionAgreementService } from '@/lib/agreements/DistributionAgreementService';
@@ -102,6 +103,7 @@ import {
 
 type AdminTab =
   | 'overview'
+  | 'replication'
   | 'partner-api'
   | 'api-usage'
   | 'comments'
@@ -767,6 +769,14 @@ export default function AdminPage() {
               description: 'Executive KPIs & live event matrix',
             },
             {
+              id: 'replication' as const,
+              label: 'Replication Monitor',
+              icon: Activity,
+              category: 'operations' as const,
+              description: 'Live status & recent arrivals from /api/replication/ingest',
+              accent: 'neon' as const,
+            },
+            {
               id: 'duplicates' as const,
               label: `Duplicate Detective (${duplicatesCount})`,
               displayLabel: 'Duplicate Detective',
@@ -1133,6 +1143,12 @@ export default function AdminPage() {
               }
             }}
           />
+        )}
+
+        {activeTab === 'replication' && (
+          <div className="space-y-6">
+            <ReplicationStatusCard />
+          </div>
         )}
 
         {activeTab === 'duplicates' && (
