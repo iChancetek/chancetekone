@@ -50,20 +50,6 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
 
   const slides: ProjectBannerSlide[] = [
     {
-      id: 'saturday-night-sunday-morning',
-      badge: 'Featured Upcoming Works',
-      narrationText: 'Featured Upcoming Works. Saturday Night, Sunday Morning... By Author, Kwame Thompson.',
-      heading: 'Saturday Night, Sunday Morning... By Author, Kwame Thompson',
-      description: '',
-      bannerAlt: 'Saturday Night, Sunday Morning... By Author, Kwame Thompson',
-      aspectRatio: { width: 1024, height: 576 },
-      track: track,
-      videoHref: '/videos',
-      videoUrl: '/videos/Kwame Book Promo 1.mp4',
-      aiPrompt: 'Tell me about Saturday Night, Sunday Morning... By Author, Kwame Thompson!',
-      projectHref: '#',
-    },
-    {
       id: 'mi-vida-loca',
       badge: 'Featured Upcoming Works',
       narrationText: 'Featured Upcoming Works. Mi Vida Loca... By Author, Orlando Figueroa.',
@@ -73,9 +59,23 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
       aspectRatio: { width: 720, height: 1280 },
       track: track,
       videoHref: '/audiobooks',
-      videoUrl: '/videos/OrlandoFigueroa.mp4',
+      videoUrl: '/videos/OrlandoFigueroa.mp4#t=0.5',
       aiPrompt: 'Tell me about Mi Vida Loca... By Author, Orlando Figueroa!',
       projectHref: '/audiobooks/audiobook-1793148157988-bnzl3',
+    },
+    {
+      id: 'saturday-night-sunday-morning',
+      badge: 'Featured Upcoming Works',
+      narrationText: 'Featured Upcoming Works. Saturday Night, Sunday Morning... By Author, Kwame Thompson.',
+      heading: 'Saturday Night, Sunday Morning... By Author, Kwame Thompson',
+      description: '',
+      bannerAlt: 'Saturday Night, Sunday Morning... By Author, Kwame Thompson',
+      aspectRatio: { width: 1024, height: 576 },
+      track: track,
+      videoHref: '/videos',
+      videoUrl: '/videos/Kwame Book Promo 1.mp4#t=0.5',
+      aiPrompt: 'Tell me about Saturday Night, Sunday Morning... By Author, Kwame Thompson!',
+      projectHref: '#',
     },
   ];
 
@@ -229,8 +229,8 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
             aria-label={isAutoSlideEnabled ? 'Stop automatic slide' : 'Start automatic slide'}
             title={isAutoSlideEnabled ? 'Stop automatic slideshow' : 'Start automatic slideshow'}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${isAutoSlideEnabled
-                ? 'bg-brand-gold/10 text-brand-gold border-brand-gold/30 hover:bg-rose-500/15 hover:text-rose-300 hover:border-rose-500/35'
-                : 'bg-white/[0.06] text-neutral-300 border-white/15 hover:bg-brand-gold/15 hover:text-brand-gold hover:border-brand-gold/35'
+              ? 'bg-brand-gold/10 text-brand-gold border-brand-gold/30 hover:bg-rose-500/15 hover:text-rose-300 hover:border-rose-500/35'
+              : 'bg-white/[0.06] text-neutral-300 border-white/15 hover:bg-brand-gold/15 hover:text-brand-gold hover:border-brand-gold/35'
               }`}
           >
             {isAutoSlideEnabled ? (
@@ -279,13 +279,16 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
 
       {/* Slide Content Area with Smooth Fade Transition */}
       <div
-        className={`relative z-10 w-full max-w-5xl space-y-6 pt-5 transition-all duration-300 ${isTransitioning ? 'opacity-40 translate-y-1' : 'opacity-100 translate-y-0'
+        className={`relative z-10 w-full space-y-6 pt-5 transition-all duration-300 ${isTransitioning ? 'opacity-40 translate-y-1' : 'opacity-100 translate-y-0'
           }`}
       >
         {/* Featured Upcoming Works Header */}
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gradient-to-r from-brand-gold/15 to-brand-purple/15 border border-brand-gold/30 text-brand-gold text-[11px] font-bold uppercase tracking-[0.14em]">
+            <div
+              data-badge-solid="true"
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gradient-to-r from-brand-gold/15 to-brand-purple/15 border border-brand-gold/30 text-brand-gold text-[11px] font-bold uppercase tracking-[0.14em]"
+            >
               <Sparkles className="w-3.5 h-3.5" />
               <span>{currentSlide.badge}</span>
             </div>
@@ -320,27 +323,28 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
           ) : null}
         </div>
 
-        {/* Master Artwork / Video Banner */}
-        <div className="relative max-w-full">
+        {/* Master Artwork / Video Banner — Full-bleed edge-to-edge card fill */}
+        <div className="relative w-full">
           {currentSlide.videoUrl ? (
             <div
-              className="relative rounded-2xl sm:rounded-3xl border border-white/15 bg-black shadow-[0_25px_70px_-15px_rgba(0,0,0,0.95)] p-1.5 sm:p-2.5 flex items-center justify-center overflow-hidden w-full max-w-full mx-auto ring-1 ring-brand-gold/15"
+              className={`relative rounded-2xl sm:rounded-3xl border border-white/15 bg-black shadow-[0_25px_70px_-15px_rgba(0,0,0,0.95)] p-0 overflow-hidden w-full ring-1 ring-brand-gold/15 ${currentSlide.id === 'mi-vida-loca'
+                  ? 'aspect-[9/16] sm:aspect-[4/5] md:aspect-[16/10]'
+                  : 'aspect-[1112/830] max-h-[72vh]'
+                }`}
             >
               <video
                 key={`video-${currentSlide.id}`}
                 src={currentSlide.videoUrl}
                 controls
                 playsInline
-                preload="metadata"
+                preload="auto"
                 onPlay={() => {
                   if (isPlaying) {
                     pause();
                   }
                   setIsAutoSlideEnabled(false);
                 }}
-                style={currentSlide.id === 'mi-vida-loca' ? undefined : { aspectRatio: '1112 / 830' }}
-                className={`w-full h-auto ${currentSlide.id === 'mi-vida-loca' ? 'max-h-[82vh] rounded-xl sm:rounded-2xl' : 'max-h-[70vh] rounded-xl'
-                  } shadow-lg bg-black block object-contain`}
+                className="w-full h-full object-cover object-center block bg-black"
               />
             </div>
           ) : currentSlide.bannerImage ? (
@@ -450,8 +454,8 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
                 onClick={() => goToSlide(idx)}
                 aria-label={`Jump to ${slide.bannerAlt}`}
                 className={`transition-all duration-300 rounded-full cursor-pointer ${idx === currentIndex
-                    ? 'w-8 h-2 bg-gradient-to-r from-brand-gold to-amber-400 shadow-[0_0_12px_rgba(245,195,68,0.75)]'
-                    : 'w-2 h-2 bg-white/25 hover:bg-white/50'
+                  ? 'w-8 h-2 bg-gradient-to-r from-brand-gold to-amber-400 shadow-[0_0_12px_rgba(245,195,68,0.75)]'
+                  : 'w-2 h-2 bg-white/25 hover:bg-white/50'
                   }`}
               />
             ))}

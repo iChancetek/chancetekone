@@ -260,6 +260,7 @@ export const ReactionButtons: React.FC<ReactionButtonsProps> = ({
           {showEmojiPicker && (
             <div
               ref={pickerRef}
+              data-emoji-popover="true"
               className="absolute bottom-full right-0 mb-2 p-1.5 rounded-2xl bg-neutral-900/95 border border-brand-gold/40 shadow-2xl backdrop-blur-xl flex items-center gap-1 z-50 animate-in fade-in zoom-in-95 duration-150"
             >
               {EXTENDED_EMOJI_MENU.map((item) => (
@@ -285,10 +286,12 @@ export const ReactionButtons: React.FC<ReactionButtonsProps> = ({
   // =========================================================================
   if (variant === 'compact') {
     return (
-      <div className="relative flex items-center gap-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
+      <div data-reaction-group="true" className="relative flex items-center gap-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
         {/* Fire */}
         <button
           type="button"
+          data-reaction-pill="true"
+          data-reaction-active={reactions.hasFire ? 'true' : undefined}
           onClick={(e) => handleToggle('fire', e)}
           className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
             reactions.hasFire
@@ -304,6 +307,8 @@ export const ReactionButtons: React.FC<ReactionButtonsProps> = ({
         {/* Heart */}
         <button
           type="button"
+          data-reaction-pill="true"
+          data-reaction-active={reactions.hasHeart ? 'true' : undefined}
           onClick={(e) => handleToggle('heart', e)}
           className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
             reactions.hasHeart
@@ -319,6 +324,8 @@ export const ReactionButtons: React.FC<ReactionButtonsProps> = ({
         {/* Black Thumbs Up 👍🏿 */}
         <button
           type="button"
+          data-reaction-pill="true"
+          data-reaction-active={reactions.hasThumbsUpDark ? 'true' : undefined}
           onClick={(e) => handleToggle('thumbs_up_dark', e)}
           className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
             reactions.hasThumbsUpDark
@@ -334,6 +341,8 @@ export const ReactionButtons: React.FC<ReactionButtonsProps> = ({
         {/* Black Thumbs Down 👎🏿 */}
         <button
           type="button"
+          data-reaction-pill="true"
+          data-reaction-active={reactions.hasThumbsDownDark ? 'true' : undefined}
           onClick={(e) => handleToggle('thumbs_down_dark', e)}
           className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
             reactions.hasThumbsDownDark
@@ -350,6 +359,7 @@ export const ReactionButtons: React.FC<ReactionButtonsProps> = ({
         <div className="relative">
           <button
             type="button"
+            data-reaction-pill="true"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -364,6 +374,7 @@ export const ReactionButtons: React.FC<ReactionButtonsProps> = ({
           {showEmojiPicker && (
             <div
               ref={pickerRef}
+              data-emoji-popover="true"
               className="absolute bottom-full right-0 mb-2 p-2 rounded-2xl bg-neutral-900/98 border border-brand-gold/40 shadow-2xl backdrop-blur-xl flex items-center gap-1 z-50 animate-in fade-in zoom-in-95 duration-150"
             >
               {EXTENDED_EMOJI_MENU.map((item) => (
@@ -388,10 +399,12 @@ export const ReactionButtons: React.FC<ReactionButtonsProps> = ({
   // 3. STANDARD VARIANT (Used on detail hero bars)
   // =========================================================================
   return (
-    <div className="relative flex items-center gap-2.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
+    <div data-reaction-group="true" className="relative flex items-center gap-2.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
       {/* Fire */}
       <button
         type="button"
+        data-reaction-pill="true"
+        data-reaction-active={reactions.hasFire ? 'true' : undefined}
         onClick={(e) => handleToggle('fire', e)}
         className={`group flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-extrabold tracking-wide transition-all duration-200 cursor-pointer ${
           reactions.hasFire
@@ -412,6 +425,8 @@ export const ReactionButtons: React.FC<ReactionButtonsProps> = ({
       {/* Heart */}
       <button
         type="button"
+        data-reaction-pill="true"
+        data-reaction-active={reactions.hasHeart ? 'true' : undefined}
         onClick={(e) => handleToggle('heart', e)}
         className={`group flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-extrabold tracking-wide transition-all duration-200 cursor-pointer ${
           reactions.hasHeart
@@ -432,6 +447,8 @@ export const ReactionButtons: React.FC<ReactionButtonsProps> = ({
       {/* Black Thumbs Up 👍🏿 */}
       <button
         type="button"
+        data-reaction-pill="true"
+        data-reaction-active={reactions.hasThumbsUpDark ? 'true' : undefined}
         onClick={(e) => handleToggle('thumbs_up_dark', e)}
         className={`group flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-extrabold tracking-wide transition-all duration-200 cursor-pointer ${
           reactions.hasThumbsUpDark
@@ -451,6 +468,8 @@ export const ReactionButtons: React.FC<ReactionButtonsProps> = ({
       {/* Black Thumbs Down 👎🏿 */}
       <button
         type="button"
+        data-reaction-pill="true"
+        data-reaction-active={reactions.hasThumbsDownDark ? 'true' : undefined}
         onClick={(e) => handleToggle('thumbs_down_dark', e)}
         className={`group flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-extrabold tracking-wide transition-all duration-200 cursor-pointer ${
           reactions.hasThumbsDownDark
@@ -485,6 +504,7 @@ export const ReactionButtons: React.FC<ReactionButtonsProps> = ({
         {showEmojiPicker && (
           <div
             ref={pickerRef}
+            data-emoji-popover="true"
             className="absolute bottom-full right-0 mb-2 p-2.5 rounded-2xl bg-neutral-900/98 border border-brand-gold/40 shadow-2xl backdrop-blur-xl flex items-center gap-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
           >
             {EXTENDED_EMOJI_MENU.map((item) => (

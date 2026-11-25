@@ -70,51 +70,11 @@ export default function AudiobooksPage() {
         </div>
       </div>
 
-      {/* Saturday Night, Sunday Morning... By Author, Kwame Thompson */}
-      <section className="glass-panel p-4 sm:p-6 rounded-3xl border border-brand-gold/40 bg-black/80 shadow-2xl space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+      {/* 1. FIRST Featured Audiobook: Mi Vida Loca... By Author, Orlando Figueroa (Full-Bleed Video Card) */}
+      <section className="glass-panel rounded-3xl border border-brand-gold/40 bg-[#0c0c16]/90 shadow-2xl overflow-hidden">
+        <div className="p-4 sm:p-6 flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-brand-gold" />
-            <h2 className="text-xl sm:text-2xl font-extrabold text-white">
-              Saturday Night, Sunday Morning... By Author, Kwame Thompson
-            </h2>
-          </div>
-          <button
-            onClick={() =>
-              setSharingAudiobook({
-                id: 'audiobook-kwame-thompson',
-                title: 'Saturday Night, Sunday Morning',
-                author: 'Kwame Thompson',
-                description:
-                  'Featured Upcoming Works. Saturday Night, Sunday Morning... By Author, Kwame Thompson.',
-                coverUrl: '/images/genres/literature.jpg',
-              })
-            }
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 border border-brand-gold/40 text-brand-gold hover:text-amber-300 font-semibold text-xs transition-all shadow-md cursor-pointer"
-            title="Share Saturday Night, Sunday Morning"
-          >
-            <Share2 className="w-4 h-4 text-brand-gold" />
-            <span>Share Audiobook</span>
-          </button>
-        </div>
-        <div className="relative rounded-3xl border border-brand-gold/30 bg-black/95 w-full shadow-2xl p-2 sm:p-4 flex items-center justify-center">
-          <video
-            src="/videos/Kwame Book Promo 1.mp4"
-            controls
-            playsInline
-            preload="metadata"
-            onPlay={handleFeaturedVideoPlay}
-            style={{ aspectRatio: '1112 / 830' }}
-            className="w-full h-auto max-h-[75vh] object-contain rounded-xl shadow-lg bg-black block"
-          />
-        </div>
-      </section>
-
-      {/* Mi Vida Loca... By Author, Orlando Figueroa */}
-      <section className="glass-panel p-4 sm:p-6 rounded-3xl border border-brand-gold/40 bg-black/80 shadow-2xl space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-brand-gold" />
+            <BookOpen className="w-5 h-5 text-brand-gold shrink-0" />
             <h2 className="text-xl sm:text-2xl font-extrabold text-white">
               Mi Vida Loca... By Author, Orlando Figueroa
             </h2>
@@ -127,7 +87,7 @@ export default function AudiobooksPage() {
                 author: 'Orlando Figueroa',
                 description:
                   'Mi Vida Loca. Written by Orlando Figueroa. Master spoken work and cinema presentation.',
-                coverUrl: '/images/genres/literature.jpg',
+                coverUrl: '/images/audiobooks/famio.jpg',
               })
             }
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 border border-brand-gold/40 text-brand-gold hover:text-amber-300 font-semibold text-xs transition-all shadow-md cursor-pointer"
@@ -137,14 +97,53 @@ export default function AudiobooksPage() {
             <span>Share Audiobook</span>
           </button>
         </div>
-        <div className="relative rounded-3xl border border-brand-gold/40 bg-black/95 w-full shadow-2xl p-2 sm:p-3 overflow-hidden flex items-center justify-center">
+        <div className="relative w-full bg-black overflow-hidden aspect-[9/16] sm:aspect-[4/5] md:aspect-[16/10]">
           <video
-            src="/videos/OrlandoFigueroa.mp4"
+            src="/videos/OrlandoFigueroa.mp4#t=0.5"
             controls
             playsInline
-            preload="metadata"
+            preload="auto"
             onPlay={handleFeaturedVideoPlay}
-            className="w-full h-auto max-h-[85vh] rounded-2xl shadow-xl bg-black block object-contain"
+            className="w-full h-full object-cover object-center block bg-black"
+          />
+        </div>
+      </section>
+
+      {/* 2. Saturday Night, Sunday Morning... By Author, Kwame Thompson */}
+      <section className="glass-panel rounded-3xl border border-brand-gold/40 bg-[#0c0c16]/90 shadow-2xl overflow-hidden">
+        <div className="p-4 sm:p-6 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-brand-gold shrink-0" />
+            <h2 className="text-xl sm:text-2xl font-extrabold text-white">
+              Saturday Night, Sunday Morning... By Author, Kwame Thompson
+            </h2>
+          </div>
+          <button
+            onClick={() =>
+              setSharingAudiobook({
+                id: 'audiobook-kwame-thompson',
+                title: 'Saturday Night, Sunday Morning',
+                author: 'Kwame Thompson',
+                description:
+                  'Featured Upcoming Works. Saturday Night, Sunday Morning... By Author, Kwame Thompson.',
+                coverUrl: '/images/audiobooks/famio.jpg',
+              })
+            }
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 border border-brand-gold/40 text-brand-gold hover:text-amber-300 font-semibold text-xs transition-all shadow-md cursor-pointer"
+            title="Share Saturday Night, Sunday Morning"
+          >
+            <Share2 className="w-4 h-4 text-brand-gold" />
+            <span>Share Audiobook</span>
+          </button>
+        </div>
+        <div className="relative w-full bg-black overflow-hidden aspect-[1112/830] max-h-[75vh]">
+          <video
+            src="/videos/Kwame Book Promo 1.mp4#t=0.5"
+            controls
+            playsInline
+            preload="auto"
+            onPlay={handleFeaturedVideoPlay}
+            className="w-full h-full object-cover object-center block bg-black"
           />
         </div>
       </section>

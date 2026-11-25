@@ -86,6 +86,7 @@ export default function HomePage() {
 
           <Link
             href="/music"
+            data-solid-cta="true"
             className="shimmer-cta inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/[0.06] hover:bg-brand-gold text-xs font-bold text-white hover:text-[#050509] border border-white/15 hover:border-brand-gold transition-all duration-300 shrink-0 cursor-pointer shadow-sm"
           >
             <Headphones className="w-3.5 h-3.5" />

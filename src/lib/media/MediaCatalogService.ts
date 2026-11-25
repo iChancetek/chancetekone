@@ -320,7 +320,7 @@ class MediaCatalogServiceClass {
         combined.push(ab);
       }
     });
-    return combined
+    const results = combined
       .filter((ab) => {
         const titleKey = `title:${(ab.title || '').toLowerCase().trim()}`;
         return !this.removedAudiobookIds.includes(ab.id) && !this.removedAudiobookIds.includes(titleKey);
@@ -329,6 +329,22 @@ class MediaCatalogServiceClass {
         ...ab,
         likeCount: EngagementMetricsService.getLikeCount(ab.id),
       }));
+
+    // Always pin "Mi Vida Loca" by Author Orlando Figueroa as the first audiobook
+    const isMiVidaLoca = (ab: Audiobook) => {
+      const t = (ab.title || '').toLowerCase();
+      const a = (ab.author || '').toLowerCase();
+      return (
+        ab.id === 'audiobook-1793148157988-bnzl3' ||
+        t.includes('mi vida loca') ||
+        a.includes('orlando figueroa')
+      );
+    };
+    return results.sort((a, b) => {
+      const aPin = isMiVidaLoca(a) ? 0 : 1;
+      const bPin = isMiVidaLoca(b) ? 0 : 1;
+      return aPin - bPin;
+    });
   }
 
   public getAudiobookById(id: string): Audiobook | undefined {
