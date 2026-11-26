@@ -108,7 +108,13 @@ export const AudiobookPlayer: React.FC<{ audiobook: Audiobook }> = ({ audiobook 
             <video
               ref={videoRef}
               src={resolvedMediaUrl}
-              poster={audiobook.coverUrl ? audiobook.coverUrl : undefined}
+              poster={
+                isPortraitVideo
+                  ? '/images/video-thumbs/OrlandoFigueroa.jpg'
+                  : audiobook.coverUrl
+                    ? audiobook.coverUrl
+                    : undefined
+              }
               controls
               playsInline
               preload="metadata"

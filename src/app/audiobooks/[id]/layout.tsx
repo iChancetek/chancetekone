@@ -13,6 +13,8 @@ export async function generateMetadata({
     const resolved = await lookupAudiobookForShareMetadata(id);
     const pageUrl = `${resolved.origin}/audiobooks/${encodeURIComponent(resolved.id)}`;
 
+    const isWidescreenThumb = resolved.ogImageUrl.includes('OrlandoFigueroa_share') || resolved.ogImageUrl.includes('/video-thumbs/');
+
     return {
       title: `${resolved.title} — ${resolved.artist}`,
       description: resolved.description,
@@ -28,8 +30,8 @@ export async function generateMetadata({
             url: resolved.ogImageUrl,
             secureUrl: resolved.ogImageUrl,
             type: resolved.ogImageType,
-            width: 1200,
-            height: 1200,
+            width: isWidescreenThumb ? 1280 : 1200,
+            height: isWidescreenThumb ? 720 : 1200,
             alt: `${resolved.title} by ${resolved.artist}`,
           },
         ],

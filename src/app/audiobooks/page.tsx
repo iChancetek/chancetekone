@@ -87,7 +87,7 @@ export default function AudiobooksPage() {
               category="audiobooks"
               title="Mi Vida Loca... By Author, Orlando Figueroa"
               subtitle="By Orlando Figueroa"
-              coverUrl="/images/audiobooks/famio.jpg"
+              coverUrl="/images/video-thumbs/OrlandoFigueroa_share.jpg"
               artistName="Orlando Figueroa"
               url="/audiobooks/audiobook-1793148157988-bnzl3"
               variant="pill"
@@ -101,7 +101,7 @@ export default function AudiobooksPage() {
                   author: 'Orlando Figueroa',
                   description:
                     'Mi Vida Loca. Written by Orlando Figueroa. Master spoken work and cinema presentation.',
-                  coverUrl: '/images/audiobooks/famio.jpg',
+                  coverUrl: '/images/video-thumbs/OrlandoFigueroa_share.jpg',
                 })
               }
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 border border-brand-gold/40 text-brand-gold hover:text-amber-300 font-semibold text-xs transition-all shadow-md cursor-pointer"
@@ -112,14 +112,23 @@ export default function AudiobooksPage() {
             </button>
           </div>
         </div>
-        <div className="relative w-full bg-black overflow-hidden aspect-[9/16] sm:aspect-[4/5] md:aspect-[16/10]">
+        <div className="relative w-full bg-black overflow-hidden flex items-center justify-center min-h-[420px] h-[72vh] sm:h-[78vh] max-h-[840px]">
+          {/* Soft blurred ambient backdrop so the full 9:16 video displays 100% uncropped from skyline to street */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/video-thumbs/OrlandoFigueroa.jpg"
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-45"
+          />
           <video
             src="/videos/OrlandoFigueroa.mp4#t=0.5"
+            poster="/images/video-thumbs/OrlandoFigueroa.jpg"
             controls
             playsInline
             preload="metadata"
             onPlay={handleFeaturedVideoPlay}
-            className="w-full h-full object-cover object-center block bg-black"
+            className="relative z-10 w-full h-full object-contain block"
           />
         </div>
       </section>

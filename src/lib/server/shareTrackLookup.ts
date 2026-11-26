@@ -162,7 +162,7 @@ function safeResolveAuthenticCover(track: Partial<Track>): string {
     if (fromAuthentic && !isGenericOrInvalidTrackCover(fromAuthentic)) {
       return fromAuthentic;
     }
-  } catch {}
+  } catch { }
 
   try {
     if (track.albumTitle || track.artistName) {
@@ -175,7 +175,7 @@ function safeResolveAuthenticCover(track: Partial<Track>): string {
         return fromKnownAlbum;
       }
     }
-  } catch {}
+  } catch { }
 
   try {
     return getDefaultCoverForTrack({
@@ -195,7 +195,7 @@ export async function findAuthoritativeTrack(rawId: string): Promise<{
   let decodedId = rawId;
   try {
     decodedId = decodeURIComponent(rawId);
-  } catch {}
+  } catch { }
 
   let serverTrack: Partial<Track> | null = null;
   let albumCover: string | undefined;
@@ -212,7 +212,7 @@ export async function findAuthoritativeTrack(rawId: string): Promise<{
         }
       }
     }
-  } catch {}
+  } catch { }
 
   // 2. Snapshot fallback if direct ID didn't hit (e.g. case-insensitive / normalized ID lookup)
   if (!serverTrack) {
@@ -251,9 +251,9 @@ export async function findAuthoritativeTrack(rawId: string): Promise<{
   const merged: Partial<Track> | null =
     serverTrack || canonicalTrack
       ? {
-          ...(canonicalTrack || {}),
-          ...(serverTrack || {}),
-        }
+        ...(canonicalTrack || {}),
+        ...(serverTrack || {}),
+      }
       : null;
 
   if (merged && !albumCover) {
@@ -378,7 +378,7 @@ export async function lookupTrackForShareMetadata(
   let decodedId = id;
   try {
     decodedId = decodeURIComponent(id);
-  } catch {}
+  } catch { }
 
   const { track, albumCover } = await findAuthoritativeTrack(decodedId);
 
@@ -435,7 +435,7 @@ export async function lookupAudiobookForShareMetadata(
   let decodedId = rawId;
   try {
     decodedId = decodeURIComponent(rawId);
-  } catch {}
+  } catch { }
 
   let serverAb: Partial<Audiobook> | null = null;
   try {
@@ -448,7 +448,7 @@ export async function lookupAudiobookForShareMetadata(
         list.find((a) => normalizeLookupKey(a.id) === normalizeLookupKey(decodedId)) ||
         null;
     }
-  } catch {}
+  } catch { }
 
   const mockAb =
     MOCK_AUDIOBOOKS.find((a) => a.id === rawId || a.id === decodedId) || null;
@@ -460,16 +460,22 @@ export async function lookupAudiobookForShareMetadata(
     (merged?.description && merged.description.replace(/\s+/g, ' ').trim().slice(0, 180)) ||
     `Listen to "${title}" by ${artist} on ChanceTEK One — Spoken Literature & Audiobooks.`;
 
+  const isMiVidaLoca =
+    decodedId === 'audiobook-1793148157988-bnzl3' ||
+    title.toLowerCase().includes('mi vida loca') ||
+    artist.toLowerCase().includes('orlando figueroa');
+
   const candidateCover = normalizeExternalCoverOrigin(
+    (isMiVidaLoca ? '/images/video-thumbs/OrlandoFigueroa_share.jpg' : '') ||
     (!isGenericOrInvalidTrackCover(merged?.coverUrl) ? merged?.coverUrl : '') ||
-      (!isGenericOrInvalidTrackCover(hints.cover) ? hints.cover : '') ||
-      '/images/audiobooks/famio.jpg'
+    (!isGenericOrInvalidTrackCover(hints.cover) ? hints.cover : '') ||
+    '/images/audiobooks/famio.jpg'
   );
 
   const rawCover =
     candidateCover.startsWith('data:image/') ||
-    candidateCover.startsWith('https://') ||
-    (candidateCover.startsWith('/') && publicFileExists(candidateCover))
+      candidateCover.startsWith('https://') ||
+      (candidateCover.startsWith('/') && publicFileExists(candidateCover))
       ? candidateCover
       : '/images/audiobooks/famio.jpg';
 
@@ -505,7 +511,7 @@ export async function lookupPodcastForShareMetadata(
   let decodedId = rawId;
   try {
     decodedId = decodeURIComponent(rawId);
-  } catch {}
+  } catch { }
 
   let serverPod: Partial<PodcastEpisode> | null = null;
   try {
@@ -518,7 +524,7 @@ export async function lookupPodcastForShareMetadata(
         list.find((p) => normalizeLookupKey(p.id) === normalizeLookupKey(decodedId)) ||
         null;
     }
-  } catch {}
+  } catch { }
 
   const seedPod =
     SEED_PODCASTS.find((p) => p.id === rawId || p.id === decodedId) || null;
@@ -532,14 +538,14 @@ export async function lookupPodcastForShareMetadata(
 
   const candidateCover = normalizeExternalCoverOrigin(
     (!isGenericOrInvalidTrackCover(merged?.coverUrl) ? merged?.coverUrl : '') ||
-      (!isGenericOrInvalidTrackCover(hints.cover) ? hints.cover : '') ||
-      '/images/genres/hip-hop.jpg'
+    (!isGenericOrInvalidTrackCover(hints.cover) ? hints.cover : '') ||
+    '/images/genres/hip-hop.jpg'
   );
 
   const rawCover =
     candidateCover.startsWith('data:image/') ||
-    candidateCover.startsWith('https://') ||
-    (candidateCover.startsWith('/') && publicFileExists(candidateCover))
+      candidateCover.startsWith('https://') ||
+      (candidateCover.startsWith('/') && publicFileExists(candidateCover))
       ? candidateCover
       : '/images/genres/hip-hop.jpg';
 
@@ -575,7 +581,7 @@ export async function lookupVideoForShareMetadata(
   let decodedId = rawId;
   try {
     decodedId = decodeURIComponent(rawId);
-  } catch {}
+  } catch { }
 
   let serverVid: Partial<Video> | null = null;
   try {
@@ -588,7 +594,7 @@ export async function lookupVideoForShareMetadata(
         list.find((v) => normalizeLookupKey(v.id) === normalizeLookupKey(decodedId)) ||
         null;
     }
-  } catch {}
+  } catch { }
 
   const mockVid = MOCK_VIDEOS.find((v) => v.id === rawId || v.id === decodedId) || null;
   const merged = serverVid || mockVid ? { ...(mockVid || {}), ...(serverVid || {}) } : null;
@@ -609,15 +615,15 @@ export async function lookupVideoForShareMetadata(
 
   const candidateCover = normalizeExternalCoverOrigin(
     extractedVideoThumb ||
-      (!isGenericOrInvalidTrackCover(merged?.thumbnailUrl) ? merged?.thumbnailUrl : '') ||
-      (!isGenericOrInvalidTrackCover(hints.cover) ? hints.cover : '') ||
-      '/images/video-thumbs/video-1.jpg'
+    (!isGenericOrInvalidTrackCover(merged?.thumbnailUrl) ? merged?.thumbnailUrl : '') ||
+    (!isGenericOrInvalidTrackCover(hints.cover) ? hints.cover : '') ||
+    '/images/video-thumbs/video-1.jpg'
   );
 
   const rawCover =
     candidateCover.startsWith('data:image/') ||
-    candidateCover.startsWith('https://') ||
-    (candidateCover.startsWith('/') && publicFileExists(candidateCover))
+      candidateCover.startsWith('https://') ||
+      (candidateCover.startsWith('/') && publicFileExists(candidateCover))
       ? candidateCover
       : '/images/video-thumbs/video-1.jpg';
 

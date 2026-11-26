@@ -310,18 +310,36 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
           ) : null}
         </div>
 
-        {/* Master Artwork / Video Banner — Full-bleed edge-to-edge card fill */}
+        {/* Master Artwork / Video Banner — Full-frame uncropped display (head to street) */}
         <div className="relative w-full">
           {currentSlide.videoUrl ? (
             <div
-              className={`relative rounded-2xl sm:rounded-3xl border border-white/15 bg-black shadow-[0_25px_70px_-15px_rgba(0,0,0,0.95)] p-0 overflow-hidden w-full ring-1 ring-brand-gold/15 ${currentSlide.id === 'mi-vida-loca'
-                ? 'aspect-[9/16] sm:aspect-[4/5] md:aspect-[16/10]'
-                : 'aspect-[1112/830] max-h-[72vh]'
-                }`}
+              className={`relative rounded-2xl sm:rounded-3xl border border-white/15 bg-black shadow-[0_25px_70px_-15px_rgba(0,0,0,0.95)] p-0 overflow-hidden w-full ring-1 ring-brand-gold/15 flex items-center justify-center ${
+                currentSlide.id === 'mi-vida-loca'
+                  ? 'min-h-[420px] h-[72vh] sm:h-[78vh] max-h-[820px]'
+                  : 'aspect-[1112/830] max-h-[72vh]'
+              }`}
             >
+              {currentSlide.id === 'mi-vida-loca' && (
+                /* Soft ambient side fill so portrait 9:16 video displays 100% uncropped (legs, street & skyline) */
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src="/images/video-thumbs/OrlandoFigueroa.jpg"
+                  alt=""
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-45"
+                />
+              )}
               <video
                 key={`video-${currentSlide.id}`}
                 src={currentSlide.videoUrl}
+                poster={
+                  currentSlide.id === 'mi-vida-loca'
+                    ? '/images/video-thumbs/OrlandoFigueroa.jpg'
+                    : currentSlide.id === 'saturday-night-sunday-morning'
+                      ? '/images/video-thumbs/Kwame_Book_Promo_1.jpg'
+                      : undefined
+                }
                 controls
                 playsInline
                 preload="metadata"
@@ -331,7 +349,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
                   }
                   setIsAutoSlideEnabled(false);
                 }}
-                className="w-full h-full object-cover object-center block bg-black"
+                className="relative z-10 w-full h-full object-contain block"
               />
             </div>
           ) : currentSlide.bannerImage ? (
@@ -462,7 +480,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
                 customTitle: 'Mi Vida Loca',
                 customCreator: 'Author Orlando Figueroa',
                 customDescription: currentSlide.narrationText,
-                customCoverUrl: '/images/video-thumbs/OrlandoFigueroa.jpg',
+                customCoverUrl: '/images/video-thumbs/OrlandoFigueroa_share.jpg',
               };
             }
             if (currentSlide.id === 'saturday-night-sunday-morning') {
