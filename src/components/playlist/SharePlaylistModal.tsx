@@ -272,7 +272,7 @@ export const SharePlaylistModal: React.FC<SharePlaylistModalProps> = ({
                 {playlist.visibility === 'private' ? <Lock className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
               </div>
               <div className="text-xs">
-                <span className="font-bold text-white capitalize">{playlist.visibility} Crate</span>
+                <span className="font-bold text-white capitalize">{playlist.visibility} Playlist</span>
                 <p className="text-neutral-400 text-[11px]">
                   {playlist.visibility === 'private'
                     ? 'Only you and explicitly invited members can access and play this playlist.'
@@ -329,7 +329,7 @@ export const SharePlaylistModal: React.FC<SharePlaylistModalProps> = ({
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-brand-purple/20 text-brand-purple border border-brand-purple/40">
-                    Crate & Playlist
+                    Member Playlist
                   </span>
                   <span className="text-[10px] text-neutral-400 font-mono">
                     {playlist.items?.length || 0} items
@@ -337,7 +337,7 @@ export const SharePlaylistModal: React.FC<SharePlaylistModalProps> = ({
                 </div>
                 <h4 className="font-extrabold text-white text-sm truncate mt-1">{playlist.name}</h4>
                 <p className="text-[11px] text-neutral-400 line-clamp-1 mt-0.5">
-                  {playlist.description || 'Curated music and media crate on ChanceTEK One.'}
+                  {playlist.description || 'Curated music and media playlist on ChanceTEK One.'}
                 </p>
               </div>
             </div>
@@ -358,7 +358,7 @@ export const SharePlaylistModal: React.FC<SharePlaylistModalProps> = ({
                     )}
                   </h5>
                   <p className="text-[10px] text-neutral-400 truncate">
-                    Pre-formatted with crate title, description, and link
+                    Pre-formatted with playlist title, description, and link
                   </p>
                 </div>
               </div>

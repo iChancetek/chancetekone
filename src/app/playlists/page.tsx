@@ -36,6 +36,7 @@ import { EditPlaylistModal } from '@/components/playlist/EditPlaylistModal';
 import { SharePlaylistModal } from '@/components/playlist/SharePlaylistModal';
 import { AuthPromptModal } from '@/components/auth/AuthPromptModal';
 import { ReactionButtons } from '@/components/social/ReactionButtons';
+import { FavoriteButton } from '@/components/social/FavoriteButton';
 import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussionModal';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
 
@@ -70,15 +71,15 @@ export default function PlaylistsPage() {
       searchQuery,
       sortBy: 'popular',
     };
-    const pub = PlaylistService.getPublicPlaylists(filter);
-    setPublicPlaylists(pub);
 
+    let ownIds = new Set<string>();
     if (currentUserId || currentEmail) {
       const userPls = PlaylistService.getUserPlaylists(currentUserId, currentEmail, {
         type: activeTab,
         searchQuery,
       });
       setUserPlaylists(userPls);
+      ownIds = new Set(userPls.map((p) => p.id));
 
       const sharedPls = PlaylistService.getSharedPlaylists(currentUserId, currentEmail, {
         type: activeTab,
@@ -93,6 +94,10 @@ export default function PlaylistsPage() {
       setSharedPlaylists([]);
       setSavedPlaylists([]);
     }
+
+    // Only real public playlists created by platform members
+    const pub = PlaylistService.getPublicPlaylists(filter).filter((p) => !ownIds.has(p.id));
+    setPublicPlaylists(pub);
   };
 
   useEffect(() => {
@@ -100,11 +105,16 @@ export default function PlaylistsPage() {
     const unsubscribe = PlaylistService.subscribe(() => {
       refreshPlaylists();
     });
+    const onPlaylistsEvent = () => refreshPlaylists();
+    window.addEventListener('playlists-updated', onPlaylistsEvent);
+    window.addEventListener('storage', onPlaylistsEvent);
     const unsubComments = SocialCommentService.subscribeAll(() => {
       setCommentTick((t) => t + 1);
     });
     return () => {
       unsubscribe();
+      window.removeEventListener('playlists-updated', onPlaylistsEvent);
+      window.removeEventListener('storage', onPlaylistsEvent);
       unsubComments();
     };
   }, [activeTab, searchQuery, currentUserId, currentEmail, isAdmin]);
@@ -165,7 +175,7 @@ export default function PlaylistsPage() {
   };
 
   const FILTER_TABS: Array<{ id: 'all' | PlaylistType; label: string; icon: any }> = [
-    { id: 'all', label: 'All Crates', icon: ListMusic },
+    { id: 'all', label: 'All Playlists', icon: ListMusic },
     { id: 'music', label: 'Music', icon: Music },
     { id: 'video', label: 'Videos', icon: Video },
     { id: 'audiobook', label: 'Audiobooks', icon: BookOpen },
@@ -180,15 +190,13 @@ export default function PlaylistsPage() {
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-gold/15 border border-brand-gold/40 text-brand-gold text-xs font-bold uppercase tracking-widest">
               <Sparkles className="w-3.5 h-3.5" />
-              Next-Gen Playlist Engine
+              Member-Created Playlists
             </div>
             <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-              Artists & Creators Playlists
+              Playlists
             </h1>
             <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-              Explore Members Playlists By various Artist,Creators, DJs, Etc
-              <br />
-              Listen, Watch and Rank Your Favorite Playlists.
+              Create your own private or public playlists, save them directly to your Playlists area &amp; Library, and explore real playlists created by platform members.
             </p>
           </div>
 
@@ -213,11 +221,10 @@ export default function PlaylistsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all shrink-0 ${
-                  isActive
+                className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all shrink-0 ${isActive
                     ? 'bg-gradient-to-r from-brand-purple to-brand-violet text-white shadow-md border border-brand-neon/40'
                     : 'bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white border border-white/5'
-                }`}
+                  }`}
               >
                 <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-brand-gold' : 'text-neutral-400'}`} />
                 <span>{tab.label}</span>
@@ -233,7 +240,7 @@ export default function PlaylistsPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search crates by title or vibe..."
+            placeholder="Search playlists by title or vibe..."
             className="w-full pl-9 pr-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-white placeholder-neutral-400 focus:outline-none focus:border-brand-purple transition-all"
           />
         </div>
@@ -246,18 +253,18 @@ export default function PlaylistsPage() {
             <Radio className="w-4 h-4 text-brand-gold shrink-0" />
             <div>
               <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-tight">
-                My Crates {profile && `(${userPlaylists.length})`}
+                My Playlists {isAuthenticated && `(${userPlaylists.length})`}
               </h2>
-              <p className="text-xs text-neutral-400 font-medium">Build Your Personal Playlist</p>
+              <p className="text-xs text-neutral-400 font-medium">Keep your playlists Private or share them Publicly</p>
             </div>
           </div>
-          {profile && userPlaylists.length > 0 && (
+          {isAuthenticated && userPlaylists.length > 0 && (
             <button
               onClick={handleCreateClick}
               className="px-4 py-2 rounded-full bg-gradient-to-r from-[#ffd700] to-[#f59e0b] text-black font-black text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(245,158,11,0.4)] hover:scale-105 transition-all flex items-center gap-1.5 border border-white/50"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
-              <span>+ New Crate</span>
+              <span>+ New Playlist</span>
             </button>
           )}
         </div>
@@ -269,7 +276,7 @@ export default function PlaylistsPage() {
                 Build Your Personal Playlist
               </h3>
               <p className="text-xs sm:text-sm text-neutral-300 max-w-lg">
-                Sign in to create unlimited custom playlists, organize tracks and 4K videos, and save crates to your library.
+                Sign in to create unlimited custom playlists, organize songs, videos, and audiobooks, and keep them private or public in your Library.
               </p>
             </div>
             <button
@@ -392,7 +399,17 @@ export default function PlaylistsPage() {
                         </h3>
                       </Link>
                       {/* Action icons */}
-                      <div className="flex items-center gap-1 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 shrink-0">
+                        <FavoriteButton
+                          id={pl.id}
+                          category="playlists"
+                          title={pl.name}
+                          subtitle={`Playlist by ${pl.ownerName}`}
+                          coverUrl={pl.coverUrl}
+                          url={`/playlists/${pl.id}`}
+                          variant="icon"
+                          size="sm"
+                        />
                         <button
                           onClick={(e) => {
                             e.preventDefault();
@@ -400,7 +417,7 @@ export default function PlaylistsPage() {
                             setShareTargetPlaylist(pl);
                           }}
                           className="p-1.5 rounded-lg bg-white/5 hover:bg-brand-neon/20 text-neutral-300 hover:text-brand-neon transition-colors"
-                          title="Share crate or invite members"
+                          title="Share playlist or invite members"
                         >
                           <Share2 className="w-3.5 h-3.5" />
                         </button>
@@ -428,11 +445,11 @@ export default function PlaylistsPage() {
                         </button>
                       </div>
                     </div>
-                    <p className="text-xs text-neutral-400 line-clamp-1">{pl.description || 'Custom curated crate'}</p>
+                    <p className="text-xs text-neutral-400 line-clamp-1">{pl.description || 'Personal member playlist'}</p>
                     <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-1">
                       <span className="text-brand-neon font-mono">{pl.itemCount} items</span>
                       <div className="flex items-center gap-1.5">
-                        <ReactionButtons contentId={pl.id} contentType="playlist" contentTitle={pl.name} contextLocation="Personal Crates Section" variant="minimal" showShare={false} />
+                        <ReactionButtons contentId={pl.id} contentType="playlist" contentTitle={pl.name} contextLocation="My Playlists Section" variant="minimal" showShare={false} />
                         {(() => {
                           const plKey = buildCanonicalContentKey('playlist', pl.name);
                           const count = SocialCommentService.getCommentCount(pl.id, plKey);
@@ -523,11 +540,11 @@ export default function PlaylistsPage() {
                         {pl.name}
                       </h3>
                     </Link>
-                    <p className="text-xs text-neutral-400 line-clamp-1">{pl.description || 'Shared private crate'}</p>
+                    <p className="text-xs text-neutral-400 line-clamp-1">{pl.description || 'Shared member playlist'}</p>
                     <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-1">
                       <span className="text-brand-neon font-mono">{pl.itemCount} items</span>
                       <div className="flex items-center gap-1.5">
-                        <ReactionButtons contentId={pl.id} contentType="playlist" contentTitle={pl.name} contextLocation="Shared Crates Section" variant="minimal" showShare={false} />
+                        <ReactionButtons contentId={pl.id} contentType="playlist" contentTitle={pl.name} contextLocation="Shared Playlists Section" variant="minimal" showShare={false} />
                         {(() => {
                           const plKey = buildCanonicalContentKey('playlist', pl.name);
                           const count = SocialCommentService.getCommentCount(pl.id, plKey);
@@ -557,20 +574,21 @@ export default function PlaylistsPage() {
         </section>
       )}
 
-      {/* 4. Featured & Community Public Crates */}
-      <section className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Flame className="w-5 h-5 text-brand-gold animate-bounce" />
-          <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-            Featured & Community Crates
-          </h2>
-        </div>
-
-        {publicPlaylists.length === 0 ? (
-          <div className="text-center py-12 text-neutral-400 text-sm">
-            No public playlists match your search criteria.
+      {/* 4. Public Member Playlists (Only real playlists created by platform members) */}
+      {publicPlaylists.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Globe className="w-5 h-5 text-brand-gold" />
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                Public Member Playlists ({publicPlaylists.length})
+              </h2>
+              <p className="text-xs text-neutral-400">
+                Public playlists created and shared by members of ChanceTEK One
+              </p>
+            </div>
           </div>
-        ) : (
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {publicPlaylists.map((pl) => {
               const TypeIcon = getTypeIcon(pl.type);
@@ -592,7 +610,7 @@ export default function PlaylistsPage() {
                   {isDeleting && (
                     <div className="absolute inset-0 z-20 bg-black/90 backdrop-blur-sm rounded-3xl flex flex-col items-center justify-center p-6 space-y-3 animate-in fade-in duration-200">
                       <Trash2 className="w-6 h-6 text-red-400" />
-                      <p className="text-xs font-bold text-white text-center">Delete "{pl.name}"?</p>
+                      <p className="text-xs font-bold text-white text-center">Delete &ldquo;{pl.name}&rdquo;?</p>
                       <p className="text-[10px] text-neutral-400 text-center">This action cannot be undone.</p>
                       <div className="flex items-center gap-2 pt-1">
                         <button
@@ -626,14 +644,6 @@ export default function PlaylistsPage() {
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
 
-                      {/* Featured Ribbon */}
-                      {pl.isFeatured && (
-                        <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-brand-gold text-black text-[10px] font-black uppercase tracking-wider shadow-md flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 fill-current" />
-                          <span>Master Crate</span>
-                        </div>
-                      )}
-
                       {/* Type Badge */}
                       <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider text-brand-gold border border-white/10 flex items-center gap-1">
                         <TypeIcon className="w-3 h-3 text-brand-neon" />
@@ -665,7 +675,17 @@ export default function PlaylistsPage() {
                       </Link>
 
                       {/* Action buttons */}
-                      <div className="flex items-center gap-1 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 shrink-0">
+                        <FavoriteButton
+                          id={pl.id}
+                          category="playlists"
+                          title={pl.name}
+                          subtitle={`Playlist by ${pl.ownerName}`}
+                          coverUrl={pl.coverUrl}
+                          url={`/playlists/${pl.id}`}
+                          variant="icon"
+                          size="sm"
+                        />
                         <button
                           onClick={(e) => {
                             e.preventDefault();
@@ -673,7 +693,7 @@ export default function PlaylistsPage() {
                             setShareTargetPlaylist(pl);
                           }}
                           className="p-1.5 rounded-lg bg-white/5 hover:bg-brand-neon/20 text-neutral-300 hover:text-brand-neon transition-colors"
-                          title="Share crate or invite members"
+                          title="Share playlist"
                         >
                           <Share2 className="w-3.5 h-3.5" />
                         </button>
@@ -724,7 +744,7 @@ export default function PlaylistsPage() {
                         <span className="truncate text-neutral-300">{pl.ownerName}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <ReactionButtons contentId={pl.id} contentType="playlist" contentTitle={pl.name} contextLocation="Community Crates Section" variant="minimal" showShare={false} />
+                        <ReactionButtons contentId={pl.id} contentType="playlist" contentTitle={pl.name} contextLocation="Member Playlists Section" variant="minimal" showShare={false} />
                         {(() => {
                           const plKey = buildCanonicalContentKey('playlist', pl.name);
                           const count = SocialCommentService.getCommentCount(pl.id, plKey);
@@ -751,8 +771,8 @@ export default function PlaylistsPage() {
               );
             })}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Modals */}
       {showCreateModal && (
@@ -817,7 +837,7 @@ export default function PlaylistsPage() {
           contentKey={buildCanonicalContentKey('playlist', discussionPlaylist.name)}
           contentType="playlist"
           contentTitle={discussionPlaylist.name}
-          contentSubtitle={`Curated Crate by ${discussionPlaylist.ownerName} • ${discussionPlaylist.itemCount} items`}
+          contentSubtitle={`Playlist by ${discussionPlaylist.ownerName} • ${discussionPlaylist.itemCount} items`}
           coverUrl={discussionPlaylist.coverUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500'}
           badgeLabel="Playlist"
         />

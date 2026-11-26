@@ -32,325 +32,15 @@ import { COVER_ART_CATALOG } from '@/lib/playlist/CoverArtCatalog';
 
 export const PRESET_COVERS = COVER_ART_CATALOG.map((c) => c.url);
 
-// Seed Data
-export const INITIAL_PUBLIC_PLAYLISTS: Playlist[] = [
-  {
-    id: 'pl-featured-master',
-    ownerId: 'creator-chancetekone',
-    ownerName: 'ChanceTEK One',
-    ownerAvatarUrl: '/images/studio_cover.jpg',
-    name: 'ChanceTEK One: The Master Vault',
-    description: 'Heavyweight big beat anthems, Apache break mastercuts, sample-chopping crate science, and legendary 12-bit SP-1200 crunch.',
-    type: 'music',
-    visibility: 'public',
-    coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=80',
-    itemCount: 4,
-    totalDuration: 769,
-    createdAt: '2026-01-15T12:00:00.000Z',
-    updatedAt: '2026-02-28T18:00:00.000Z',
-    isFeatured: true,
-    stats: {
-      plays: 0,
-      saves: 0,
-      likes: 0,
-      shares: 0,
-    },
-    items: [
-      {
-        id: 'item-master-1',
-        playlistId: 'pl-featured-master',
-        mediaId: 'track-1',
-        mediaType: 'music',
-        title: 'ChanceTEK One Break Beats',
-        artistName: 'ChanceTEK One',
-        coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80',
-        duration: 194,
-        position: 0,
-        addedAt: '2026-01-15T12:00:00.000Z',
-        audioUrl: '/audio/Fort Apache.mp3',
-        bpm: 130,
-        genre: 'Big Beat',
-      },
-      {
-        id: 'item-master-2',
-        playlistId: 'pl-featured-master',
-        mediaId: 'track-2',
-        mediaType: 'music',
-        title: 'Neon Crate Philosophy',
-        artistName: 'ChanceTEK One',
-        coverUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop&q=80',
-        duration: 218,
-        position: 1,
-        addedAt: '2026-01-15T12:05:00.000Z',
-        audioUrl: '/audio/Fort Apache.mp3',
-        bpm: 110,
-        genre: 'Epic Tracks',
-      },
-      {
-        id: 'item-master-3',
-        playlistId: 'pl-featured-master',
-        mediaId: 'track-5',
-        mediaType: 'music',
-        title: 'Ghost In The SP-1200',
-        artistName: 'ChanceTEK One',
-        coverUrl: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&auto=format&fit=crop&q=80',
-        duration: 172,
-        position: 2,
-        addedAt: '2026-01-15T12:10:00.000Z',
-        audioUrl: '/audio/Fort Apache.mp3',
-        bpm: 120,
-        genre: 'Big Beat',
-      },
-      {
-        id: 'item-master-4',
-        playlistId: 'pl-featured-master',
-        mediaId: 'track-4',
-        mediaType: 'music',
-        title: 'Soul Kitchen 1974',
-        artistName: 'Luna Brass & The Crate Queens',
-        coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
-        duration: 185,
-        position: 3,
-        addedAt: '2026-01-15T12:15:00.000Z',
-        audioUrl: '/audio/Fort Apache.mp3',
-        bpm: 108,
-        genre: 'Funk Breaks',
-      },
-    ],
-  },
-  {
-    id: 'pl-mixed-experience',
-    ownerId: 'creator-chancetekone',
-    ownerName: 'ChanceTEK One',
-    ownerAvatarUrl: '/images/studio_cover.jpg',
-    name: 'Late Night Concrete Session (Mixed Crate)',
-    description: 'Immersive multi-format experience seamlessly blending heavy audio tracks, 4K studio visual cuts, and audiobook history chapters.',
-    type: 'mixed',
-    visibility: 'public',
-    coverUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&auto=format&fit=crop&q=80',
-    itemCount: 4,
-    totalDuration: 3014,
-    createdAt: '2026-02-01T10:00:00.000Z',
-    updatedAt: '2026-02-28T20:00:00.000Z',
-    isFeatured: true,
-    stats: {
-      plays: 0,
-      saves: 0,
-      likes: 0,
-      shares: 0,
-    },
-    items: [
-      {
-        id: 'item-mix-1',
-        playlistId: 'pl-mixed-experience',
-        mediaId: 'track-1',
-        mediaType: 'music',
-        title: 'ChanceTEK One Break Beats',
-        artistName: 'ChanceTEK One',
-        coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80',
-        duration: 194,
-        position: 0,
-        addedAt: '2026-02-01T10:00:00.000Z',
-        audioUrl: '/audio/Fort Apache.mp3',
-        bpm: 130,
-        genre: 'Big Beat',
-      },
-      {
-        id: 'item-mix-2',
-        playlistId: 'pl-mixed-experience',
-        mediaId: 'video-1',
-        mediaType: 'video',
-        title: 'ChanceTEK One: Masterclass & Breakbeat Experience',
-        artistName: 'ChanceTEK One',
-        coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=80',
-        duration: 240,
-        position: 1,
-        addedAt: '2026-02-01T10:05:00.000Z',
-        videoUrl: '/videos/FatherTime4K.mp4',
-        genre: 'Masterclass',
-      },
-      {
-        id: 'item-mix-3',
-        playlistId: 'pl-mixed-experience',
-        mediaId: 'audiobook-1',
-        mediaType: 'audiobook',
-        title: 'Chapter 1: The Six Seconds That Changed Everything',
-        artistName: 'ChanceTEK One',
-        coverUrl: '/images/studio_cover.jpg',
-        duration: 2400,
-        position: 2,
-        addedAt: '2026-02-01T10:10:00.000Z',
-        audioUrl: '/audio/Fort Apache.mp3',
-        chapterIndex: 1,
-        genre: 'Documentary',
-      },
-      {
-        id: 'item-mix-4',
-        playlistId: 'pl-mixed-experience',
-        mediaId: 'track-3',
-        mediaType: 'music',
-        title: 'Cyber Grid Overdrive',
-        artistName: 'Cipher Voltage',
-        coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
-        duration: 245,
-        position: 3,
-        addedAt: '2026-02-01T10:15:00.000Z',
-        audioUrl: '/audio/Fort Apache.mp3',
-        bpm: 134,
-        genre: 'Electro Breaks',
-      },
-    ],
-  },
-  {
-    id: 'pl-video-master',
-    ownerId: 'creator-chancetekone',
-    ownerName: 'ChanceTEK One',
-    ownerAvatarUrl: '/images/studio_cover.jpg',
-    name: 'ChanceTEK One Studio Visual Masterclasses',
-    description: 'Official continuous stream of high-definition 4K studio cuts, hardware break chopping sessions, and turntable demonstrations.',
-    type: 'video',
-    visibility: 'public',
-    coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&auto=format&fit=crop&q=80',
-    itemCount: 4,
-    totalDuration: 735,
-    createdAt: '2026-02-10T14:00:00.000Z',
-    updatedAt: '2026-02-27T16:00:00.000Z',
-    isFeatured: true,
-    stats: {
-      plays: 0,
-      saves: 0,
-      likes: 0,
-      shares: 0,
-    },
-    items: [
-      {
-        id: 'item-vid-1',
-        playlistId: 'pl-video-master',
-        mediaId: 'video-1',
-        mediaType: 'video',
-        title: 'ChanceTEK One: Masterclass & Breakbeat Experience',
-        artistName: 'ChanceTEK One',
-        coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=80',
-        duration: 240,
-        position: 0,
-        addedAt: '2026-02-10T14:00:00.000Z',
-        videoUrl: '/videos/FatherTime4K.mp4',
-        genre: 'Masterclass',
-      },
-      {
-        id: 'item-vid-2',
-        playlistId: 'pl-video-master',
-        mediaId: 'video-2',
-        mediaType: 'video',
-        title: 'ChanceTEK One: Chapter I — The Sonic Lab Session',
-        artistName: 'ChanceTEK One',
-        coverUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&auto=format&fit=crop&q=80',
-        duration: 180,
-        position: 1,
-        addedAt: '2026-02-10T14:05:00.000Z',
-        videoUrl: '/videos/chancetekone1.mp4',
-        genre: 'Studio Session',
-      },
-      {
-        id: 'item-vid-3',
-        playlistId: 'pl-video-master',
-        mediaId: 'video-3',
-        mediaType: 'video',
-        title: 'ChanceTEK One: Chapter II — Underground Crate Science',
-        artistName: 'ChanceTEK One',
-        coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&auto=format&fit=crop&q=80',
-        duration: 150,
-        position: 2,
-        addedAt: '2026-02-10T14:10:00.000Z',
-        videoUrl: '/videos/chancetekone2.mp4',
-        genre: 'Masterclass',
-      },
-      {
-        id: 'item-vid-4',
-        playlistId: 'pl-video-master',
-        mediaId: 'video-4',
-        mediaType: 'video',
-        title: 'ChanceTEK One: Chapter III — Rhythm Dynamics & Flow',
-        artistName: 'ChanceTEK One',
-        coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&auto=format&fit=crop&q=80',
-        duration: 165,
-        position: 3,
-        addedAt: '2026-02-10T14:15:00.000Z',
-        videoUrl: '/videos/chancetekone3.mp4',
-        genre: 'Production',
-      },
-    ],
-  },
-  {
-    id: 'pl-audiobook-master',
-    ownerId: 'creator-chancetekone',
-    ownerName: 'ChanceTEK One',
-    ownerAvatarUrl: '/images/studio_cover.jpg',
-    name: 'ChanceTEK One: Audio Documentary',
-    description: 'The definitive audio narrative documenting how 6 seconds of drum solo in the 1960s ignited Big Beat and modern culture.',
-    type: 'audiobook',
-    visibility: 'public',
-    coverUrl: '/images/studio_cover.jpg',
-    itemCount: 3,
-    totalDuration: 9000,
-    createdAt: '2026-01-20T08:00:00.000Z',
-    updatedAt: '2026-02-15T12:00:00.000Z',
-    isFeatured: true,
-    stats: {
-      plays: 0,
-      saves: 0,
-      likes: 0,
-      shares: 0,
-    },
-    items: [
-      {
-        id: 'item-book-1',
-        playlistId: 'pl-audiobook-master',
-        mediaId: 'audiobook-1',
-        mediaType: 'audiobook',
-        title: 'Chapter 1: The Six Seconds That Changed Everything',
-        artistName: 'ChanceTEK One',
-        coverUrl: '/images/studio_cover.jpg',
-        duration: 2400,
-        position: 0,
-        addedAt: '2026-01-20T08:00:00.000Z',
-        audioUrl: '/audio/Fort Apache.mp3',
-        chapterIndex: 1,
-        genre: 'Documentary',
-      },
-      {
-        id: 'item-book-2',
-        playlistId: 'pl-audiobook-master',
-        mediaId: 'audiobook-1',
-        mediaType: 'audiobook',
-        title: 'Chapter 2: South Bronx Block Parties & Pioneer Code',
-        artistName: 'ChanceTEK One',
-        coverUrl: '/images/studio_cover.jpg',
-        duration: 3000,
-        position: 1,
-        addedAt: '2026-01-20T08:05:00.000Z',
-        audioUrl: '/audio/Fort Apache.mp3',
-        chapterIndex: 2,
-        genre: 'Documentary',
-      },
-      {
-        id: 'item-book-3',
-        playlistId: 'pl-audiobook-master',
-        mediaId: 'audiobook-1',
-        mediaType: 'audiobook',
-        title: 'Chapter 3: The 12-Bit Renaissance: SP-1200 & MPC60',
-        artistName: 'ChanceTEK One',
-        coverUrl: '/images/studio_cover.jpg',
-        duration: 3600,
-        position: 2,
-        addedAt: '2026-01-20T08:10:00.000Z',
-        audioUrl: '/audio/Fort Apache.mp3',
-        chapterIndex: 3,
-        genre: 'Documentary',
-      },
-    ],
-  },
-];
+// Zero synthetic/mock seed playlists — ONLY real member-created playlists exist on the platform.
+export const INITIAL_PUBLIC_PLAYLISTS: Playlist[] = [];
+
+const LEGACY_SYNTHETIC_PLAYLIST_IDS = new Set<string>([
+  'pl-featured-master',
+  'pl-mixed-experience',
+  'pl-video-master',
+  'pl-audiobook-master',
+]);
 
 export class PlaylistService {
   private static listeners: Set<() => void> = new Set();
@@ -460,20 +150,24 @@ export class PlaylistService {
 
   private static getRawAll(): Playlist[] {
     if (typeof window === 'undefined') {
-      return INITIAL_PUBLIC_PLAYLISTS.map((p) => this.sanitizePlaylist(p));
+      return [];
     }
     try {
       const stored = localStorage.getItem(PLAYLIST_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored) as Playlist[];
-        const existingIds = new Set(parsed.map((p) => p.id));
-        const missingSeeds = INITIAL_PUBLIC_PLAYLISTS.filter((s) => !existingIds.has(s.id));
-        return [...parsed, ...missingSeeds].map((p) => this.sanitizePlaylist(p));
+        const cleaned = (Array.isArray(parsed) ? parsed : []).filter(
+          (p) => p && p.id && !LEGACY_SYNTHETIC_PLAYLIST_IDS.has(p.id) && p.ownerId !== 'creator-chancetekone'
+        );
+        if (cleaned.length !== (Array.isArray(parsed) ? parsed.length : 0)) {
+          localStorage.setItem(PLAYLIST_STORAGE_KEY, JSON.stringify(cleaned));
+        }
+        return cleaned.map((p) => this.sanitizePlaylist(p));
       }
     } catch (e) {
       console.warn('Error loading playlists from localStorage:', e);
     }
-    return INITIAL_PUBLIC_PLAYLISTS.map((p) => this.sanitizePlaylist(p));
+    return [];
   }
 
   private static loadAll(): Playlist[] {
@@ -551,8 +245,9 @@ export class PlaylistService {
     const all = this.loadAll().filter((p) => {
       if (p.isDeleted) return false;
       return (
-        p.ownerId === userId ||
-        Boolean(normalizedEmail && p.ownerEmail && p.ownerEmail.toLowerCase() === normalizedEmail)
+        (Boolean(userId) && p.ownerId === userId) ||
+        Boolean(normalizedEmail && p.ownerEmail && p.ownerEmail.toLowerCase() === normalizedEmail) ||
+        (Boolean(userId) && p.ownerId === 'usr-member' && !p.ownerEmail)
       );
     });
     return this.applyFilter(all, filter);

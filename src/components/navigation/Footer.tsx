@@ -38,7 +38,7 @@ export const Footer: React.FC = () => {
             </Link>
 
             <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed max-w-md">
-              The definitive breakbeat ecosystem uniting master-quality audio streaming, 4K cultural documentaries, narrated audiobooks, limited collector vinyl pressings, and autonomous AI crate digging.
+              The definitive cultural streaming ecosystem uniting master-quality audio, 4K documentaries, narrated audiobooks, podcasts, collector vinyl pressings, and agentic AI music discovery.
             </p>
 
             <div className="pt-1 flex items-center gap-2">
@@ -135,7 +135,7 @@ export const Footer: React.FC = () => {
           {/* Column 3: Media & Discovery */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-widest text-brand-gold">
-              Media & Crates
+              Media &amp; Discovery
             </h4>
             <ul className="space-y-2.5 text-xs sm:text-sm">
               <li>
@@ -214,7 +214,7 @@ export const Footer: React.FC = () => {
                   className="text-neutral-300 hover:text-brand-gold transition-colors flex items-center gap-1.5"
                 >
                   <Radio className="w-3.5 h-3.5 text-neutral-400" />
-                  <span>Curated Crates</span>
+                  <span>Member Playlists</span>
                 </Link>
               </li>
               <li>
@@ -240,7 +240,7 @@ export const Footer: React.FC = () => {
                   href="/library"
                   className="text-neutral-300 hover:text-brand-gold transition-colors flex items-center gap-1.5"
                 >
-                  <span>Your Vault</span>
+                  <span>Library</span>
                 </Link>
               </li>
             </ul>

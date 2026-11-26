@@ -67,7 +67,7 @@ export const CartDrawer: React.FC = () => {
                 </div>
                 <h3 className="text-lg font-bold text-white">Order Confirmed!</h3>
                 <p className="text-xs text-neutral-300">
-                  Thank you for supporting breakbeat vinyl and artists. Your mock order has been recorded.
+                  Thank you for supporting independent music, vinyl, and artists. Your order has been recorded.
                 </p>
                 <button
                   onClick={() => setOrderComplete(false)}

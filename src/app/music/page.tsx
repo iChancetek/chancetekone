@@ -20,6 +20,8 @@ import {
   Sliders,
   Radio,
   Volume2,
+  VolumeX,
+  Shuffle,
   ShieldCheck,
   Trash2,
   AlertTriangle,
@@ -33,6 +35,7 @@ import { Track } from '@/types/media';
 import { MOCK_TRACKS } from '@/lib/mockData';
 import { MediaCard } from '@/components/media/MediaCard';
 import { PublicMusicCatalogSection } from '@/components/music/PublicMusicCatalogSection';
+import { AgenticDiscoveryDeck } from '@/components/ai/AgenticDiscoveryDeck';
 import { MusicSortOption, MUSIC_SORT_OPTIONS, sortTracks } from '@/lib/music/trackSorting';
 
 const GENRES = [
@@ -67,7 +70,7 @@ const GENRE_ARTWORKS: Record<string, GenreArtworkInfo> = {
     video: '/videos/timeless_music_algorithm.mp4',
     tagline: 'ChanceTEK One Master Audio Catalog',
     description:
-      'Explore authentic vinyl chops, heavyweight breakbeats, soulful chord progressions, and modern club anthems across the entire multi-genre sound spectrum.',
+      'Explore authentic vinyl cuts, heavyweight rhythms, soulful chord progressions, and modern club anthems across the entire multi-genre sound spectrum.',
     accent: '#ffd700',
     badge: 'Timeless Music Archive',
     bpmRange: '84 - 174 BPM',
@@ -100,7 +103,7 @@ const GENRE_ARTWORKS: Record<string, GenreArtworkInfo> = {
     artwork: '/images/genres/country-soul.jpg',
     tagline: 'Delta Blues, Slide Guitars & Southern Grit',
     description:
-      'Acoustic slide licks, driving breakbeat tempos, warm pedal steel tones, and down-home storytelling uniting Nashville soul with Memphis rhythm.',
+      'Acoustic slide licks, driving groove tempos, warm pedal steel tones, and down-home storytelling uniting Nashville soul with Memphis rhythm.',
     accent: '#f59e0b',
     badge: 'Delta Roots & Grit',
     bpmRange: '96 - 118 BPM',
@@ -133,7 +136,7 @@ const GENRE_ARTWORKS: Record<string, GenreArtworkInfo> = {
     artwork: '/images/genres/jazz-blues.jpg',
     tagline: 'Smoky Brass, Blue Notes & Virtuosity',
     description:
-      'Muted trumpet solos, expressive tenor sax lines, swinging upright bass, and dusty midnight speakeasy confessions for true crate diggers.',
+      'Muted trumpet solos, expressive tenor sax lines, swinging upright bass, and dusty midnight speakeasy confessions for true vinyl collectors.',
     accent: '#3b82f6',
     badge: 'Speakeasy Virtuosity',
     bpmRange: '92 - 115 BPM',
@@ -164,7 +167,7 @@ const GENRE_ARTWORKS: Record<string, GenreArtworkInfo> = {
   'Latin-Freestyle': {
     name: 'Latin-Freestyle',
     artwork: '/images/genres/latin-freestyle.jpg',
-    tagline: 'Miami 808 Synths & Electro Breakbeats',
+    tagline: 'Miami 808 Synths & Electro Rhythms',
     description:
       'Punchy Roland TR-808 percussion, soaring vocal melodies, rapid synth arpeggios, and high-energy 80s/90s club freestyle rhythms.',
     accent: '#ec4899',
@@ -200,7 +203,7 @@ const MEMBERS_ONLY_CRATES: MemberCrate[] = [
   {
     id: 'oldschool-rnb-soul',
     name: 'Timeless R&B | Soul Music',
-    subtitle: 'Motown, Stax & Rare 70s Crate Vinyl',
+    subtitle: 'Motown, Stax & Rare 70s Collector Vinyl',
     badge: 'Analog Reel',
     icon: Disc3,
   },
@@ -213,9 +216,9 @@ const MEMBERS_ONLY_CRATES: MemberCrate[] = [
   },
   {
     id: 'break-beats-samples',
-    name: 'Break Beats & Samples',
+    name: 'Classic Drums & Samples',
     subtitle: 'Open Drum Solos, Chops & Funk Loops',
-    badge: 'Rare Breaks',
+    badge: 'Rare Drums',
     icon: Disc,
   },
   {
@@ -270,7 +273,7 @@ const getCrateIcon = (iconName?: string) => {
 
 export default function MusicPage() {
   const router = useRouter();
-  const { playTrack, currentTrack, isPlaying } = usePlayer();
+  const { playTrack, playRandom, pause, currentTrack, isPlaying, isShuffled } = usePlayer();
   const { profile, isAdmin } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState('Genre');
@@ -280,6 +283,50 @@ export default function MusicPage() {
 
   const [trackToRemove, setTrackToRemove] = useState<Track | null>(null);
   const [removeReason, setRemoveReason] = useState<string>('');
+
+  // Video sound toggle controls for the Music page hero & Algorithm of Timeless Music videos
+  const heroVideoRef = React.useRef<HTMLVideoElement | null>(null);
+  const genreVideoRef = React.useRef<HTMLVideoElement | null>(null);
+  const [isHeroVideoUnmuted, setIsHeroVideoUnmuted] = useState(false);
+  const [isGenreVideoUnmuted, setIsGenreVideoUnmuted] = useState(false);
+
+  const toggleHeroVideoAudio = () => {
+    const vid = heroVideoRef.current;
+    if (!vid) return;
+    const nextUnmuted = !isHeroVideoUnmuted;
+    if (nextUnmuted) {
+      pause();
+      if (genreVideoRef.current) {
+        genreVideoRef.current.muted = true;
+      }
+      setIsGenreVideoUnmuted(false);
+      vid.muted = false;
+      vid.volume = 1;
+      vid.play().catch(() => { });
+    } else {
+      vid.muted = true;
+    }
+    setIsHeroVideoUnmuted(nextUnmuted);
+  };
+
+  const toggleGenreVideoAudio = () => {
+    const vid = genreVideoRef.current;
+    if (!vid) return;
+    const nextUnmuted = !isGenreVideoUnmuted;
+    if (nextUnmuted) {
+      pause();
+      if (heroVideoRef.current) {
+        heroVideoRef.current.muted = true;
+      }
+      setIsHeroVideoUnmuted(false);
+      vid.muted = false;
+      vid.volume = 1;
+      vid.play().catch(() => { });
+    } else {
+      vid.muted = true;
+    }
+    setIsGenreVideoUnmuted(nextUnmuted);
+  };
 
   React.useEffect(() => {
     setMounted(true);
@@ -312,8 +359,8 @@ export default function MusicPage() {
       selectedGenre === 'Genre'
         ? allCatalogTracks
         : allCatalogTracks.filter((t) =>
-            isTrackMatchingGenre(t.genre, selectedGenre, t.crateId, t.artistName, t.title)
-          );
+          isTrackMatchingGenre(t.genre, selectedGenre, t.crateId, t.artistName, t.title)
+        );
     return sortTracks(genreMatched, sortBy);
   }, [allCatalogTracks, selectedGenre, sortBy]);
 
@@ -378,23 +425,60 @@ export default function MusicPage() {
         {/* Full-Bleed 16:9 HD Brand Video (100% unobstructed) */}
         <div className="relative w-full aspect-video max-h-[540px] bg-black overflow-hidden">
           <video
+            ref={heroVideoRef}
             autoPlay
             loop
-            muted
+            muted={!isHeroVideoUnmuted}
             playsInline
             preload="auto"
             className="w-full h-full object-cover object-center block"
           >
             <source src="/videos/chancetekone1.mp4" type="video/mp4" />
           </video>
+
+          {/* Listen / Mute Video Audio Pill */}
+          <button
+            type="button"
+            onClick={toggleHeroVideoAudio}
+            className={`absolute bottom-3.5 right-3.5 z-20 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider backdrop-blur-md transition-all duration-200 cursor-pointer shadow-xl border ${isHeroVideoUnmuted
+                ? 'bg-brand-gold text-black border-amber-200 hover:scale-105'
+                : 'bg-black/75 hover:bg-brand-gold text-white hover:text-black border-white/25 hover:border-brand-gold'
+              }`}
+            title={isHeroVideoUnmuted ? 'Mute Video Audio' : 'Listen to Video Audio'}
+            aria-label={isHeroVideoUnmuted ? 'Mute Video Audio' : 'Listen to Video Audio'}
+          >
+            {isHeroVideoUnmuted ? (
+              <>
+                <Volume2 className="w-4 h-4 animate-pulse" />
+                <span>Listening · Mute</span>
+              </>
+            ) : (
+              <>
+                <VolumeX className="w-4 h-4" />
+                <span>Listen to Video</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* Clean Licensing Bar directly beneath the video */}
-        <div className="relative z-10 flex items-center justify-center px-4 py-3 bg-[#08080e]/95 border-t border-white/10">
+        <div className="relative z-10 flex flex-wrap items-center justify-center sm:justify-between gap-2 px-4 sm:px-6 py-3 bg-[#08080e]/95 border-t border-white/10">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-brand-gold/15 border border-brand-gold/50 text-brand-gold text-xs font-black uppercase tracking-wider shadow-[0_0_20px_rgba(245,158,11,0.2)]">
             <ShieldCheck className="w-3.5 h-3.5 text-brand-gold shrink-0" />
             <span>Music Curated by ASCAP &amp; BMI Publishing</span>
           </div>
+
+          <button
+            type="button"
+            onClick={toggleHeroVideoAudio}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border ${isHeroVideoUnmuted
+                ? 'bg-brand-gold/20 border-brand-gold/60 text-brand-gold'
+                : 'bg-white/10 hover:bg-white/20 border-white/15 text-white'
+              }`}
+          >
+            {isHeroVideoUnmuted ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+            <span>{isHeroVideoUnmuted ? 'Video Audio On' : 'Listen to Video'}</span>
+          </button>
         </div>
       </div>
 
@@ -422,11 +506,10 @@ export default function MusicPage() {
                 data-genre-active={isSelected ? 'true' : undefined}
                 onClick={() => setSelectedGenre(g)}
                 title={g}
-                className={`shrink-0 lg:flex-1 lg:min-w-0 flex items-center justify-center text-center px-3.5 sm:px-4 lg:px-2 py-2 rounded-xl text-xs lg:text-[11px] xl:text-xs font-bold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer ${
-                  isSelected
+                className={`shrink-0 lg:flex-1 lg:min-w-0 flex items-center justify-center text-center px-3.5 sm:px-4 lg:px-2 py-2 rounded-xl text-xs lg:text-[11px] xl:text-xs font-bold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer ${isSelected
                     ? 'bg-gradient-to-r from-[#ffd700] via-[#f59e0b] to-[#fbbf24] text-black font-black shadow-[0_0_15px_rgba(245,158,11,0.4)] border border-brand-gold z-10'
                     : 'bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 hover:border-brand-gold/40'
-                }`}
+                  }`}
               >
                 {g === 'Genre' && (
                   <Disc3 className={`w-3.5 h-3.5 mr-1.5 shrink-0 ${isSelected ? 'text-black' : 'text-brand-gold'}`} />
@@ -525,9 +608,11 @@ export default function MusicPage() {
             {/* Actions */}
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
+                type="button"
+                data-solid-cta="true"
                 onClick={handlePlayGenre}
                 disabled={filteredTracks.length === 0}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-wider shadow-lg transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-wider shadow-lg transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   background: isGenrePlaying
                     ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
@@ -539,20 +624,34 @@ export default function MusicPage() {
                 {isGenrePlaying ? (
                   <>
                     <Volume2 className="w-4 h-4 text-black animate-pulse" />
-                    <span>Now Playing {selectedGenre === 'Genre' ? 'Vault' : selectedGenre}</span>
+                    <span>Playing</span>
                   </>
                 ) : (
                   <>
                     <Play className="w-4 h-4 fill-black text-black ml-0.5" />
-                    <span>Play {selectedGenre === 'Genre' ? 'Vault Anthems' : `${selectedGenre} Mix`}</span>
+                    <span>Play</span>
                   </>
                 )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => playRandom(filteredTracks)}
+                disabled={filteredTracks.length === 0}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-extrabold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed border ${isShuffled && isGenrePlaying
+                    ? 'bg-brand-purple text-white border-brand-neon shadow-[0_0_20px_rgba(157,78,221,0.55)]'
+                    : 'bg-white/10 hover:bg-brand-purple/40 text-white border-white/20 hover:border-brand-neon/60'
+                  }`}
+                title="Play music in a randomized order"
+              >
+                <Shuffle className="w-4 h-4 text-brand-gold" />
+                <span>Random</span>
               </button>
 
               <div className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-neutral-300">
                 <Disc className="w-3.5 h-3.5 text-brand-gold animate-spin-slow" />
                 <span className="font-bold text-white">{filteredTracks.length}</span>
-                <span className="text-neutral-400">tracks in this crate</span>
+                <span className="text-neutral-400">tracks</span>
               </div>
             </div>
           </div>
@@ -564,18 +663,42 @@ export default function MusicPage() {
               style={{ borderColor: `${activeGenreMeta.accent}90` }}
             >
               {activeGenreMeta.video ? (
-                <video
-                  key={activeGenreMeta.video}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  poster={activeGenreMeta.artwork}
-                  className="object-cover object-center w-full h-full block"
-                >
-                  <source src={activeGenreMeta.video} type="video/mp4" />
-                </video>
+                <>
+                  <video
+                    ref={genreVideoRef}
+                    key={activeGenreMeta.video}
+                    autoPlay
+                    loop
+                    muted={!isGenreVideoUnmuted}
+                    playsInline
+                    preload="auto"
+                    poster={activeGenreMeta.artwork}
+                    className="object-cover object-center w-full h-full block"
+                  >
+                    <source src={activeGenreMeta.video} type="video/mp4" />
+                  </video>
+                  <button
+                    type="button"
+                    onClick={toggleGenreVideoAudio}
+                    className={`absolute bottom-2.5 right-2.5 z-20 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider backdrop-blur-md transition-all cursor-pointer shadow-lg border ${isGenreVideoUnmuted
+                        ? 'bg-brand-gold text-black border-amber-200'
+                        : 'bg-black/75 hover:bg-brand-gold text-white hover:text-black border-white/25'
+                      }`}
+                    title={isGenreVideoUnmuted ? 'Mute Video' : 'Listen to Video'}
+                  >
+                    {isGenreVideoUnmuted ? (
+                      <>
+                        <Volume2 className="w-3.5 h-3.5 animate-pulse" />
+                        <span>Mute</span>
+                      </>
+                    ) : (
+                      <>
+                        <VolumeX className="w-3.5 h-3.5" />
+                        <span>Listen</span>
+                      </>
+                    )}
+                  </button>
+                </>
               ) : (
                 <Image
                   src={activeGenreMeta.artwork}
@@ -592,6 +715,9 @@ export default function MusicPage() {
           </div>
         </div>
       </div>
+
+      {/* 2c. Agentic AI Music Companion — Tracks streaming history & suggests similar & new songs */}
+      <AgenticDiscoveryDeck mode="music" />
 
       {/* 3. Featured Grid */}
       <div className="space-y-4">
@@ -649,7 +775,7 @@ export default function MusicPage() {
         )}
       </div>
 
-      {/* 4. Members Only Crates Section */}
+      {/* 4. Members Only Collections Section */}
       <section className="relative overflow-hidden rounded-3xl p-6 sm:p-8 glass-panel border border-brand-gold/40 bg-gradient-to-br from-[#1c122e]/95 via-[#120a1f]/90 to-[#0a0712]/95 shadow-[0_10px_40px_rgba(0,0,0,0.6)] space-y-6">
         {/* Glow backdrop */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
@@ -659,14 +785,14 @@ export default function MusicPage() {
           <div className="space-y-1.5 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-gold/20 border border-brand-gold/50 text-brand-gold text-xs font-black uppercase tracking-widest">
               <Crown className="w-3.5 h-3.5" />
-              <span>VIP Crate Vault · One Subscription Includes All Crates</span>
+              <span>VIP Studio Archive · One Subscription Includes All Collections</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
-              <span>Members Only Crates</span>
+              <span>Members Only Collections</span>
               <Lock className="w-5 h-5 text-brand-gold inline-block" />
             </h2>
             <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-              Unlock exclusive collector archives, rare multi-tracks, and high-fidelity masters. A single subscription membership includes full, unlimited access to all 8 crates — no individual purchases needed.
+              Unlock exclusive collector archives, rare multi-tracks, and high-fidelity masters. A single subscription membership includes full, unlimited access to all 8 collections — no individual purchases needed.
             </p>
           </div>
 
@@ -674,12 +800,12 @@ export default function MusicPage() {
             href="/membership"
             className="self-start md:self-auto flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#ffd700] via-[#f59e0b] to-[#fbbf24] text-black font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(245,158,11,0.45)] hover:scale-105 transition-all shrink-0 cursor-pointer"
           >
-            <span>Subscribe & Unlock All Crates</span>
+            <span>Subscribe &amp; Unlock All</span>
             <ChevronRight className="w-4 h-4 text-black stroke-[3]" />
           </Link>
         </div>
 
-        {/* 8 Members Only Crates Cards Grid */}
+        {/* 8 Members Only Collections Cards Grid */}
         <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
           {crates.map((crate) => {
             const Icon = getCrateIcon(crate.iconName);
@@ -696,7 +822,7 @@ export default function MusicPage() {
                   </div>
                   <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 border border-brand-gold/40 text-brand-gold text-[10px] font-bold uppercase tracking-wider">
                     <Lock className="w-3 h-3 text-brand-gold" />
-                    <span>All Crates Included</span>
+                    <span>All Included</span>
                   </div>
                 </div>
 
@@ -709,7 +835,7 @@ export default function MusicPage() {
                     {crate.subtitle}
                   </p>
                   <div className="pt-2 flex items-center gap-1.5 text-[10px] font-black text-brand-gold uppercase tracking-wider group-hover:translate-x-0.5 transition-transform">
-                    <span>Subscribe — Unlocks All Crates</span>
+                    <span>Subscribe — Unlocks All</span>
                     <ChevronRight className="w-3 h-3 stroke-[3]" />
                   </div>
                 </div>
@@ -722,7 +848,7 @@ export default function MusicPage() {
         <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-white/10 text-xs text-neutral-400">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-brand-gold shrink-0" />
-            <span>All 8 Members Only Crates are included with your subscription membership.</span>
+            <span>All 8 Members Only Collections are included with your subscription membership.</span>
           </div>
           <Link
             href="/membership"

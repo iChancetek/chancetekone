@@ -7,6 +7,8 @@ import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
 import { MediaUploadModal } from '@/components/media/MediaUploadModal';
 import { ShareAudiobookModal } from '@/components/audiobook/ShareAudiobookModal';
+import { FavoriteButton } from '@/components/social/FavoriteButton';
+import { AgenticDiscoveryDeck } from '@/components/ai/AgenticDiscoveryDeck';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { Audiobook } from '@/types/media';
 
@@ -79,23 +81,36 @@ export default function AudiobooksPage() {
               Mi Vida Loca... By Author, Orlando Figueroa
             </h2>
           </div>
-          <button
-            onClick={() =>
-              setSharingAudiobook({
-                id: 'audiobook-1793148157988-bnzl3',
-                title: 'Mi Vida Loca',
-                author: 'Orlando Figueroa',
-                description:
-                  'Mi Vida Loca. Written by Orlando Figueroa. Master spoken work and cinema presentation.',
-                coverUrl: '/images/audiobooks/famio.jpg',
-              })
-            }
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 border border-brand-gold/40 text-brand-gold hover:text-amber-300 font-semibold text-xs transition-all shadow-md cursor-pointer"
-            title="Share Mi Vida Loca"
-          >
-            <Share2 className="w-4 h-4 text-brand-gold" />
-            <span>Share Audiobook</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <FavoriteButton
+              id="audiobook-1793148157988-bnzl3"
+              category="audiobooks"
+              title="Mi Vida Loca... By Author, Orlando Figueroa"
+              subtitle="By Orlando Figueroa"
+              coverUrl="/images/audiobooks/famio.jpg"
+              artistName="Orlando Figueroa"
+              url="/audiobooks/audiobook-1793148157988-bnzl3"
+              variant="pill"
+              size="md"
+            />
+            <button
+              onClick={() =>
+                setSharingAudiobook({
+                  id: 'audiobook-1793148157988-bnzl3',
+                  title: 'Mi Vida Loca',
+                  author: 'Orlando Figueroa',
+                  description:
+                    'Mi Vida Loca. Written by Orlando Figueroa. Master spoken work and cinema presentation.',
+                  coverUrl: '/images/audiobooks/famio.jpg',
+                })
+              }
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 border border-brand-gold/40 text-brand-gold hover:text-amber-300 font-semibold text-xs transition-all shadow-md cursor-pointer"
+              title="Share Mi Vida Loca"
+            >
+              <Share2 className="w-4 h-4 text-brand-gold" />
+              <span>Share Audiobook</span>
+            </button>
+          </div>
         </div>
         <div className="relative w-full bg-black overflow-hidden aspect-[9/16] sm:aspect-[4/5] md:aspect-[16/10]">
           <video
@@ -118,23 +133,36 @@ export default function AudiobooksPage() {
               Saturday Night, Sunday Morning... By Author, Kwame Thompson
             </h2>
           </div>
-          <button
-            onClick={() =>
-              setSharingAudiobook({
-                id: 'audiobook-kwame-thompson',
-                title: 'Saturday Night, Sunday Morning',
-                author: 'Kwame Thompson',
-                description:
-                  'Featured Upcoming Works. Saturday Night, Sunday Morning... By Author, Kwame Thompson.',
-                coverUrl: '/images/audiobooks/famio.jpg',
-              })
-            }
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 border border-brand-gold/40 text-brand-gold hover:text-amber-300 font-semibold text-xs transition-all shadow-md cursor-pointer"
-            title="Share Saturday Night, Sunday Morning"
-          >
-            <Share2 className="w-4 h-4 text-brand-gold" />
-            <span>Share Audiobook</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <FavoriteButton
+              id="audiobook-kwame-thompson"
+              category="audiobooks"
+              title="Saturday Night, Sunday Morning... By Author, Kwame Thompson"
+              subtitle="By Kwame Thompson"
+              coverUrl="/images/audiobooks/famio.jpg"
+              artistName="Kwame Thompson"
+              url="/audiobooks/audiobook-kwame-thompson"
+              variant="pill"
+              size="md"
+            />
+            <button
+              onClick={() =>
+                setSharingAudiobook({
+                  id: 'audiobook-kwame-thompson',
+                  title: 'Saturday Night, Sunday Morning',
+                  author: 'Kwame Thompson',
+                  description:
+                    'Featured Upcoming Works. Saturday Night, Sunday Morning... By Author, Kwame Thompson.',
+                  coverUrl: '/images/audiobooks/famio.jpg',
+                })
+              }
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 border border-brand-gold/40 text-brand-gold hover:text-amber-300 font-semibold text-xs transition-all shadow-md cursor-pointer"
+              title="Share Saturday Night, Sunday Morning"
+            >
+              <Share2 className="w-4 h-4 text-brand-gold" />
+              <span>Share Audiobook</span>
+            </button>
+          </div>
         </div>
         <div className="relative w-full bg-black overflow-hidden aspect-[1112/830] max-h-[75vh]">
           <video
@@ -147,6 +175,9 @@ export default function AudiobooksPage() {
           />
         </div>
       </section>
+
+      {/* Agentic AI Audiobook Guide — Tracks what you stream & suggests similar audiobooks */}
+      <AgenticDiscoveryDeck mode="audiobook" />
 
       {/* Spoken Masterworks Grid */}
       <div className="space-y-4">

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -53,23 +53,23 @@ const PLANS: Plan[] = [
   },
   {
     id: 'member',
-    name: 'Crate Club Member',
-    tagline: 'Full all-inclusive access to all 8 Members Only Crates & 24-bit Lossless streaming',
+    name: 'VIP Studio Member',
+    tagline: 'Full all-inclusive access to all 8 Members Only Collections & 24-bit Lossless streaming',
     priceMonthly: '$9.99',
     priceAnnual: '$99/yr',
     popular: true,
     badge: 'Most Popular',
     features: [
-      '✨ Unlimited access to ALL 8 Members Only Crates included:',
+      '✨ Unlimited access to ALL 8 Members Only Collections included:',
       '• Slow Jams, Disco & Timeless R&B | Soul Music',
-      '• Golden Era Hip Hop & Break Beats & Samples',
+      '• Golden Era Hip Hop & Classic Drums & Samples',
       '• Discographys, Stems & Miscellaneous Vault',
       'Lossless 24-bit / 96kHz FLAC audio stream',
       'Unlimited custom playlists & offline cache',
       'Priority vinyl pre-orders & 10% merch discount',
-      'Deep Sample Detective AI break lineage tool',
+      'Deep Sample Detective AI musical lineage tool',
     ],
-    cta: 'Subscribe — Includes All Crates',
+    cta: 'Subscribe — Includes All Collections',
   },
   {
     id: 'creator',
@@ -79,14 +79,14 @@ const PLANS: Plan[] = [
     priceAnnual: '$199/yr',
     badge: 'Pro Tier',
     features: [
-      'All 8 Members Only Crates & Member benefits included',
+      'All 8 Members Only Collections & Member benefits included',
       'Downloadable studio stems & multitracks (WAV)',
       'Instant commercial sample clearance licenses',
       'Creator distribution & direct fan tipping tools',
       'Early access to test pressings & white labels',
       'Priority Agentic AI music masterclass analysis',
     ],
-    cta: 'Subscribe as Creator — All Crates Included',
+    cta: 'Subscribe as Creator — All Collections Included',
   },
 ];
 
@@ -121,7 +121,7 @@ function MembershipContent() {
     }
 
     if (!user) {
-      setAuthActionTitle(`Sign Up to Subscribe to ${planId === 'member' ? 'Crate Club' : 'Creator Tier'}`);
+      setAuthActionTitle(`Sign Up to Subscribe to ${planId === 'member' ? 'VIP Studio Membership' : 'Creator Tier'}`);
       setShowAuthModal(true);
       return;
     }
@@ -132,7 +132,7 @@ function MembershipContent() {
     }
     setCurrentTier(planId);
     setSubscribedMessage(
-      `Welcome to ${planId === 'member' ? 'Crate Club Membership' : 'Full Creator Membership'}! All Members Only Crates are now unlocked.`
+      `Welcome to ${planId === 'member' ? 'VIP Studio Membership' : 'Full Creator Membership'}! All Members Only Collections are now unlocked.`
     );
   };
 
@@ -151,10 +151,10 @@ function MembershipContent() {
                   <Crown className="w-3 h-3" /> Included in All-Access Subscription
                 </div>
                 <h2 className="text-xl sm:text-2xl font-black text-white">
-                  &ldquo;{requestedCrate}&rdquo; Is Included With All Other Crates
+                  &ldquo;{requestedCrate}&rdquo; Is Included With All Collections
                 </h2>
                 <p className="text-xs sm:text-sm text-neutral-300">
-                  Your subscription includes full access to all 8 Members Only Crates. Subscribe below to immediately unlock &ldquo;{requestedCrate}&rdquo; and the entire crate vault.
+                  Your subscription includes full access to all 8 Members Only Collections. Subscribe below to immediately unlock &ldquo;{requestedCrate}&rdquo; and the entire VIP archive.
                 </p>
               </div>
             </div>
@@ -196,10 +196,10 @@ function MembershipContent() {
           <span>Subscription Memberships</span>
         </div>
         <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-          Unlock All Members Only Crates
+          Unlock All Members Only Collections
         </h1>
         <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-          One subscription includes the complete vault. Experience uncompressed analog sound, rare multi-tracks, and all 8 high-value crates curated for true collectors and selectors.
+          One subscription includes the complete archive. Experience uncompressed analog sound, rare multi-tracks, and all 8 curated collections built for true listeners and selectors.
         </p>
 
         {/* Billing Toggle */}
@@ -309,9 +309,9 @@ function MembershipContent() {
               <Disc3 className="w-3.5 h-3.5" />
               <span>Exclusive Repertoire</span>
             </div>
-            <h2 className="text-2xl font-black text-white">The 8 Members Only Crates</h2>
+            <h2 className="text-2xl font-black text-white">The 8 Members Only Collections</h2>
             <p className="text-xs sm:text-sm text-neutral-300 mt-1">
-              Curated master tapes, isolated multitrack stems, and deep historical cuts accessible with Crate Club & Creator Memberships.
+              Curated master tapes, isolated multitrack stems, and deep historical cuts accessible with VIP Studio &amp; Creator Memberships.
             </p>
           </div>
         </div>
@@ -320,9 +320,9 @@ function MembershipContent() {
           {[
             { name: 'Slow Jams', desc: 'Late-night Quiet Storm & 90s Soul' },
             { name: 'Disco', desc: 'Studio 54 anthems & 12" club mixes' },
-            { name: 'Timeless R&B | Soul Music', desc: 'Stax, Motown & 70s crate vinyl' },
+            { name: 'Timeless R&B | Soul Music', desc: 'Stax, Motown & 70s collector vinyl' },
             { name: 'Golden Era Hip Hop', desc: 'SP-1200 boom bap classics' },
-            { name: 'Break Beats & Samples', desc: 'Open drum breaks & funk loops' },
+            { name: 'Classic Drums & Samples', desc: 'Open drum solos & funk loops' },
             { name: 'Discographys', desc: 'Complete archives & rare B-sides' },
             { name: 'Stems', desc: 'Isolated multi-tracks & WAV stems' },
             { name: 'Miscellaneous', desc: 'White labels, promos & live dubplates' },
@@ -347,8 +347,8 @@ function MembershipContent() {
         <div className="space-y-3">
           {[
             {
-              q: 'Does the subscription include all of the Members Only Crates?',
-              a: 'Yes, absolutely. A single subscription membership includes complete, unlimited access to all 8 Members Only Crates: Slow Jams, Disco, Timeless R&B | Soul Music, Golden Era Hip Hop, Break Beats & Samples, Discographys, Stems, and Miscellaneous archives. There are no separate per-crate purchases.',
+              q: 'Does the subscription include all of the Members Only Collections?',
+              a: 'Yes, absolutely. A single subscription membership includes complete, unlimited access to all 8 Members Only Collections: Slow Jams, Disco, Timeless R&B | Soul Music, Golden Era Hip Hop, Classic Drums & Samples, Discographys, Stems, and Miscellaneous archives. There are no separate purchases.',
             },
             {
               q: 'Can I cancel or switch subscription plans anytime?',
@@ -356,7 +356,7 @@ function MembershipContent() {
             },
             {
               q: 'What audio fidelity do members receive?',
-              a: 'Crate Club and Creator members enjoy lossless 24-bit / 96kHz FLAC master streaming, delivering every needle scratch, drum transient, and bass resonance exactly as originally recorded.',
+              a: 'VIP Studio and Creator members enjoy lossless 24-bit / 96kHz FLAC master streaming, delivering every needle scratch, drum transient, and bass resonance exactly as originally recorded.',
             },
           ].map((item, idx) => (
             <div key={idx} className="p-5 rounded-2xl bg-white/5 border border-white/5 space-y-1.5">
@@ -375,14 +375,14 @@ function MembershipContent() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         title={authActionTitle}
-        description="Create your account to activate your subscription membership and unlock all Members Only Crates."
+        description="Create your account to activate your subscription membership and unlock all Members Only Collections."
         onSuccess={() => {
           setShowAuthModal(false);
           if (typeof window !== 'undefined') {
             localStorage.setItem('chancetekone_subscription_tier', 'member');
           }
           setCurrentTier('member');
-          setSubscribedMessage('Welcome to Crate Club! Your membership is active.');
+          setSubscribedMessage('Welcome to VIP Studio Membership! Your membership is active.');
         }}
       />
     </div>

@@ -66,7 +66,7 @@ export default function TermsPage() {
                 <Scale className="w-5 h-5" />
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-white tracking-wide">
-                Intellectual Property, Master Lineage, and Crate Rights
+                Intellectual Property, Master Lineage, and Catalog Rights
               </h2>
             </div>
             <VoiceNarrationButton
@@ -93,12 +93,12 @@ export default function TermsPage() {
               </h2>
             </div>
             <VoiceNarrationButton
-              text="The ChanceTEK One AI assistant operates as an interactive cultural curator. Queries submitted to the agent are processed in real time to provide personalized crate curation, tempo matching, and historical sample genealogy. You agree not to submit malicious prompts, attempt model extraction, or inject hostile instructions into the assistant interface."
+              text="The ChanceTEK One AI assistant operates as an interactive cultural curator. Queries submitted to the agent are processed in real time to provide personalized music curation, tempo matching, and historical sample genealogy. You agree not to submit malicious prompts, attempt model extraction, or inject hostile instructions into the assistant interface."
               variant="icon"
             />
           </div>
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            The ChanceTEK One AI assistant operates as an interactive cultural curator. Queries submitted to the agent are processed in real time to provide personalized crate curation, tempo matching, and historical sample genealogy. You agree not to submit malicious prompts, attempt model extraction, or inject hostile instructions into the assistant interface.
+            The ChanceTEK One AI assistant operates as an interactive cultural curator. Queries submitted to the agent are processed in real time to provide personalized music curation, tempo matching, and historical sample genealogy. You agree not to submit malicious prompts, attempt model extraction, or inject hostile instructions into the assistant interface.
           </p>
         </section>
 

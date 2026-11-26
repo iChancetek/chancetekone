@@ -28,7 +28,9 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
   onClose,
   mediaItem,
 }) => {
-  const { profile } = useAuth();
+  const { profile, user, isAdmin } = useAuth();
+  const currentUserId = profile?.id || user?.uid || '';
+  const currentUserEmail = (profile?.email || user?.email) || undefined;
 
   const [userPlaylists, setUserPlaylists] = useState<Playlist[]>([]);
   const [addedPlaylistIds, setAddedPlaylistIds] = useState<Set<string>>(new Set());
@@ -38,10 +40,10 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      if (!profile) {
+      if (!currentUserId) {
         setShowAuthModal(true);
       } else {
-        const pls = PlaylistService.getUserPlaylists(profile.id);
+        const pls = PlaylistService.getUserPlaylists(currentUserId, currentUserEmail);
         setUserPlaylists(pls);
 
         // Check which playlists already contain this media
@@ -54,17 +56,17 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
         setAddedPlaylistIds(alreadyIn);
       }
     }
-  }, [isOpen, profile, mediaItem.mediaId, mediaItem.mediaType]);
+  }, [isOpen, currentUserId, currentUserEmail, mediaItem.mediaId, mediaItem.mediaType]);
 
   if (!isOpen) return null;
 
-  if (!profile) {
+  if (!currentUserId) {
     return (
       <AuthPromptModal
         isOpen={showAuthModal}
         onClose={onClose}
         title="Sign in to save this to your playlist"
-        description="Build your personal crates, save breakbeat gems, and organize your favorite audio and video sessions."
+        description="Build your personal playlists, save favorite tracks, and organize your audio and video sessions."
         onSuccess={() => {
           setShowAuthModal(false);
         }}
@@ -77,7 +79,7 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
       // Remove
       const item = playlist.items.find((it) => it.mediaId === mediaItem.mediaId && it.mediaType === mediaItem.mediaType);
       if (item) {
-        PlaylistService.removeItemFromPlaylist(playlist.id, profile.id, item.id);
+        PlaylistService.removeItemFromPlaylist(playlist.id, currentUserId, item.id, isAdmin, currentUserEmail);
         setAddedPlaylistIds((prev) => {
           const next = new Set(prev);
           next.delete(playlist.id);
@@ -86,10 +88,16 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
       }
     } else {
       // Add
-      const res = PlaylistService.addItemToPlaylist(playlist.id, profile.id, {
-        mediaId: mediaItem.mediaId,
-        mediaType: mediaItem.mediaType,
-      });
+      const res = PlaylistService.addItemToPlaylist(
+        playlist.id,
+        currentUserId,
+        {
+          mediaId: mediaItem.mediaId,
+          mediaType: mediaItem.mediaType,
+        },
+        isAdmin,
+        currentUserEmail
+      );
       if (res.success) {
         setAddedPlaylistIds((prev) => new Set(prev).add(playlist.id));
         setMessage(`Added to "${playlist.name}"`);
@@ -129,7 +137,7 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-bold text-brand-gold uppercase tracking-wider">
-                  Add to Crate Playlist
+                  Add to Playlist
                 </p>
                 <h3 className="text-sm font-bold text-white truncate max-w-[200px]">
                   {mediaItem.title}
@@ -170,7 +178,7 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
               <div className="text-center py-8 space-y-2 text-neutral-400">
                 <ListMusic className="w-8 h-8 mx-auto text-neutral-400 opacity-60" />
                 <p className="text-xs">You have no playlists yet.</p>
-                <p className="text-[11px] text-neutral-400">Click above to create your first breakbeat crate!</p>
+                <p className="text-[11px] text-neutral-400">Click above to create your first playlist!</p>
               </div>
             ) : (
               userPlaylists.map((pl) => {

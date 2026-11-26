@@ -123,7 +123,7 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
   ];
 
   const VISIBILITY_OPTIONS: Array<{ id: PlaylistVisibility; label: string; icon: any; desc: string }> = [
-    { id: 'public', label: 'Public', icon: Globe, desc: 'Visible in crate discovery & playable by all' },
+    { id: 'public', label: 'Public', icon: Globe, desc: 'Visible in playlist discovery & playable by all' },
     { id: 'unlisted', label: 'Unlisted', icon: LinkIcon, desc: 'Only people with the link' },
     { id: 'private', label: 'Private', icon: Lock, desc: 'Only visible to you & invited members' },
   ];
@@ -139,7 +139,7 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
             </div>
             <div>
               <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
-                Edit Crate Playlist
+                Edit Playlist
               </h3>
               <p className="text-xs text-neutral-400">
                 Update name, cover art, visibility, and member sharing permissions.
@@ -170,7 +170,7 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
               <div className="space-y-1">
                 <h4 className="text-base font-bold text-white">Permanently delete "{playlist.name}"?</h4>
                 <p className="text-xs text-neutral-300 leading-relaxed">
-                  This crate will be completely removed from your library and community listings. This will NOT delete the original tracks or videos from the platform.
+                  This playlist will be completely removed from your Library and member listings. This will NOT delete the original tracks or videos from the platform.
                 </p>
               </div>
             </div>
@@ -188,7 +188,7 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
                 className="px-5 py-2.5 rounded-full bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider shadow-lg hover:scale-105 transition-all flex items-center gap-1.5"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span>Confirm Delete Crate</span>
+                <span>Confirm Delete Playlist</span>
               </button>
             </div>
           </div>
@@ -324,7 +324,7 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
                     </span>
                   </label>
                   <p className="text-[11px] text-neutral-400 mt-0.5">
-                    Select from 100 Big Beat, SP-1200 hardware, and crate visuals.
+                    Select from 100 studio hardware, vinyl, and music cover visuals.
                   </p>
                 </div>
 
@@ -391,7 +391,7 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-bold text-red-400 hover:bg-red-500/20 hover:text-red-300 border border-red-500/30 transition-all cursor-pointer"
               >
                 <Trash2 className="w-4 h-4" />
-                <span>Delete Crate</span>
+                <span>Delete Playlist</span>
               </button>
 
               <div className="flex items-center gap-2">

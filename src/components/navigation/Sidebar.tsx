@@ -74,10 +74,10 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const LIBRARY_ITEMS = [
-  { label: 'Your Library', href: '/library', icon: Library },
+  { label: 'Library', href: '/library', icon: Library },
   { label: 'Account Profile & Settings', href: '/profile', icon: UserIcon },
   { label: 'Creator Studio', href: '/studio', icon: Sparkles, badge: 'Studio' },
-  { label: 'Liked Tracks', href: '/library?tab=liked', icon: Heart },
+  { label: 'Favorites', href: '/library?tab=all', icon: Heart },
   { label: 'Listening History', href: '/library?tab=history', icon: History },
 ];
 
@@ -252,15 +252,15 @@ export const Sidebar: React.FC = () => {
                         : 'text-neutral-200 hover:text-white hover:bg-white/[0.06] border border-transparent'
                       }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0 mr-1.5">
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
                       <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400 group-hover:text-white'}`} />
-                      {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
+                      {!isCollapsed && <span className="truncate">{item.label}</span>}
                     </div>
 
                     {!isCollapsed && item.badge && (
                       <span
                         data-nav-badge="true"
-                        className="text-[11px] px-2.5 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 shrink-0 ml-auto whitespace-nowrap"
+                        className="text-[10px] px-2 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 shrink-0 whitespace-nowrap"
                       >
                         {item.badge}
                       </span>
@@ -513,7 +513,7 @@ export const Sidebar: React.FC = () => {
                 </div>
               </div>
               <p className="text-xs text-neutral-300 leading-relaxed">
-                Crate digger &amp; culture assistant with dual memory.
+                Agentic music, audiobook &amp; culture assistant with dual memory.
               </p>
               <button
                 data-solid-cta="true"
@@ -678,15 +678,15 @@ export const Sidebar: React.FC = () => {
                       : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
                       }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0 mr-1.5">
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
                       <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400'}`} />
-                      <span className="whitespace-nowrap">{item.label}</span>
+                      <span className="truncate">{item.label}</span>
                     </div>
 
                     {item.badge && (
                       <span
                         data-nav-badge="true"
-                        className="text-[11px] px-2.5 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 shrink-0 ml-auto whitespace-nowrap"
+                        className="text-[10px] px-2 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 shrink-0 whitespace-nowrap"
                       >
                         {item.badge}
                       </span>
@@ -859,7 +859,7 @@ export const Sidebar: React.FC = () => {
               </div>
             </div>
             <p className="text-xs text-neutral-300 leading-snug">
-              Crate digger & culture assistant with dual memory.
+              Agentic music, audiobook &amp; culture assistant with dual memory.
             </p>
             <button
               data-solid-cta="true"

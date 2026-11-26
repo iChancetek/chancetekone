@@ -551,7 +551,7 @@ export default function LearnMorePage() {
             When the E-mu SP-1200 arrived in 1987, followed closely by Roger Linns Akai MPC60, producers gained the power to capture twelve-bit analog slices of vinyl history. By pitching records up to forty-five RPM during recording and tuning them down inside the sampler, pioneers unlocked a crunchy, saturated transient snap that defined golden-era hip-hop and transatlantic rave music.
           </p>
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            ChanceTEK One is dedicated to honoring this uninterrupted legacy. We reject sterile algorithms that flatten sonic nuance. Instead, we combine authentic crate-digging reverence with next-generation agentic intelligence to celebrate the musicians, the diggers, the producers, and the timeless magic of the break.
+            ChanceTEK One is dedicated to honoring this uninterrupted legacy. We reject sterile algorithms that flatten sonic nuance. Instead, we combine authentic collector reverence with next-generation agentic intelligence to celebrate the musicians, the selectors, the producers, and the timeless magic of sound.
           </p>
         </section>
 
@@ -581,7 +581,7 @@ export default function LearnMorePage() {
                 <span>High-Definition Streaming</span>
               </div>
               <p className="text-xs text-neutral-400 leading-relaxed">
-                Master-quality audio with dynamic tempo and BPM matching across all breakbeat sub-genres.
+                Master-quality audio with dynamic tempo and BPM matching across all timeless genres.
               </p>
             </div>
 
@@ -611,7 +611,7 @@ export default function LearnMorePage() {
                 <span>Limited Heavyweight Vinyl</span>
               </div>
               <p className="text-xs text-neutral-400 leading-relaxed">
-                Tangible physical collector artifacts crafted for dedicated crate enthusiasts.
+                Tangible physical collector artifacts crafted for dedicated music enthusiasts.
               </p>
             </div>
           </div>
@@ -628,13 +628,13 @@ export default function LearnMorePage() {
               </h2>
             </div>
             <VoiceNarrationButton
-              text="Music and culture should never exist in walled gardens. ChanceTEK One pioneers an open, agentic media architecture that seamlessly connects crate-digging heritage to external fitness ecosystems, smart hardware, and artificial intelligence reasoning agents through high-performance streaming APIs and the Model Context Protocol."
+              text="Music and culture should never exist in walled gardens. ChanceTEK One pioneers an open, agentic media architecture that seamlessly connects vinyl heritage to external fitness ecosystems, smart hardware, and artificial intelligence reasoning agents through high-performance streaming APIs and the Model Context Protocol."
               variant="icon"
             />
           </div>
 
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            Music and culture should never exist in walled gardens. ChanceTEK One pioneers an open, agentic media architecture that seamlessly connects crate-digging heritage to external fitness ecosystems, smart hardware, and artificial intelligence reasoning agents through high-performance streaming APIs and the Model Context Protocol.
+            Music and culture should never exist in walled gardens. ChanceTEK One pioneers an open, agentic media architecture that seamlessly connects vinyl heritage to external fitness ecosystems, smart hardware, and artificial intelligence reasoning agents through high-performance streaming APIs and the Model Context Protocol.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -653,7 +653,7 @@ export default function LearnMorePage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-brand-gold">•</span>
-                  <span>Continuous commercial-free breakbeat and soulful house radio</span>
+                  <span>Continuous commercial-free hip-hop, R&amp;B, and soulful house radio</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-brand-gold">•</span>

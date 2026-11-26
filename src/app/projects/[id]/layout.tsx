@@ -40,17 +40,17 @@ export async function generateMetadata({
   } catch {
     return {
       title: 'CHANCETEK ONE: THE FOUNDATION BEATS — ChanceTEK One',
-      description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
+      description: 'The Forthcoming Project celebrates the classic rhythm foundations of Hip Hop Music and Culture featuring various artists and a documentary film.',
       openGraph: {
         title: 'CHANCETEK ONE: THE FOUNDATION BEATS',
-        description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
+        description: 'The Forthcoming Project celebrates the classic rhythm foundations of Hip Hop Music and Culture featuring various artists and a documentary film.',
         type: 'website',
         url: 'https://chancetekone.us/projects#project-1',
       },
       twitter: {
         card: 'summary_large_image',
         title: 'CHANCETEK ONE: THE FOUNDATION BEATS',
-        description: 'The Forthcoming Project is based on The Classic Break Beats of Hip Hop Music and Culture Featuring Various Artists and A Documentary Film.',
+        description: 'The Forthcoming Project celebrates the classic rhythm foundations of Hip Hop Music and Culture featuring various artists and a documentary film.',
       },
     };
   }

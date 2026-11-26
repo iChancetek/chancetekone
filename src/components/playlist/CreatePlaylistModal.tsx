@@ -188,13 +188,13 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
 
   const TYPE_OPTIONS: Array<{ id: PlaylistType; label: string; icon: any; desc: string }> = [
     { id: 'mixed', label: 'Mixed Media', icon: Layers, desc: 'Music, Videos & Audiobooks' },
-    { id: 'music', label: 'Music Only', icon: Music, desc: 'Tracks, Beats & Breakcuts' },
+    { id: 'music', label: 'Music Only', icon: Music, desc: 'Songs, Albums & Singles' },
     { id: 'video', label: 'Videos Only', icon: Video, desc: 'Studio Masterclasses & Sessions' },
     { id: 'audiobook', label: 'Audiobooks', icon: BookOpen, desc: 'Chapters & Narratives' },
   ];
 
   const VISIBILITY_OPTIONS: Array<{ id: PlaylistVisibility; label: string; icon: any; desc: string }> = [
-    { id: 'public', label: 'Public', icon: Globe, desc: 'Visible in crate discovery' },
+    { id: 'public', label: 'Public', icon: Globe, desc: 'Discoverable by platform members' },
     { id: 'unlisted', label: 'Unlisted', icon: LinkIcon, desc: 'Only people with the link' },
     { id: 'private', label: 'Private', icon: Lock, desc: 'Only visible to you' },
   ];
@@ -212,10 +212,10 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
             </div>
             <div>
               <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
-                Create New Crate Playlist
+                Create New Playlist
               </h3>
               <p className="text-xs text-neutral-400">
-                Curate custom breakbeat collections and sound sequences.
+                Build your personal private or public playlists across music, videos, and audiobooks.
               </p>
             </div>
           </div>
@@ -258,7 +258,7 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
               maxLength={300}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Tell listeners what makes this crate special..."
+              placeholder="Tell listeners what makes this playlist special..."
               className="w-full p-3 rounded-2xl bg-white/5 border border-white/10 text-xs sm:text-sm text-white placeholder-neutral-400 focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple transition-all resize-none"
             />
           </div>
@@ -483,8 +483,8 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
             </div>
             <p className="text-[11px] text-neutral-400">
               {visibility === 'public'
-                ? 'Your crate is public for all users to discover, but you can also explicitly share it to member accounts.'
-                : 'Your crate is private. Only you and the specific members you add here will be able to view and play it.'}
+                ? 'Your playlist is public for all members to discover, and you can also share it directly with specific member accounts.'
+                : 'Your playlist is private. Only you and the specific members you add here will be able to view and play it.'}
             </p>
 
             <div className="flex items-center gap-2">
@@ -545,7 +545,7 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
                   </span>
                 </label>
                 <p className="text-[11px] text-neutral-400 mt-0.5">
-                  Choose from 100 Big Beat, hardware samplers, and vinyl crate covers.
+                  Choose from 100 studio, hardware sampler, and vinyl artwork covers.
                 </p>
               </div>
 
@@ -589,9 +589,9 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
               </div>
 
               <div className="flex-1 space-y-1.5 min-w-0">
-                <p className="text-xs font-bold text-white">Selected Crate Artwork</p>
+                <p className="text-xs font-bold text-white">Selected Playlist Artwork</p>
                 <p className="text-[11px] text-neutral-400">
-                  Click the artwork or "Browse 100 Covers" to explore Big Beat, Turntablism, SP-1200, and Neon categories.
+                  Click the artwork or &ldquo;Browse 100 Covers&rdquo; to explore Studio, Turntablism, Hardware, and Neon visuals.
                 </p>
                 <div className="flex items-center gap-2">
                   <input
@@ -621,7 +621,7 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
               className="px-7 py-3 rounded-full bg-gradient-to-r from-[#ffd700] via-[#f59e0b] to-[#fbbf24] text-black text-xs sm:text-sm font-black uppercase tracking-wider shadow-[0_0_25px_rgba(245,158,11,0.55)] border-2 border-white/60 hover:scale-105 hover:shadow-[0_0_35px_rgba(245,158,11,0.85)] transition-all disabled:opacity-40 flex items-center gap-2 cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-black fill-current" />
-              <span>Create Crate {selectedMedia.length > 0 && `(${selectedMedia.length} items)`}</span>
+              <span>Create Playlist {selectedMedia.length > 0 && `(${selectedMedia.length} items)`}</span>
             </button>
           </div>
         </form>

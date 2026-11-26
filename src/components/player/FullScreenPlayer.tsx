@@ -321,7 +321,7 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
                 }`}
             >
               <Brain className="w-3.5 h-3.5 text-brand-neon" />
-              <span>AI Crate Pocket</span>
+              <span>AI Discovery</span>
               <span className="text-[9px] px-1 rounded bg-brand-gold text-black font-extrabold">LIVE</span>
             </button>
             <button
@@ -379,7 +379,7 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
               <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-4 font-sans">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <span className="text-xs font-bold text-brand-gold uppercase tracking-wider">
-                    Breakbeat Anatomy & Liner Notes
+                    Track Anatomy &amp; Liner Notes
                   </span>
                   <VoiceNarrationButton
                     text={linerNotesText}
@@ -392,10 +392,10 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
                   {currentTrack.lyrics || (
                     <div className="space-y-3">
                       <p className="font-semibold text-white">
-                        Instrumental Breakbeat Masterwork
+                        Studio Instrumental Masterwork
                       </p>
                       <p className="text-xs text-neutral-300">
-                        {currentTrack.title} is constructed around heavy kick-snare patterns, dynamic hi-hat shuffles, and harmonic bass hooks tailored for breakbeat and hip-hop sessions.
+                        {currentTrack.title} is crafted around rich rhythmic drums, warm analog texture, and deep harmonic basslines tailored for studio listening sessions.
                       </p>
                       <div className="p-3 rounded-xl bg-black/40 border border-white/5 text-xs text-brand-gold font-mono space-y-1">
                         <p>• Tempo: {currentTrack.bpm || 120} BPM</p>

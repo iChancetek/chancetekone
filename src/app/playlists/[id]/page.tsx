@@ -233,7 +233,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
     return (
       <div className="py-20 text-center space-y-3">
         <Sparkles className="w-8 h-8 mx-auto text-brand-gold animate-spin-slow" />
-        <p className="text-sm text-neutral-400">Loading crate master sequence...</p>
+        <p className="text-sm text-neutral-400">Loading playlist sequence...</p>
       </div>
     );
   }
@@ -292,7 +292,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-gold/15 border border-brand-gold/40 text-brand-gold text-xs font-bold uppercase tracking-widest">
                 <TypeIcon className="w-3.5 h-3.5" />
-                <span className="capitalize">{playlist.type} Crate</span>
+                <span className="capitalize">{playlist.type} Playlist</span>
               </span>
 
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 text-neutral-300 text-xs font-semibold">
@@ -366,10 +366,10 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                 onClick={handleShuffle}
                 disabled={playlist.items.length === 0}
                 className="flex items-center gap-2 px-5 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white font-semibold text-xs transition-all hover:scale-105 disabled:opacity-40"
-                title="Shuffle Crate"
+                title="Play in Random Order"
               >
                 <Shuffle className="w-4 h-4 text-brand-gold" />
-                Shuffle
+                Random
               </button>
 
               <button
@@ -443,10 +443,10 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                   <button
                     onClick={() => setShowEditModal(true)}
                     className="flex items-center gap-1.5 px-4 py-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-white text-xs font-bold transition-all cursor-pointer shadow-sm hover:border-brand-gold/50"
-                    title="Edit Crate Name, Artwork, & Privacy"
+                    title="Edit Playlist Name, Artwork, & Privacy"
                   >
                     <Edit className="w-4 h-4 text-brand-gold" />
-                    <span>Edit Crate</span>
+                    <span>Edit Playlist</span>
                   </button>
 
                   <button
@@ -455,7 +455,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                     title="Delete this playlist"
                   >
                     <Trash2 className="w-4 h-4" />
-                    <span>Delete Crate</span>
+                    <span>Delete Playlist</span>
                   </button>
                 </>
               )}
@@ -471,10 +471,10 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
             <div>
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-brand-gold" />
-                Add Media from Crate Catalog
+                Add Media from Catalog
               </h3>
               <p className="text-xs text-neutral-400">
-                Search songs, 4K videos, and audiobooks to append to this crate.
+                Search songs, 4K videos, and audiobooks to add to this playlist.
               </p>
             </div>
 
@@ -588,7 +588,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
           </h2>
           {canManage && playlist.items.length > 1 && (
             <p className="text-xs text-neutral-400">
-              Use arrow buttons to adjust crate order.
+              Use arrow buttons to adjust playlist order.
             </p>
           )}
         </div>
@@ -598,7 +598,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
             <Layers className="w-10 h-10 mx-auto text-neutral-500" />
             <h3 className="text-base font-bold text-white">This playlist is empty</h3>
             <p className="text-xs text-neutral-400 max-w-sm mx-auto">
-              Add your favorite breakbeat tracks, videos, and audiobook masterclasses to start listening.
+              Add your favorite songs, 4K videos, and audiobooks to start listening.
             </p>
             {canManage && (
               <button
@@ -717,7 +717,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
               <div className="space-y-1">
                 <h4 className="text-base font-bold text-white">Permanently delete "{playlist.name}"?</h4>
                 <p className="text-xs text-neutral-300 leading-relaxed">
-                  This crate will be permanently deleted and removed from your library and community catalogs.
+                  This playlist will be permanently deleted and removed from your Library and member catalogs.
                 </p>
               </div>
             </div>

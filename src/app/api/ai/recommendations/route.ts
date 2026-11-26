@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAIClient, AI_CONFIG } from '@/lib/openai/config';
 import { MOCK_TRACKS, MOCK_VIDEOS, MOCK_AUDIOBOOKS, MOCK_PRODUCTS } from '@/lib/mockData';
 import { PLATFORM_CANONICAL_TRACKS } from '@/lib/music/MusicCatalogService';
@@ -33,9 +33,9 @@ export async function POST(req: NextRequest) {
       console.warn('[Recommendations] Rate limit reached — using deterministic fallback.');
       const fallbackTracks = ALL_AVAILABLE_TRACKS.slice(0, 3);
       return NextResponse.json({
-        agentName: 'Crate Digger Agent',
+        agentName: 'Agentic Music Curator',
         agentRationale: 'Serving curated selections from the catalog.',
-        vibeTag: 'Break Beats Selection',
+        vibeTag: 'Timeless Selection',
         bpmShift: 'Aligned',
         recommendedTracks: fallbackTracks,
         recommendedVideos: MOCK_VIDEOS.slice(0, 1),
@@ -139,12 +139,12 @@ Provide the harmonic, cross-media recommendations in strict JSON format now.`;
       );
 
       parsedResult = {
-        agentName: 'Crate Digger Agent',
-        agentRationale: `Locked into the ${currentMedia.genre || 'Breakbeat'} pocket at ${curBpm} BPM. These harmonic selections maintain rhythmic tension and sample lineage across the session.`,
+        agentName: 'Agentic Music Curator',
+        agentRationale: `Locked into the ${currentMedia.genre || 'Timeless Music'} groove at ${curBpm} BPM. These harmonic selections maintain seamless rhythm and vibe across your session.`,
         recommendedTrackIds: matchingTracks.slice(0, 3).map((t) => t.id),
         recommendedVideoIds: [MOCK_VIDEOS[0]?.id || 'video-1'],
         recommendedAudiobookIds: [MOCK_AUDIOBOOKS[0]?.id || 'audiobook-1'],
-        vibeTag: `${curBpm} BPM Crate Selection`,
+        vibeTag: `${curBpm} BPM Harmonic Flow`,
         bpmShift: 'Harmonic Flow',
       };
     }
@@ -161,9 +161,9 @@ Provide the harmonic, cross-media recommendations in strict JSON format now.`;
     );
 
     return NextResponse.json({
-      agentName: parsedResult.agentName || 'Crate Digger Agent',
-      agentRationale: parsedResult.agentRationale || 'Curated to match current tempo and break lineage.',
-      vibeTag: parsedResult.vibeTag || 'Breakbeat Flow',
+      agentName: parsedResult.agentName || 'Agentic Music Curator',
+      agentRationale: parsedResult.agentRationale || 'Curated to match your current tempo and listening vibe.',
+      vibeTag: parsedResult.vibeTag || 'Harmonic Flow',
       bpmShift: parsedResult.bpmShift || 'Aligned',
       recommendedTracks: recommendedTracks.length > 0 ? recommendedTracks : ALL_AVAILABLE_TRACKS.slice(0, 2),
       recommendedVideos: recommendedVideos.length > 0 ? recommendedVideos : MOCK_VIDEOS.slice(0, 1),

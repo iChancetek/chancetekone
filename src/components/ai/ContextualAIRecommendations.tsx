@@ -95,7 +95,7 @@ export const ContextualAIRecommendations: React.FC<ContextualAIRecommendationsPr
     if (autoFetch && currentMedia?.id) {
       fetchRecommendations();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMedia?.id, autoFetch]);
 
   if (!currentMedia) return null;
@@ -113,7 +113,7 @@ export const ContextualAIRecommendations: React.FC<ContextualAIRecommendationsPr
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold text-white">
-                {data?.agentName || 'Crate Digger Agent'}
+                {data?.agentName || 'Agentic Music Curator'}
               </h3>
             </div>
             <p className="text-[10px] text-neutral-400">
@@ -278,7 +278,7 @@ export const ContextualAIRecommendations: React.FC<ContextualAIRecommendationsPr
         <button
           onClick={() =>
             openAI(
-              `Dig deeper into music and culture matching ${currentMedia.title} (${currentMedia.bpm || '120'} BPM). Recommend rare breakbeats and explain the sample history.`
+              `Dig deeper into music and culture matching ${currentMedia.title} (${currentMedia.bpm || '120'} BPM). Recommend similar songs and explain the musical history.`
             )
           }
           className="text-xs text-brand-gold hover:text-white font-semibold flex items-center gap-1 hover:gap-1.5 transition-all"

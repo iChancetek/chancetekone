@@ -9,6 +9,7 @@ import { usePlayer } from '@/lib/player/PlayerContext';
 import { MusicCatalogService, getDefaultCoverForTrack } from '@/lib/music/MusicCatalogService';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 import { ReactionButtons } from '@/components/social/ReactionButtons';
+import { FavoriteButton } from '@/components/social/FavoriteButton';
 import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussionModal';
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
@@ -226,6 +227,21 @@ export const TrackRow: React.FC<TrackRowProps> = ({
         )}
 
         <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 sm:gap-1.5">
+          {/* Universal Favorite Toggle (Always visible on mobile & desktop) */}
+          <FavoriteButton
+            id={track.id}
+            category="music"
+            title={track.title}
+            subtitle={track.artistName}
+            coverUrl={resolvedCover}
+            genre={track.genre}
+            artistName={track.artistName}
+            duration={track.duration}
+            url={`/music/${track.id}`}
+            variant="icon"
+            size="sm"
+          />
+
           {/* Reaction emojis displayed on desktop viewports to prevent mobile horizontal overflow */}
           <div className="hidden sm:flex items-center">
             <ReactionButtons
@@ -233,7 +249,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({
               contentKey={canonicalKey}
               contentType="music"
               contentTitle={`${track.title} (${track.artistName})`}
-              contextLocation="Track Row / Crate List"
+              contextLocation="Track Row"
               initialLikes={track.likeCount}
               variant="minimal"
               showShare={false}

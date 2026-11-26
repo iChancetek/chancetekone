@@ -134,7 +134,7 @@ export default function CrateDetailPage() {
                   color: crate.accentColor,
                 }}
               >
-                Official Crate Archive
+                Official Collection Archive
               </span>
               <span className="px-3 py-1 rounded-full bg-brand-gold/20 text-brand-gold border border-brand-gold/40 text-xs font-extrabold uppercase tracking-wider">
                 {crate.badge}
@@ -166,12 +166,12 @@ export default function CrateDetailPage() {
                 {isCratePlaying ? (
                   <>
                     <Volume2 className="w-4 h-4 text-black animate-pulse" />
-                    <span>Now Playing {crate.name}</span>
+                    <span>Playing {crate.name}</span>
                   </>
                 ) : (
                   <>
                     <Play className="w-4 h-4 fill-black text-black ml-0.5" />
-                    <span>Play Crate Anthems</span>
+                    <span>Play</span>
                   </>
                 )}
               </button>
@@ -179,7 +179,7 @@ export default function CrateDetailPage() {
               <div className="flex items-center gap-2 px-4 py-3 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-neutral-300">
                 <Disc className="w-4 h-4 text-brand-gold animate-spin-slow" />
                 <span className="font-bold text-white">{tracks.length}</span>
-                <span>tracks in crate</span>
+                <span>tracks</span>
               </div>
             </div>
 
@@ -187,7 +187,7 @@ export default function CrateDetailPage() {
             <div className="pt-1 flex items-center justify-center md:justify-start gap-2 text-xs text-neutral-300">
               <Crown className="w-4 h-4 text-brand-gold" />
               <span>
-                One membership includes full, unlimited access to all 8 crates.
+                One membership includes full, unlimited access to all 8 collections.
               </span>
             </div>
           </div>
@@ -199,7 +199,7 @@ export default function CrateDetailPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-4">
           <div>
             <h3 className="text-lg sm:text-xl font-black text-white">
-              Crate Track Listing ({tracks.length})
+              Track Listing ({tracks.length})
             </h3>
             <p className="text-xs text-neutral-400">
               High-definition masters and newly published additions

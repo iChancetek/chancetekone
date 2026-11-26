@@ -93,7 +93,7 @@ function SignupRedirectContent() {
             {GUEST_SIGNUP_GATE_MESSAGE}
           </p>
           <p className="text-xs text-neutral-400 leading-relaxed">
-            Unlock unlimited high-fidelity music streaming, personal crates &amp; playlists, 4K visual
+            Unlock unlimited high-fidelity music streaming, personal playlists, 4K visual
             cinema, audiobooks, and community discussions on ChanceTEK One.
           </p>
         </div>

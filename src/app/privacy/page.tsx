@@ -8,7 +8,7 @@ export const metadata = {
   description: 'Global privacy standards, memory vault security, and data stewardship for ChanceTEK One.',
 };
 
-const PRIVACY_FULL_TEXT = `Privacy Policy and Global Data Stewardship. Effective Date: January 1, 2026. Published by ChanceTEK One. At ChanceTEK One, we regard user privacy as an essential civil liberty rather than an afterthought. We design our technology to minimize data footprint while delivering a transcendent, personalized listening experience. We never monetize, rent, or sell your personal identifiers to third-party data brokers. We collect only the telemetry and profile attributes required to power platform playback, persistent crate curation, and secure transactions. Preferred tempos and taste facts provided to ChanceTEK One AI are stored with client-side isolation and user-controlled deletion. You retain full sovereignty over your digital footprint and may export or erase your archive at any time.`;
+const PRIVACY_FULL_TEXT = `Privacy Policy and Global Data Stewardship. Effective Date: January 1, 2026. Published by ChanceTEK One. At ChanceTEK One, we regard user privacy as an essential civil liberty rather than an afterthought. We design our technology to minimize data footprint while delivering a transcendent, personalized listening experience. We never monetize, rent, or sell your personal identifiers to third-party data brokers. We collect only the telemetry and profile attributes required to power platform playback, persistent playlist curation, and secure transactions. Preferred tempos and taste facts provided to ChanceTEK One AI are stored with client-side isolation and user-controlled deletion. You retain full sovereignty over your digital footprint and may export or erase your archive at any time.`;
 
 export default function PrivacyPage() {
   return (
@@ -70,12 +70,12 @@ export default function PrivacyPage() {
               </h2>
             </div>
             <VoiceNarrationButton
-              text="We collect only the telemetry and profile attributes required to power platform playback, persistent crate curation, and secure transactions: Identity and Authentication managed through Firebase, Musical DNA stored with user-controlled deletion, Commerce receipts with cryptographic encryption, and Device Telemetry for offline streaming."
+              text="We collect only the telemetry and profile attributes required to power platform playback, persistent playlist curation, and secure transactions: Identity and Authentication managed through Firebase, Musical DNA stored with user-controlled deletion, Commerce receipts with cryptographic encryption, and Device Telemetry for offline streaming."
               variant="icon"
             />
           </div>
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-            We collect only the telemetry and profile attributes required to power platform playback, persistent crate curation, and secure transactions:
+            We collect only the telemetry and profile attributes required to power platform playback, persistent playlist curation, and secure transactions:
           </p>
           <ul className="space-y-3 pl-2 text-sm sm:text-base text-neutral-300">
             <li className="flex items-start gap-2.5">

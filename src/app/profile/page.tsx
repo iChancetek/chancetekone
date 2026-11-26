@@ -1475,7 +1475,7 @@ export default function ProfilePage() {
                   <span className="text-[10px] text-neutral-500">Just now</span>
                 </div>
                 <p className="text-xs text-neutral-300 leading-snug">
-                  Listening to the authentic breakbeats and vinyl chops on ChanceTEK One!
+                  Listening to timeless music and studio cuts on ChanceTEK One!
                 </p>
               </div>
             </div>

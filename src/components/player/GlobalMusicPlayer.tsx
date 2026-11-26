@@ -196,7 +196,7 @@ export const GlobalMusicPlayer: React.FC = () => {
 
   const linerNotesText =
     currentTrack.lyrics ||
-    `${currentTrack.title} by ${currentTrack.artistName}. Authentic breakbeat cut at ${currentTrack.bpm || 120} BPM.`;
+    `${currentTrack.title} by ${currentTrack.artistName}. Studio master track at ${currentTrack.bpm || 120} BPM.`;
 
   // COLLAPSED MINI-PILL PLAYER (DRAGGABLE TO ANY SCREEN POSITION)
   if (isPlayerCollapsed) {
@@ -439,7 +439,7 @@ export const GlobalMusicPlayer: React.FC = () => {
           <div className="flex items-center justify-between px-3 py-2 border-b border-white/10">
             <span className="text-xs font-bold text-brand-gold uppercase tracking-wider flex items-center gap-1.5">
               <Brain className="w-4 h-4 text-brand-neon" />
-              Autonomous AI Crate Recommendations
+              Agentic AI Recommendations
             </span>
             <button
               onClick={() => setShowAIPocket(false)}
@@ -552,22 +552,33 @@ export const GlobalMusicPlayer: React.FC = () => {
             <span className="w-8 shrink-0">{formatTime(duration)}</span>
           </div>
 
-          <div className="flex items-center justify-between gap-2 px-1">
+          <div className="flex items-center justify-between gap-1.5 px-1">
             <button
               type="button"
               onClick={() => toggleLikeTrack(currentTrack.id)}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-95 cursor-pointer ${isLiked ? 'text-red-500 bg-red-500/15' : 'text-neutral-300 bg-white/[0.06]'
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95 cursor-pointer ${isLiked ? 'text-red-500 bg-red-500/15' : 'text-neutral-300 bg-white/[0.06]'
                 }`}
-              title="Like"
-              aria-label="Like"
+              title={isLiked ? 'Remove from Favorites' : 'Add to Favorites'}
+              aria-label="Favorite"
             >
               <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
             </button>
 
             <button
               type="button"
+              onClick={toggleShuffle}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95 cursor-pointer ${isShuffled ? 'text-brand-gold bg-brand-gold/20 border border-brand-gold/50' : 'text-neutral-300 bg-white/[0.06]'
+                }`}
+              title={isShuffled ? 'Random Order: On' : 'Random Order: Off'}
+              aria-label="Random Order"
+            >
+              <Shuffle className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
               onClick={playPrev}
-              className="w-10 h-10 rounded-full bg-white/[0.06] text-neutral-200 hover:text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+              className="w-9 h-9 rounded-full bg-white/[0.06] text-neutral-200 hover:text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer"
               title="Previous"
               aria-label="Previous"
             >
@@ -723,12 +734,14 @@ export const GlobalMusicPlayer: React.FC = () => {
         <div className="flex flex-col items-center gap-1 md:gap-2 flex-1 max-w-xl min-w-0">
           <div className="flex items-center gap-1.5 sm:gap-3 md:gap-5">
             <button
+              type="button"
               onClick={toggleShuffle}
-              className={`p-1.5 rounded-full text-xs transition-colors hidden sm:block ${isShuffled ? 'text-brand-gold' : 'text-neutral-400 hover:text-white'
+              className={`px-2 py-1 rounded-full text-xs font-bold transition-all hidden sm:flex items-center gap-1 cursor-pointer ${isShuffled ? 'text-brand-gold bg-brand-gold/15 border border-brand-gold/40 shadow-sm' : 'text-neutral-400 hover:text-white hover:bg-white/10 border border-transparent'
                 }`}
-              title="Shuffle"
+              title={isShuffled ? 'Random Order: On (Click to disable)' : 'Random Order: Off (Click to mix playback order)'}
             >
               <Shuffle className="w-3.5 h-3.5" />
+              <span className="hidden xl:inline text-[10px] uppercase tracking-wider">Random</span>
             </button>
 
             <button
@@ -828,10 +841,10 @@ export const GlobalMusicPlayer: React.FC = () => {
                 ? 'bg-brand-gold text-black border-brand-gold'
                 : 'bg-brand-purple/30 hover:bg-brand-purple/50 text-brand-gold border-brand-purple/50 hover:text-white'
               }`}
-            title="Open Autonomous AI Crate Recommendations"
+            title="Open Agentic AI Recommendations"
           >
             <Brain className="w-3.5 h-3.5 text-brand-neon" />
-            <span className="hidden xl:inline">AI Pocket</span>
+            <span className="hidden xl:inline">AI Picks</span>
           </button>
 
           <div className="hidden lg:flex items-center gap-2">
@@ -860,7 +873,7 @@ export const GlobalMusicPlayer: React.FC = () => {
           <button
             onClick={() =>
               openAI(
-                `Tell me about "${currentTrack.title}" by ${currentTrack.artistName}, its BPM, and similar breakbeats!`
+                `Tell me about "${currentTrack.title}" by ${currentTrack.artistName}, its BPM, and similar songs!`
               )
             }
             className="hidden sm:flex p-1.5 sm:p-2 rounded-full bg-brand-purple/20 hover:bg-brand-purple/40 text-brand-neon hover:text-white transition-all border border-brand-purple/40"

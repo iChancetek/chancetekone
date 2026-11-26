@@ -77,7 +77,7 @@ export default function AlbumsPage() {
             Albums, EPs, &amp; New Releases
           </h1>
           <p className="text-sm text-neutral-300/90 mt-2">
-            Explore complete studio albums and curated collections across all 8 crates.
+            Explore complete studio albums and curated collections across the ChanceTEK One catalog.
           </p>
         </div>
       </div>

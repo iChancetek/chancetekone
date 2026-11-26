@@ -25,6 +25,8 @@ import {
 import { HeroBanner } from '@/components/media/HeroBanner';
 import { TrackRow } from '@/components/media/TrackRow';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
+import { RecentlyPlayedSection } from '@/components/home/RecentlyPlayedSection';
+import { AgenticDiscoveryDeck } from '@/components/ai/AgenticDiscoveryDeck';
 import { BrandLogo, PLATFORM_SLOGAN } from '@/components/brand/BrandLogo';
 import { MOCK_TRACKS } from '@/lib/mockData';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
@@ -141,6 +143,12 @@ export default function HomePage() {
         {/* Featured Spatial Premiere Stage */}
         <HeroBanner track={featuredTrack} />
 
+        {/* Recently Played Across Music, Audiobooks, Podcasts & 4K Videos */}
+        <RecentlyPlayedSection />
+
+        {/* Agentic AI Recommendations — New & Similar Content Across All Media */}
+        <AgenticDiscoveryDeck mode="all" />
+
         {/* Cultural & Sonic System Spotlight Card */}
         <section className="specular-edge relative overflow-hidden glass-panel p-6 sm:p-9 rounded-3xl bg-gradient-to-br from-[#141026]/90 via-[#0c0c16]/90 to-[#120f1c]/90 space-y-5">
           <div className="pointer-events-none absolute -right-24 -top-24 w-72 h-72 rounded-full bg-brand-gold/12 blur-[90px]" />
@@ -154,7 +162,7 @@ export default function HomePage() {
                   <span>Digital Arts &amp; Entertainment Platform</span>
                 </div>
                 <VoiceNarrationButton
-                  text="Introducing an advance cultural and sonic system for Independent Artists & Creators. Using Digital Arts, Entertainment, Music and Videos, Streaming 4K Cultural Documentaries, Narrated Audiobooks and Podcasts. The Platform will also Introduce DJ Playlists, Online Radio, A.I Crate Digging, Music Downloads, Apps, Merchandise and More."
+                  text="Introducing an advance cultural and sonic system for Independent Artists & Creators. Using Digital Arts, Entertainment, Music and Videos, Streaming 4K Cultural Documentaries, Narrated Audiobooks and Podcasts. The Platform will also Introduce DJ Playlists, Online Radio, Agentic AI Music Discovery, Music Downloads, Apps, Merchandise and More."
                   variant="dual"
                 />
               </div>
@@ -162,7 +170,7 @@ export default function HomePage() {
                 Introducing an advance cultural and sonic system for Independent Artists &amp; Creators
               </h2>
               <p className="text-sm sm:text-base text-neutral-300/90 leading-relaxed">
-                Using Digital Arts, Entertainment, Music and Videos, Streaming 4K Cultural Documentaries, Narrated Audiobooks and Podcasts. The Platform will also Introduce DJ Playlists, Online Radio, A.I Crate Digging, Music Downloads, Apps, Merchandise and More.
+                Using Digital Arts, Entertainment, Music and Videos, Streaming 4K Cultural Documentaries, Narrated Audiobooks and Podcasts. The Platform will also Introduce DJ Playlists, Online Radio, Agentic AI Music Discovery, Music Downloads, Apps, Merchandise and More.
               </p>
             </div>
 
@@ -184,7 +192,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Trending Breakbeat Anthems Studio Deck */}
+        {/* Trending Studio Anthems Deck */}
         <section className="glass-panel p-5 sm:p-7 rounded-3xl space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] pb-4">
             <div className="flex items-center gap-3">
@@ -193,7 +201,7 @@ export default function HomePage() {
               </div>
               <div>
                 <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
-                  Trending Breakbeat Anthems
+                  Trending Timeless Music
                 </h3>
                 <p className="text-xs text-neutral-400">
                   Instant hi-res playback • Click any track to stream
@@ -299,7 +307,7 @@ export default function HomePage() {
                   Support Center
                 </h3>
                 <p className="text-xs text-neutral-300/90 leading-relaxed">
-                  Crate Concierge, PWA offline guide, vinyl tracking, and direct email contacts.
+                  Platform Concierge, PWA offline guide, vinyl tracking, and direct email contacts.
                 </p>
               </div>
               <span className="text-xs font-bold text-brand-neon flex items-center gap-1 pt-1">

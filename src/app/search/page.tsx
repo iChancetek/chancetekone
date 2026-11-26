@@ -135,11 +135,10 @@ function SearchContent() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                activeTab === tab.id
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${activeTab === tab.id
                   ? 'bg-brand-purple text-white shadow-md'
                   : 'bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -152,7 +151,7 @@ function SearchContent() {
         <div className="text-center py-20 glass-panel rounded-3xl border border-white/5 space-y-2">
           <p className="text-base font-bold text-white">No results found for &ldquo;{query}&rdquo;</p>
           <p className="text-xs text-neutral-400">
-            Try searching for &ldquo;concrete&rdquo;, &ldquo;SP-1200&rdquo;, &ldquo;breakbeat&rdquo;, or &ldquo;hoodie&rdquo;.
+            Try searching for &ldquo;Hip Hop&rdquo;, &ldquo;R&amp;B&rdquo;, &ldquo;audiobook&rdquo;, or &ldquo;hoodie&rdquo;.
           </p>
         </div>
       ) : (

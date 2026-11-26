@@ -23,8 +23,10 @@ import { MediaUploadModal } from '@/components/media/MediaUploadModal';
 import { PodcastEpisode } from '@/types/media';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { ReactionButtons } from '@/components/social/ReactionButtons';
+import { FavoriteButton } from '@/components/social/FavoriteButton';
 import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussionModal';
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
+import { AgenticDiscoveryDeck } from '@/components/ai/AgenticDiscoveryDeck';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
 
 export default function PodcastsPage() {
@@ -143,7 +145,7 @@ export default function PodcastsPage() {
               <span>Upload Podcast (MP3, MP4, .MOV)</span>
             </button>
             <VoiceNarrationButton
-              text="Welcome to ChanceTEK One Podcasts. Featuring episodic conversations on Agentic AI, sonic mastering, crate digging history, cultural storytelling, and independent creative sovereignty."
+              text="Welcome to ChanceTEK One Podcasts. Featuring episodic conversations on Agentic AI, sonic mastering, music culture history, cultural storytelling, and independent creative sovereignty."
               variant="dual"
             />
           </div>
@@ -214,6 +216,21 @@ export default function PodcastsPage() {
                 )}
               </button>
 
+              {/* Favorite Featured Podcast */}
+              <FavoriteButton
+                id={podcasts[0].id}
+                category="podcasts"
+                title={podcasts[0].title}
+                subtitle={`${podcasts[0].showTitle} • ${podcasts[0].host}`}
+                coverUrl={podcasts[0].coverUrl}
+                genre={podcasts[0].category}
+                artistName={podcasts[0].host}
+                duration={podcasts[0].duration}
+                url={`/podcasts/${podcasts[0].id}`}
+                variant="pill"
+                size="md"
+              />
+
               {/* Emoji Reactions for Featured Spotlight */}
               <ReactionButtons
                 contentId={podcasts[0].id}
@@ -265,6 +282,9 @@ export default function PodcastsPage() {
         </section>
       )}
 
+      {/* Agentic AI Podcast Scout — Tracks your listening & suggests similar podcasts */}
+      <AgenticDiscoveryDeck mode="podcast" />
+
       {/* Category Filter and Count */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-3 text-xs">
         <div className="flex flex-wrap items-center gap-2">
@@ -274,11 +294,10 @@ export default function PodcastsPage() {
               <button
                 key={c}
                 onClick={() => setSelectedCategory(c)}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  selectedCategory === c
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${selectedCategory === c
                     ? 'bg-brand-gold text-black shadow'
                     : 'text-neutral-300 hover:text-white'
-                }`}
+                  }`}
               >
                 {c === 'all' ? 'All Episodes' : c}
               </button>
@@ -376,6 +395,21 @@ export default function PodcastsPage() {
                   />
 
                   <div className="flex items-center gap-1.5 ml-auto">
+                    {/* Favorite Trigger */}
+                    <FavoriteButton
+                      id={ep.id}
+                      category="podcasts"
+                      title={ep.title}
+                      subtitle={`${ep.showTitle} • ${ep.host}`}
+                      coverUrl={ep.coverUrl}
+                      genre={ep.category}
+                      artistName={ep.host}
+                      duration={ep.duration}
+                      url={`/podcasts/${ep.id}`}
+                      variant="icon"
+                      size="sm"
+                    />
+
                     {/* Discuss Trigger */}
                     <button
                       type="button"

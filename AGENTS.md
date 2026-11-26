@@ -2020,3 +2020,25 @@ esolvedAudioUrl is reset to '' (zero tolerance).
   - `src/app/api/share/item/route.ts`: Public O(1) single-item hydrator so recipients opening shared links on fresh devices immediately load and play the exact shared track without flashing `MOCK_TRACKS[0]`.
   - `src/app/share/track/[id]/page.tsx`, `src/app/music/[id]/layout.tsx`, `src/app/audiobooks/[id]/layout.tsx`, `src/app/podcasts/[id]/layout.tsx`, `src/app/videos/[id]/layout.tsx`: Added `export const dynamic = 'force-dynamic'`, `og:image:type`, `og:image:secure_url`, and resilient `try/catch` fallbacks.
   - `src/lib/sharing/shareMetadataService.ts`, `src/components/social/UniversalShareModal.tsx`, `src/components/playlist/SharePlaylistModal.tsx`: Short clean `/share/track/[id]` links, dedicated **Famio.us** and **Messenger** buttons, prominent native device share sheet, iOS/Android-aware SMS links (`sms:&body=` vs `sms:?body=`), synchronous non-popup-blocked external tab launches, and portaled mobile-safe rendering.
+
+
+### 35. Platform-Wide Terminology Cleanup, Flawless Random Playback, Video Audio Toggle, Member-Only Playlists, Universal Favorites & Agentic Discovery
+- **Terminology & Navigation Fixes**:
+  - Removed user-facing `"crates"`, `"crate"`, `"the break beats"`, and `"break beats"` wording across public UI, PWA manifest (`src/app/manifest.ts`), Sidebar, TopNav, Footer, Music, Playlists, Library, Membership, Offline, About, Support, Terms, Privacy, AuthModal, Voice Search, and AI surfaces.
+  - Renamed `"Your Library"` / `"My Library"` / `"Your Crate Library"` to **`Library`** across Sidebar, TopNav, Footer, and `/library`.
+  - Fixed `"Brands & Collections"` overlapping `"By Members"` badge on desktop/mobile drawers (`Sidebar.tsx`) with `flex-1 min-w-0` + `truncate` and compact badges.
+- **Music Page Enhancements (`src/app/music/page.tsx`) & Flawless `Random` Mode (`PlayerContext.tsx`, `GlobalMusicPlayer.tsx`)**:
+  - Replaced `"Play Vault Anthems"` with **`Play`** and added a dedicated **`Random`** button next to it.
+  - Added Fisher-Yates `shuffleArray()`, `isShuffledRef`, live queue shuffling in `toggleShuffle()`, and `playRandom(tracks?)` in `PlayerContext.tsx` so random playback never repeats the current track or suffers stale closures.
+  - Added interactive **Listen to Video / Mute** audio toggle controls on both videos in `/music` (`chancetekone1.mp4` hero video and `timeless_music_algorithm.mp4` card video), auto-pausing background music when unmuted.
+- **Member-Only Playlists (`PlaylistService.ts`, `src/app/playlists/page.tsx`, `CreatePlaylistModal.tsx`, `AddToPlaylistModal.tsx`)**:
+  - Removed all synthetic/mock seed playlists (`INITIAL_PUBLIC_PLAYLISTS = []`) and automatically purge legacy synthetic IDs (`pl-featured-master`, `pl-mixed-experience`, `pl-video-master`, `pl-audiobook-master`) from `localStorage`.
+  - Removed the `"Featured & Community Crates"` section — only real member-created playlists appear (with `Private`, `Unlisted`, and `Public` visibility controls, reliable saving across owner ID/email, and real-time sync in `/playlists` and `/library`).
+- **Universal Favorites System & `Library` (`FavoritesService.ts`, `FavoriteButton.tsx`, `src/app/library/page.tsx`)**:
+  - Expanded `FavoriteCategory` to cover all content (`music`, `albums`, `artists`, `audiobooks`, `podcasts`, `videos`, `playlists`, `producers`, `projects`) with live catalog resolution (`MusicCatalogService`, `MediaCatalogService`, `PlaylistService`, `ProducerCatalogService`) and guest+member merging.
+  - Added reusable `<FavoriteButton />` across `MediaCard`, `TrackRow`, `PublicMusicCatalogSection`, `PodcastsPage`, `AudiobooksPage`, `PlaylistsPage`, `ReactionButtons` (covering all detail pages), and players.
+  - Upgraded `/library` (**Library**) with **All Favorites**, **Music & Albums**, **Playlists**, **Audiobooks**, **Podcasts**, **Videos**, **Artists**, **Producers**, **Projects**, and **History** tabs.
+- **Agentic AI Streaming Companion & Home Recently Played (`AgenticDiscoveryDeck.tsx`, `RecentlyPlayedSection.tsx`, `HistoryService.ts`)**:
+  - Upgraded `HistoryService` with `'podcast'` support, rich metadata (`genre`, `artistName`, `bpm`, `href`), guest+member merged history (`getMergedHistory`), and real-time `history-updated` subscriptions.
+  - Built `<AgenticDiscoveryDeck />` to track live active playback, streaming history, and favorites in real time and recommend new & similar content on `/music`, `/audiobooks`, `/podcasts`, and the Home page (`/`).
+  - Built `<RecentlyPlayedSection />` on the Home page (`src/app/page.tsx`) displaying recently played Music, Audiobooks, Podcasts, and 4K Videos with type filters, 1-click resume, and Favorite toggles.

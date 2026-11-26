@@ -79,13 +79,13 @@ export const CoverArtPickerModal: React.FC<CoverArtPickerModalProps> = ({
             </div>
             <div>
               <h3 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
-                <span>Select Crate Artwork</span>
+                <span>Select Playlist Artwork</span>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-brand-gold/20 border border-brand-gold/40 text-brand-gold font-mono">
                   100 Available
                 </span>
               </h3>
               <p className="text-xs text-neutral-400">
-                Choose from authentic Big Beat, SP-1200 hardware, turntablism, and vinyl crate visuals.
+                Choose from authentic studio hardware, turntablism, and vinyl visuals.
               </p>
             </div>
           </div>

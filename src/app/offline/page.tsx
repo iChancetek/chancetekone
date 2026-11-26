@@ -69,7 +69,7 @@ export default function OfflinePage() {
         </h1>
 
         <p className="text-sm text-neutral-300 max-w-md mx-auto leading-relaxed">
-          No active internet connection detected. You can still access your precached crates, saved library, and offline breakbeat sessions.
+          No active internet connection detected. You can still access your precached playlists, saved library, and offline audio sessions.
         </p>
       </div>
 
@@ -89,7 +89,7 @@ export default function OfflinePage() {
           className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white font-semibold text-xs sm:text-sm transition-all"
         >
           <Layers className="w-4 h-4 text-brand-gold" />
-          <span>My Offline Library</span>
+          <span>Offline Library</span>
         </Link>
       </div>
 
@@ -113,7 +113,7 @@ export default function OfflinePage() {
             className="p-3.5 rounded-2xl glass-card border border-white/5 hover:border-brand-purple/40 group transition-all"
           >
             <ListMusic className="w-5 h-5 text-brand-gold mb-1 group-hover:scale-110 transition-transform" />
-            <p className="text-xs font-bold text-white">Breakbeat Crates</p>
+            <p className="text-xs font-bold text-white">Playlists</p>
             <p className="text-[10px] text-neutral-400">Your created playlists</p>
           </Link>
 

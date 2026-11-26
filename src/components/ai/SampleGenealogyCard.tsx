@@ -127,7 +127,7 @@ export const SampleGenealogyCard: React.FC<SampleGenealogyCardProps> = ({
         <div className="py-12 flex flex-col items-center justify-center space-y-3">
           <RefreshCw className="w-8 h-8 text-brand-gold animate-spin" />
           <p className="text-xs font-mono text-brand-neon">
-            Digging through 1970s vinyl crates & vintage sampler matrices...
+            Digging through classic studio archives &amp; vintage sampler matrices...
           </p>
         </div>
       ) : genealogy ? (
@@ -180,7 +180,7 @@ export const SampleGenealogyCard: React.FC<SampleGenealogyCardProps> = ({
             <div className="flex items-center justify-between border-b border-white/5 pb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-brand-gold flex items-center gap-1.5">
                 <Brain className="w-4 h-4 text-brand-neon" />
-                <span>The Crate Lineage & Breakbeat Evolution</span>
+                <span>The Musical Lineage &amp; Sample Evolution</span>
               </span>
               <VoiceNarrationButton
                 text={genealogy.culturalStory}
@@ -242,7 +242,7 @@ export const SampleGenealogyCard: React.FC<SampleGenealogyCardProps> = ({
               }
               className="text-xs text-brand-gold hover:text-white font-bold flex items-center gap-1 hover:gap-1.5 transition-all"
             >
-              <span>Ask ChanceTEK One AI for Deep Crate History</span>
+              <span>Ask ChanceTEK One AI for Deep Sample History</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

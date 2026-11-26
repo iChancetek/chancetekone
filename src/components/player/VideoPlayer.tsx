@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
 import {
@@ -148,7 +148,7 @@ export const VideoPlayer: React.FC<{ video: Video }> = ({ video }) => {
 
   const videoNarrative =
     video.description ||
-    `${video.title} by ${video.artistName}. High-definition breakbeat visual production focusing on DJ culture, crate digging, and vintage hardware workflows.`;
+    `${video.title} by ${video.artistName}. High-definition 4K visual production celebrating music culture, artistry, and studio craft.`;
 
   return (
     <div className="space-y-4">

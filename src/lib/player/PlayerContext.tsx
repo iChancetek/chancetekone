@@ -72,6 +72,7 @@ interface PlayerContextType {
 
   // Actions
   playTrack: (track: Track, newQueue?: Track[], precedingTracks?: Track[], preserveExistingQueue?: boolean) => void;
+  playRandom: (tracks?: Track[]) => void;
   playAudiobookChapter: (audiobook: Audiobook, chapter: AudiobookChapter) => void;
   playPlaylist: (playlist: Playlist, startIndex?: number, shuffle?: boolean) => void;
   openVideoModal: (video: Video) => void;
@@ -125,6 +126,15 @@ function toAbsoluteMediaUrl(url?: string | null): string {
   }
   const clean = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
   return typeof window !== 'undefined' ? `${window.location.origin}${clean}` : `https://chancetekone.us${clean}`;
+}
+
+function shuffleArray<T>(items: T[]): T[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
 }
 
 export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -306,6 +316,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [volume, setVolumeState] = useState<number>(0.8);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [isShuffled, setIsShuffled] = useState<boolean>(false);
+  const isShuffledRef = useRef<boolean>(false);
+  useEffect(() => {
+    isShuffledRef.current = isShuffled;
+  }, [isShuffled]);
   const [repeatMode, setRepeatMode] = useState<RepeatMode>('off');
   const [playbackRate, setPlaybackRateState] = useState<number>(1);
   const [queue, setQueue] = useState<Track[]>(() => {
@@ -419,17 +433,19 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
     setActiveVideoModal(video);
 
-    if (profile?.id) {
-      HistoryService.recordHistory(profile.id, {
-        mediaId: video.id,
-        mediaType: 'video',
-        title: video.title,
-        subtitle: video.artistName || video.category || '4K Video',
-        coverUrl: video.thumbnailUrl || '/images/studio_cover.jpg',
-        duration: video.duration || 0,
-        videoUrl: video.videoUrl,
-      });
-    }
+    const historyUserId = profile?.id || user?.uid || 'guest';
+    HistoryService.recordHistory(historyUserId, {
+      mediaId: video.id,
+      mediaType: 'video',
+      title: video.title,
+      subtitle: video.artistName || video.category || '4K Video',
+      coverUrl: video.thumbnailUrl || '/images/studio_cover.jpg',
+      duration: video.duration || 0,
+      videoUrl: video.videoUrl,
+      genre: video.category,
+      artistName: video.artistName,
+      href: `/videos/${video.id}`,
+    });
 
     AnalyticsEngine.trackEvent({
       eventType: 'VIDEO_STARTED',
@@ -932,17 +948,25 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       metadata: { artist: resolvedTrack.artistName, bpm: resolvedTrack.bpm, genre: resolvedTrack.genre },
     });
 
-    if (profile?.id) {
-      HistoryService.recordHistory(profile.id, {
-        mediaId: resolvedTrack.id,
-        mediaType: 'music',
-        title: resolvedTrack.title,
-        subtitle: resolvedTrack.artistName || 'ChanceTEK One',
-        coverUrl: resolvedTrack.coverUrl || '/images/studio_cover.jpg',
-        duration: resolvedTrack.duration || 0,
-        audioUrl: resolvedTrack.audioUrl,
-      });
-    }
+    const historyUserId = profile?.id || user?.uid || 'guest';
+    const isPodcastItem =
+      resolvedTrack.artistId === 'podcast-host' ||
+      resolvedTrack.genre?.toLowerCase().includes('podcast') ||
+      resolvedTrack.id.startsWith('pod-') ||
+      resolvedTrack.id.startsWith('ep-');
+    HistoryService.recordHistory(historyUserId, {
+      mediaId: resolvedTrack.id,
+      mediaType: isPodcastItem ? 'podcast' : 'music',
+      title: resolvedTrack.title,
+      subtitle: resolvedTrack.artistName || 'ChanceTEK One',
+      coverUrl: resolvedTrack.coverUrl || '/images/studio_cover.jpg',
+      duration: resolvedTrack.duration || 0,
+      audioUrl: resolvedTrack.audioUrl,
+      genre: resolvedTrack.genre,
+      artistName: resolvedTrack.artistName,
+      bpm: resolvedTrack.bpm,
+      href: isPodcastItem ? `/podcasts/${resolvedTrack.id}` : `/music/${resolvedTrack.id}`,
+    });
 
     if (!preserveExistingQueue) {
       let finalUpcomingQueue = newQueue;
@@ -1214,17 +1238,19 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       metadata: { chapterTitle: chapter.title, author: audiobook.author, narrator: audiobook.narrator },
     });
 
-    if (profile?.id) {
-      HistoryService.recordHistory(profile.id, {
-        mediaId: audiobook.id,
-        mediaType: 'audiobook',
-        title: audiobook.title,
-        subtitle: `Ch. ${chapter.chapterIndex}: ${chapter.title}`,
-        coverUrl: audiobook.coverUrl || '/images/studio_cover.jpg',
-        duration: chapter.duration || 0,
-        audioUrl: chapter.audioUrl,
-      });
-    }
+    const historyUserId = profile?.id || user?.uid || 'guest';
+    HistoryService.recordHistory(historyUserId, {
+      mediaId: audiobook.id,
+      mediaType: 'audiobook',
+      title: audiobook.title,
+      subtitle: `Ch. ${chapter.chapterIndex}: ${chapter.title}`,
+      coverUrl: audiobook.coverUrl || '/images/studio_cover.jpg',
+      duration: chapter.duration || 0,
+      audioUrl: chapter.audioUrl,
+      genre: (audiobook as any).category || (audiobook as any).genre || 'Audiobook',
+      artistName: audiobook.author,
+      href: `/audiobooks/${audiobook.id}`,
+    });
 
     if (audioRef.current) {
       audioRef.current.src = chapter.audioUrl;
@@ -1259,7 +1285,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (itemsToPlay.length === 0) return;
 
     if (shuffle) {
-      itemsToPlay = [...itemsToPlay].sort(() => Math.random() - 0.5);
+      itemsToPlay = shuffleArray(itemsToPlay);
+      setIsShuffled(true);
+      isShuffledRef.current = true;
     }
 
     const startItem = itemsToPlay[startIndex] || itemsToPlay[0];
@@ -1418,7 +1446,50 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  const toggleShuffle = () => setIsShuffled(!isShuffled);
+  const toggleShuffle = useCallback(() => {
+    setIsShuffled((prev) => {
+      const next = !prev;
+      isShuffledRef.current = next;
+      if (next) {
+        const currId = currentTrackRef.current?.id;
+        const liveQ = queueRef.current;
+        if (liveQ && liveQ.length > 1) {
+          const randomized = shuffleArray(liveQ.filter((t) => t.id !== currId));
+          setQueue(randomized);
+          queueRef.current = randomized;
+        } else {
+          const allTracks = MusicCatalogService.getAllTracks().filter((t) => t.id !== currId);
+          if (allTracks.length > 0) {
+            const randomized = shuffleArray(allTracks);
+            setQueue(randomized);
+            queueRef.current = randomized;
+          }
+        }
+      }
+      return next;
+    });
+  }, []);
+
+  const playRandom = useCallback((tracks?: Track[]) => {
+    const source =
+      tracks && tracks.length > 0 ? tracks : MusicCatalogService.getAllTracks();
+    if (!source || source.length === 0) return;
+
+    const shuffled = shuffleArray(source);
+    const currId = currentTrackRef.current?.id;
+    // Avoid immediately picking the exact same track if there are alternatives
+    if (shuffled.length > 1 && currId && shuffled[0].id === currId) {
+      const swapIdx = 1 + Math.floor(Math.random() * (shuffled.length - 1));
+      [shuffled[0], shuffled[swapIdx]] = [shuffled[swapIdx], shuffled[0]];
+    }
+
+    setIsShuffled(true);
+    isShuffledRef.current = true;
+    const [firstTrack, ...restTracks] = shuffled;
+    setQueue(restTracks);
+    queueRef.current = restTracks;
+    void playTrackRef.current(firstTrack, restTracks, [], true);
+  }, []);
 
   const toggleRepeat = () => {
     if (repeatMode === 'off') setRepeatMode('all');
@@ -1434,12 +1505,17 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const playNext = useCallback(() => {
+    const shuffledMode = isShuffledRef.current;
+
     // 1. If queue has upcoming tracks, take the next track from queue
     const liveQueue = queueRef.current;
     if (liveQueue && liveQueue.length > 0) {
-      const nextTrack = isShuffled
-        ? liveQueue[Math.floor(Math.random() * liveQueue.length)]
-        : liveQueue[0];
+      const currId = currentTrackRef.current?.id;
+      const candidates =
+        liveQueue.length > 1 && currId ? liveQueue.filter((t) => t.id !== currId) : liveQueue;
+      const nextTrack = shuffledMode
+        ? candidates[Math.floor(Math.random() * candidates.length)]
+        : candidates[0];
       const remainingQueue = liveQueue.filter((t) => t.id !== nextTrack.id);
       if (currentTrackRef.current) {
         setHistoryQueue((prev) => [...prev, currentTrackRef.current!]);
@@ -1451,10 +1527,25 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return;
     }
 
-    // 2. If queue is empty, dynamically discover the next track in the album, crate, or catalog
+    // 2. If queue is empty, dynamically discover the next track in the album, collection, or catalog
     const curr = currentTrackRef.current;
+    const allTracks = MusicCatalogService.getAllTracks();
+
+    if (shuffledMode && allTracks.length > 0) {
+      const pool = allTracks.filter((t) => !curr || t.id !== curr.id);
+      const randomized = shuffleArray(pool.length > 0 ? pool : allTracks);
+      const [nextTrack, ...rest] = randomized;
+      if (curr) {
+        setHistoryQueue((prev) => [...prev, curr]);
+        historyQueueRef.current = [...historyQueueRef.current, curr];
+      }
+      setQueue(rest);
+      queueRef.current = rest;
+      void playTrackRef.current(nextTrack, rest, undefined, true);
+      return;
+    }
+
     if (curr) {
-      const allTracks = MusicCatalogService.getAllTracks();
       let pool = allTracks;
       if (curr.albumTitle) {
         const albumTracks = allTracks.filter(
@@ -1494,11 +1585,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     // 3. Fallback: If no current track or single track, play first track of all tracks
-    const all = MusicCatalogService.getAllTracks();
-    if (all.length > 0) {
-      void playTrackRef.current(all[0], all.slice(1), [], false);
+    if (allTracks.length > 0) {
+      void playTrackRef.current(allTracks[0], allTracks.slice(1), [], false);
     }
-  }, [isShuffled]);
+  }, []);
 
   useEffect(() => {
     playNextRef.current = playNext;
@@ -1652,6 +1742,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         isPlayerCollapsed,
         isPlayerVisible,
         playTrack,
+        playRandom,
         playAudiobookChapter,
         playPlaylist,
         openVideoModal,

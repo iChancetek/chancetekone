@@ -26,7 +26,7 @@ const VOICE_IDEAS = [
   'Play 95 BPM boom bap with dirty drums',
   'Tell me the history of the Amen break',
   'Show me 4K DJ performance videos',
-  'Find audiobooks about crate digging',
+  'Find audiobooks about music culture',
   'Recommend vinyl releases under 120 BPM',
 ];
 
@@ -96,10 +96,10 @@ export const GlobalVoiceSearchModal: React.FC<GlobalVoiceSearchModalProps> = ({
             Whisper Voice Search & Agent Controls
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-            Speak to Dig the Crates
+            Speak to Search the Catalog
           </h2>
           <p className="text-xs text-neutral-300 max-w-sm mx-auto">
-            Say any tempo, artist name, crate vibe, or cultural question.
+            Say any tempo, artist name, genre vibe, or cultural question.
           </p>
         </div>
 
@@ -124,7 +124,7 @@ export const GlobalVoiceSearchModal: React.FC<GlobalVoiceSearchModalProps> = ({
             {isProcessing && (
               <div className="pt-2 flex items-center gap-2 text-xs text-brand-neon font-mono font-bold">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                Routing intent to ChanceTEK One AI & Crate Search...
+                Routing intent to ChanceTEK One AI &amp; Catalog Search...
               </div>
             )}
           </div>

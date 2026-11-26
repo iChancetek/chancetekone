@@ -54,7 +54,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
   title = 'Sign in to ChanceTEK One Platform',
-  description = 'Access custom crates, AI memory sync, exclusive vinyl, and high-fidelity streaming.',
+  description = 'Access custom playlists, AI memory sync, exclusive vinyl, and high-fidelity streaming.',
   initialTab = 'signin',
   onSuccess,
 }) => {
@@ -365,7 +365,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <BrandLogo variant="auth" showSlogan />
           <h3 className="text-lg sm:text-xl font-black text-white tracking-tight pt-1">{title}</h3>
           <p className="text-xs text-neutral-300 max-w-sm">
-            {tab === 'signup' && description === 'Access custom crates, AI memory sync, exclusive vinyl, and high-fidelity streaming.'
+            {tab === 'signup' && description === 'Access custom playlists, AI memory sync, exclusive vinyl, and high-fidelity streaming.'
               ? GUEST_SIGNUP_GATE_MESSAGE
               : description}
           </p>
@@ -573,7 +573,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       id: 'producer' as const,
                       title: 'Producer',
                       subtitle: 'Beatmaker & Audio Engineer',
-                      desc: 'Publish breakbeat instrumentals, sound libraries, and producer crates.',
+                      desc: 'Publish instrumentals, sound libraries, and studio productions.',
                       icon: Sliders,
                       tag: 'Agreement Required',
                       tagColor: 'text-brand-gold bg-brand-gold/15 border-brand-gold/30',
@@ -592,8 +592,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     {
                       id: 'streamer' as const,
                       title: 'Listener / Streamer',
-                      subtitle: 'Music Lover & Crate Digger',
-                      desc: 'Stream high-fidelity music, watch videos, save crates, and follow artists.',
+                      subtitle: 'Music Lover & Listener',
+                      desc: 'Stream high-fidelity music, watch videos, save playlists, and follow artists.',
                       icon: Headphones,
                       tag: 'Instant Streaming',
                       tagColor: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30',
@@ -856,7 +856,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       4. Royalties and Revenue Share
                     </h6>
                     <p>
-                      Platform will pay Artist/Creator eighty percent (80%) of Net Revenue directly attributable to Artist&apos;s Content (streams, downloads, direct fan support, exclusive crates). Platform retains twenty percent (20%) as a distribution and technology fee. Payouts are calculated monthly and distributed via approved electronic payment rails.
+                      Platform will pay Artist/Creator eighty percent (80%) of Net Revenue directly attributable to Artist&apos;s Content (streams, downloads, direct fan support, exclusive collections). Platform retains twenty percent (20%) as a distribution and technology fee. Payouts are calculated monthly and distributed via approved electronic payment rails.
                     </p>
                   </div>
 
@@ -1147,7 +1147,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     Immediate Listener Access Unlocked
                   </p>
                   <p className="text-[11px] leading-relaxed text-emerald-200/90">
-                    You can start streaming, saving tracks, and exploring crates immediately. Content publishing, upload tools, and distribution privileges will activate automatically once an admin reviews and approves your agreement.
+                    You can start streaming, saving tracks, and exploring collections immediately. Content publishing, upload tools, and distribution privileges will activate automatically once an admin reviews and approves your agreement.
                   </p>
                 </div>
 

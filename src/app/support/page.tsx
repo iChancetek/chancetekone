@@ -1,14 +1,14 @@
-﻿import React from 'react';
+import React from 'react';
 import { HelpCircle, Radio, Brain, Disc3, Users, Mail, Sparkles, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 
 export const metadata = {
   title: 'Support Center',
-  description: 'Technical assistance, crate concierge, PWA offline guide, and direct support channels.',
+  description: 'Technical assistance, platform concierge, PWA offline guide, and direct support channels.',
 };
 
-const SUPPORT_FULL_TEXT = `Support Center and Crate Concierge. Technical Assistance, Crate Navigation, and Direct Inquiries. Published by ChanceTEK One. Whether you need assistance with Progressive Web App offline caching, vinyl fulfillment, sample breakdown verification, or account synchronization, our dedicated support engineering team is available to assist you. ChanceTEK One is engineered as a modern Progressive Web App, enabling high-definition audio and audiobook playback with lock-screen controls even when offline. ChanceTEK One AI operates a Dual-Memory architecture allowing you to inspect or clear your saved gear and genre preferences at any time. Visitors and unauthenticated guests enjoy full access to stream music tracks, watch cultural documentaries, and converse with the AI assistant without creating an account.`;
+const SUPPORT_FULL_TEXT = `Support Center and Platform Concierge. Technical Assistance, Platform Navigation, and Direct Inquiries. Published by ChanceTEK One. Whether you need assistance with Progressive Web App offline caching, vinyl fulfillment, sample breakdown verification, or account synchronization, our dedicated support engineering team is available to assist you. ChanceTEK One is engineered as a modern Progressive Web App, enabling high-definition audio and audiobook playback with lock-screen controls even when offline. ChanceTEK One AI operates a Dual-Memory architecture allowing you to inspect or clear your saved gear and genre preferences at any time. Visitors and unauthenticated guests enjoy full access to stream music tracks, watch cultural documentaries, and converse with the AI assistant without creating an account.`;
 
 export default function SupportPage() {
   return (
@@ -19,7 +19,7 @@ export default function SupportPage() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold text-xs font-semibold uppercase tracking-wider">
               <HelpCircle className="w-3.5 h-3.5" />
-              <span>Crate Concierge</span>
+              <span>Platform Concierge</span>
             </div>
 
             {/* Nova Calm Voice Dual-Language Spoken Narration (English & Spanish) */}
@@ -33,7 +33,7 @@ export default function SupportPage() {
             Support Center
           </h1>
           <p className="text-sm sm:text-base text-neutral-300 max-w-2xl leading-relaxed">
-            Technical Assistance, Crate Navigation, and Direct Inquiries • Published by ChanceTEK One
+            Technical Assistance, Platform Navigation, and Direct Inquiries • Published by ChanceTEK One
           </p>
         </div>
       </div>
@@ -42,7 +42,7 @@ export default function SupportPage() {
         <section className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/5 bg-neutral-900/40 space-y-4">
           <h2 className="text-xl sm:text-2xl font-bold text-white tracking-wide flex items-center gap-2.5">
             <Sparkles className="w-5 h-5 text-brand-gold" />
-            <span>Welcome to the Crate Concierge</span>
+            <span>Welcome to the Support Concierge</span>
           </h2>
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
             Whether you need assistance with Progressive Web App offline caching, vinyl fulfillment, sample breakdown verification, or account synchronization, our dedicated support engineering team is available to assist you.
@@ -100,12 +100,12 @@ export default function SupportPage() {
                   </h3>
                 </div>
                 <VoiceNarrationButton
-                  text="Upon order confirmation from the Merch Crate, our distribution warehouse generates a localized tracking number. High-grade collector packaging ensures each vinyl record arrives in pristine condition."
+                  text="Upon order confirmation from the Merch Store, our distribution warehouse generates a localized tracking number. High-grade collector packaging ensures each vinyl record arrives in pristine condition."
                   variant="icon"
                 />
               </div>
               <p className="text-sm sm:text-base text-neutral-300 leading-relaxed pl-8">
-                Upon order confirmation from the Merch Crate, our distribution warehouse generates a localized tracking number. High-grade collector packaging ensures each vinyl record arrives in pristine condition.
+                Upon order confirmation from the Merch Store, our distribution warehouse generates a localized tracking number. High-grade collector packaging ensures each vinyl record arrives in pristine condition.
               </p>
             </div>
 

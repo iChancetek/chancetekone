@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import Image from 'next/image';
@@ -32,7 +32,7 @@ import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussio
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
 
-const PRODUCERS_PAGE_NARRATION = `Producers and Sonic Architects Directory for ChanceTEK One and ChanceTEK One. Featuring master beatmakers, hardware sampler specialists, analog tape engineers, and sound designers shaping the breakbeat renaissance with E-mu SP-1200 and Akai MPC60 hardware crunch.`;
+const PRODUCERS_PAGE_NARRATION = `Producers and Sonic Architects Directory for ChanceTEK One. Featuring master beatmakers, hardware sampler specialists, analog tape engineers, and sound designers crafting timeless music with classic studio hardware.`;
 
 export default function ProducersPage() {
   const { playTrack, currentTrack, isPlaying } = usePlayer();
@@ -72,7 +72,7 @@ export default function ProducersPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-gold/15 border border-brand-gold/40 text-brand-gold text-xs font-bold uppercase tracking-wider">
               <Sliders className="w-3.5 h-3.5 text-brand-gold" />
-              <span>Studio & Crate Architects</span>
+              <span>Studio &amp; Sound Architects</span>
             </div>
 
             <VoiceNarrationButton

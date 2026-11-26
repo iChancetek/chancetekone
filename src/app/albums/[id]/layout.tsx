@@ -40,17 +40,17 @@ export async function generateMetadata({
   } catch {
     return {
       title: 'ChanceTEK One — Studio Album',
-      description: 'Stream master album releases and breakbeat vinyl on ChanceTEK One.',
+      description: 'Stream master album releases and collector vinyl on ChanceTEK One.',
       openGraph: {
         title: 'ChanceTEK One',
-        description: 'Stream master album releases and breakbeat vinyl on ChanceTEK One.',
+        description: 'Stream master album releases and collector vinyl on ChanceTEK One.',
         type: 'website',
         url: 'https://chancetekone.us',
       },
       twitter: {
         card: 'summary_large_image',
         title: 'ChanceTEK One',
-        description: 'Stream master album releases and breakbeat vinyl on ChanceTEK One.',
+        description: 'Stream master album releases and collector vinyl on ChanceTEK One.',
       },
     };
   }

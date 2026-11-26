@@ -10,6 +10,7 @@ import { MusicCatalogService, getDefaultCoverForTrack } from '@/lib/music/MusicC
 import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { ReactionButtons } from '@/components/social/ReactionButtons';
+import { FavoriteButton } from '@/components/social/FavoriteButton';
 import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussionModal';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
 
@@ -366,6 +367,33 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, type }) => {
               <ListPlus className="w-3.5 h-3.5" />
             </button>
           )}
+
+          {/* Universal Favorite Heart Quick Button — Always accessible on every media card */}
+          <div className="absolute bottom-2 right-11 z-10">
+            <FavoriteButton
+              id={item.id}
+              category={
+                isTrack
+                  ? 'music'
+                  : isAlbum
+                    ? 'albums'
+                    : isArtist
+                      ? 'artists'
+                      : isVideo
+                        ? 'videos'
+                        : 'audiobooks'
+              }
+              title={getTitle()}
+              subtitle={getSubtitle()}
+              coverUrl={resolvedCover || getImage()}
+              genre={(item as any).genre || (item as any).category}
+              artistName={(item as any).artistName || (item as any).author || (isArtist ? (item as Artist).name : undefined)}
+              duration={(item as any).duration}
+              url={getHref()}
+              variant="overlay"
+              size="sm"
+            />
+          </div>
 
           {/* Universal Share Quick Button — Always visible on mobile, PWA & desktop */}
           <button

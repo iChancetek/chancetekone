@@ -30,10 +30,10 @@ import { useAI } from '@/lib/ai/AIContext';
 
 const INITIAL_SUGGESTIONS = [
   'What can I explore on ChanceTEK One?',
-  'Play the freshest 90s breakbeat track',
-  'Tell me the history of the Amen break',
+  'Play a classic 90s Hip Hop or R&B track',
+  'Recommend music similar to what I just played',
   'How do I install this app for offline playback?',
-  'Recommend vinyl releases based on my taste',
+  'Recommend audiobooks and podcasts based on my taste',
 ];
 
 export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => void }> = ({
@@ -296,7 +296,7 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
       id: 'welcome',
       role: 'assistant',
       content:
-        'Yo! I am **ChanceTEK One AI** — your Agentic AI crate digger and culture assistant powered by **Agentic Intelligence** with **Dual Memory**. Ask me to find tracks, build custom playlists, remember your studio gear, or explore exclusive vinyl.',
+        'Welcome! I am **ChanceTEK One AI** — your Agentic AI music, audiobook & culture assistant powered by **Agentic Intelligence** with **Dual Memory**. Ask me to find similar songs, build custom playlists, remember your tastes, or explore audiobooks and podcasts.',
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -671,7 +671,7 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
                 {loading && (
                   <div className="flex items-center gap-2 text-xs text-brand-neon p-3 bg-white/5 rounded-2xl border border-white/5 animate-pulse">
                     <Loader2 className="w-4 h-4 animate-spin text-brand-gold" />
-                    <span>ChanceTEK One AI is consulting crate memory & reasoning...</span>
+                    <span>ChanceTEK One AI is consulting music memory &amp; reasoning...</span>
                   </div>
                 )}
                 <div ref={messagesEndRef} />

@@ -39,18 +39,18 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: 'ChanceTEK One — Curated Playlist Crate',
-      description: 'Stream curated member playlists and breakbeat crates on ChanceTEK One.',
+      title: 'ChanceTEK One — Member Playlist',
+      description: 'Stream curated member playlists on ChanceTEK One.',
       openGraph: {
         title: 'ChanceTEK One',
-        description: 'Stream curated member playlists and breakbeat crates on ChanceTEK One.',
+        description: 'Stream curated member playlists on ChanceTEK One.',
         type: 'website',
         url: 'https://chancetekone.us',
       },
       twitter: {
         card: 'summary_large_image',
         title: 'ChanceTEK One',
-        description: 'Stream curated member playlists and breakbeat crates on ChanceTEK One.',
+        description: 'Stream curated member playlists on ChanceTEK One.',
       },
     };
   }

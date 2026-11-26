@@ -7,6 +7,8 @@ import { ReactionService, ContentReactions, UniversalReactionType } from '@/lib/
 import { useAuth } from '@/lib/auth/AuthContext';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
+import { FavoriteButton } from '@/components/social/FavoriteButton';
+import { FavoriteCategory } from '@/lib/favorites/FavoritesService';
 import { ShareContentType } from '@/lib/sharing/shareMetadataService';
 
 interface ReactionButtonsProps {
@@ -148,6 +150,25 @@ export const ReactionButtons: React.FC<ReactionButtonsProps> = ({
       : contentType === 'playlist'
       ? 'playlist'
       : 'song';
+
+  const mappedFavoriteCategory: FavoriteCategory =
+    contentType === 'album'
+      ? 'albums'
+      : contentType === 'artist'
+      ? 'artists'
+      : contentType === 'video'
+      ? 'videos'
+      : contentType === 'audiobook' || contentType === 'book'
+      ? 'audiobooks'
+      : contentType === 'podcast'
+      ? 'podcasts'
+      : contentType === 'playlist'
+      ? 'playlists'
+      : contentType === 'producer'
+      ? 'producers'
+      : contentType === 'project'
+      ? 'projects'
+      : 'music';
 
   const handleShare = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -521,6 +542,15 @@ export const ReactionButtons: React.FC<ReactionButtonsProps> = ({
           </div>
         )}
       </div>
+
+      {/* Universal Favorite Toggle (Synced to Library) */}
+      <FavoriteButton
+        id={contentId}
+        category={mappedFavoriteCategory}
+        title={contentTitle}
+        variant="pill"
+        size="md"
+      />
 
       {/* Optional Share Button */}
       {showShare && (

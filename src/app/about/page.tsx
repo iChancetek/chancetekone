@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
   Compass,
   Sparkles,
@@ -27,7 +27,7 @@ export const metadata = {
 
 const ABOUT_FULL_TEXT = `ChanceTEK One. A Cultural and Sonic Platform for Independent Artists and Creators.
 
-Introducing an advanced cultural and sonic system for Independent Artists and Creators — a platform built on Digital Arts, Entertainment, Music and Video, Streaming 4K Cultural Documentaries, Narrated Audiobooks and Podcasts. The platform also delivers DJ Playlists, Online Radio, A.I. Crate Digging, Music Downloads, Apps, Merchandise, and more. The platform is also in connection with its own Social Media Platform "The FAM" Famio.US, which will serve as a companion for Social and Business Connections. The two platforms are linked for extra curriculum and ease of access.
+Introducing an advanced cultural and sonic system for Independent Artists and Creators — a platform built on Digital Arts, Entertainment, Music and Video, Streaming 4K Cultural Documentaries, Narrated Audiobooks and Podcasts. The platform also delivers DJ Playlists, Online Radio, Agentic AI Music Discovery, Music Downloads, Apps, Merchandise, and more. The platform is also in connection with its own Social Media Platform "The FAM" Famio.US, which will serve as a companion for Social and Business Connections. The two platforms are linked for extra curriculum and ease of access.
 
 Our mission is to empower independent artists, producers, DJs, and creators with a single platform where they can stream, distribute, and sell their work directly to the people who value it most — their audience. At the same time creating a Standard for Good Music without compromising the integrity of the culture.
 
@@ -39,14 +39,14 @@ Becoming a member: Members are anyone using the platform to generate income — 
 
 For Independent Artists: Distribute and sell your music and videos directly to Account Holders. No middlemen, no diluted royalties — just a direct line to an audience actively seeking new, independent music from talented artists.
 For Producers: Showcase your catalog, your beats and instrumentals, and connect with artists and DJs looking for original production — all within one ecosystem built for discovery and collaboration.
-For DJs: Curate and publish playlists, host your own online radio segments, and tap into A.I. Crate Digging to unearth rare tracks, deep cuts, and emerging talent. As a Member, you can also receive direct support from your audience through the platform's Donation feature.
+For DJs: Curate and publish playlists, host your own online radio segments, and tap into Agentic AI Music Discovery to unearth rare tracks, deep cuts, and emerging talent. As a Member, you can also receive direct support from your audience through the platform's Donation feature.
 For Creators of All Kinds: Whether you're producing 4K cultural documentaries, narrating audiobooks, or hosting podcasts, our platform gives your work a home alongside music — reaching audiences who come for sound and stay for story.
 
 We are more than a streaming service. We are a cultural infrastructure — a place where music, story, and identity converge, and where the people creating culture are the ones who profit from it, control it, and shape where it goes next. We Are The Future Of Independent Entertainment.
 
 The Operating System:
 Platform Architecture and Accessibility: Engineered as a modern Progressive Web App, ChanceTEK One offers instantaneous access to unauthenticated guests and verified collectors alike. You are never required to pass through registration gates to stream music, explore the archive, or watch cultural mini-documentaries. The platform incorporates a universal text and font scaling accessibility engine, allowing listeners to increase typeface sizing up to one hundred and forty-five percent, engage high-contrast visual modes, and activate spoken audio narration in English and Spanish across all editorial sections.
-Leadership and Engineering Stewardship: ChanceTEK One is developed and maintained by Chancellor at ChanceTEK LLC. Every software component, audio processing pipeline, neural recommendation graph, and visual canvas is crafted with exacting precision to deliver a transcendent cultural experience. For technical inquiries, crate additions, master tape preservation collaborations, or physical vinyl fulfillment support, our engineering team and crate concierge can be reached directly through the Support Center.`;
+Leadership and Engineering Stewardship: ChanceTEK One is developed and maintained by Chancellor at ChanceTEK LLC. Every software component, audio processing pipeline, neural recommendation graph, and visual canvas is crafted with exacting precision to deliver a transcendent cultural experience. For technical inquiries, catalog additions, master tape preservation collaborations, or physical vinyl fulfillment support, our engineering team and concierge can be reached directly through the Support Center.`;
 
 export default function AboutPage() {
   return (
@@ -79,7 +79,7 @@ export default function AboutPage() {
           <p className="text-sm sm:text-base text-neutral-200 leading-relaxed max-w-3xl">
             Introducing an advanced cultural and sonic system for Independent Artists & Creators — a platform
             built on Digital Arts, Entertainment, Music and Video, Streaming 4K Cultural Documentaries, Narrated
-            Audiobooks and Podcasts. The platform also delivers DJ Playlists, Online Radio, A.I. Crate Digging,
+            Audiobooks and Podcasts. The platform also delivers DJ Playlists, Online Radio, Agentic AI Music Discovery,
             Music Downloads, Apps, Merchandise, and more.
           </p>
 
@@ -248,8 +248,8 @@ export default function AboutPage() {
               </div>
               <h3 className="text-base sm:text-lg font-bold text-white">For DJs</h3>
               <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-                Curate and publish playlists, host your own online radio segments, and tap into A.I. Crate
-                Digging to unearth rare tracks, deep cuts, and emerging talent. As a Member, you can also
+                Curate and publish playlists, host your own online radio segments, and tap into Agentic AI
+                Music Discovery to unearth rare tracks, deep cuts, and emerging talent. As a Member, you can also
                 receive direct support from your audience through the platform&apos;s Donation feature.
               </p>
             </div>
@@ -322,7 +322,7 @@ export default function AboutPage() {
                 precision to deliver a transcendent cultural experience.
               </p>
               <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-                For technical inquiries, crate additions, master tape preservation collaborations, or physical vinyl fulfillment support, our engineering team and crate concierge can be reached directly through the Support Center.
+                For technical inquiries, catalog additions, master tape preservation collaborations, or physical vinyl fulfillment support, our engineering team and concierge can be reached directly through the Support Center.
               </p>
             </div>
           </div>
