@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'ChanceTEK One',
     short_name: 'ChanceTEK One',
     description:
-      'Listen. Watch. Discover. ChanceTEK One Music Streaming, 4K Video Sessions, Cultural Audiobooks, Podcasts & Merchandise Operating System.',
+      'The Algorithm of Timeless Music. ChanceTEK One Music Streaming, 4K Video Sessions, Cultural Audiobooks, Podcasts & Merchandise Operating System.',
     start_url: '/',
     display: 'standalone',
     background_color: '#08080c',

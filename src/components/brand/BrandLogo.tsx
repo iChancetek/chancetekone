@@ -4,7 +4,7 @@ import React from 'react';
 import { useTheme } from '@/lib/theme/ThemeContext';
 
 export const PLATFORM_NAME = 'ChanceTEK One';
-export const PLATFORM_SLOGAN = 'Listen. Watch. Discover.';
+export const PLATFORM_SLOGAN = 'The Algorithm of Timeless Music';
 export const PLATFORM_LOGO_DARK = '/images/chancetekone_logo.png?v=2';
 export const PLATFORM_LOGO_LIGHT = '/images/chancetekone_logo_light.png?v=2';
 export const PLATFORM_ICON_DARK = '/images/chancetekone_icon.png?v=2';
@@ -71,7 +71,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           draggable={false}
         />
         {showSlogan && (
-          <p className={`text-xs sm:text-sm font-extrabold uppercase tracking-[0.2em] pl-0.5 ${sloganClass}`}>
+          <p className={`text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.14em] pl-0.5 ${sloganClass}`}>
             {PLATFORM_SLOGAN}
           </p>
         )}
@@ -98,7 +98,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         />
         {showSlogan && (
           <p
-            className={`text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.22em] text-center ${sloganClass}`}
+            className={`text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.14em] text-center ${sloganClass}`}
           >
             {PLATFORM_SLOGAN}
           </p>
@@ -125,7 +125,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       />
       {showSlogan && (
         <span
-          className={`text-[10px] font-extrabold tracking-[0.18em] uppercase leading-tight pl-0.5 truncate ${sloganClass}`}
+          className={`text-[9px] font-extrabold tracking-[0.08em] uppercase leading-tight pl-0.5 whitespace-nowrap ${sloganClass}`}
         >
           {PLATFORM_SLOGAN}
         </span>

@@ -90,7 +90,7 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
           <Link
             href="/"
             className={`${isSearchFocused ? 'hidden' : 'inline-flex md:hidden'} shrink-0`}
-            aria-label="ChanceTEK One — Listen. Watch. Discover."
+            aria-label="ChanceTEK One — The Algorithm of Timeless Music"
           >
             <BrandLogo variant="compact" showSlogan={false} className="[&_img]:w-8 [&_img]:h-8" />
           </Link>
@@ -100,7 +100,7 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
             <Link
               href="/"
               className="hidden md:flex items-center shrink-0 pr-2 hover:opacity-95 transition-opacity"
-              aria-label="ChanceTEK One — Listen. Watch. Discover."
+              aria-label="ChanceTEK One — The Algorithm of Timeless Music"
             >
               <BrandLogo variant="sidebar" showSlogan className="scale-90 origin-left" />
             </Link>

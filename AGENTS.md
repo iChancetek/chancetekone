@@ -2127,3 +2127,18 @@ esolvedAudioUrl is reset to '' (zero tolerance).
   - Added independent `isMobilePlayerHidden` + `isMobileNavHidden` + `hideAllMobileBars()` controls so BOTH the Music Player AND Bottom Menu Bar can completely disappear off-screen in vertical portrait mode while audio continues playing seamlessly (via 1-tap `Hide`, `Hide All`, or swipe-down gesture), with tiny unobtrusive bottom-right corner pills (`Player` / `Menu`) to bring either back anytime.
 - **Vertical-Friendly Portrait Hamburger Menu (`Sidebar.tsx`)**:
   - Portaled the mobile drawer directly to `document.body` (`z-[80]`/`z-[85]`), narrowed it to a compact vertical-friendly `w-[74vw] max-w-[285px]` (never full-screen — leaving a visible tap-to-close backdrop strip on the right), added a pinned high-contrast gold **`✕ Close`** button at the top-right (never crushed by logo width), a thumb-reachable **`✕ Close Menu`** button in the sticky footer, swipe-left-to-close gesture, and in-drawer toggles for both Bottom Menu Bar and Music Player Bar.
+
+
+### 43. Bulletproof Listening & Watch History Across Songs, Videos, Audiobooks & Podcasts
+- **Root Causes Identified & Eliminated**:
+  1. **Silent `localStorage` `QuotaExceededError`**: Uploaded tracks/media often carried massive base64 `data:` image URIs or `blob:` URLs in `coverUrl`/`audioUrl`/`videoUrl`; writing them directly into `8spades_user_history_<userId>` exceeded the 5MB browser quota and silently dropped history entries.
+  2. **User ID Key Split-Brain**: `PlayerContext.tsx` resolved `profile?.id || user?.uid || 'guest'` while `library/page.tsx` resolved `profile?.id || user?.uid || (isAdmin ? 'admin' : 'guest')`, and `videos/[id]/page.tsx` only recorded when `profile?.id` was hydrated.
+  3. **Missing Playback Recorders**: `VideoPlayer.tsx`, `AudiobookPlayer.tsx` (video audiobooks & PDF books), `/audiobooks/page.tsx` featured videos (Mi Vida Loca & Saturday Night, Sunday Morning), `/podcasts/[id]/page.tsx` embedded video podcasts, `HeroBanner.tsx` carousel videos, and `PlayerContext.resume()` were not recording plays; `openVideoModal()` misclassified video podcasts as `'video'`; and `playTrack()` did not match `'podcast-'` IDs.
+- **Architectural Fixes**:
+  - `src/lib/history/HistoryService.ts`: Added canonical `resolveHistoryUserId(profile, user, isAdmin)`, stripped oversized `data:` (>2KB) and transient `blob:` URLs via `sanitizePersistableUrl()`, added an in-memory mirror (`memoryStore`) plus progressive quota-safe persistence (`persistWithQuotaFallback`), and added same-user dual-ID merging (`getMergedHistory(primary, secondary)`).
+  - Wired `HistoryService.recordHistory` with `resolveHistoryUserId` across `PlayerContext.tsx` (music, audio podcasts, video podcasts, audiobooks, and `resume()`), `VideoPlayer.tsx`, `videos/[id]/page.tsx`, `AudiobookPlayer.tsx`, `audiobooks/page.tsx`, `podcasts/[id]/page.tsx`, and `HeroBanner.tsx`.
+  - Synced live `history-updated` listeners in `library/page.tsx`, `RecentlyPlayedSection.tsx`, and `AgenticDiscoveryDeck.tsx`.
+
+
+### 44. Global Platform Slogan Update (`The Algorithm of Timeless Music`)
+- Replaced `"Listen. Watch. Discover."` across the entire platform with **`The Algorithm of Timeless Music`** in `BrandLogo.tsx` (`PLATFORM_SLOGAN` — powering Sidebar, Footer, Hero, Auth, and Mobile Drawer), `src/app/layout.tsx` (title, description, keywords, OpenGraph, Twitter), `src/app/manifest.ts`, `TopNav.tsx`, `src/app/music/[id]/layout.tsx`, and `src/app/share/track/[id]/page.tsx`.

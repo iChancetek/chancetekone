@@ -21,7 +21,7 @@ import { usePlayer } from '@/lib/player/PlayerContext';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
 import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
-import { HistoryService, HistoryEntry } from '@/lib/history/HistoryService';
+import { HistoryService, HistoryEntry, resolveHistoryUserId } from '@/lib/history/HistoryService';
 import { FavoritesService, FavoriteItem, FavoriteCategory } from '@/lib/favorites/FavoritesService';
 import { FavoriteButton } from '@/components/social/FavoriteButton';
 import { AddToPlaylistButton } from '@/components/playlist/AddToPlaylistButton';
@@ -75,8 +75,9 @@ export const AgenticDiscoveryDeck: React.FC<AgenticDiscoveryDeckProps> = ({
     openVideoModal,
     playAudiobookChapter,
   } = usePlayer();
-  const { profile, user } = useAuth();
-  const userId = profile?.id || user?.uid || 'guest';
+  const { profile, user, isAdmin } = useAuth();
+  const userId = resolveHistoryUserId(profile, user, isAdmin);
+  const secondaryUserId = user?.uid && user.uid !== userId ? user.uid : undefined;
 
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
@@ -85,7 +86,7 @@ export const AgenticDiscoveryDeck: React.FC<AgenticDiscoveryDeckProps> = ({
   const [activeFilter, setActiveFilter] = useState<'all' | 'music' | 'audiobook' | 'podcast' | 'video'>('all');
 
   useEffect(() => {
-    const syncHistory = () => setHistory(HistoryService.getMergedHistory(userId));
+    const syncHistory = () => setHistory(HistoryService.getMergedHistory(userId, secondaryUserId));
     const syncFavs = () => setFavorites(FavoritesService.getMergedFavorites(userId));
     const syncCatalog = () => setCatalogTick((t) => t + 1);
 
@@ -97,6 +98,7 @@ export const AgenticDiscoveryDeck: React.FC<AgenticDiscoveryDeckProps> = ({
     const unsubMusic = MusicCatalogService.subscribe(syncCatalog);
     const unsubMedia = MediaCatalogService.subscribe(syncCatalog);
 
+    window.addEventListener('history-updated', syncHistory);
     window.addEventListener('catalog-updated', syncCatalog);
     window.addEventListener('media-catalog-updated', syncCatalog);
 
@@ -105,10 +107,11 @@ export const AgenticDiscoveryDeck: React.FC<AgenticDiscoveryDeckProps> = ({
       unsubFavs();
       unsubMusic();
       unsubMedia();
+      window.removeEventListener('history-updated', syncHistory);
       window.removeEventListener('catalog-updated', syncCatalog);
       window.removeEventListener('media-catalog-updated', syncCatalog);
     };
-  }, [userId]);
+  }, [userId, secondaryUserId]);
 
   // Build real-time listener taste profile from active playback, streaming history & favorites
   const tasteProfile = useMemo(() => {
@@ -556,11 +559,10 @@ export const AgenticDiscoveryDeck: React.FC<AgenticDiscoveryDeckProps> = ({
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveFilter(tab.id as any)}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer border ${
-                  active
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer border ${active
                     ? 'bg-brand-gold text-black border-brand-gold shadow-sm'
                     : 'bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10'
-                }`}
+                  }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{tab.label}</span>

@@ -24,6 +24,8 @@ import {
 import { MediaCatalogService, SEED_PODCASTS } from '@/lib/media/MediaCatalogService';
 import { PodcastEpisode } from '@/types/media';
 import { usePlayer } from '@/lib/player/PlayerContext';
+import { useAuth } from '@/lib/auth/AuthContext';
+import { HistoryService, resolveHistoryUserId } from '@/lib/history/HistoryService';
 import { ReactionButtons } from '@/components/social/ReactionButtons';
 import { CommentSection } from '@/components/comments/CommentSection';
 import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
@@ -34,6 +36,7 @@ import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/Soc
 export default function PodcastEpisodeDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { profile, user, isAdmin } = useAuth();
   const episodeId = params.id as string;
   const { playTrack, currentTrack, isPlaying, togglePlay } = usePlayer();
 
@@ -239,6 +242,21 @@ export default function PodcastEpisodeDetailPage() {
                 playsInline
                 preload="metadata"
                 poster={podcast.coverUrl}
+                onPlay={() => {
+                  const historyUserId = resolveHistoryUserId(profile, user, isAdmin);
+                  HistoryService.recordHistory(historyUserId, {
+                    mediaId: podcast.id,
+                    mediaType: 'podcast',
+                    title: podcast.title,
+                    subtitle: `${podcast.showTitle} • ${podcast.host}`,
+                    coverUrl: podcast.coverUrl || '/images/studio_cover.jpg',
+                    duration: podcast.duration || 0,
+                    videoUrl: podcast.mediaUrl,
+                    genre: podcast.category || 'Podcast',
+                    artistName: podcast.host,
+                    href: `/podcasts/${podcast.id}`,
+                  });
+                }}
                 className="w-full h-full object-contain"
               />
             </div>

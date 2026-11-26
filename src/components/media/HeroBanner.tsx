@@ -18,6 +18,8 @@ import {
 import { Track } from '@/types/media';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { useAI } from '@/lib/ai/AIContext';
+import { useAuth } from '@/lib/auth/AuthContext';
+import { HistoryService, resolveHistoryUserId } from '@/lib/history/HistoryService';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { MOCK_TRACKS } from '@/lib/mockData';
@@ -47,6 +49,7 @@ const AUTOPLAY_INTERVAL = 6000;
 export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ track, onOpenAI }) => {
   const { currentTrack, isPlaying, playTrack, togglePlay, pause } = usePlayer();
   const { openAI } = useAI();
+  const { profile, user, isAdmin } = useAuth();
 
   const slides: ProjectBannerSlide[] = [
     {
@@ -387,11 +390,39 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
                 controls
                 playsInline
                 preload="metadata"
-                onPlay={() => {
+                onPlay={(e) => {
                   if (isPlaying) {
                     pause();
                   }
                   setIsAutoSlideEnabled(false);
+                  const historyUserId = resolveHistoryUserId(profile, user, isAdmin);
+                  const isFeaturedBook =
+                    currentSlide.id === 'mi-vida-loca' ||
+                    currentSlide.id === 'saturday-night-sunday-morning';
+                  HistoryService.recordHistory(historyUserId, {
+                    mediaId:
+                      currentSlide.id === 'mi-vida-loca'
+                        ? 'audiobook-1793148157988-bnzl3'
+                        : currentSlide.id === 'saturday-night-sunday-morning'
+                          ? 'audiobook-kwame-thompson'
+                          : currentSlide.id,
+                    mediaType: isFeaturedBook ? 'audiobook' : 'video',
+                    title: currentSlide.heading,
+                    subtitle: currentSlide.badge || 'ChanceTEK One',
+                    coverUrl:
+                      currentSlide.id === 'mi-vida-loca'
+                        ? '/images/video-thumbs/OrlandoFigueroa_share.jpg'
+                        : currentSlide.id === 'saturday-night-sunday-morning'
+                          ? '/images/video-thumbs/Kwame_Book_Promo_1.jpg'
+                          : '/images/studio_cover.jpg',
+                    duration: Math.floor(e.currentTarget.duration || 0),
+                    videoUrl: currentSlide.videoUrl?.split('#')[0],
+                    genre: currentSlide.badge,
+                    href:
+                      currentSlide.projectHref && currentSlide.projectHref !== '#'
+                        ? currentSlide.projectHref
+                        : currentSlide.videoHref,
+                  });
                 }}
                 className="relative z-10 w-full h-full object-contain block"
               />

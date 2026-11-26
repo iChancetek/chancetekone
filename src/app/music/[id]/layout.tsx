@@ -56,7 +56,7 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: 'ChanceTEK One — Listen. Watch. Discover.',
+      title: 'ChanceTEK One — The Algorithm of Timeless Music',
       description: 'Stream master music and audio on ChanceTEK One.',
       openGraph: {
         title: 'ChanceTEK One',

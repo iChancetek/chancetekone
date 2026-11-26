@@ -72,10 +72,10 @@ export async function generateMetadata({
   } catch (err) {
     console.error('[share/track] generateMetadata fallback:', err);
     return {
-      title: 'Listen on ChanceTEK One — Listen. Watch. Discover.',
+      title: 'Listen on ChanceTEK One — The Algorithm of Timeless Music',
       description: 'Stream music, 4K videos, audiobooks, and podcasts on ChanceTEK One.',
       openGraph: {
-        title: 'ChanceTEK One — Listen. Watch. Discover.',
+        title: 'ChanceTEK One — The Algorithm of Timeless Music',
         description: 'Stream music, 4K videos, audiobooks, and podcasts on ChanceTEK One.',
         siteName: 'ChanceTEK One',
         type: 'website',
@@ -87,13 +87,13 @@ export async function generateMetadata({
             type: 'image/jpeg',
             width: 1200,
             height: 675,
-            alt: 'ChanceTEK One — Listen. Watch. Discover.',
+            alt: 'ChanceTEK One — The Algorithm of Timeless Music',
           },
         ],
       },
       twitter: {
         card: 'summary_large_image',
-        title: 'ChanceTEK One — Listen. Watch. Discover.',
+        title: 'ChanceTEK One — The Algorithm of Timeless Music',
         description: 'Stream music, 4K videos, audiobooks, and podcasts on ChanceTEK One.',
         images: ['https://chancetekone.us/images/chancetekone_logo.jpg'],
       },

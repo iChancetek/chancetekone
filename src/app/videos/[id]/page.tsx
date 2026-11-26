@@ -14,14 +14,14 @@ import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 import { useAuth } from '@/lib/auth/AuthContext';
-import { HistoryService } from '@/lib/history/HistoryService';
+import { HistoryService, resolveHistoryUserId } from '@/lib/history/HistoryService';
 import { AnalyticsEngine } from '@/lib/analytics/AnalyticsEngine';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
 
 export default function VideoDetailPage() {
   const params = useParams();
   const videoId = params.id as string;
-  const { profile } = useAuth();
+  const { profile, user, isAdmin } = useAuth();
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
@@ -33,8 +33,9 @@ export default function VideoDetailPage() {
   const relatedVideos = allVideos.filter((v) => v.id !== video.id);
 
   useEffect(() => {
-    if (profile?.id && video) {
-      HistoryService.recordHistory(profile.id, {
+    if (video) {
+      const historyUserId = resolveHistoryUserId(profile, user, isAdmin);
+      HistoryService.recordHistory(historyUserId, {
         mediaId: video.id,
         mediaType: 'video',
         title: video.title,
@@ -42,19 +43,24 @@ export default function VideoDetailPage() {
         coverUrl: video.thumbnailUrl || '/images/studio_cover.jpg',
         duration: video.duration || 0,
         videoUrl: video.videoUrl,
+        genre: video.category,
+        artistName: video.artistName,
+        href: `/videos/${video.id}`,
       });
-      AnalyticsEngine.trackEvent({
-        eventType: 'VIDEO_STARTED',
-        action: `Started 4K Video "${video.title}"`,
-        resource: video.title,
-        resourceId: video.id,
-        platformArea: 'Videos',
-        userId: profile.id,
-        userName: profile.name,
-        userEmail: profile.email,
-      });
+      if (profile?.id) {
+        AnalyticsEngine.trackEvent({
+          eventType: 'VIDEO_STARTED',
+          action: `Started 4K Video "${video.title}"`,
+          resource: video.title,
+          resourceId: video.id,
+          platformArea: 'Videos',
+          userId: profile.id,
+          userName: profile.name,
+          userEmail: profile.email,
+        });
+      }
     }
-  }, [profile?.id, video?.id]);
+  }, [profile?.id, user?.uid, isAdmin, video?.id]);
 
   return (
     <div className="space-y-8 py-6 max-w-6xl mx-auto">

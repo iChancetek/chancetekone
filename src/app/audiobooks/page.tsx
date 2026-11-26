@@ -12,19 +12,39 @@ import { AddToPlaylistButton } from '@/components/playlist/AddToPlaylistButton';
 import { AgenticDiscoveryDeck } from '@/components/ai/AgenticDiscoveryDeck';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { HistoryService, resolveHistoryUserId } from '@/lib/history/HistoryService';
 import { Audiobook } from '@/types/media';
 
 export default function AudiobooksPage() {
-  const { isAdmin } = useAuth();
+  const { profile, user, isAdmin } = useAuth();
   const [audiobooks, setAudiobooks] = useState<Audiobook[]>([]);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [sharingAudiobook, setSharingAudiobook] = useState<any | null>(null);
   const { requireStreamAuth } = usePlayer();
 
-  const handleFeaturedVideoPlay = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+  const handleFeaturedVideoPlay = (
+    e: React.SyntheticEvent<HTMLVideoElement>,
+    meta?: { id: string; title: string; author: string; coverUrl: string; videoUrl: string }
+  ) => {
     if (!requireStreamAuth('watch featured video')) {
       e.currentTarget.pause();
       e.currentTarget.currentTime = 0;
+      return;
+    }
+    if (meta) {
+      const historyUserId = resolveHistoryUserId(profile, user, isAdmin);
+      HistoryService.recordHistory(historyUserId, {
+        mediaId: meta.id,
+        mediaType: 'audiobook',
+        title: meta.title,
+        subtitle: `By ${meta.author}`,
+        coverUrl: meta.coverUrl,
+        duration: Math.floor(e.currentTarget.duration || 0),
+        videoUrl: meta.videoUrl,
+        genre: 'Audiobook',
+        artistName: meta.author,
+        href: `/audiobooks/${meta.id}`,
+      });
     }
   };
 
@@ -143,7 +163,15 @@ export default function AudiobooksPage() {
             controls
             playsInline
             preload="metadata"
-            onPlay={handleFeaturedVideoPlay}
+            onPlay={(e) =>
+              handleFeaturedVideoPlay(e, {
+                id: 'audiobook-1793148157988-bnzl3',
+                title: 'Mi Vida Loca... By Author, Orlando Figueroa',
+                author: 'Orlando Figueroa',
+                coverUrl: '/images/video-thumbs/OrlandoFigueroa_share.jpg',
+                videoUrl: '/videos/OrlandoFigueroa.mp4',
+              })
+            }
             className="relative z-10 w-full h-full object-contain block"
           />
         </div>
@@ -207,7 +235,15 @@ export default function AudiobooksPage() {
             controls
             playsInline
             preload="metadata"
-            onPlay={handleFeaturedVideoPlay}
+            onPlay={(e) =>
+              handleFeaturedVideoPlay(e, {
+                id: 'audiobook-kwame-thompson',
+                title: 'Saturday Night, Sunday Morning... By Author, Kwame Thompson',
+                author: 'Kwame Thompson',
+                coverUrl: '/images/video-thumbs/Kwame_Book_Promo_1.jpg',
+                videoUrl: '/videos/Kwame Book Promo 1.mp4',
+              })
+            }
             className="w-full h-full object-contain block bg-black"
           />
         </div>

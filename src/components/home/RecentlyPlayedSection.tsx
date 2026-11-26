@@ -15,7 +15,7 @@ import {
   ArrowUpRight,
   Sparkles,
 } from 'lucide-react';
-import { HistoryService, HistoryEntry } from '@/lib/history/HistoryService';
+import { HistoryService, HistoryEntry, resolveHistoryUserId } from '@/lib/history/HistoryService';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
@@ -44,21 +44,26 @@ function formatRelativeTime(isoString: string): string {
 
 export const RecentlyPlayedSection: React.FC = () => {
   const router = useRouter();
-  const { profile, user } = useAuth();
+  const { profile, user, isAdmin } = useAuth();
   const { playTrack, openVideoModal, playAudiobookChapter } = usePlayer();
-  const userId = profile?.id || user?.uid || 'guest';
+  const userId = resolveHistoryUserId(profile, user, isAdmin);
+  const secondaryUserId = user?.uid && user.uid !== userId ? user.uid : undefined;
 
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [filter, setFilter] = useState<'all' | 'music' | 'audiobook' | 'podcast' | 'video'>('all');
 
   useEffect(() => {
     const sync = () => {
-      setEntries(HistoryService.getMergedHistory(userId));
+      setEntries(HistoryService.getMergedHistory(userId, secondaryUserId));
     };
     sync();
     const unsub = HistoryService.subscribeAll(sync);
-    return () => unsub();
-  }, [userId]);
+    window.addEventListener('history-updated', sync);
+    return () => {
+      unsub();
+      window.removeEventListener('history-updated', sync);
+    };
+  }, [userId, secondaryUserId]);
 
   const filteredEntries = useMemo(() => {
     const list = filter === 'all' ? entries : entries.filter((e) => e.mediaType === filter);
@@ -189,11 +194,10 @@ export const RecentlyPlayedSection: React.FC = () => {
                 key={tab.id}
                 type="button"
                 onClick={() => setFilter(tab.id as any)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer border ${
-                  active
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer border ${active
                     ? 'bg-brand-gold text-black border-brand-gold shadow-sm'
                     : 'bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10'
-                }`}
+                  }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{tab.label}</span>

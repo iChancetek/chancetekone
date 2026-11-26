@@ -50,7 +50,7 @@ import { usePlayer } from '@/lib/player/PlayerContext';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { TrackRow } from '@/components/media/TrackRow';
 import { MediaCard } from '@/components/media/MediaCard';
-import { HistoryService, HistoryEntry } from '@/lib/history/HistoryService';
+import { HistoryService, HistoryEntry, resolveHistoryUserId } from '@/lib/history/HistoryService';
 import { FavoritesService, FavoriteItem } from '@/lib/favorites/FavoritesService';
 import { PlaylistService } from '@/lib/playlist/PlaylistService';
 import { Playlist } from '@/types/playlist';
@@ -132,7 +132,8 @@ function LibraryContent() {
   const [, setCatalogVersion] = useState(0);
 
   const currentEmail = (profile?.email || user?.email) || undefined;
-  const currentUserId = profile?.id || user?.uid || (isAdmin ? 'admin' : 'guest');
+  const currentUserId = resolveHistoryUserId(profile, user, isAdmin);
+  const secondaryUserId = user?.uid && user.uid !== currentUserId ? user.uid : undefined;
   const isAuthenticated = Boolean(profile || user || isAdmin);
 
   useEffect(() => {
@@ -143,7 +144,7 @@ function LibraryContent() {
     if (confirm('Clear all favorited items and playback history from your Library?')) {
       FavoritesService.clearFavorites(currentUserId);
       setFavorites([]);
-      HistoryService.clearHistory(currentUserId);
+      HistoryService.clearHistory(currentUserId, secondaryUserId);
       setHistory([]);
     }
   };
@@ -151,12 +152,16 @@ function LibraryContent() {
   // Load merged History (works for signed-in users AND guests)
   useEffect(() => {
     const syncHistory = () => {
-      setHistory(HistoryService.getMergedHistory(currentUserId));
+      setHistory(HistoryService.getMergedHistory(currentUserId, secondaryUserId));
     };
     syncHistory();
     const unsub = HistoryService.subscribeAll(syncHistory);
-    return () => unsub();
-  }, [currentUserId]);
+    window.addEventListener('history-updated', syncHistory);
+    return () => {
+      unsub();
+      window.removeEventListener('history-updated', syncHistory);
+    };
+  }, [currentUserId, secondaryUserId]);
 
   // Load merged Favorites & Member Playlists
   useEffect(() => {
@@ -418,7 +423,7 @@ function LibraryContent() {
 
   const handleClearHistory = () => {
     if (confirm('Are you sure you want to clear your listening and watch history?')) {
-      HistoryService.clearHistory(currentUserId);
+      HistoryService.clearHistory(currentUserId, secondaryUserId);
       setHistory([]);
     }
   };

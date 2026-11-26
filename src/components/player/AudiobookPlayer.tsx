@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { Audiobook, AudiobookChapter } from '@/types/media';
 import { usePlayer } from '@/lib/player/PlayerContext';
+import { useAuth } from '@/lib/auth/AuthContext';
+import { HistoryService, resolveHistoryUserId } from '@/lib/history/HistoryService';
 import { ShareAudiobookModal } from '@/components/audiobook/ShareAudiobookModal';
 
 function resolveAudiobookMediaUrl(url?: string): string {
@@ -58,10 +60,30 @@ export const AudiobookPlayer: React.FC<{ audiobook: Audiobook }> = ({ audiobook 
     requireStreamAuth,
   } = usePlayer();
 
+  const { profile, user, isAdmin } = useAuth();
   const videoRef = React.useRef<HTMLVideoElement | null>(null);
   const [isVideoPlaying, setIsVideoPlaying] = React.useState(false);
   const [showShareModal, setShowShareModal] = React.useState(false);
   const [isTheaterMode, setIsTheaterMode] = React.useState(false);
+
+  const recordAudiobookPlay = () => {
+    const historyUserId = resolveHistoryUserId(profile, user, isAdmin);
+    HistoryService.recordHistory(historyUserId, {
+      mediaId: audiobook.id,
+      mediaType: 'audiobook',
+      title: audiobook.title,
+      subtitle: `By ${audiobook.author}`,
+      coverUrl:
+        (isPortraitVideo ? '/images/video-thumbs/OrlandoFigueroa_share.jpg' : audiobook.coverUrl) ||
+        '/images/studio_cover.jpg',
+      duration: audiobook.duration || activeChapter?.duration || 0,
+      audioUrl: isVideoChapter ? undefined : resolvedMediaUrl || undefined,
+      videoUrl: isVideoChapter ? resolvedMediaUrl || undefined : undefined,
+      genre: (audiobook as any).category || (audiobook as any).genre || 'Audiobook',
+      artistName: audiobook.author,
+      href: `/audiobooks/${audiobook.id}`,
+    });
+  };
 
   const isCurrentBook = currentAudiobook?.id === audiobook.id;
   const activeChapter = isCurrentBook && currentChapter ? currentChapter : audiobook.chapters[0];
@@ -125,6 +147,7 @@ export const AudiobookPlayer: React.FC<{ audiobook: Audiobook }> = ({ audiobook 
                   return;
                 }
                 setIsVideoPlaying(true);
+                recordAudiobookPlay();
               }}
               onPause={() => setIsVideoPlaying(false)}
               onEnded={() => setIsVideoPlaying(false)}
@@ -190,6 +213,7 @@ export const AudiobookPlayer: React.FC<{ audiobook: Audiobook }> = ({ audiobook 
                 href={pdfSourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={recordAudiobookPlay}
                 className="px-4 py-2 rounded-xl bg-gradient-to-r from-brand-gold to-brand-amber text-black font-extrabold text-xs flex items-center gap-1.5 shadow-xl hover:scale-105 transition-all"
               >
                 <ExternalLink className="w-4 h-4" />

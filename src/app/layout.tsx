@@ -26,14 +26,14 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://chancetekone.us'),
   applicationName: 'ChanceTEK One',
   title: {
-    default: 'ChanceTEK One — Listen. Watch. Discover.',
+    default: 'ChanceTEK One — The Algorithm of Timeless Music',
     template: '%s · ChanceTEK One',
   },
   description:
-    'Listen. Watch. Discover. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and ChanceTEK One curation.',
+    'The Algorithm of Timeless Music. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and ChanceTEK One curation.',
   keywords: [
     'ChanceTEK One',
-    'Listen. Watch. Discover.',
+    'The Algorithm of Timeless Music',
     'Music Streaming',
     '4K Videos',
     'Audiobooks',
@@ -47,9 +47,9 @@ export const metadata: Metadata = {
     apple: '/images/chancetekone_icon.png?v=2',
   },
   openGraph: {
-    title: 'ChanceTEK One — Listen. Watch. Discover.',
+    title: 'ChanceTEK One — The Algorithm of Timeless Music',
     description:
-      'Listen. Watch. Discover. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and ChanceTEK One curation.',
+      'The Algorithm of Timeless Music. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and ChanceTEK One curation.',
     siteName: 'ChanceTEK One',
     url: 'https://chancetekone.us',
     type: 'website',
@@ -58,15 +58,15 @@ export const metadata: Metadata = {
         url: '/images/chancetekone_logo.jpg?v=2',
         width: 1200,
         height: 675,
-        alt: 'ChanceTEK One — Listen. Watch. Discover.',
+        alt: 'ChanceTEK One — The Algorithm of Timeless Music',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChanceTEK One — Listen. Watch. Discover.',
+    title: 'ChanceTEK One — The Algorithm of Timeless Music',
     description:
-      'Listen. Watch. Discover. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and ChanceTEK One curation.',
+      'The Algorithm of Timeless Music. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and ChanceTEK One curation.',
     images: ['/images/chancetekone_logo.jpg?v=2'],
   },
   manifest: '/manifest.webmanifest',

@@ -18,13 +18,18 @@ import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 import { buildVideoFrameSrc, isGenericVideoCover } from '@/components/media/VideoThumbnail';
 import { useAI } from '@/lib/ai/AIContext';
 import { usePlayer } from '@/lib/player/PlayerContext';
+import { useAuth } from '@/lib/auth/AuthContext';
+import { HistoryService, resolveHistoryUserId } from '@/lib/history/HistoryService';
 
 export const VideoPlayer: React.FC<{ video: Video }> = ({ video }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const { openAI } = useAI();
+  const { profile, user, isAdmin } = useAuth();
   // Pull master volume from the platform player so the global slider controls video too
   const { volume, isMuted, setVolume, toggleMute, requireStreamAuth } = usePlayer();
+  const historyUserRef = useRef(resolveHistoryUserId(profile, user, isAdmin));
+  historyUserRef.current = resolveHistoryUserId(profile, user, isAdmin);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -66,6 +71,24 @@ export const VideoPlayer: React.FC<{ video: Video }> = ({ video }) => {
         return;
       }
       setIsPlaying(true);
+      const isPodcastVideo =
+        video.artistId === 'podcast-creator' ||
+        video.id.startsWith('pod-') ||
+        video.id.startsWith('podcast-') ||
+        video.id.startsWith('ep-') ||
+        video.category?.toLowerCase().includes('podcast');
+      HistoryService.recordHistory(historyUserRef.current, {
+        mediaId: video.id,
+        mediaType: isPodcastVideo ? 'podcast' : 'video',
+        title: video.title,
+        subtitle: video.artistName || video.category || (isPodcastVideo ? 'Podcast' : '4K Video'),
+        coverUrl: video.thumbnailUrl || '/images/studio_cover.jpg',
+        duration: video.duration || 0,
+        videoUrl: video.videoUrl,
+        genre: video.category,
+        artistName: video.artistName,
+        href: isPodcastVideo ? `/podcasts/${video.id}` : `/videos/${video.id}`,
+      });
     };
     const onPause = () => setIsPlaying(false);
     const onEnded = () => setIsPlaying(false);

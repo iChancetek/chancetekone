@@ -19,7 +19,7 @@ import {
   getGuestPreviewState,
   isSharedMusicGuestSession,
 } from '@/lib/auth/guestPreviewGate';
-import { HistoryService } from '@/lib/history/HistoryService';
+import { HistoryService, resolveHistoryUserId } from '@/lib/history/HistoryService';
 import { FavoritesService } from '@/lib/favorites/FavoritesService';
 import { AudioStorageService } from '@/lib/audio/AudioStorageService';
 import { EngagementMetricsService } from '@/lib/analytics/EngagementMetricsService';
@@ -433,18 +433,24 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
     setActiveVideoModal(video);
 
-    const historyUserId = profile?.id || user?.uid || 'guest';
+    const historyUserId = resolveHistoryUserId(profile, user, isAdmin);
+    const isPodcastVideo =
+      video.artistId === 'podcast-creator' ||
+      video.id.startsWith('pod-') ||
+      video.id.startsWith('podcast-') ||
+      video.id.startsWith('ep-') ||
+      video.category?.toLowerCase().includes('podcast');
     HistoryService.recordHistory(historyUserId, {
       mediaId: video.id,
-      mediaType: 'video',
+      mediaType: isPodcastVideo ? 'podcast' : 'video',
       title: video.title,
-      subtitle: video.artistName || video.category || '4K Video',
+      subtitle: video.artistName || video.category || (isPodcastVideo ? 'Podcast' : '4K Video'),
       coverUrl: video.thumbnailUrl || '/images/studio_cover.jpg',
       duration: video.duration || 0,
       videoUrl: video.videoUrl,
       genre: video.category,
       artistName: video.artistName,
-      href: `/videos/${video.id}`,
+      href: isPodcastVideo ? `/podcasts/${video.id}` : `/videos/${video.id}`,
     });
 
     AnalyticsEngine.trackEvent({
@@ -948,11 +954,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       metadata: { artist: resolvedTrack.artistName, bpm: resolvedTrack.bpm, genre: resolvedTrack.genre },
     });
 
-    const historyUserId = profile?.id || user?.uid || 'guest';
+    const historyUserId = resolveHistoryUserId(profile, user, isAdmin);
     const isPodcastItem =
       resolvedTrack.artistId === 'podcast-host' ||
       resolvedTrack.genre?.toLowerCase().includes('podcast') ||
       resolvedTrack.id.startsWith('pod-') ||
+      resolvedTrack.id.startsWith('podcast-') ||
       resolvedTrack.id.startsWith('ep-');
     HistoryService.recordHistory(historyUserId, {
       mediaId: resolvedTrack.id,
@@ -1238,7 +1245,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       metadata: { chapterTitle: chapter.title, author: audiobook.author, narrator: audiobook.narrator },
     });
 
-    const historyUserId = profile?.id || user?.uid || 'guest';
+    const historyUserId = resolveHistoryUserId(profile, user, isAdmin);
     HistoryService.recordHistory(historyUserId, {
       mediaId: audiobook.id,
       mediaType: 'audiobook',
@@ -1402,7 +1409,31 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
       audioRef.current
         .play()
-        .then(() => setIsPlaying(true))
+        .then(() => {
+          setIsPlaying(true);
+          if (currentTrack) {
+            const historyUserId = resolveHistoryUserId(profile, user, isAdmin);
+            const isPodcastItem =
+              currentTrack.artistId === 'podcast-host' ||
+              currentTrack.genre?.toLowerCase().includes('podcast') ||
+              currentTrack.id.startsWith('pod-') ||
+              currentTrack.id.startsWith('podcast-') ||
+              currentTrack.id.startsWith('ep-');
+            HistoryService.recordHistory(historyUserId, {
+              mediaId: currentTrack.id,
+              mediaType: isPodcastItem ? 'podcast' : 'music',
+              title: currentTrack.title,
+              subtitle: currentTrack.artistName || 'ChanceTEK One',
+              coverUrl: currentTrack.coverUrl || '/images/studio_cover.jpg',
+              duration: currentTrack.duration || 0,
+              audioUrl: currentTrack.audioUrl,
+              genre: currentTrack.genre,
+              artistName: currentTrack.artistName,
+              bpm: currentTrack.bpm,
+              href: isPodcastItem ? `/podcasts/${currentTrack.id}` : `/music/${currentTrack.id}`,
+            });
+          }
+        })
         .catch((err) => {
           console.warn('Play error:', err);
           if (currentTrack) {
