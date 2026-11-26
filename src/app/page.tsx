@@ -60,8 +60,8 @@ export default function HomePage() {
 
   return (
     <div className="relative py-5 sm:py-7 min-h-screen">
-      {/* Clean Futuristic Spatial Light Field (No Background Video) */}
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      {/* Clean Futuristic Spatial Light Field (desktop only to keep mobile PWA GPU fast & responsive) */}
+      <div className="hidden md:block pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[920px] h-[420px] rounded-full bg-gradient-to-b from-brand-purple/18 via-indigo-600/10 to-transparent blur-[130px] animate-aurora-slow" />
         <div className="absolute top-[28%] right-[-10%] w-[520px] h-[520px] rounded-full bg-brand-gold/[0.08] blur-[140px] animate-aurora-reverse" />
         <div className="absolute bottom-[-10%] left-[-8%] w-[520px] h-[420px] rounded-full bg-cyan-500/[0.06] blur-[140px]" />

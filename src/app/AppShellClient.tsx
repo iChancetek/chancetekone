@@ -45,12 +45,12 @@ const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   return (
     <div className="min-h-screen flex flex-col bg-[#050509] relative">
-      {/* Dynamic Spatial Aurora & Studio Micro-Grid Atmosphere */}
+      {/* Dynamic Spatial Aurora & Studio Micro-Grid Atmosphere (desktop GPU blobs hidden on mobile for smooth 60fps PWA) */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute inset-0 spatial-canvas-grid opacity-70" />
-        <div className="absolute -top-48 -left-32 w-[540px] h-[540px] bg-brand-purple/14 rounded-full blur-[140px] animate-aurora-slow" />
-        <div className="absolute top-1/4 -right-40 w-[500px] h-[500px] bg-brand-gold/10 rounded-full blur-[150px] animate-aurora-reverse" />
-        <div className="absolute -bottom-32 left-1/3 w-[560px] h-[420px] bg-cyan-500/[0.06] rounded-full blur-[150px] animate-aurora-slow" />
+        <div className="hidden md:block absolute inset-0 spatial-canvas-grid opacity-70" />
+        <div className="hidden md:block absolute -top-48 -left-32 w-[540px] h-[540px] bg-brand-purple/14 rounded-full blur-[140px] animate-aurora-slow" />
+        <div className="hidden md:block absolute top-1/4 -right-40 w-[500px] h-[500px] bg-brand-gold/10 rounded-full blur-[150px] animate-aurora-reverse" />
+        <div className="hidden md:block absolute -bottom-32 left-1/3 w-[560px] h-[420px] bg-cyan-500/[0.06] rounded-full blur-[150px] animate-aurora-slow" />
       </div>
 
       {/* Fixed Left Sidebar (Desktop) */}
@@ -58,9 +58,8 @@ const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
       {/* Main Viewport Container with dynamic padding based on sidebar state */}
       <div
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
-          isCollapsed ? 'md:pl-20' : 'md:pl-72'
-        }`}
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${isCollapsed ? 'md:pl-20' : 'md:pl-72'
+          }`}
       >
         {/* Fixed Top Navigation Bar */}
         <TopNav onOpenAI={() => openAI()} />
@@ -72,9 +71,8 @@ const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
         {/* Global Page Footer */}
         <div
-          className={`transition-all duration-300 ${
-            !currentTrack || !isPlayerVisible || isPlayerCollapsed ? 'pb-24 md:pb-10' : 'pb-56 md:pb-32'
-          }`}
+          className={`transition-all duration-300 ${!currentTrack || !isPlayerVisible || isPlayerCollapsed ? 'pb-24 md:pb-10' : 'pb-56 md:pb-32'
+            }`}
         >
           <Footer />
         </div>

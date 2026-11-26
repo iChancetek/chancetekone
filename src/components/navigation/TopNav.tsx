@@ -60,7 +60,7 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
   return (
     <>
       <header
-        className={`h-[calc(4.25rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] fixed top-0 right-0 left-0 border-b border-white/[0.07] z-30 px-2.5 sm:px-4 md:px-6 flex items-center justify-between gap-2 sm:gap-3 bg-[#050509]/85 backdrop-blur-2xl shadow-[0_10px_30px_-15px_rgba(0,0,0,0.8)] transition-all duration-300 ease-in-out ${
+        className={`h-[calc(4.25rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] fixed top-0 right-0 left-0 border-b border-white/[0.07] z-30 px-2.5 sm:px-4 md:px-6 flex items-center justify-between gap-2 sm:gap-3 bg-[#050509]/95 md:bg-[#050509]/85 md:backdrop-blur-2xl shadow-[0_10px_30px_-15px_rgba(0,0,0,0.8)] transition-all duration-300 ease-in-out ${
           isCollapsed ? 'md:left-20' : 'md:left-72'
         }`}
       >

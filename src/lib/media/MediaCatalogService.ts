@@ -11,6 +11,7 @@ import {
 } from '@/lib/catalog/catalogAssets';
 import { CatalogCollection, CatalogDoc, CatalogOp, CatalogSnapshot } from '@/lib/catalog/cloudShared';
 import { SEED_PODCASTS } from './seedMediaData';
+import { resolveAuthenticVideoThumbnail } from './videoThumbnailMap';
 
 export { SEED_PODCASTS };
 
@@ -367,7 +368,7 @@ class MediaCatalogServiceClass {
         body: JSON.stringify({
           ops: [{ collection: 'audiobooks', op: 'set', id: audiobook.id, data: audiobook }],
         }),
-      }).catch(() => {});
+      }).catch(() => { });
     }
     this.notify();
   }
@@ -433,10 +434,14 @@ class MediaCatalogServiceClass {
         const titleKey = `title:${(v.title || '').toLowerCase().trim()}`;
         return !this.removedVideoIds.includes(v.id) && !this.removedVideoIds.includes(titleKey);
       })
-      .map((v) => ({
-        ...v,
-        likeCount: EngagementMetricsService.getLikeCount(v.id),
-      }));
+      .map((v) => {
+        const authenticThumb = resolveAuthenticVideoThumbnail(v.id, v.videoUrl, v.thumbnailUrl);
+        return {
+          ...v,
+          thumbnailUrl: authenticThumb || v.thumbnailUrl,
+          likeCount: EngagementMetricsService.getLikeCount(v.id),
+        };
+      });
   }
 
   public getVideoById(id: string): Video | undefined {
@@ -538,7 +543,7 @@ class MediaCatalogServiceClass {
         body: JSON.stringify({
           ops: [{ collection: 'podcasts', op: 'set', id: podcast.id, data: podcast }],
         }),
-      }).catch(() => {});
+      }).catch(() => { });
     }
     this.notify();
   }

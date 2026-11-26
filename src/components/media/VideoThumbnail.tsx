@@ -1,32 +1,23 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-
-const GENERIC_COVER_PATTERNS = [
-  '/images/studio_cover.jpg',
-  '/images/logo.png',
-  '/images/chancetekone_banner.png',
-  '/images/the_lounge_ambient.jpg',
-  '/images/chancetekone_logo',
-  '/images/chancetekone_icon',
-];
+import {
+  isGenericVideoThumbnailUrl,
+  resolveAuthenticVideoThumbnail,
+} from '@/lib/media/videoThumbnailMap';
 
 export function isGenericVideoCover(url?: string | null): boolean {
-  if (!url || !url.trim()) return true;
-  const lower = url.toLowerCase().trim();
-  return GENERIC_COVER_PATTERNS.some((p) => lower.includes(p));
+  return isGenericVideoThumbnailUrl(url);
 }
 
 export function buildVideoFrameSrc(videoUrl?: string | null, seekSeconds = 1.5): string {
   if (!videoUrl) return '';
   const trimmed = videoUrl.trim();
   if (!trimmed) return '';
-  // Preserve blob:/data: URLs as-is without encoding
   if (trimmed.startsWith('blob:') || trimmed.startsWith('data:')) {
     return trimmed;
   }
   const [withoutHash, existingHash] = trimmed.split('#');
-  // Avoid double-encoding already encoded URLs
   let safeBase = withoutHash;
   try {
     safeBase = encodeURI(decodeURI(withoutHash));
@@ -40,22 +31,27 @@ export function buildVideoFrameSrc(videoUrl?: string | null, seekSeconds = 1.5):
 }
 
 interface VideoThumbnailProps {
+  videoId?: string | null;
   videoUrl?: string | null;
   thumbnailUrl?: string | null;
   alt: string;
   className?: string;
   videoRef?: React.RefObject<HTMLVideoElement | null>;
   isHovered?: boolean;
-  /** Prefer live video frame over thumbnailUrl whenever thumbnailUrl is generic or always when true */
+  /** Prefer live video frame when no static extracted video thumbnail exists */
   preferVideoFrame?: boolean;
 }
 
 /**
- * Renders the actual frame thumbnail from a video file (avoiding generic studio_cover.jpg art).
- * Automatically seeks past black intro frames (t = 1.5s or 20% of duration) once metadata loads
- * and supports smooth hover preview playback when `videoRef` + `isHovered` are provided.
+ * Displays the authentic video frame thumbnail for any video (just like YouTube).
+ * 1. If a real extracted JPEG thumbnail exists (`/images/video-thumbs/...` or non-generic uploaded poster),
+ *    renders an instant, zero-overhead `<img>` (keeping iPhone & Android PWAs silky-smooth 60fps!) and
+ *    smoothly switches to `<video>` only during desktop hover preview.
+ * 2. If no static extracted thumbnail exists yet (e.g. a brand-new external video), lazily activates
+ *    `<video preload="metadata">` via IntersectionObserver to render its real frame at t=1.5s.
  */
 export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
+  videoId,
   videoUrl,
   thumbnailUrl,
   alt,
@@ -64,17 +60,46 @@ export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
   isHovered = false,
   preferVideoFrame = true,
 }) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const internalRef = useRef<HTMLVideoElement | null>(null);
   const elRef = externalRef || internalRef;
   const [videoFailed, setVideoFailed] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
+  const [isNearViewport, setIsNearViewport] = useState(false);
 
-  const hasCustomThumbnail = Boolean(thumbnailUrl && !isGenericVideoCover(thumbnailUrl));
+  const authenticThumb = resolveAuthenticVideoThumbnail(videoId, videoUrl, thumbnailUrl);
+  const hasAuthenticStaticThumb = Boolean(authenticThumb && !imgFailed);
   const canRenderVideo = Boolean(videoUrl && !videoFailed);
   const frameSrc = buildVideoFrameSrc(videoUrl, 1.5);
 
   useEffect(() => {
     setVideoFailed(false);
-  }, [videoUrl]);
+    setImgFailed(false);
+  }, [videoUrl, thumbnailUrl]);
+
+  // Only observe viewport when we actually need a live <video> element for frame extraction
+  useEffect(() => {
+    if (hasAuthenticStaticThumb && !isHovered) return;
+    const node = containerRef.current;
+    if (!node || typeof IntersectionObserver === 'undefined') {
+      setIsNearViewport(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry?.isIntersecting) {
+          setIsNearViewport(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '120px 0px', threshold: 0.01 }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasAuthenticStaticThumb, isHovered]);
 
   const handleLoadedMetadata = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const el = e.currentTarget;
@@ -90,31 +115,55 @@ export const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
     }
   };
 
-  if (canRenderVideo && (preferVideoFrame || !hasCustomThumbnail)) {
+  // Fast path: real extracted JPEG thumbnail exists and user isn't hovering for desktop preview
+  if (hasAuthenticStaticThumb && (!isHovered || !canRenderVideo)) {
     return (
-      <video
-        ref={elRef}
-        src={frameSrc}
-        poster={hasCustomThumbnail ? thumbnailUrl! : undefined}
-        muted
-        loop
-        playsInline
-        preload="auto"
-        onLoadedMetadata={handleLoadedMetadata}
-        onError={() => setVideoFailed(true)}
-        aria-label={alt}
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={authenticThumb}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        onError={() => setImgFailed(true)}
         className={className}
       />
+    );
+  }
+
+  // Hover preview or fallback live frame extraction for newly uploaded videos without static JPEG
+  if (canRenderVideo && (isHovered || preferVideoFrame || !hasAuthenticStaticThumb)) {
+    return (
+      <div ref={containerRef} className="w-full h-full bg-[#080810] relative">
+        {isNearViewport || isHovered ? (
+          <video
+            ref={elRef}
+            src={frameSrc}
+            poster={hasAuthenticStaticThumb ? authenticThumb : undefined}
+            muted
+            loop
+            autoPlay={isHovered}
+            playsInline
+            preload="metadata"
+            onLoadedMetadata={handleLoadedMetadata}
+            onError={() => setVideoFailed(true)}
+            aria-label={alt}
+            className={`pointer-events-none ${className}`}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-[#141024] via-[#0a0a12] to-[#050509]" />
+        )}
+      </div>
     );
   }
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={hasCustomThumbnail ? thumbnailUrl! : '/images/studio_cover.jpg'}
+      src={hasAuthenticStaticThumb ? authenticThumb : '/images/video-thumbs/video-1.jpg'}
       alt={alt}
+      loading="lazy"
+      decoding="async"
       className={className}
     />
   );
 };
-

@@ -59,7 +59,7 @@ export const MobileNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => 
   };
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[calc(4.25rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] border-t border-white/[0.1] z-50 px-2 flex items-center justify-around bg-[#07070e]/92 backdrop-blur-2xl shadow-[0_-12px_36px_rgba(0,0,0,0.85)]">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[calc(4.25rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] border-t border-white/[0.1] z-50 px-2 flex items-center justify-around bg-[#07070e]/96 shadow-[0_-12px_36px_rgba(0,0,0,0.85)]">
       {NAV_ITEMS.map((item) => {
         const Icon = item.icon;
         const isActive = activePath === item.href || (item.href !== '/' && activePath.startsWith(item.href));

@@ -43,6 +43,29 @@ type FavoritesListener = (favorites: FavoriteItem[]) => void;
 export class FavoritesService {
   private static listeners: Map<string, Set<FavoritesListener>> = new Map();
   private static globalListeners: Set<() => void> = new Set();
+  private static mergedCache: Map<string, FavoriteItem[]> = new Map();
+  private static idSetCache: Map<string, Set<string>> = new Map();
+  private static storageListenerBound = false;
+
+  private static ensureStorageSync(): void {
+    if (this.storageListenerBound || typeof window === 'undefined') return;
+    this.storageListenerBound = true;
+    window.addEventListener('storage', (e) => {
+      if (e.key && e.key.startsWith(FAVORITES_STORAGE_PREFIX)) {
+        this.invalidateCache();
+        this.globalListeners.forEach((cb) => {
+          try {
+            cb();
+          } catch { }
+        });
+      }
+    });
+  }
+
+  private static invalidateCache(): void {
+    this.mergedCache.clear();
+    this.idSetCache.clear();
+  }
 
   private static getStorageKey(userId: string = 'guest'): string {
     return `${FAVORITES_STORAGE_PREFIX}${userId}`;
@@ -50,6 +73,7 @@ export class FavoritesService {
 
   public static getFavorites(userId: string = 'guest'): FavoriteItem[] {
     if (typeof window === 'undefined') return [];
+    this.ensureStorageSync();
     try {
       const data = localStorage.getItem(this.getStorageKey(userId));
       const parsed = data ? JSON.parse(data) : [];
@@ -61,16 +85,21 @@ export class FavoritesService {
 
   /**
    * Returns merged favorites across the signed-in userId AND guest storage
-   * (deduplicated by id + category, newest first) so items favorited before
-   * signing in remain seamlessly available in Library.
+   * (deduplicated by id + category, newest first) with O(1) in-memory caching.
    */
   public static getMergedFavorites(userId?: string | null): FavoriteItem[] {
     if (typeof window === 'undefined') return [];
+    this.ensureStorageSync();
+    const cacheKey = userId || 'guest';
+    const hit = this.mergedCache.get(cacheKey);
+    if (hit) return hit;
+
     const primary = userId ? this.getFavorites(userId) : [];
     const guest = this.getFavorites('guest');
     const combined = userId && userId !== 'guest' ? [...primary, ...guest] : guest;
     const seen = new Set<string>();
     const deduped: FavoriteItem[] = [];
+    const keySet = new Set<string>();
     combined
       .sort((a, b) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime())
       .forEach((item) => {
@@ -78,8 +107,12 @@ export class FavoritesService {
         if (!seen.has(key)) {
           seen.add(key);
           deduped.push(item);
+          keySet.add(key);
+          keySet.add(`any:${item.id}`);
         }
       });
+    this.mergedCache.set(cacheKey, deduped);
+    this.idSetCache.set(cacheKey, keySet);
     return deduped;
   }
 
@@ -87,6 +120,7 @@ export class FavoritesService {
     if (typeof window === 'undefined') return;
     try {
       localStorage.setItem(this.getStorageKey(userId), JSON.stringify(items));
+      this.invalidateCache();
       this.notify(userId, items);
     } catch (e) {
       console.error('Error saving user favorites:', e);
@@ -98,8 +132,14 @@ export class FavoritesService {
   }
 
   public static isFavorite(id: string, userId: string = 'guest', category?: FavoriteCategory): boolean {
-    const list = this.getMergedFavorites(userId);
-    return list.some((item) => item.id === id && (!category || item.category === category));
+    if (typeof window === 'undefined') return false;
+    const cacheKey = userId || 'guest';
+    if (!this.idSetCache.has(cacheKey)) {
+      this.getMergedFavorites(userId);
+    }
+    const keySet = this.idSetCache.get(cacheKey);
+    if (!keySet) return false;
+    return category ? keySet.has(`${category}:${id}`) : keySet.has(`any:${id}`);
   }
 
   public static addFavorite(
@@ -179,16 +219,10 @@ export class FavoritesService {
   }
 
   public static subscribeAll(listener: () => void): () => void {
+    this.ensureStorageSync();
     this.globalListeners.add(listener);
-    const onWindow = () => listener();
-    if (typeof window !== 'undefined') {
-      window.addEventListener('favorites-updated', onWindow);
-    }
     return () => {
       this.globalListeners.delete(listener);
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('favorites-updated', onWindow);
-      }
     };
   }
 

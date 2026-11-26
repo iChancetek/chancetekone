@@ -20,6 +20,7 @@ import {
   knownAlbumCover,
 } from '@/lib/music/canonicalCatalogData';
 import { Audiobook, PodcastEpisode, Track, Video } from '@/types/media';
+import { resolveAuthenticVideoThumbnail } from '@/lib/media/videoThumbnailMap';
 
 const PRODUCTION_ORIGIN = (
   process.env.NEXT_PUBLIC_APP_URL || 'https://chancetekone.us'
@@ -50,6 +51,8 @@ export interface ServerResolvedTrackShare {
   ogImageType: string;
   /** Relative or absolute image URL suitable for client rendering */
   clientCoverUrl: string;
+  /** Optional direct video URL for YouTube-style og:video tags on shared videos */
+  videoUrl?: string;
   origin: string;
 }
 
@@ -596,10 +599,19 @@ export async function lookupVideoForShareMetadata(
     (merged?.description && merged.description.replace(/\s+/g, ' ').trim().slice(0, 180)) ||
     `Watch "${title}" by ${artist} in 4K Ultra HD on ChanceTEK One.`;
 
+  // Always prioritize the REAL extracted frame thumbnail from the video itself (YouTube-style)
+  // — NEVER use generic cover art like studio_cover.jpg or genre art when sharing a video.
+  const extractedVideoThumb = resolveAuthenticVideoThumbnail(
+    decodedId,
+    merged?.videoUrl,
+    merged?.thumbnailUrl
+  );
+
   const candidateCover = normalizeExternalCoverOrigin(
-    (!isGenericOrInvalidTrackCover(merged?.thumbnailUrl) ? merged?.thumbnailUrl : '') ||
+    extractedVideoThumb ||
+      (!isGenericOrInvalidTrackCover(merged?.thumbnailUrl) ? merged?.thumbnailUrl : '') ||
       (!isGenericOrInvalidTrackCover(hints.cover) ? hints.cover : '') ||
-      '/images/genres/hip-hop.jpg'
+      '/images/video-thumbs/video-1.jpg'
   );
 
   const rawCover =
@@ -607,7 +619,7 @@ export async function lookupVideoForShareMetadata(
     candidateCover.startsWith('https://') ||
     (candidateCover.startsWith('/') && publicFileExists(candidateCover))
       ? candidateCover
-      : '/images/genres/hip-hop.jpg';
+      : '/images/video-thumbs/video-1.jpg';
 
   const { ogImageUrl, ogImageType, clientCoverUrl } = buildOgImageResult(
     safeOrigin,
@@ -615,6 +627,12 @@ export async function lookupVideoForShareMetadata(
     decodedId,
     'video'
   );
+
+  const normalizedVideoUrl = merged?.videoUrl
+    ? merged.videoUrl.startsWith('http://') || merged.videoUrl.startsWith('https://')
+      ? merged.videoUrl
+      : `${safeOrigin}${encodeURI(merged.videoUrl.startsWith('/') ? merged.videoUrl : `/${merged.videoUrl}`)}`
+    : undefined;
 
   return {
     id: decodedId,
@@ -625,6 +643,7 @@ export async function lookupVideoForShareMetadata(
     ogImageUrl,
     ogImageType,
     clientCoverUrl,
+    videoUrl: normalizedVideoUrl,
     origin: safeOrigin,
   };
 }

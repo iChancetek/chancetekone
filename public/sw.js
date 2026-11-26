@@ -1,9 +1,9 @@
-// ChanceTEK One - 2026 Progressive Web App Service Worker (Real-Time Platform Sync)
-const CACHE_NAME = 'chancetekone-pwa-v2.5.0';
-const RUNTIME_CACHE = 'chancetekone-runtime-v2.5.0';
-// Audio files are never cached by the SW — browser handles native Range-request streaming directly
+// ChanceTEK One - 2026 Progressive Web App Service Worker (Fast Mobile PWA + Zero Stale Hydration)
+const CACHE_NAME = 'chancetekone-pwa-v3.0.0';
+const RUNTIME_CACHE = 'chancetekone-runtime-v3.0.0';
 
-// Pre-cache only offline fallback shell assets; dynamic pages are fetched network-first to ensure real-time platform sync
+// Pre-cache only lightweight offline shell assets; HTML pages always load fresh from network
+// so installed iPhone & Android PWAs never load stale HTML referencing deleted Next.js JS chunks.
 const PRECACHE_URLS = [
   '/offline',
   '/images/chancetekone_icon.png?v=2',
@@ -21,46 +21,47 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// 2. Activate Event: Clean up stale caches and claim clients immediately
+// 2. Activate Event: Purge ALL legacy caches (including v2.5.0 stale HTML/chunks) and claim clients
 self.addEventListener('activate', (event) => {
   const currentCaches = [CACHE_NAME, RUNTIME_CACHE];
   event.waitUntil(
     caches
       .keys()
-      .then((cacheNames) => {
-        return Promise.all(
+      .then((cacheNames) =>
+        Promise.all(
           cacheNames.map((cacheName) => {
             if (!currentCaches.includes(cacheName)) {
-              console.log('[PWA SW] Removing legacy cache:', cacheName);
               return caches.delete(cacheName);
             }
+            return Promise.resolve(false);
           })
-        );
-      })
+        )
+      )
       .then(() => self.clients.claim())
   );
 });
 
-// 3. Fetch Event: Intelligent multi-tier caching strategy
+// 3. Fetch Event: Network-first for HTML & chunks safety; bypass all audio/video/API
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Bypass non-GET requests, non-http protocols, and only-if-cached requests
+  // Bypass non-GET requests, non-http protocols, cross-origin, and only-if-cached
   if (
     request.method !== 'GET' ||
     !url.protocol.startsWith('http') ||
+    url.origin !== self.location.origin ||
     request.cache === 'only-if-cached'
   ) {
     return;
   }
 
   // CRITICAL RULE 1: Completely bypass ALL audio & video files (.mp3, .mp4, /audio/, /videos/)
-  // Browser audio and video elements use HTTP Range requests for seeking/streaming. Never intercept them.
   if (
     url.pathname.endsWith('.mp3') ||
     url.pathname.endsWith('.mp4') ||
     url.pathname.endsWith('.m4v') ||
+    url.pathname.endsWith('.mov') ||
     url.pathname.endsWith('.wav') ||
     url.pathname.endsWith('.ogg') ||
     url.pathname.endsWith('.aac') ||
@@ -71,7 +72,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Bypass API endpoints, Auth endpoints, development localhost, and external third-party services
+  // Bypass API, dev/HMR, RSC payloads, and localhost
   if (
     url.hostname === 'localhost' ||
     url.hostname === '127.0.0.1' ||
@@ -79,44 +80,27 @@ self.addEventListener('fetch', (event) => {
     url.pathname.includes('/webpack-hmr') ||
     url.pathname.includes('/__nextjs') ||
     url.searchParams.has('_rsc') ||
-    request.headers.get('RSC') === '1' ||
-    url.hostname.includes('firebase') ||
-    url.hostname.includes('googleapis') ||
-    url.hostname.includes('openai.com')
+    request.headers.get('RSC') === '1'
   ) {
     return;
   }
 
-  // Next.js Static Assets (CSS, JS chunks, fonts, images): Stale-While-Revalidate / Cache-First
-  // These are content-hashed and immutable. Caching them guarantees CSS and chunk loads never fail or 404 on mobile PWAs.
-  if (
-    url.pathname.startsWith('/_next/static/') ||
-    url.pathname.startsWith('/images/') ||
-    url.pathname.endsWith('.png') ||
-    url.pathname.endsWith('.jpg') ||
-    url.pathname.endsWith('.jpeg') ||
-    url.pathname.endsWith('.webp') ||
-    url.pathname.endsWith('.svg') ||
-    url.pathname.endsWith('.woff2') ||
-    url.pathname.endsWith('.css')
-  ) {
+  // Next.js immutable hashed static assets (JS, CSS, fonts): Cache-First ONLY if valid non-HTML 200 response
+  if (url.pathname.startsWith('/_next/static/')) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
-          // Revalidate in background to keep fresh
-          fetch(request)
-            .then((networkResponse) => {
-              if (networkResponse && networkResponse.status === 200) {
-                const clone = networkResponse.clone();
-                caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, clone)).catch(() => {});
-              }
-            })
-            .catch(() => {});
           return cachedResponse;
         }
-
         return fetch(request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+          const contentType = (networkResponse.headers.get('content-type') || '').toLowerCase();
+          // Never cache HTML error pages in a JS/CSS chunk slot
+          if (
+            networkResponse &&
+            networkResponse.status === 200 &&
+            networkResponse.type === 'basic' &&
+            !contentType.includes('text/html')
+          ) {
             const clone = networkResponse.clone();
             caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, clone)).catch(() => {});
           }
@@ -127,36 +111,56 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // HTML Navigation Requests: Network-First with Offline Fallback
-  if (request.mode === 'navigate') {
+  // Static images & fonts: Cache-First with safe non-blocking background fill
+  if (
+    url.pathname.startsWith('/images/') ||
+    url.pathname.endsWith('.png') ||
+    url.pathname.endsWith('.jpg') ||
+    url.pathname.endsWith('.jpeg') ||
+    url.pathname.endsWith('.webp') ||
+    url.pathname.endsWith('.svg') ||
+    url.pathname.endsWith('.woff2')
+  ) {
     event.respondWith(
-      fetch(new Request(request, { cache: 'no-cache' }))
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+      caches.match(request).then((cachedResponse) => {
+        if (cachedResponse) return cachedResponse;
+        return fetch(request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             const clone = networkResponse.clone();
             caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, clone)).catch(() => {});
           }
           return networkResponse;
-        })
-        .catch(async () => {
-          const cachedResponse = await caches.match(request);
-          if (cachedResponse) return cachedResponse;
-          const offlinePage = await caches.match('/offline');
-          return (
-            offlinePage ||
-            new Response('Offline - ChanceTEK One', {
-              headers: { 'Content-Type': 'text/html' },
-            })
-          );
-        })
+        });
+      })
+    );
+    return;
+  }
+
+  // HTML Navigation Requests: Strictly Network-First (NEVER serve stale HTML with outdated chunk hashes!)
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(new Request(request, { cache: 'no-cache' })).catch(async () => {
+        const offlinePage = await caches.match('/offline');
+        return (
+          offlinePage ||
+          new Response('Offline - ChanceTEK One', {
+            headers: { 'Content-Type': 'text/html' },
+          })
+        );
+      })
     );
     return;
   }
 });
 
-// 4. Message Event: Handle manual update triggers from client
+// 4. Message Event: Handle manual update & cache purge triggers from client
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  if (event.data && event.data.type === 'CLEAR_CACHES') {
+    event.waitUntil(
+      caches.keys().then((names) => Promise.all(names.map((n) => caches.delete(n))))
+    );
   }
 });

@@ -3,6 +3,7 @@ import { Product } from '@/types/commerce';
 import { Playlist } from '@/types/playlist';
 import { MusicCatalogService, getDefaultCoverForTrack } from '@/lib/music/MusicCatalogService';
 import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
+import { resolveAuthenticVideoThumbnail } from '@/lib/media/videoThumbnailMap';
 import { MerchCatalogService } from '@/lib/commerce/MerchCatalogService';
 import { ProducerCatalogService } from '@/lib/producers/ProducerCatalogService';
 import { PlaylistService } from '@/lib/playlist/PlaylistService';
@@ -158,6 +159,18 @@ export function resolveAuthenticCover(type: ShareContentType, item: any): string
     return '/images/genres/rnb-neo-soul.jpg';
   }
 
+  // For videos: ALWAYS prioritize the authentic extracted video thumbnail (YouTube-style),
+  // NEVER generic cover art or unrelated audiobook art.
+  if (type === 'video') {
+    const video = item as Video;
+    const extracted = resolveAuthenticVideoThumbnail(video?.id, video?.videoUrl, video?.thumbnailUrl);
+    if (extracted) return extracted;
+    if (video?.thumbnailUrl && !isDefaultOrInvalidCover(video.thumbnailUrl)) {
+      return video.thumbnailUrl;
+    }
+    return '/images/video-thumbs/video-1.jpg';
+  }
+
   // For non-song entities: if custom or item has a non-default cover, verify it:
   const directCover = item?.coverUrl || item?.imageUrl || item?.thumbnailUrl || item?.avatarUrl || item?.bannerUrl;
   if (directCover && !isDefaultOrInvalidCover(directCover)) {
@@ -165,14 +178,6 @@ export function resolveAuthenticCover(type: ShareContentType, item: any): string
   }
 
   switch (type) {
-    case 'video': {
-      const video = item as Video;
-      if (video?.thumbnailUrl && !isDefaultOrInvalidCover(video.thumbnailUrl)) {
-        return video.thumbnailUrl;
-      }
-      return '/images/genres/hip-hop.jpg';
-    }
-
     case 'podcast': {
       const podcast = item as PodcastEpisode;
       if (podcast?.coverUrl && !isDefaultOrInvalidCover(podcast.coverUrl)) {
@@ -389,7 +394,7 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
         creator = item?.artistName || 'ChanceTEK One';
         break;
       case 'video':
-        creator = item?.artist || item?.creator || 'Visual Cinema';
+        creator = item?.artistName || item?.artist || item?.creator || 'Visual Cinema';
         break;
       case 'podcast':
         creator = item?.host || item?.showTitle || 'ChanceTEK One';
@@ -485,11 +490,14 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
     }
   }
 
-  // Resolve authentic cover art (exact song cover prioritized over generic art):
+  // Resolve authentic cover art (exact video thumbnail / exact song cover prioritized over generic art):
   const coverUrl =
-    input.customCoverUrl && !isDefaultOrInvalidCover(input.customCoverUrl) && !isGenericGenreCover(input.customCoverUrl)
-      ? input.customCoverUrl
-      : resolveAuthenticCover(type, item);
+    type === 'video'
+      ? resolveAuthenticVideoThumbnail(effectiveId, item?.videoUrl, input.customCoverUrl || item?.thumbnailUrl) ||
+        resolveAuthenticCover(type, item)
+      : input.customCoverUrl && !isDefaultOrInvalidCover(input.customCoverUrl) && !isGenericGenreCover(input.customCoverUrl)
+        ? input.customCoverUrl
+        : resolveAuthenticCover(type, item);
 
   // Canonical public share URL (Required by SMS/iMessage, WhatsApp, Facebook, X, LinkedIn, Telegram crawlers):
   let relativePath = `/music/${effectiveId}`;
@@ -551,30 +559,37 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
   if (item?.releaseYear) metadataBadges.push(String(item.releaseYear));
 
   // Text message body specifically tailored for SMS / iMessage rich link previews:
-  const textMessageBody = `Listen to "${title}" by ${creator} on ChanceTEK One!
+  const actionVerb = type === 'video' ? 'Watch' : 'Listen to';
+  const textMessageBody = `${actionVerb} "${title}" by ${creator} on ChanceTEK One!
 
 ${description}
 
 ${canonicalUrl}`;
 
   // General share text:
-  const shareText = `Check out "${title}" by ${creator} on ChanceTEK One: ${description}`;
+  const shareText = `${actionVerb} "${title}" by ${creator} on ChanceTEK One: ${description}`;
 
-  // Social share URLs (all point to canonicalUrl carrying exact song OG artwork):
+  // Absolute public thumbnail URL for Famio.us & social share hints
+  const publicCoverUrl =
+    coverUrl.startsWith('http://') || coverUrl.startsWith('https://')
+      ? coverUrl
+      : `${PRODUCTION_ORIGIN}${encodeURI(coverUrl.startsWith('/') ? coverUrl : `/${coverUrl}`)}`;
+
+  // Social share URLs (all point to canonicalUrl carrying exact video thumbnail / song OG artwork):
   const encodedUrl = encodeURIComponent(canonicalUrl);
   const encodedSms = encodeURIComponent(textMessageBody);
 
   const smsUrl = `sms:?&body=${encodedSms}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
   const messengerUrl = `fb-messenger://share/?link=${encodedUrl}`;
-  const famioUrl = `https://famio.us/?share=${encodedUrl}&title=${encodeURIComponent(`${title} — ${creator}`)}&text=${encodeURIComponent(`Listen to "${title}" by ${creator} on ChanceTEK One`)}`;
-  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out "${title}" by ${creator} on ChanceTEK One`)}&url=${encodedUrl}`;
+  const famioUrl = `https://famio.us/?share=${encodedUrl}&title=${encodeURIComponent(`${title} — ${creator}`)}&text=${encodeURIComponent(`${actionVerb} "${title}" by ${creator} on ChanceTEK One`)}&image=${encodeURIComponent(publicCoverUrl)}`;
+  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`${actionVerb} "${title}" by ${creator} on ChanceTEK One`)}&url=${encodedUrl}`;
   const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
   const whatsAppUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`*${title}* by _${creator}_\n\n${canonicalUrl}`)}`;
   const telegramUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(`${title} by ${creator} on ChanceTEK One`)}`;
 
   const emailSubject = `${title} by ${creator} — ChanceTEK One`;
-  const emailBody = `Hey,\n\nI wanted to share this with you on ChanceTEK One:\n\n"${title}" by ${creator}\n\n${description}\n\nStream now: ${canonicalUrl}`;
+  const emailBody = `Hey,\n\nI wanted to share this with you on ChanceTEK One:\n\n"${title}" by ${creator}\n\n${description}\n\n${type === 'video' ? 'Watch now' : 'Stream now'}: ${canonicalUrl}`;
   const emailUrl = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
 
   return {

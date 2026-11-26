@@ -234,6 +234,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, type }) => {
             <>
               {/* Real Video Frame Thumbnail with Hover Auto-Play (Never shows generic studio_cover.jpg) */}
               <VideoThumbnail
+                videoId={item.id}
                 videoUrl={videoUrlForCard}
                 thumbnailUrl={resolvedCover}
                 alt={getTitle()}

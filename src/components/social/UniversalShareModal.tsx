@@ -187,9 +187,14 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
   };
 
   const handleFamioShare = () => {
-    const famioPost = `${meta.title} by ${meta.creator} — Listen on ChanceTEK One\n${meta.canonicalUrl}`;
+    const verb = meta.type === 'video' ? 'Watch' : 'Listen';
+    const famioPost = `${meta.title} by ${meta.creator} — ${verb} on ChanceTEK One\n${meta.canonicalUrl}`;
     void copyTextReliably(famioPost);
-    showToast('Copied for Famio.us! Opening famio.us — paste into your Famio post or chat and the cover art attaches automatically.');
+    showToast(
+      meta.type === 'video'
+        ? 'Copied for Famio.us! Opening famio.us — paste into your Famio post or chat and the video thumbnail attaches automatically.'
+        : 'Copied for Famio.us! Opening famio.us — paste into your Famio post or chat and the cover art attaches automatically.'
+    );
     openExternalUrlSafely(meta.famioUrl);
   };
 
@@ -221,7 +226,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
 
   // Resilient fallback image if image loading errors out:
   const fallbackCover = meta.type === 'video'
-    ? '/images/genres/hip-hop.jpg'
+    ? '/images/video-thumbs/video-1.jpg'
     : meta.type === 'audiobook' || meta.type === 'book'
     ? '/images/audiobooks/famio.jpg'
     : meta.type === 'merch'
@@ -261,7 +266,9 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
                 <Sparkles className="w-4 h-4 text-brand-gold" />
               </h3>
               <p className="text-xs text-neutral-400">
-                Cover art attaches automatically on social media, Messenger, SMS, and Famio.us
+                {meta.type === 'video'
+                  ? 'Original video thumbnail attaches automatically on social media, Messenger, SMS, and Famio.us'
+                  : 'Cover art attaches automatically on social media, Messenger, SMS, and Famio.us'}
               </p>
             </div>
           </div>
@@ -277,7 +284,11 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
 
         {/* Authentic Media Preview Card */}
         <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center gap-4 relative z-10 shadow-inner">
-          <div className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-2xl overflow-hidden border border-brand-gold/40 shrink-0 bg-neutral-900 shadow-xl">
+          <div
+            className={`relative rounded-2xl overflow-hidden border border-brand-gold/40 shrink-0 bg-neutral-900 shadow-xl ${
+              meta.type === 'video' ? 'w-28 h-16 sm:w-32 sm:h-[72px]' : 'w-20 h-20 sm:w-22 sm:h-22'
+            }`}
+          >
             <Image
               src={resolvedCoverSrc}
               alt={meta.title}

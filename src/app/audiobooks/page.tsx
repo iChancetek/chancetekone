@@ -117,7 +117,7 @@ export default function AudiobooksPage() {
             src="/videos/OrlandoFigueroa.mp4#t=0.5"
             controls
             playsInline
-            preload="auto"
+            preload="metadata"
             onPlay={handleFeaturedVideoPlay}
             className="w-full h-full object-cover object-center block bg-black"
           />

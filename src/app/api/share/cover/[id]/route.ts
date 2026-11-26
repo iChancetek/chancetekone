@@ -46,7 +46,7 @@ function parseCoverSlug(rawParam: string, queryType?: string | null): { id: stri
   let decoded = rawParam || '';
   try {
     decoded = decodeURIComponent(rawParam);
-  } catch {}
+  } catch { }
 
   // Strip optional crawler-friendly file extension (.jpg, .jpeg, .png, .webp)
   let cleanId = decoded.replace(/\.(jpg|jpeg|png|webp)$/i, '');
@@ -72,15 +72,20 @@ function readLocalFallbackCover(mediaType: string): { body: Uint8Array; contentT
   const candidates =
     mediaType === 'audiobook' || mediaType === 'book'
       ? [
-          path.resolve(publicRoot, 'images', 'audiobooks', 'famio.jpg'),
+        path.resolve(publicRoot, 'images', 'audiobooks', 'famio.jpg'),
+        path.resolve(publicRoot, 'images', 'chancetekone_logo.jpg'),
+      ]
+      : mediaType === 'video'
+        ? [
+          path.resolve(publicRoot, 'images', 'video-thumbs', 'video-1.jpg'),
           path.resolve(publicRoot, 'images', 'chancetekone_logo.jpg'),
         ]
-      : mediaType === 'podcast' || mediaType === 'video'
-        ? [
+        : mediaType === 'podcast'
+          ? [
             path.resolve(publicRoot, 'images', 'genres', 'hip-hop.jpg'),
             path.resolve(publicRoot, 'images', 'chancetekone_logo.jpg'),
           ]
-        : [
+          : [
             path.resolve(publicRoot, 'images', 'genres', 'rnb-neo-soul.jpg'),
             path.resolve(publicRoot, 'images', 'chancetekone_logo.jpg'),
           ];
@@ -91,7 +96,7 @@ function readLocalFallbackCover(mediaType: string): { body: Uint8Array; contentT
         const bytes = fs.readFileSync(candidate);
         return { body: new Uint8Array(bytes), contentType: mimeFromExt(candidate) };
       }
-    } catch {}
+    } catch { }
   }
   return null;
 }

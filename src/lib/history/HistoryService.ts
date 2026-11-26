@@ -24,6 +24,23 @@ const STORAGE_PREFIX = '8spades_user_history_';
 class HistoryServiceClass {
   private listeners: Map<string, Set<(history: HistoryEntry[]) => void>> = new Map();
   private globalListeners: Set<() => void> = new Set();
+  private mergedCache: Map<string, HistoryEntry[]> = new Map();
+  private storageListenerBound = false;
+
+  private ensureStorageSync(): void {
+    if (this.storageListenerBound || typeof window === 'undefined') return;
+    this.storageListenerBound = true;
+    window.addEventListener('storage', (e) => {
+      if (e.key && e.key.startsWith(STORAGE_PREFIX)) {
+        this.mergedCache.clear();
+        this.globalListeners.forEach((cb) => {
+          try {
+            cb();
+          } catch { }
+        });
+      }
+    });
+  }
 
   private getStorageKey(userId: string): string {
     return `${STORAGE_PREFIX}${userId}`;
@@ -31,6 +48,7 @@ class HistoryServiceClass {
 
   public getHistory(userId: string): HistoryEntry[] {
     if (typeof window === 'undefined' || !userId) return [];
+    this.ensureStorageSync();
     try {
       const raw = localStorage.getItem(this.getStorageKey(userId));
       if (!raw) return [];
@@ -44,13 +62,18 @@ class HistoryServiceClass {
 
   /**
    * Returns recently played entries across the signed-in user AND guest session,
-   * deduplicated by mediaType + mediaId and sorted newest first.
+   * deduplicated by mediaType + mediaId and sorted newest first (cached in memory).
    */
   public getMergedHistory(userId?: string | null): HistoryEntry[] {
     if (typeof window === 'undefined') return [];
+    this.ensureStorageSync();
+    const cacheKey = userId || 'guest';
+    const hit = this.mergedCache.get(cacheKey);
+    if (hit) return hit;
+
     const primary = userId ? this.getHistory(userId) : [];
-    const guest = userId && userId !== 'guest' ? this.getHistory('guest') : this.getHistory('guest');
-    const combined = [...primary, ...(userId && userId !== 'guest' ? guest : [])];
+    const guest = this.getHistory('guest');
+    const combined = userId && userId !== 'guest' ? [...primary, ...guest] : guest;
     const seen = new Set<string>();
     const deduped: HistoryEntry[] = [];
     combined
@@ -62,7 +85,9 @@ class HistoryServiceClass {
           deduped.push(entry);
         }
       });
-    return deduped.slice(0, 100);
+    const result = deduped.slice(0, 100);
+    this.mergedCache.set(cacheKey, result);
+    return result;
   }
 
   public recordHistory(
@@ -89,6 +114,7 @@ class HistoryServiceClass {
       const trimmed = filtered.slice(0, 100);
 
       localStorage.setItem(this.getStorageKey(effectiveUserId), JSON.stringify(trimmed));
+      this.mergedCache.clear();
       this.notify(effectiveUserId, trimmed);
       return newEntry;
     } catch (e) {
@@ -104,6 +130,7 @@ class HistoryServiceClass {
       if (userId !== 'guest') {
         localStorage.removeItem(this.getStorageKey('guest'));
       }
+      this.mergedCache.clear();
       this.notify(userId, []);
     } catch (e) {
       console.warn('Failed to clear history:', e);
@@ -126,16 +153,10 @@ class HistoryServiceClass {
   }
 
   public subscribeAll(callback: () => void): () => void {
+    this.ensureStorageSync();
     this.globalListeners.add(callback);
-    const onWindowEvent = () => callback();
-    if (typeof window !== 'undefined') {
-      window.addEventListener('history-updated', onWindowEvent);
-    }
     return () => {
       this.globalListeners.delete(callback);
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('history-updated', onWindowEvent);
-      }
     };
   }
 

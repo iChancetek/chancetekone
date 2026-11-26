@@ -83,7 +83,6 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
   const [isAutoSlideEnabled, setIsAutoSlideEnabled] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [showShareModal, setShowShareModal] = useState(false);
   const [discussionSlide, setDiscussionSlide] = useState<ProjectBannerSlide | null>(null);
   const [, setCommentRefresh] = useState(0);
@@ -111,14 +110,12 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
   const nextSlide = useCallback(() => {
     setIsTransitioning(true);
     setCurrentIndex((prev) => (prev + 1) % slides.length);
-    setProgress(0);
     setTimeout(() => setIsTransitioning(false), 300);
   }, [slides.length]);
 
   const prevSlide = useCallback(() => {
     setIsTransitioning(true);
     setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
-    setProgress(0);
     setTimeout(() => setIsTransitioning(false), 300);
   }, [slides.length]);
 
@@ -126,34 +123,23 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
     if (idx === currentIndex) return;
     setIsTransitioning(true);
     setCurrentIndex(idx);
-    setProgress(0);
     setTimeout(() => setIsTransitioning(false), 300);
   };
 
   const toggleAutoSlide = () => {
     setIsAutoSlideEnabled((prev) => !prev);
-    setProgress(0);
   };
 
-  // Automatic slideshow timer with progress tracking
+  // Automatic slideshow timer — single setTimeout per slide (ZERO 50ms React re-render loop)
   useEffect(() => {
     if (!isAutoSlideEnabled || isHovered || Boolean(discussionSlide)) return;
 
-    const tick = 50;
-    const step = (tick / AUTOPLAY_INTERVAL) * 100;
+    const timer = setTimeout(() => {
+      nextSlide();
+    }, AUTOPLAY_INTERVAL);
 
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          nextSlide();
-          return 0;
-        }
-        return prev + step;
-      });
-    }, tick);
-
-    return () => clearInterval(interval);
-  }, [isAutoSlideEnabled, isHovered, nextSlide]);
+    return () => clearTimeout(timer);
+  }, [isAutoSlideEnabled, isHovered, discussionSlide, currentIndex, nextSlide]);
 
   const handlePlayToggle = () => {
     if (currentTrack?.id === currentSlide.track.id) {
@@ -181,12 +167,13 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
       <div className="pointer-events-none absolute -top-24 -right-20 w-80 h-80 rounded-full bg-brand-purple/20 blur-[110px]" />
       <div className="pointer-events-none absolute -bottom-24 -left-20 w-72 h-72 rounded-full bg-brand-gold/12 blur-[110px]" />
 
-      {/* Auto-Slide Progress Bar */}
-      {isAutoSlideEnabled && (
+      {/* Auto-Slide Progress Bar (pure GPU CSS animation — zero JS timer re-renders) */}
+      {isAutoSlideEnabled && !isHovered && !discussionSlide && (
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-white/[0.06] overflow-hidden z-30 pointer-events-none">
           <div
-            className="h-full bg-gradient-to-r from-brand-purple via-brand-gold to-cyan-400 transition-all duration-75 ease-linear shadow-[0_0_12px_rgba(245,195,68,0.8)]"
-            style={{ width: `${progress}%` }}
+            key={`progress-${currentIndex}`}
+            className="h-full w-full origin-left bg-gradient-to-r from-brand-purple via-brand-gold to-cyan-400 shadow-[0_0_12px_rgba(245,195,68,0.8)] animate-hero-progress"
+            style={{ animationDuration: `${AUTOPLAY_INTERVAL}ms` }}
           />
         </div>
       )}
@@ -328,8 +315,8 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
           {currentSlide.videoUrl ? (
             <div
               className={`relative rounded-2xl sm:rounded-3xl border border-white/15 bg-black shadow-[0_25px_70px_-15px_rgba(0,0,0,0.95)] p-0 overflow-hidden w-full ring-1 ring-brand-gold/15 ${currentSlide.id === 'mi-vida-loca'
-                  ? 'aspect-[9/16] sm:aspect-[4/5] md:aspect-[16/10]'
-                  : 'aspect-[1112/830] max-h-[72vh]'
+                ? 'aspect-[9/16] sm:aspect-[4/5] md:aspect-[16/10]'
+                : 'aspect-[1112/830] max-h-[72vh]'
                 }`}
             >
               <video
@@ -337,7 +324,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
                 src={currentSlide.videoUrl}
                 controls
                 playsInline
-                preload="auto"
+                preload="metadata"
                 onPlay={() => {
                   if (isPlaying) {
                     pause();
@@ -475,7 +462,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
                 customTitle: 'Mi Vida Loca',
                 customCreator: 'Author Orlando Figueroa',
                 customDescription: currentSlide.narrationText,
-                customCoverUrl: '/images/audiobooks/famio.jpg',
+                customCoverUrl: '/images/video-thumbs/OrlandoFigueroa.jpg',
               };
             }
             if (currentSlide.id === 'saturday-night-sunday-morning') {
@@ -485,7 +472,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
                 customTitle: 'Saturday Night, Sunday Morning',
                 customCreator: 'Author Kwame Thompson',
                 customDescription: currentSlide.narrationText,
-                customCoverUrl: '/images/genres/literature.jpg',
+                customCoverUrl: '/images/video-thumbs/Kwame_Book_Promo_1.jpg',
               };
             }
             return {

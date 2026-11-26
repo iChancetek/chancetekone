@@ -1,7 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { RefreshCw, Wifi, WifiOff, X } from 'lucide-react';
+import { RefreshCw, WifiOff, X } from 'lucide-react';
+
+const CHUNK_RECOVERY_KEY = 'chancetekone_chunk_reload_ts';
+const SW_RELOAD_KEY = 'chancetekone_sw_reload_ts';
 
 export const PWARegister: React.FC = () => {
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
@@ -24,7 +27,62 @@ export const PWARegister: React.FC = () => {
     window.addEventListener('offline', updateOnlineStatus);
     updateOnlineStatus();
 
-    // 2. Register Service Worker in production; unregister and clear caches in development to prevent Turbopack stale chunk errors
+    // 2. Self-healing stale chunk / hydration mismatch recovery for installed iPhone & Android PWAs
+    // If a newly deployed build invalidates old JS chunks, clear caches and reload cleanly (max once per 30s).
+    const recoverFromStaleChunk = () => {
+      try {
+        const lastReload = Number(sessionStorage.getItem(CHUNK_RECOVERY_KEY) || '0');
+        if (Date.now() - lastReload < 30_000) return;
+        sessionStorage.setItem(CHUNK_RECOVERY_KEY, String(Date.now()));
+      } catch {
+        return;
+      }
+
+      const doReload = () => window.location.reload();
+      if ('caches' in window) {
+        caches
+          .keys()
+          .then((names) => Promise.all(names.map((n) => caches.delete(n))))
+          .finally(doReload);
+      } else {
+        doReload();
+      }
+    };
+
+    const handleWindowError = (event: ErrorEvent) => {
+      const msg = String(event?.message || '');
+      const target = event?.target as HTMLElement | null;
+      const isFailedChunkScript =
+        target &&
+        target.tagName === 'SCRIPT' &&
+        typeof (target as HTMLScriptElement).src === 'string' &&
+        (target as HTMLScriptElement).src.includes('/_next/static/');
+
+      if (
+        isFailedChunkScript ||
+        msg.includes('ChunkLoadError') ||
+        msg.includes('Loading chunk') ||
+        msg.includes('Failed to fetch dynamically imported module')
+      ) {
+        recoverFromStaleChunk();
+      }
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const msg = String(event?.reason?.message || event?.reason || '');
+      if (
+        msg.includes('ChunkLoadError') ||
+        msg.includes('Loading chunk') ||
+        msg.includes('Failed to fetch dynamically imported module')
+      ) {
+        recoverFromStaleChunk();
+      }
+    };
+
+    window.addEventListener('error', handleWindowError, true);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    // 3. Register Service Worker in production; unregister and clear caches in development
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       if (process.env.NODE_ENV === 'development') {
         navigator.serviceWorker.getRegistrations().then((registrations) => {
@@ -39,8 +97,27 @@ export const PWARegister: React.FC = () => {
             }
           });
         }
-        return;
+        return () => {
+          window.removeEventListener('online', updateOnlineStatus);
+          window.removeEventListener('offline', updateOnlineStatus);
+          window.removeEventListener('error', handleWindowError, true);
+          window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+        };
       }
+
+      const hadController = Boolean(navigator.serviceWorker.controller);
+      const onControllerChange = () => {
+        if (!hadController) return;
+        try {
+          const last = Number(sessionStorage.getItem(SW_RELOAD_KEY) || '0');
+          if (Date.now() - last < 30_000) return;
+          sessionStorage.setItem(SW_RELOAD_KEY, String(Date.now()));
+        } catch {
+          return;
+        }
+        window.location.reload();
+      };
+      navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
 
       navigator.serviceWorker
         .register('/sw.js', { updateViaCache: 'none' })
@@ -57,17 +134,16 @@ export const PWARegister: React.FC = () => {
           window.addEventListener('focus', checkForUpdate);
           window.addEventListener('online', checkForUpdate);
           cleanupListeners = () => {
+            navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
             document.removeEventListener('visibilitychange', onVisible);
             window.removeEventListener('focus', checkForUpdate);
             window.removeEventListener('online', checkForUpdate);
           };
 
-          // Check if an update is already waiting
           if (registration.waiting) {
             setUpdateAvailable(true);
           }
 
-          // Listen for new updates discovered in background
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
             if (newWorker) {
@@ -89,6 +165,8 @@ export const PWARegister: React.FC = () => {
       cleanupListeners();
       window.removeEventListener('online', updateOnlineStatus);
       window.removeEventListener('offline', updateOnlineStatus);
+      window.removeEventListener('error', handleWindowError, true);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
 

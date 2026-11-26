@@ -610,19 +610,21 @@ export const Sidebar: React.FC = () => {
       {/* ========================================================================= */}
       {/* 2. FULL MOBILE & PORTRAIT TABLET SLIDE-OVER DRAWER                        */}
       {/* ========================================================================= */}
-      {/* Backdrop */}
-      <div
-        onClick={closeMobileSidebar}
-        className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] transition-opacity duration-200 touch-manipulation ${isMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-          }`}
-        aria-hidden={!isMobileOpen}
-      />
+      {/* Backdrop — mounted ONLY when mobile drawer is open so closed state never composites or blocks taps */}
+      {isMobileOpen && (
+        <div
+          onClick={closeMobileSidebar}
+          className="fixed inset-0 bg-black/75 z-[70] touch-manipulation animate-in fade-in duration-150"
+          aria-hidden={!isMobileOpen}
+        />
+      )}
 
       {/* Slide Drawer Panel */}
       <aside
-        className={`fixed inset-y-0 left-0 w-[88vw] sm:w-96 max-w-sm glass-panel border-r border-white/10 z-[80] bg-[#0c0c16]/98 flex flex-col h-[100dvh] shadow-[0_0_50px_rgba(0,0,0,0.9)] transition-transform duration-200 ease-out ${isMobileOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'
+        className={`fixed inset-y-0 left-0 w-[88vw] sm:w-96 max-w-sm glass-panel border-r border-white/10 z-[80] bg-[#0c0c16]/98 flex flex-col h-[100dvh] shadow-[0_0_50px_rgba(0,0,0,0.9)] transition-transform duration-200 ease-out ${isMobileOpen ? 'translate-x-0 pointer-events-auto visible' : '-translate-x-full pointer-events-none invisible'
           }`}
         aria-label="Mobile Navigation Menu"
+        aria-hidden={!isMobileOpen}
       >
         {/* Mobile Drawer Header */}
         <div data-drawer-header="true" className="p-4 pt-[calc(1rem+env(safe-area-inset-top))] border-b border-white/10 flex items-center justify-between bg-[#10101c]/80">

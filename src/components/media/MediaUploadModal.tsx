@@ -65,8 +65,8 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
     mediaType === 'audiobook'
       ? 'Upload Audiobook & Book (.mp3, .mp4, .mov, .pdf)'
       : mediaType === 'podcast'
-      ? 'Upload Podcast (.mp3, .mp4, .mov)'
-      : 'Upload Video (.mp3, .mp4, .mov)';
+        ? 'Upload Podcast (.mp3, .mp4, .mov)'
+        : 'Upload Video (.mp3, .mp4, .mov)';
 
   const Icon =
     mediaType === 'audiobook' ? BookOpen : mediaType === 'podcast' ? Mic : Video;
@@ -80,8 +80,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
 
     if (!ext || !validExts.includes(ext)) {
       setErrorMessage(
-        `Invalid file format. ${
-          mediaType === 'audiobook' ? 'Audiobooks and Books' : mediaType === 'video' ? 'Videos' : 'Podcasts'
+        `Invalid file format. ${mediaType === 'audiobook' ? 'Audiobooks and Books' : mediaType === 'video' ? 'Videos' : 'Podcasts'
         } must be in ${validExts.map((x) => '.' + x).join(', ')} format.`
       );
       setMediaFile(null);
@@ -121,6 +120,101 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
     reader.readAsDataURL(file);
   };
 
+  // Automatically extract an authentic 1280x720 JPEG frame thumbnail from any uploaded video file
+  // (just like YouTube) so shared videos ALWAYS display their real video frame on social media, Famio.us & Messages.
+  const captureVideoThumbnailFile = (videoFile: File): Promise<File | null> => {
+    return new Promise((resolve) => {
+      if (typeof document === 'undefined' || typeof URL === 'undefined') {
+        resolve(null);
+        return;
+      }
+      const lower = videoFile.name.toLowerCase();
+      const isVideoFile =
+        videoFile.type.startsWith('video/') ||
+        lower.endsWith('.mp4') ||
+        lower.endsWith('.mov') ||
+        lower.endsWith('.webm') ||
+        lower.endsWith('.m4v');
+      if (!isVideoFile) {
+        resolve(null);
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(videoFile);
+      const videoEl = document.createElement('video');
+      videoEl.muted = true;
+      videoEl.playsInline = true;
+      videoEl.preload = 'metadata';
+      videoEl.crossOrigin = 'anonymous';
+      let settled = false;
+
+      const finish = (result: File | null) => {
+        if (settled) return;
+        settled = true;
+        try {
+          videoEl.pause();
+          videoEl.removeAttribute('src');
+          videoEl.load();
+        } catch { }
+        URL.revokeObjectURL(objectUrl);
+        resolve(result);
+      };
+
+      const timeoutId = setTimeout(() => finish(null), 7000);
+
+      videoEl.onloadedmetadata = () => {
+        const dur = Number.isFinite(videoEl.duration) ? videoEl.duration : 0;
+        const seekTo = dur > 0.5 ? Math.min(1.8, Math.max(0.3, dur * 0.22)) : 0;
+        try {
+          videoEl.currentTime = seekTo;
+        } catch {
+          // If seek fails, capture first decoded frame
+        }
+      };
+
+      videoEl.onseeked = () => {
+        try {
+          const vw = videoEl.videoWidth || 1280;
+          const vh = videoEl.videoHeight || 720;
+          const scale = Math.min(1, 1280 / Math.max(vw, vh));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(160, Math.round(vw * scale));
+          canvas.height = Math.max(90, Math.round(vh * scale));
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            clearTimeout(timeoutId);
+            finish(null);
+            return;
+          }
+          ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(
+            (blob) => {
+              clearTimeout(timeoutId);
+              if (!blob || blob.size < 500) {
+                finish(null);
+                return;
+              }
+              const base = videoFile.name.replace(/\.[^.]+$/, '') || 'video';
+              finish(new File([blob], `${base}_thumb.jpg`, { type: 'image/jpeg' }));
+            },
+            'image/jpeg',
+            0.9
+          );
+        } catch {
+          clearTimeout(timeoutId);
+          finish(null);
+        }
+      };
+
+      videoEl.onerror = () => {
+        clearTimeout(timeoutId);
+        finish(null);
+      };
+
+      videoEl.src = objectUrl;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!mediaFile) {
@@ -140,8 +234,14 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
       const formData = new FormData();
       formData.append('file', mediaFile);
       formData.append('mediaType', mediaType);
-      if (!noCoverArt && coverFile) {
-        formData.append('cover', coverFile);
+
+      let effectiveCoverFile: File | null = !noCoverArt && coverFile ? coverFile : null;
+      // For videos without a custom image, extract an authentic frame directly from the video file
+      if (mediaType === 'video' && !effectiveCoverFile) {
+        effectiveCoverFile = await captureVideoThumbnailFile(mediaFile);
+      }
+      if (effectiveCoverFile) {
+        formData.append('cover', effectiveCoverFile);
       }
 
       let mediaUrl = '';
@@ -171,7 +271,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
         const data = await res.json();
         if (data.success) {
           mediaUrl = data.mediaUrl || data.videoUrl || data.audioUrl || data.pdfUrl;
-          if (data.coverUrl && !noCoverArt) {
+          if (data.coverUrl && (!noCoverArt || mediaType === 'video')) {
             coverUrl = data.coverUrl;
           }
         }
@@ -193,8 +293,14 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
       const isVideoAudiobook =
         mediaFile.name.toLowerCase().endsWith('.mp4') || mediaFile.name.toLowerCase().endsWith('.mov');
 
-      // Strict user directive: Add no cover art option. Do NOT add use default cover. Remove it.
-      const finalCover = !noCoverArt && coverFile && coverUrl ? coverUrl : '';
+      // For videos: always preserve the authentic auto-captured video frame thumbnail (or custom poster)
+      // For audiobooks/podcasts: honor explicit noCoverArt choice with zero generic fallback.
+      const finalCover =
+        mediaType === 'video'
+          ? coverUrl || ''
+          : !noCoverArt && coverFile && coverUrl
+            ? coverUrl
+            : '';
 
       if (mediaType === 'audiobook') {
         const newAudiobook: Audiobook = {
@@ -209,8 +315,8 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
             (isPdfBook
               ? 'Book | PDF Document'
               : isVideoAudiobook
-              ? 'Book | AudioBook'
-              : 'Audiobook & Narrative'),
+                ? 'Book | AudioBook'
+                : 'Audiobook & Narrative'),
           description:
             description.trim() ||
             (isPdfBook
@@ -348,11 +454,10 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
             />
             <div
               onClick={() => mediaInputRef.current?.click()}
-              className={`p-4 rounded-2xl border-2 border-dashed cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-2 ${
-                mediaFile
+              className={`p-4 rounded-2xl border-2 border-dashed cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-2 ${mediaFile
                   ? 'border-brand-gold/60 bg-brand-gold/10 text-white'
                   : 'border-white/20 hover:border-brand-gold/40 bg-white/5 text-neutral-400'
-              }`}
+                }`}
             >
               {(() => {
                 const ext = mediaFile?.name.split('.').pop()?.toLowerCase();
@@ -400,8 +505,8 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
                     {mediaType === 'audiobook'
                       ? 'Upload spoken literature or PDF books in MP3, MP4, .MOV, or PDF format'
                       : mediaType === 'video'
-                      ? 'Upload visual cinema in MP3, MP4, or .MOV format'
-                      : 'Upload podcast episode in MP3, MP4, or .MOV format'}
+                        ? 'Upload visual cinema in MP3, MP4, or .MOV format'
+                        : 'Upload podcast episode in MP3, MP4, or .MOV format'}
                   </p>
                 </div>
               )}
@@ -420,8 +525,8 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
                 mediaType === 'audiobook'
                   ? 'e.g. Saturday Night, Sunday Morning'
                   : mediaType === 'podcast'
-                  ? 'e.g. Episode 4: The 12-Bit Renaissance'
-                  : 'e.g. ChanceTEK HQ Visual Master'
+                    ? 'e.g. Episode 4: The 12-Bit Renaissance'
+                    : 'e.g. ChanceTEK HQ Visual Master'
               }
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -436,8 +541,8 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
                 {mediaType === 'audiobook'
                   ? 'Author'
                   : mediaType === 'podcast'
-                  ? 'Podcast Show Title'
-                  : 'Director / Creator'}
+                    ? 'Podcast Show Title'
+                    : 'Director / Creator'}
               </label>
               <input
                 type="text"
@@ -445,8 +550,8 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
                   mediaType === 'audiobook'
                     ? 'e.g. Kwame Thompson'
                     : mediaType === 'podcast'
-                    ? 'e.g. ChanceTEK Masterminds'
-                    : 'e.g. Chancellor @ ChanceTEK LLC'
+                      ? 'e.g. ChanceTEK Masterminds'
+                      : 'e.g. Chancellor @ ChanceTEK LLC'
                 }
                 value={creatorOrAuthor}
                 onChange={(e) => setCreatorOrAuthor(e.target.value)}
@@ -459,8 +564,8 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
                 {mediaType === 'audiobook'
                   ? 'Narrator'
                   : mediaType === 'podcast'
-                  ? 'Host Name'
-                  : 'Category / Tag'}
+                    ? 'Host Name'
+                    : 'Category / Tag'}
               </label>
               <input
                 type="text"
@@ -468,8 +573,8 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
                   mediaType === 'audiobook'
                     ? 'e.g. Chancellor'
                     : mediaType === 'podcast'
-                    ? 'e.g. Chancellor & Guests'
-                    : 'e.g. 4K Cinema / Motion'
+                      ? 'e.g. Chancellor & Guests'
+                      : 'e.g. 4K Cinema / Motion'
                 }
                 value={narratorOrHost}
                 onChange={(e) => setNarratorOrHost(e.target.value)}
@@ -526,11 +631,10 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
                   setCoverFile(null);
                   setCoverPreview(null);
                 }}
-                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                  noCoverArt
+                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${noCoverArt
                     ? 'bg-brand-gold/20 border border-brand-gold/60 text-brand-gold shadow-md'
                     : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                }`}
+                  }`}
               >
                 <EyeOff className="w-3.5 h-3.5" />
                 <span>No Cover Art (Native Video / Slate)</span>
@@ -542,11 +646,10 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
                   setNoCoverArt(false);
                   coverInputRef.current?.click();
                 }}
-                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                  !noCoverArt
+                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${!noCoverArt
                     ? 'bg-brand-gold text-black shadow-md'
                     : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                }`}
+                  }`}
               >
                 <ImageIcon className="w-3.5 h-3.5" />
                 <span>Custom Cover Image</span>

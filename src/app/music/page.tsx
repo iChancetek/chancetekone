@@ -430,7 +430,7 @@ export default function MusicPage() {
             loop
             muted={!isHeroVideoUnmuted}
             playsInline
-            preload="auto"
+            preload="metadata"
             className="w-full h-full object-cover object-center block"
           >
             <source src="/videos/chancetekone1.mp4" type="video/mp4" />
@@ -441,8 +441,8 @@ export default function MusicPage() {
             type="button"
             onClick={toggleHeroVideoAudio}
             className={`absolute bottom-3.5 right-3.5 z-20 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider backdrop-blur-md transition-all duration-200 cursor-pointer shadow-xl border ${isHeroVideoUnmuted
-                ? 'bg-brand-gold text-black border-amber-200 hover:scale-105'
-                : 'bg-black/75 hover:bg-brand-gold text-white hover:text-black border-white/25 hover:border-brand-gold'
+              ? 'bg-brand-gold text-black border-amber-200 hover:scale-105'
+              : 'bg-black/75 hover:bg-brand-gold text-white hover:text-black border-white/25 hover:border-brand-gold'
               }`}
             title={isHeroVideoUnmuted ? 'Mute Video Audio' : 'Listen to Video Audio'}
             aria-label={isHeroVideoUnmuted ? 'Mute Video Audio' : 'Listen to Video Audio'}
@@ -472,8 +472,8 @@ export default function MusicPage() {
             type="button"
             onClick={toggleHeroVideoAudio}
             className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border ${isHeroVideoUnmuted
-                ? 'bg-brand-gold/20 border-brand-gold/60 text-brand-gold'
-                : 'bg-white/10 hover:bg-white/20 border-white/15 text-white'
+              ? 'bg-brand-gold/20 border-brand-gold/60 text-brand-gold'
+              : 'bg-white/10 hover:bg-white/20 border-white/15 text-white'
               }`}
           >
             {isHeroVideoUnmuted ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
@@ -507,8 +507,8 @@ export default function MusicPage() {
                 onClick={() => setSelectedGenre(g)}
                 title={g}
                 className={`shrink-0 lg:flex-1 lg:min-w-0 flex items-center justify-center text-center px-3.5 sm:px-4 lg:px-2 py-2 rounded-xl text-xs lg:text-[11px] xl:text-xs font-bold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer ${isSelected
-                    ? 'bg-gradient-to-r from-[#ffd700] via-[#f59e0b] to-[#fbbf24] text-black font-black shadow-[0_0_15px_rgba(245,158,11,0.4)] border border-brand-gold z-10'
-                    : 'bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 hover:border-brand-gold/40'
+                  ? 'bg-gradient-to-r from-[#ffd700] via-[#f59e0b] to-[#fbbf24] text-black font-black shadow-[0_0_15px_rgba(245,158,11,0.4)] border border-brand-gold z-10'
+                  : 'bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 hover:border-brand-gold/40'
                   }`}
               >
                 {g === 'Genre' && (
@@ -526,30 +526,15 @@ export default function MusicPage() {
         data-genre-banner="true"
         className="relative overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-br from-[#120a1f] via-[#090610] to-[#040208] shadow-[0_12px_45px_rgba(0,0,0,0.65)] group"
       >
-        {/* Background Artwork / Ambient Motion Video with cinematic dark gradients */}
+        {/* Lightweight ambient backdrop image (avoids double-decoding a blurred 1080p video on mobile GPUs) */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {activeGenreMeta.video ? (
-            <video
-              key={`bg-${activeGenreMeta.video}`}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              poster={activeGenreMeta.artwork}
-              className="w-full h-full object-cover object-center opacity-30 md:opacity-35 scale-105 group-hover:scale-110 transition-transform duration-700 filter blur-sm md:blur-[2px]"
-            >
-              <source src={activeGenreMeta.video} type="video/mp4" />
-            </video>
-          ) : (
-            <Image
-              src={activeGenreMeta.artwork}
-              alt={activeGenreMeta.name}
-              fill
-              priority
-              className="object-cover object-center opacity-30 md:opacity-35 scale-105 group-hover:scale-110 transition-transform duration-700 filter blur-sm md:blur-[2px]"
-            />
-          )}
+          <Image
+            src={activeGenreMeta.artwork}
+            alt={activeGenreMeta.name}
+            fill
+            priority
+            className="object-cover object-center opacity-30 md:opacity-35 scale-105 group-hover:scale-110 transition-transform duration-700 filter blur-sm md:blur-[2px]"
+          />
           {/* Multi-layered directional vignette to ensure pristine text readability */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#08050e] via-[#08050e]/90 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#08050e] via-transparent to-[#08050e]/60" />
@@ -639,8 +624,8 @@ export default function MusicPage() {
                 onClick={() => playRandom(filteredTracks)}
                 disabled={filteredTracks.length === 0}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-extrabold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed border ${isShuffled && isGenrePlaying
-                    ? 'bg-brand-purple text-white border-brand-neon shadow-[0_0_20px_rgba(157,78,221,0.55)]'
-                    : 'bg-white/10 hover:bg-brand-purple/40 text-white border-white/20 hover:border-brand-neon/60'
+                  ? 'bg-brand-purple text-white border-brand-neon shadow-[0_0_20px_rgba(157,78,221,0.55)]'
+                  : 'bg-white/10 hover:bg-brand-purple/40 text-white border-white/20 hover:border-brand-neon/60'
                   }`}
                 title="Play music in a randomized order"
               >
@@ -671,7 +656,7 @@ export default function MusicPage() {
                     loop
                     muted={!isGenreVideoUnmuted}
                     playsInline
-                    preload="auto"
+                    preload="metadata"
                     poster={activeGenreMeta.artwork}
                     className="object-cover object-center w-full h-full block"
                   >
@@ -681,8 +666,8 @@ export default function MusicPage() {
                     type="button"
                     onClick={toggleGenreVideoAudio}
                     className={`absolute bottom-2.5 right-2.5 z-20 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider backdrop-blur-md transition-all cursor-pointer shadow-lg border ${isGenreVideoUnmuted
-                        ? 'bg-brand-gold text-black border-amber-200'
-                        : 'bg-black/75 hover:bg-brand-gold text-white hover:text-black border-white/25'
+                      ? 'bg-brand-gold text-black border-amber-200'
+                      : 'bg-black/75 hover:bg-brand-gold text-white hover:text-black border-white/25'
                       }`}
                     title={isGenreVideoUnmuted ? 'Mute Video' : 'Listen to Video'}
                   >
