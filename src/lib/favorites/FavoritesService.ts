@@ -84,23 +84,22 @@ export class FavoritesService {
   }
 
   /**
-   * Returns merged favorites across the signed-in userId AND guest storage
-   * (deduplicated by id + category, newest first) with O(1) in-memory caching.
+   * Returns strictly isolated favorites for the given userId (multi-user safe).
+   * Signed-in users ONLY see their own favorites; guests ONLY see guest session favorites.
+   * Deduplicated by id + category, newest first, with O(1) in-memory caching.
    */
   public static getMergedFavorites(userId?: string | null): FavoriteItem[] {
     if (typeof window === 'undefined') return [];
     this.ensureStorageSync();
-    const cacheKey = userId || 'guest';
-    const hit = this.mergedCache.get(cacheKey);
+    const effectiveUserId = userId && userId.trim() ? userId.trim() : 'guest';
+    const hit = this.mergedCache.get(effectiveUserId);
     if (hit) return hit;
 
-    const primary = userId ? this.getFavorites(userId) : [];
-    const guest = this.getFavorites('guest');
-    const combined = userId && userId !== 'guest' ? [...primary, ...guest] : guest;
+    const items = this.getFavorites(effectiveUserId);
     const seen = new Set<string>();
     const deduped: FavoriteItem[] = [];
     const keySet = new Set<string>();
-    combined
+    [...items]
       .sort((a, b) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime())
       .forEach((item) => {
         const key = `${item.category}:${item.id}`;
@@ -111,8 +110,8 @@ export class FavoritesService {
           keySet.add(`any:${item.id}`);
         }
       });
-    this.mergedCache.set(cacheKey, deduped);
-    this.idSetCache.set(cacheKey, keySet);
+    this.mergedCache.set(effectiveUserId, deduped);
+    this.idSetCache.set(effectiveUserId, keySet);
     return deduped;
   }
 
@@ -169,15 +168,11 @@ export class FavoritesService {
 
   public static removeFavorite(id: string, userId: string = 'guest', category?: FavoriteCategory): void {
     const effectiveUser = userId || 'guest';
-    const keysToUpdate = effectiveUser !== 'guest' ? [effectiveUser, 'guest'] : ['guest'];
-
-    keysToUpdate.forEach((uid) => {
-      const list = this.getFavorites(uid);
-      const updated = list.filter((item) => !(item.id === id && (!category || item.category === category)));
-      if (updated.length !== list.length) {
-        this.saveFavorites(uid, updated);
-      }
-    });
+    const list = this.getFavorites(effectiveUser);
+    const updated = list.filter((item) => !(item.id === id && (!category || item.category === category)));
+    if (updated.length !== list.length) {
+      this.saveFavorites(effectiveUser, updated);
+    }
 
     AnalyticsEngine.trackEvent('favorite_removed', {
       contentId: id,
@@ -187,10 +182,7 @@ export class FavoritesService {
   }
 
   public static clearFavorites(userId: string = 'guest'): void {
-    this.saveFavorites(userId, []);
-    if (userId !== 'guest') {
-      this.saveFavorites('guest', []);
-    }
+    this.saveFavorites(userId || 'guest', []);
   }
 
   public static toggleFavorite(

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
@@ -35,7 +35,7 @@ import {
 import { useAuth } from '@/lib/auth/AuthContext';
 
 export default function DistributionAgreementPage() {
-  const { profile } = useAuth();
+  const { profile, isAdmin } = useAuth();
 
   // Form State
   const [artistLegalName, setArtistLegalName] = useState('');
@@ -598,10 +598,10 @@ export default function DistributionAgreementPage() {
             </p>
             <div className="flex items-center gap-3">
               <Link
-                href="/admin"
+                href={isAdmin ? '/admin' : '/studio'}
                 className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-brand-amber text-black font-black text-xs uppercase tracking-wider shadow-lg shadow-brand-gold/20 flex items-center gap-2"
               >
-                <span>Proceed to Admin Dashboard</span>
+                <span>{isAdmin ? 'Proceed to Admin Dashboard' : 'Proceed to Creator Studio'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>

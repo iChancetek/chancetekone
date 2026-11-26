@@ -6,9 +6,11 @@ import { MediaCard } from '@/components/media/MediaCard';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
 import { MediaUploadModal } from '@/components/media/MediaUploadModal';
+import { useAuth } from '@/lib/auth/AuthContext';
 import { Video } from '@/types/media';
 
 export default function VideosPage() {
+  const { isAdmin } = useAuth();
   const [videos, setVideos] = useState<Video[]>([]);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
@@ -37,13 +39,15 @@ export default function VideosPage() {
               <span>Visual Cinema • 4K Vault</span>
             </div>
             <div className="flex flex-wrap items-center gap-2.5">
-              <button
-                onClick={() => setIsUploadOpen(true)}
-                className="shimmer-cta px-4 py-2.5 rounded-full bg-gradient-to-r from-rose-600 via-brand-amber to-brand-gold hover:scale-[1.03] text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-[0_6px_24px_rgba(244,63,94,0.35)] flex items-center gap-1.5 cursor-pointer"
-              >
-                <UploadCloud className="w-4 h-4" />
-                <span>Upload Video (MP3, MP4, .MOV)</span>
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => setIsUploadOpen(true)}
+                  className="shimmer-cta px-4 py-2.5 rounded-full bg-gradient-to-r from-rose-600 via-brand-amber to-brand-gold hover:scale-[1.03] text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-[0_6px_24px_rgba(244,63,94,0.35)] flex items-center gap-1.5 cursor-pointer"
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Upload Video (MP3, MP4, .MOV)</span>
+                </button>
+              )}
               <VoiceNarrationButton
                 text="Welcome to the ChanceTEK Visual Cinema and Video Production vault. Featuring ChanceTEK HQ architectural tours, the multi-chapter CyneMora saga, iSkylar AI companion motion premieres, StrideIQ intelligent performance analytics, The Fam... Famio cultural legacy films, and the ChanceTEK One Remix visual suite by Chancellor at ChanceTEK LLC."
                 variant="dual"

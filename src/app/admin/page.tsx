@@ -462,11 +462,24 @@ export default function AdminPage() {
               Strict Admin Authorization Required
             </div>
             <h2 className="text-2xl font-black text-white">
-              Restricted Admin Console
+              Administrator Access Only
             </h2>
             <p className="text-xs text-neutral-300 leading-relaxed max-w-sm mx-auto">
-              This environment is strictly reserved for authorized platform administrators. Password authentication is mandatory.
+              The Admin Operations Dashboard is strictly restricted to platform administrators. Regular member accounts cannot access this area.
             </p>
+            {profile && (
+              <div className="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                <p className="text-[11px] text-neutral-300">
+                  Signed in as <strong className="text-white">{profile.name}</strong> ({profile.email}) — <span className="text-brand-gold font-bold">Member Account</span>
+                </p>
+                <a
+                  href="/"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-brand-gold to-amber-500 text-black font-extrabold text-xs uppercase tracking-wider shadow-md hover:scale-105 transition-transform"
+                >
+                  Return to ChanceTEK One
+                </a>
+              </div>
+            )}
           </div>
 
           {authError && (

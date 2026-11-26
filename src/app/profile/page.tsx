@@ -20,6 +20,9 @@ import {
   KeyRound,
   Clock,
   RotateCcw,
+  Globe,
+  Library,
+  ListMusic,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { UserAvatar } from '@/components/navigation/UserAvatar';
@@ -1343,7 +1346,142 @@ export default function ProfilePage() {
         </div>
 
         {/* ========================================================= */}
-        {/* SECTION 3: CHANGE PASSWORD (Security Credentials)         */}
+        {/* SECTION 3: PRIVACY & PUBLIC VISIBILITY SETTINGS           */}
+        {/* ========================================================= */}
+        <div className="p-6 rounded-3xl glass-panel border border-white/10 bg-[#0e0918]/85 space-y-5">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center gap-2">
+              <Globe className="w-5 h-5 text-brand-gold" />
+              <h2 className="text-base font-extrabold text-white">Privacy &amp; Public Visibility</h2>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-brand-purple/20 border border-brand-purple/40 text-brand-neon">
+              Your Space Controls
+            </span>
+          </div>
+
+          <p className="text-xs text-neutral-300 leading-relaxed">
+            Your profile, Library, and playlists belong exclusively to your account. Keep them private by default or choose what to make public on ChanceTEK One.
+          </p>
+
+          <div className="space-y-3">
+            {/* 1. Public Profile Toggle */}
+            <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-between gap-3">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-gold/15 border border-brand-gold/30 flex items-center justify-center text-brand-gold shrink-0">
+                  <User className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-white">Profile Visibility</p>
+                  <p className="text-[11px] text-neutral-400">
+                    {profile.isProfilePublic
+                      ? 'Public — other members can see your profile info and presence.'
+                      : 'Private — only visible to you.'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  const next = !profile.isProfilePublic;
+                  await updateUserProfile({ isProfilePublic: next });
+                  showRealTimeToast(
+                    'Profile Visibility Updated',
+                    next ? 'Your profile is now Public.' : 'Your profile is now Private.'
+                  );
+                }}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${
+                  profile.isProfilePublic
+                    ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                    : 'bg-white/10 border-white/15 text-neutral-300 hover:border-brand-gold/40'
+                }`}
+              >
+                {profile.isProfilePublic ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                <span>{profile.isProfilePublic ? 'Public' : 'Private'}</span>
+              </button>
+            </div>
+
+            {/* 2. Public Library Toggle */}
+            <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-between gap-3">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-purple/20 border border-brand-purple/40 flex items-center justify-center text-brand-neon shrink-0">
+                  <Library className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-white">Library &amp; Favorites Visibility</p>
+                  <p className="text-[11px] text-neutral-400">
+                    {profile.isLibraryPublic
+                      ? 'Public — your favorited music, videos, books & podcasts can be shared publicly.'
+                      : 'Private — your Library and Favorites are private to your account.'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  const next = !profile.isLibraryPublic;
+                  await updateUserProfile({ isLibraryPublic: next });
+                  showRealTimeToast(
+                    'Library Visibility Updated',
+                    next ? 'Your Library is now Public.' : 'Your Library is now Private.'
+                  );
+                }}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${
+                  profile.isLibraryPublic
+                    ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                    : 'bg-white/10 border-white/15 text-neutral-300 hover:border-brand-gold/40'
+                }`}
+              >
+                {profile.isLibraryPublic ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                <span>{profile.isLibraryPublic ? 'Public' : 'Private'}</span>
+              </button>
+            </div>
+
+            {/* 3. Default Playlist Visibility Toggle */}
+            <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-between gap-3">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-cyan-300 shrink-0">
+                  <ListMusic className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-white">Default Playlist Visibility</p>
+                  <p className="text-[11px] text-neutral-400">
+                    {profile.defaultPlaylistVisibility === 'public'
+                      ? 'New playlists default to Public (you can still set any playlist Private).'
+                      : 'New playlists default to Private (you can make any playlist Public anytime).'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  const next = profile.defaultPlaylistVisibility === 'public' ? 'private' : 'public';
+                  await updateUserProfile({ defaultPlaylistVisibility: next });
+                  showRealTimeToast(
+                    'Playlist Default Updated',
+                    next === 'public'
+                      ? 'New playlists will default to Public.'
+                      : 'New playlists will default to Private.'
+                  );
+                }}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${
+                  profile.defaultPlaylistVisibility === 'public'
+                    ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                    : 'bg-white/10 border-white/15 text-neutral-300 hover:border-brand-gold/40'
+                }`}
+              >
+                {profile.defaultPlaylistVisibility === 'public' ? (
+                  <Globe className="w-3.5 h-3.5" />
+                ) : (
+                  <Lock className="w-3.5 h-3.5" />
+                )}
+                <span>{profile.defaultPlaylistVisibility === 'public' ? 'Public' : 'Private'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* SECTION 4: CHANGE PASSWORD (Security Credentials)         */}
         {/* ========================================================= */}
         <div className="p-6 rounded-3xl glass-panel border border-white/10 bg-[#0e0918]/85 space-y-5">
           <div className="flex items-center justify-between border-b border-white/10 pb-3">

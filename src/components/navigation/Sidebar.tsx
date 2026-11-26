@@ -344,8 +344,8 @@ export const Sidebar: React.FC = () => {
                 )}
               </Link>
 
-              {/* Admin Operations & API Management shortcuts for Super Users */}
-              {isAdmin && (
+              {/* Admin Operations & API Management shortcuts — strictly Admins Only */}
+              {Boolean(profile && isAdmin) && (
                 <>
                   <Link
                     data-nav-admin="true"
@@ -748,8 +748,8 @@ export const Sidebar: React.FC = () => {
                 <span>+ Create Playlist</span>
               </Link>
 
-              {/* Admin Operations & API Management shortcuts for Super Users */}
-              {isAdmin && (
+              {/* Admin Operations & API Management shortcuts — strictly Admins Only */}
+              {Boolean(profile && isAdmin) && (
                 <>
                   <Link
                     data-nav-admin="true"

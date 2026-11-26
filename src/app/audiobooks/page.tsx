@@ -10,9 +10,11 @@ import { ShareAudiobookModal } from '@/components/audiobook/ShareAudiobookModal'
 import { FavoriteButton } from '@/components/social/FavoriteButton';
 import { AgenticDiscoveryDeck } from '@/components/ai/AgenticDiscoveryDeck';
 import { usePlayer } from '@/lib/player/PlayerContext';
+import { useAuth } from '@/lib/auth/AuthContext';
 import { Audiobook } from '@/types/media';
 
 export default function AudiobooksPage() {
+  const { isAdmin } = useAuth();
   const [audiobooks, setAudiobooks] = useState<Audiobook[]>([]);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [sharingAudiobook, setSharingAudiobook] = useState<any | null>(null);
@@ -50,13 +52,15 @@ export default function AudiobooksPage() {
               <span>Audiobook Narratives &amp; Cinema</span>
             </div>
             <div className="flex flex-wrap items-center gap-2.5">
-              <button
-                onClick={() => setIsUploadOpen(true)}
-                className="shimmer-cta px-4 py-2.5 rounded-full bg-gradient-to-r from-[#f7cf62] via-brand-gold to-amber-500 hover:scale-[1.03] text-[#050509] font-extrabold text-xs uppercase tracking-wider transition-all shadow-[0_6px_24px_rgba(245,195,68,0.35)] flex items-center gap-1.5 cursor-pointer"
-              >
-                <UploadCloud className="w-4 h-4" />
-                <span>Upload Audiobook &amp; PDF Book (MP3, MP4, .MOV, .PDF)</span>
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => setIsUploadOpen(true)}
+                  className="shimmer-cta px-4 py-2.5 rounded-full bg-gradient-to-r from-[#f7cf62] via-brand-gold to-amber-500 hover:scale-[1.03] text-[#050509] font-extrabold text-xs uppercase tracking-wider transition-all shadow-[0_6px_24px_rgba(245,195,68,0.35)] flex items-center gap-1.5 cursor-pointer"
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Upload Audiobook &amp; PDF Book (MP3, MP4, .MOV, .PDF)</span>
+                </button>
+              )}
               <VoiceNarrationButton
                 text="Explore immersive master audiobooks and spoken narratives by Chancellor at ChanceTEK LLC and ChanceTEK One. Featuring Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio."
                 variant="dual"

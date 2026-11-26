@@ -60,7 +60,9 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
   const [type, setType] = useState<PlaylistType>(
     initialMediaItem ? initialMediaItem.mediaType : 'mixed'
   );
-  const [visibility, setVisibility] = useState<PlaylistVisibility>('public');
+  const [visibility, setVisibility] = useState<PlaylistVisibility>(
+    profile?.defaultPlaylistVisibility || 'private'
+  );
   const [selectedCover, setSelectedCover] = useState<string>(PRESET_COVERS[0]);
   const [customCoverUrl, setCustomCoverUrl] = useState<string>('');
   const [showCoverPickerModal, setShowCoverPickerModal] = useState(false);

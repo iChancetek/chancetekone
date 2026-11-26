@@ -119,7 +119,7 @@ function LibraryContent() {
 
   const [activeTab, setActiveTab] = useState<LibraryTabKey>(initialTab);
   const { likedTrackIds, playTrack, openVideoModal, playAudiobookChapter } = usePlayer();
-  const { profile, user, isAdmin } = useAuth();
+  const { profile, user, isAdmin, updateUserProfile } = useAuth();
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [userPlaylists, setUserPlaylists] = useState<Playlist[]>([]);
@@ -453,9 +453,39 @@ function LibraryContent() {
       <div className="border-b border-white/5 pb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-purple/20 border border-brand-purple/40 text-brand-neon text-xs font-semibold uppercase tracking-wider mb-2">
-              <Library className="w-3.5 h-3.5" />
-              Personal Collection
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-purple/20 border border-brand-purple/40 text-brand-neon text-xs font-semibold uppercase tracking-wider">
+                <Library className="w-3.5 h-3.5" />
+                <span>{profile ? `${profile.name}'s Personal Collection` : 'Personal Collection'}</span>
+              </div>
+              {profile && (
+                <button
+                  type="button"
+                  onClick={() => updateUserProfile({ isLibraryPublic: !profile.isLibraryPublic })}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                    profile.isLibraryPublic
+                      ? 'bg-emerald-500/15 border-emerald-400/50 text-emerald-300 hover:bg-emerald-500/25'
+                      : 'bg-white/5 border-white/15 text-neutral-300 hover:border-brand-gold/40 hover:text-brand-gold'
+                  }`}
+                  title={
+                    profile.isLibraryPublic
+                      ? 'Your Library is Public — click to make Private'
+                      : 'Your Library is Private — click to make Public'
+                  }
+                >
+                  {profile.isLibraryPublic ? (
+                    <>
+                      <Globe className="w-3.5 h-3.5" />
+                      <span>Public Library</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>Private Library · Make Public</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white">Library</h1>
             <p className="text-sm text-neutral-400 mt-1">

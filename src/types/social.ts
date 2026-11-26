@@ -90,6 +90,10 @@ export interface UserProfile {
   agreementId?: string;
   createdAt: string;
   bio?: string;
+  /** Multi-user visibility & privacy preferences (default private; opt-in public) */
+  isProfilePublic?: boolean;
+  isLibraryPublic?: boolean;
+  defaultPlaylistVisibility?: 'private' | 'public';
   likedTrackIds: string[];
   likedVideoIds: string[];
   likedAudiobookIds: string[];

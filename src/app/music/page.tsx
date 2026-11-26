@@ -376,12 +376,7 @@ export default function MusicPage() {
   };
 
   const handleMemberCrateClick = (crateName: string) => {
-    const isMember = Boolean(
-      isAdmin ||
-      profile?.role === 'admin' ||
-      profile?.role === 'creator' ||
-      (profile as any)?.membershipStatus === 'active'
-    );
+    const isMember = Boolean(profile || isAdmin);
 
     const crateObj =
       crates.find(

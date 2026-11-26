@@ -53,6 +53,9 @@ interface SavedProfilePrefs {
   bio?: string;
   avatarUrl?: string;
   profileVideoUrl?: string;
+  isProfilePublic?: boolean;
+  isLibraryPublic?: boolean;
+  defaultPlaylistVisibility?: 'private' | 'public';
   updatedAt?: number;
 }
 
@@ -69,6 +72,9 @@ function saveProfilePrefs(profile: UserProfile): void {
         profile.profileVideoUrl && !profile.profileVideoUrl.startsWith('blob:')
           ? profile.profileVideoUrl
           : undefined,
+      isProfilePublic: profile.isProfilePublic,
+      isLibraryPublic: profile.isLibraryPublic,
+      defaultPlaylistVisibility: profile.defaultPlaylistVisibility,
       updatedAt: Date.now(),
     };
     if (profile.id) map[profile.id] = entry;
@@ -1270,7 +1276,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     profileRef.current = null;
   };
 
-  const isAdmin = Boolean(profile && (profile.role === 'admin' || isSuperUserEmail(profile.email)));
+  const isAdmin = Boolean(
+    profile &&
+      (!isDemo || isSuperUserEmail(profile.email)) &&
+      (profile.role === 'admin' || isSuperUserEmail(profile.email))
+  );
   const isSuperUser = Boolean(profile && isSuperUserEmail(profile.email));
 
   return (

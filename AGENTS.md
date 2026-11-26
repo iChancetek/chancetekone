@@ -2090,3 +2090,15 @@ esolvedAudioUrl is reset to '' (zero tolerance).
   - When hidden, the mobile music player smoothly docks flush at `bottom-0` with zero menu bar obstructing music controls, and a compact centered `Menu` restore pill (or the player header button) brings it back in 1 tap.
 - **Eliminated All PWA Popups (`PWAInstallBanner.tsx`, `PWARegister.tsx`, `AppShellClient.tsx`)**:
   - Permanently disabled the floating `"Install ChanceTEK One"` popup banner and removed the `"Platform Updated / Reload"` and `"Offline Mode"` popup boxes from `PWARegister` — Service Worker updates now activate silently in the background with zero popup interruptions.
+
+
+### 40. Strict Multi-User Isolation, Per-User Privacy/Public Controls, Full Member Content Access & Admin-Only Lockdown
+- **Strict Per-User Isolation (`FavoritesService.ts`, `HistoryService.ts`, `PlaylistService.ts`)**:
+  - Removed cross-user `'guest'` storage merging for signed-in users so every registered user has their own strictly isolated Library, Favorites, and Playback History (`8spades_user_favorites_v2_${userId}` & `8spades_user_history_${userId}`), with zero bleed across accounts.
+- **Per-User Profile & Privacy Controls (`src/types/social.ts`, `src/app/profile/page.tsx`, `src/app/library/page.tsx`, `CreatePlaylistModal.tsx`)**:
+  - Extended `UserProfile` with `isProfilePublic`, `isLibraryPublic`, and `defaultPlaylistVisibility` (`'private' | 'public'`).
+  - Added a **Privacy & Public Visibility** settings section in `Account Profile & Settings` (`/profile`) allowing every user to toggle their Profile, Library, and default Playlist visibility between Private and Public.
+  - Added a 1-tap **Private / Public Library** toggle directly in the `/library` header, and updated `CreatePlaylistModal` to honor each user's `defaultPlaylistVisibility` (defaulting to `'private'`, with per-playlist Private/Public choice).
+- **Full Member Content Streaming & Strict Admin-Only Dashboard/Uploads (`src/app/music/page.tsx`, `src/app/videos/page.tsx`, `src/app/audiobooks/page.tsx`, `src/app/podcasts/page.tsx`, `src/app/admin/page.tsx`)**:
+  - Enabled ALL authenticated members to access all music collections, stream all music/videos/audiobooks/podcasts, create playlists, and share content freely.
+  - Strictly gated `/admin` and all platform catalog upload triggers (`Upload Video`, `Upload Audiobook`, `Upload Podcast`) to administrators only (`isAdmin === true`), displaying a clear **Administrator Access Only** notice with a Return Home link if a regular member visits `/admin`.

@@ -61,22 +61,20 @@ class HistoryServiceClass {
   }
 
   /**
-   * Returns recently played entries across the signed-in user AND guest session,
-   * deduplicated by mediaType + mediaId and sorted newest first (cached in memory).
+   * Returns strictly isolated playback history for the given userId (multi-user safe).
+   * Signed-in users ONLY see their own history; guests ONLY see guest session history.
    */
   public getMergedHistory(userId?: string | null): HistoryEntry[] {
     if (typeof window === 'undefined') return [];
     this.ensureStorageSync();
-    const cacheKey = userId || 'guest';
-    const hit = this.mergedCache.get(cacheKey);
+    const effectiveUserId = userId && userId.trim() ? userId.trim() : 'guest';
+    const hit = this.mergedCache.get(effectiveUserId);
     if (hit) return hit;
 
-    const primary = userId ? this.getHistory(userId) : [];
-    const guest = this.getHistory('guest');
-    const combined = userId && userId !== 'guest' ? [...primary, ...guest] : guest;
+    const items = this.getHistory(effectiveUserId);
     const seen = new Set<string>();
     const deduped: HistoryEntry[] = [];
-    combined
+    [...items]
       .sort((a, b) => new Date(b.playedAt).getTime() - new Date(a.playedAt).getTime())
       .forEach((entry) => {
         const key = `${entry.mediaType}:${entry.mediaId}`;
@@ -86,7 +84,7 @@ class HistoryServiceClass {
         }
       });
     const result = deduped.slice(0, 100);
-    this.mergedCache.set(cacheKey, result);
+    this.mergedCache.set(effectiveUserId, result);
     return result;
   }
 
@@ -127,9 +125,6 @@ class HistoryServiceClass {
     if (typeof window === 'undefined' || !userId) return;
     try {
       localStorage.removeItem(this.getStorageKey(userId));
-      if (userId !== 'guest') {
-        localStorage.removeItem(this.getStorageKey('guest'));
-      }
       this.mergedCache.clear();
       this.notify(userId, []);
     } catch (e) {

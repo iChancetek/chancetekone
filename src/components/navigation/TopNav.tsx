@@ -299,15 +299,25 @@ export const TopNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
                   <span>Account Profile & Settings</span>
                 </Link>
 
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    onClick={() => setShowProfileMenu(false)}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-red-400 hover:bg-red-500/10 transition-colors"
-                  >
-                    <ShieldAlert className="w-3.5 h-3.5" />
-                    <span>Operations Center</span>
-                  </Link>
+                {Boolean(profile && isAdmin) && (
+                  <>
+                    <Link
+                      href="/admin"
+                      onClick={() => setShowProfileMenu(false)}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-red-400 hover:bg-red-500/10 transition-colors"
+                    >
+                      <ShieldAlert className="w-3.5 h-3.5" />
+                      <span>Operations Center</span>
+                    </Link>
+                    <Link
+                      href="/admin?tab=api-management"
+                      onClick={() => setShowProfileMenu(false)}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-cyan-300 hover:bg-cyan-500/10 transition-colors"
+                    >
+                      <ShieldAlert className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>API Management</span>
+                    </Link>
+                  </>
                 )}
 
                 <Link

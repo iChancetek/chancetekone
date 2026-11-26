@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -22,6 +22,7 @@ import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
 import { MediaUploadModal } from '@/components/media/MediaUploadModal';
 import { PodcastEpisode } from '@/types/media';
 import { usePlayer } from '@/lib/player/PlayerContext';
+import { useAuth } from '@/lib/auth/AuthContext';
 import { ReactionButtons } from '@/components/social/ReactionButtons';
 import { FavoriteButton } from '@/components/social/FavoriteButton';
 import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussionModal';
@@ -30,6 +31,7 @@ import { AgenticDiscoveryDeck } from '@/components/ai/AgenticDiscoveryDeck';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
 
 export default function PodcastsPage() {
+  const { isAdmin } = useAuth();
   const { playTrack, currentTrack, isPlaying, togglePlay, openVideoModal } = usePlayer();
   const [podcasts, setPodcasts] = useState<PodcastEpisode[]>([]);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -137,13 +139,15 @@ export default function PodcastsPage() {
             Spoken Radio & Podcasts
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsUploadOpen(true)}
-              className="px-4 py-2 rounded-2xl bg-gradient-to-r from-brand-gold via-brand-amber to-brand-neon hover:scale-105 text-black font-extrabold text-xs uppercase tracking-wider transition-all shadow-lg flex items-center gap-1.5 cursor-pointer"
-            >
-              <UploadCloud className="w-4 h-4" />
-              <span>Upload Podcast (MP3, MP4, .MOV)</span>
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setIsUploadOpen(true)}
+                className="px-4 py-2 rounded-2xl bg-gradient-to-r from-brand-gold via-brand-amber to-brand-neon hover:scale-105 text-black font-extrabold text-xs uppercase tracking-wider transition-all shadow-lg flex items-center gap-1.5 cursor-pointer"
+              >
+                <UploadCloud className="w-4 h-4" />
+                <span>Upload Podcast (MP3, MP4, .MOV)</span>
+              </button>
+            )}
             <VoiceNarrationButton
               text="Welcome to ChanceTEK One Podcasts. Featuring episodic conversations on Agentic AI, sonic mastering, music culture history, cultural storytelling, and independent creative sovereignty."
               variant="dual"
