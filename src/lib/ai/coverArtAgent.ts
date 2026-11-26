@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEK One — Autonomous Agentic AI Cover Art Specialist
+ * ChanceTEK One — Autonomous ChanceTEK One Cover Art Specialist
  * An autonomous agent that searches the internet using Tavily to find authentic
  * cover art for artists, albums, and MP3 tracks, and embeds/attaches it across
  * the MP3 binaries, albums, folders, and platform catalog.
@@ -26,7 +26,7 @@ export interface CoverArtEnrichmentResult {
 
 export class AgenticAICoverArtAgent {
   public static readonly AGENT_ID = 'agent-cover-art-tavily-v1';
-  public static readonly AGENT_NAME = 'Agentic AI Cover Art & Crate Curator';
+  public static readonly AGENT_NAME = 'ChanceTEK One Cover Art & Crate Curator';
 
   /**
    * Determines whether an item needs cover art enrichment
@@ -156,7 +156,7 @@ export class AgenticAICoverArtAgent {
         adminName: this.AGENT_NAME,
         adminRole: 'content_admin',
         eventType: 'AI_INGESTION_ANALYSIS',
-        action: `Agentic AI searched internet via Tavily and attached authentic cover art to "${title}"`,
+        action: `ChanceTEK One searched internet via Tavily and attached authentic cover art to "${title}"`,
         resource: 'Music Catalog Ingestion',
         resourceId: item.id,
         newValue: {
@@ -259,7 +259,7 @@ export class AgenticAICoverArtAgent {
         }
       }
 
-      const reasoning = `Agentic AI found and attached authentic album artwork from ${best.domain} for album "${album}" (${tracksInGroup.length} tracks updated, ${embeddedCount} MP3 binaries tagged).`;
+      const reasoning = `ChanceTEK One found and attached authentic album artwork from ${best.domain} for album "${album}" (${tracksInGroup.length} tracks updated, ${embeddedCount} MP3 binaries tagged).`;
 
       return {
         success: true,

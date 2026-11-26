@@ -143,7 +143,7 @@ export const executeAgentTool = async (
       } else if (topic.includes('support') || topic.includes('contact') || topic.includes('help') || topic.includes('concierge')) {
         details = `Support Center (/support): Crate Concierge and technical assistance for PWA offline playback, vinyl order tracking, and memory vault reset. Contact us directly at support@chancetekone.us or concierge@chancetekone.us.`;
       } else if (topic.includes('project') || topic.includes('masterwork')) {
-        details = `Projects (/projects): Explore production masterworks: 1) Genesis of the Concrete Beat (12-bit SP-1200), 2) ChanceTEK (Agentic AI, iSkylar, Famio), 3) The Bronx Heritage Archive (oral history & park jams), 4) Quantum Break Sequence (cyber electro breaks), and 5) Velvet Horns & Tape Saturation (2-inch analog tape funk).`;
+        details = `Projects (/projects): Explore production masterworks: 1) Genesis of the Concrete Beat (12-bit SP-1200), 2) ChanceTEK (ChanceTEK One, iSkylar, Famio), 3) The Bronx Heritage Archive (oral history & park jams), 4) Quantum Break Sequence (cyber electro breaks), and 5) Velvet Horns & Tape Saturation (2-inch analog tape funk).`;
       } else if (topic.includes('producer') || topic.includes('gear') || topic.includes('sp-1200') || topic.includes('mpc')) {
         details = `Producers (/producers): Discover sonic architects shaping the breakbeat renaissance: ChanceTEK One, Chancellor @ ChanceTEK LLC, Cipher Voltage, and Luna Brass & The Crate Queens.`;
       } else if (topic.includes('music') || topic.includes('stream') || topic.includes('track') || topic.includes('bpm')) {

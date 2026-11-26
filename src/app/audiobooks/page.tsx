@@ -8,6 +8,7 @@ import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
 import { MediaUploadModal } from '@/components/media/MediaUploadModal';
 import { ShareAudiobookModal } from '@/components/audiobook/ShareAudiobookModal';
 import { FavoriteButton } from '@/components/social/FavoriteButton';
+import { AddToPlaylistButton } from '@/components/playlist/AddToPlaylistButton';
 import { AgenticDiscoveryDeck } from '@/components/ai/AgenticDiscoveryDeck';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { useAuth } from '@/lib/auth/AuthContext';
@@ -62,7 +63,7 @@ export default function AudiobooksPage() {
                 </button>
               )}
               <VoiceNarrationButton
-                text="Explore immersive master audiobooks and spoken narratives by Chancellor at ChanceTEK LLC and ChanceTEK One. Featuring Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio."
+                text="Explore immersive master audiobooks and spoken narratives by Chancellor at ChanceTEK LLC and ChanceTEK One. Featuring ChanceTEK One, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio."
                 variant="dual"
               />
             </div>
@@ -71,7 +72,7 @@ export default function AudiobooksPage() {
             Audiobooks &amp; Spoken Masterworks
           </h1>
           <p className="text-sm sm:text-base text-neutral-300/90 mt-2.5 max-w-3xl leading-relaxed">
-            Explore immersive master audiobooks and spoken narratives on Agentic AI, AI Security, Health &amp; Longevity, Neural Systems, and Cultural Heritage by Chancellor @ ChanceTEK LLC.
+            Explore immersive master audiobooks and spoken narratives on ChanceTEK One, AI Security, Health &amp; Longevity, Neural Systems, and Cultural Heritage by Chancellor @ ChanceTEK LLC.
           </p>
         </div>
       </div>
@@ -85,7 +86,18 @@ export default function AudiobooksPage() {
               Mi Vida Loca... By Author, Orlando Figueroa
             </h2>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <AddToPlaylistButton
+              mediaId="audiobook-1793148157988-bnzl3"
+              mediaType="audiobook"
+              title="Mi Vida Loca... By Author, Orlando Figueroa"
+              artistName="Orlando Figueroa"
+              coverUrl="/images/video-thumbs/OrlandoFigueroa_share.jpg"
+              videoUrl="/videos/OrlandoFigueroa.mp4"
+              genre="Memoir & Fiction"
+              variant="pill"
+              size="md"
+            />
             <FavoriteButton
               id="audiobook-1793148157988-bnzl3"
               category="audiobooks"
@@ -146,7 +158,18 @@ export default function AudiobooksPage() {
               Saturday Night, Sunday Morning... By Author, Kwame Thompson
             </h2>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <AddToPlaylistButton
+              mediaId="audiobook-kwame-thompson"
+              mediaType="audiobook"
+              title="Saturday Night, Sunday Morning... By Author, Kwame Thompson"
+              artistName="Kwame Thompson"
+              coverUrl="/images/video-thumbs/Kwame_Book_Promo_1.jpg"
+              videoUrl="/videos/Kwame Book Promo 1.mp4"
+              genre="Featured Upcoming Works"
+              variant="pill"
+              size="md"
+            />
             <FavoriteButton
               id="audiobook-kwame-thompson"
               category="audiobooks"
@@ -190,7 +213,7 @@ export default function AudiobooksPage() {
         </div>
       </section>
 
-      {/* Agentic AI Audiobook Guide — Tracks what you stream & suggests similar audiobooks */}
+      {/* ChanceTEK One Audiobook Guide — Tracks what you stream & suggests similar audiobooks */}
       <AgenticDiscoveryDeck mode="audiobook" />
 
       {/* Spoken Masterworks Grid */}

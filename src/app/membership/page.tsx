@@ -84,7 +84,7 @@ const PLANS: Plan[] = [
       'Instant commercial sample clearance licenses',
       'Creator distribution & direct fan tipping tools',
       'Early access to test pressings & white labels',
-      'Priority Agentic AI music masterclass analysis',
+      'Priority ChanceTEK One music masterclass analysis',
     ],
     cta: 'Subscribe as Creator — All Collections Included',
   },

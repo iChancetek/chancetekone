@@ -10,6 +10,7 @@ import { MusicCatalogService, getDefaultCoverForTrack } from '@/lib/music/MusicC
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 import { ReactionButtons } from '@/components/social/ReactionButtons';
 import { FavoriteButton } from '@/components/social/FavoriteButton';
+import { AddToPlaylistButton } from '@/components/playlist/AddToPlaylistButton';
 import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussionModal';
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
@@ -227,6 +228,20 @@ export const TrackRow: React.FC<TrackRowProps> = ({
         )}
 
         <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 sm:gap-1.5">
+          {/* Universal + Add to Playlist Button (Always visible on mobile & desktop) */}
+          <AddToPlaylistButton
+            mediaId={track.id}
+            mediaType="music"
+            title={track.title}
+            artistName={track.artistName}
+            coverUrl={resolvedCover}
+            duration={track.duration}
+            audioUrl={track.audioUrl}
+            genre={track.genre}
+            variant="icon"
+            size="sm"
+          />
+
           {/* Universal Favorite Toggle (Always visible on mobile & desktop) */}
           <FavoriteButton
             id={track.id}

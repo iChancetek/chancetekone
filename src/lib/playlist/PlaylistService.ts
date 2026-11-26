@@ -2,10 +2,23 @@ import { Playlist, PlaylistItem, PlaylistType, PlaylistVisibility, PlaylistFilte
 import { MediaType, Track, Video, Audiobook, AudiobookChapter } from '@/types/media';
 import { MOCK_TRACKS, MOCK_VIDEOS, MOCK_AUDIOBOOKS } from '@/lib/mockData';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
+import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
 import { AnalyticsEngine } from '@/lib/analytics/AnalyticsEngine';
 import { FavoritesService } from '@/lib/favorites/FavoritesService';
 import { EngagementMetricsService } from '@/lib/analytics/EngagementMetricsService';
 import { AuditLogger } from '@/lib/admin/AuditLogger';
+
+export interface PlaylistMediaInput {
+  mediaId: string;
+  mediaType: MediaType | 'podcast';
+  title?: string;
+  artistName?: string;
+  coverUrl?: string;
+  duration?: number;
+  audioUrl?: string;
+  videoUrl?: string;
+  genre?: string;
+}
 
 export interface RecoverablePlaylistItem {
   id: string; // recovery item id (e.g. rec-pl-...)
@@ -358,30 +371,40 @@ export class PlaylistService {
     type: PlaylistType;
     visibility: PlaylistVisibility;
     coverUrl?: string;
-    initialItems?: Array<{ mediaId: string; mediaType: MediaType }>;
+    initialItems?: PlaylistMediaInput[];
     sharedWith?: string[];
   }): Playlist {
     const all = this.loadAll();
+    const playlistId = `pl-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
     const items: PlaylistItem[] = [];
     if (params.initialItems && params.initialItems.length > 0) {
       params.initialItems.forEach((it, idx) => {
-        const item = this.resolveMediaItem(it.mediaId, it.mediaType, `pl-${Date.now()}`, idx);
+        const item = this.resolveMediaItem(it, playlistId, idx);
         if (item) items.push(item);
       });
     }
 
     const totalDuration = items.reduce((acc, curr) => acc + (curr.duration || 0), 0);
 
+    // Ensure playlist type matches initial items (auto-upgrade to mixed if heterogeneous)
+    let resolvedType: PlaylistType = params.type;
+    if (items.length > 0 && resolvedType !== 'mixed') {
+      const hasDifferentType = items.some((it) => it.mediaType !== resolvedType);
+      if (hasDifferentType) {
+        resolvedType = 'mixed';
+      }
+    }
+
     const newPlaylist: Playlist = {
-      id: `pl-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      id: playlistId,
       ownerId: params.ownerId,
       ownerName: params.ownerName || 'ChanceTEK One',
       ownerEmail: params.ownerEmail?.toLowerCase().trim() || undefined,
       ownerAvatarUrl: params.ownerAvatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120',
       name: params.name.trim(),
       description: params.description?.trim() || '',
-      type: params.type,
+      type: resolvedType,
       visibility: params.visibility,
       coverUrl: params.coverUrl || (items.length > 0 ? items[0].coverUrl : PRESET_COVERS[Math.floor(Math.random() * PRESET_COVERS.length)]),
       items,
@@ -608,7 +631,7 @@ export class PlaylistService {
   public static addItemToPlaylist(
     playlistId: string,
     userId: string,
-    media: { mediaId: string; mediaType: MediaType },
+    media: PlaylistMediaInput,
     isAdmin?: boolean,
     userEmail?: string
   ): { success: boolean; item?: PlaylistItem; error?: string } {
@@ -622,20 +645,22 @@ export class PlaylistService {
       return { success: false, error: 'Only the playlist creator or an administrator can modify this playlist.' };
     }
 
-    // Type compatibility check & auto-upgrade to mixed format (e.g. adding video to music crate)
-    if (playlist.type !== 'mixed' && playlist.type !== media.mediaType) {
+    const newItem = this.resolveMediaItem(media, playlistId, playlist.items.length);
+    if (!newItem) {
+      return { success: false, error: 'Media asset could not be found.' };
+    }
+
+    // Type compatibility check & auto-upgrade to mixed format (e.g. adding video/podcast/audiobook to music crate)
+    if (playlist.type !== 'mixed' && playlist.type !== newItem.mediaType) {
       playlist.type = 'mixed';
     }
 
-    // Check duplicate
-    const exists = playlist.items.some((it) => it.mediaId === media.mediaId && it.mediaType === media.mediaType);
+    // Check duplicate (by mediaId across matching normalized type or exact mediaId)
+    const exists = playlist.items.some(
+      (it) => it.mediaId === newItem.mediaId && (it.mediaType === newItem.mediaType || media.mediaType === 'podcast')
+    );
     if (exists) {
       return { success: false, error: 'This item is already in the playlist.' };
-    }
-
-    const newItem = this.resolveMediaItem(media.mediaId, media.mediaType, playlistId, playlist.items.length);
-    if (!newItem) {
-      return { success: false, error: 'Media asset could not be found.' };
     }
 
     playlist.items.push(newItem);
@@ -941,70 +966,200 @@ export class PlaylistService {
   }
 
   private static resolveMediaItem(
-    mediaId: string,
-    mediaType: MediaType,
+    input: PlaylistMediaInput,
     playlistId: string,
     position: number
   ): PlaylistItem | null {
+    const { mediaId, mediaType } = input;
+    const itemUid = `item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const nowIso = new Date().toISOString();
+
+    // 1. Podcast resolution (explicit 'podcast' OR fallback when a podcast is passed as 'music'/'video')
+    const resolvePodcast = () => {
+      const pod = MediaCatalogService.getAllPodcasts().find((p) => p.id === mediaId);
+      if (!pod) return null;
+      const isVid =
+        pod.mediaType === 'video' ||
+        pod.mediaUrl.toLowerCase().endsWith('.mp4') ||
+        pod.mediaUrl.toLowerCase().endsWith('.mov');
+      return {
+        id: itemUid,
+        playlistId,
+        mediaId: pod.id,
+        mediaType: (isVid ? 'video' : 'music') as MediaType,
+        title: pod.title,
+        artistName: `${pod.showTitle} • ${pod.host}`,
+        coverUrl: pod.coverUrl || '/images/studio_cover.jpg',
+        duration: pod.duration || 0,
+        position,
+        addedAt: nowIso,
+        audioUrl: isVid ? undefined : pod.mediaUrl,
+        videoUrl: isVid ? pod.mediaUrl : undefined,
+        genre: pod.category || 'Podcast',
+      } satisfies PlaylistItem;
+    };
+
+    if (mediaType === 'podcast') {
+      const podItem = resolvePodcast();
+      if (podItem) return podItem;
+      if (input.title) {
+        const isVid = Boolean(input.videoUrl) || Boolean(input.audioUrl?.toLowerCase().endsWith('.mp4'));
+        return {
+          id: itemUid,
+          playlistId,
+          mediaId,
+          mediaType: isVid ? 'video' : 'music',
+          title: input.title,
+          artistName: input.artistName || 'Podcast',
+          coverUrl: input.coverUrl || '/images/studio_cover.jpg',
+          duration: input.duration || 0,
+          position,
+          addedAt: nowIso,
+          audioUrl: isVid ? undefined : input.audioUrl,
+          videoUrl: isVid ? (input.videoUrl || input.audioUrl) : undefined,
+          genre: input.genre || 'Podcast',
+        };
+      }
+      return null;
+    }
+
+    // 2. Music Track resolution
     if (mediaType === 'music') {
       if (MusicCatalogService.isTrackPermanentlyRemoved(mediaId)) return null;
-      const track = MusicCatalogService.getTrackById(mediaId);
-      if (!track || MusicCatalogService.isTrackPermanentlyRemoved(track.id, track.title, track.artistName)) return null;
-      return {
-        id: `item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-        playlistId,
-        mediaId: track.id,
-        mediaType: 'music',
-        title: track.title,
-        artistName: track.artistName,
-        coverUrl: track.coverUrl,
-        duration: track.duration,
-        position,
-        addedAt: new Date().toISOString(),
-        audioUrl: track.audioUrl,
-        bpm: track.bpm,
-        genre: track.genre,
-      };
+      const track =
+        MusicCatalogService.getTrackById(mediaId) ||
+        MOCK_TRACKS.find((t) => t.id === mediaId);
+      if (track) {
+        if (MusicCatalogService.isTrackPermanentlyRemoved(track.id, track.title, track.artistName)) {
+          return null;
+        }
+        return {
+          id: itemUid,
+          playlistId,
+          mediaId: track.id,
+          mediaType: 'music',
+          title: track.title,
+          artistName: track.artistName,
+          coverUrl: MusicCatalogService.resolveTrackCover(track),
+          duration: track.duration,
+          position,
+          addedAt: nowIso,
+          audioUrl: track.audioUrl,
+          bpm: track.bpm,
+          genre: track.genre,
+        };
+      }
+      const podFallback = resolvePodcast();
+      if (podFallback) return podFallback;
+      if (input.title) {
+        return {
+          id: itemUid,
+          playlistId,
+          mediaId,
+          mediaType: 'music',
+          title: input.title,
+          artistName: input.artistName || 'ChanceTEK One',
+          coverUrl: input.coverUrl || '/images/studio_cover.jpg',
+          duration: input.duration || 0,
+          position,
+          addedAt: nowIso,
+          audioUrl: input.audioUrl,
+          genre: input.genre || 'Music',
+        };
+      }
+      return null;
     }
 
+    // 3. Video resolution (checks live MediaCatalogService first, then MOCK_VIDEOS, then podcasts)
     if (mediaType === 'video') {
-      const video = MOCK_VIDEOS.find((v) => v.id === mediaId);
-      if (!video) return null;
-      return {
-        id: `item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-        playlistId,
-        mediaId: video.id,
-        mediaType: 'video',
-        title: video.title,
-        artistName: video.artistName,
-        coverUrl: video.thumbnailUrl,
-        duration: video.duration,
-        position,
-        addedAt: new Date().toISOString(),
-        videoUrl: video.videoUrl,
-        genre: video.category,
-      };
+      const video =
+        MediaCatalogService.getAllVideos().find((v) => v.id === mediaId) ||
+        MOCK_VIDEOS.find((v) => v.id === mediaId);
+      if (video) {
+        return {
+          id: itemUid,
+          playlistId,
+          mediaId: video.id,
+          mediaType: 'video',
+          title: video.title,
+          artistName: video.artistName,
+          coverUrl: video.thumbnailUrl || '/images/studio_cover.jpg',
+          duration: video.duration,
+          position,
+          addedAt: nowIso,
+          videoUrl: video.videoUrl,
+          genre: video.category,
+        };
+      }
+      const podFallback = resolvePodcast();
+      if (podFallback) return podFallback;
+      if (input.title) {
+        return {
+          id: itemUid,
+          playlistId,
+          mediaId,
+          mediaType: 'video',
+          title: input.title,
+          artistName: input.artistName || 'ChanceTEK One',
+          coverUrl: input.coverUrl || '/images/studio_cover.jpg',
+          duration: input.duration || 0,
+          position,
+          addedAt: nowIso,
+          videoUrl: input.videoUrl,
+          genre: input.genre || '4K Video',
+        };
+      }
+      return null;
     }
 
+    // 4. Audiobook resolution (checks live MediaCatalogService first, then MOCK_AUDIOBOOKS)
     if (mediaType === 'audiobook') {
-      const book = MOCK_AUDIOBOOKS.find((b) => b.id === mediaId);
-      if (!book) return null;
-      const firstChapter = book.chapters[0];
-      return {
-        id: `item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-        playlistId,
-        mediaId: book.id,
-        mediaType: 'audiobook',
-        title: firstChapter ? firstChapter.title : book.title,
-        artistName: book.author,
-        coverUrl: book.coverUrl,
-        duration: firstChapter ? firstChapter.duration : book.duration,
-        position,
-        addedAt: new Date().toISOString(),
-        audioUrl: firstChapter?.audioUrl || '/audio/Fort Apache.mp3',
-        chapterIndex: 1,
-        genre: book.genre,
-      };
+      const book =
+        MediaCatalogService.getAllAudiobooks().find((b) => b.id === mediaId) ||
+        MOCK_AUDIOBOOKS.find((b) => b.id === mediaId);
+      if (book) {
+        const firstChapter = book.chapters?.[0];
+        const firstUrl = firstChapter?.audioUrl || '';
+        const isVideoBook =
+          book.mediaFormat === 'video' ||
+          firstUrl.toLowerCase().endsWith('.mp4') ||
+          firstUrl.toLowerCase().endsWith('.mov');
+        return {
+          id: itemUid,
+          playlistId,
+          mediaId: book.id,
+          mediaType: 'audiobook',
+          title: book.title,
+          artistName: book.author,
+          coverUrl: book.coverUrl || '/images/studio_cover.jpg',
+          duration: firstChapter ? firstChapter.duration : book.duration,
+          position,
+          addedAt: nowIso,
+          audioUrl: isVideoBook ? undefined : firstUrl || undefined,
+          videoUrl: isVideoBook ? firstUrl : undefined,
+          chapterIndex: 1,
+          genre: book.genre,
+        };
+      }
+      if (input.title) {
+        return {
+          id: itemUid,
+          playlistId,
+          mediaId,
+          mediaType: 'audiobook',
+          title: input.title,
+          artistName: input.artistName || 'Author',
+          coverUrl: input.coverUrl || '/images/studio_cover.jpg',
+          duration: input.duration || 0,
+          position,
+          addedAt: nowIso,
+          audioUrl: input.audioUrl,
+          videoUrl: input.videoUrl,
+          chapterIndex: 1,
+          genre: input.genre || 'Audiobook',
+        };
+      }
+      return null;
     }
 
     return null;

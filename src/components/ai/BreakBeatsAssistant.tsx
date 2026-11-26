@@ -296,7 +296,7 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
       id: 'welcome',
       role: 'assistant',
       content:
-        'Welcome! I am **ChanceTEK One AI** — your Agentic AI music, audiobook & culture assistant powered by **Agentic Intelligence** with **Dual Memory**. Ask me to find similar songs, build custom playlists, remember your tastes, or explore audiobooks and podcasts.',
+        'Welcome! I am **ChanceTEK One AI** — your ChanceTEK One music, audiobook & culture assistant powered by **ChanceTEK One Intelligence** with **Dual Memory**. Ask me to find similar songs, build custom playlists, remember your tastes, or explore audiobooks and podcasts.',
       timestamp: new Date().toISOString(),
     },
   ]);

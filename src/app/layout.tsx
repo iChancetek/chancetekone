@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     template: '%s · ChanceTEK One',
   },
   description:
-    'Listen. Watch. Discover. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and Agentic AI curation with ChanceTEK One.',
+    'Listen. Watch. Discover. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and ChanceTEK One curation.',
   keywords: [
     'ChanceTEK One',
     'Listen. Watch. Discover.',
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'ChanceTEK One — Listen. Watch. Discover.',
     description:
-      'Listen. Watch. Discover. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and Agentic AI curation.',
+      'Listen. Watch. Discover. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and ChanceTEK One curation.',
     siteName: 'ChanceTEK One',
     url: 'https://chancetekone.us',
     type: 'website',
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'ChanceTEK One — Listen. Watch. Discover.',
     description:
-      'Listen. Watch. Discover. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and Agentic AI curation.',
+      'Listen. Watch. Discover. Experience next-generation music, 4K videos, audiobooks, podcasts, exclusive vinyl merch, and ChanceTEK One curation.',
     images: ['/images/chancetekone_logo.jpg?v=2'],
   },
   manifest: '/manifest.webmanifest',

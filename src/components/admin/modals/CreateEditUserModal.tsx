@@ -131,7 +131,7 @@ export const CreateEditUserModal: React.FC<CreateEditUserModalProps> = ({
                 <option value="music_manager">Music Manager</option>
                 <option value="analytics_admin">Analytics Admin</option>
                 <option value="moderator">Moderator</option>
-                <option value="agentic_ai">Agentic AI Agent</option>
+                <option value="agentic_ai">ChanceTEK One Agent</option>
                 <option value="admin">Administrator</option>
                 <option value="super_admin">Super Administrator</option>
               </select>

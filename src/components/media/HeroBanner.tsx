@@ -77,6 +77,48 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
       aiPrompt: 'Tell me about Saturday Night, Sunday Morning... By Author, Kwame Thompson!',
       projectHref: '#',
     },
+    {
+      id: 'chancetek-one-streaming-experience',
+      badge: 'ChanceTEK One Experience',
+      narrationText: 'ChanceTEK One — Stream Anywhere, Anytime. Music, 4K cinema, audiobooks, and podcasts on every screen.',
+      heading: 'ChanceTEK One — Stream Anywhere, Anytime',
+      description: 'Experience music, 4K cinema, audiobooks, and podcasts seamlessly across every screen.',
+      bannerAlt: 'People using ChanceTEK One Streaming',
+      aspectRatio: { width: 1920, height: 1080 },
+      track: track,
+      videoHref: '/music',
+      videoUrl: '/videos/People_using_ChanceTEK_One_Streaming.mp4#t=0.5',
+      aiPrompt: 'Tell me about streaming music, videos, audiobooks, and podcasts on ChanceTEK One!',
+      projectHref: '/music',
+    },
+    {
+      id: 'chancetek-one-mobile-streaming',
+      badge: 'Mobile & PWA Streaming',
+      narrationText: 'Stream Music and Video On Mobile Devices. Take your playlists, favorites, and timeless music anywhere.',
+      heading: 'Stream Music & Video On Mobile Devices',
+      description: 'Take your personal playlists, favorites, and timeless music anywhere on iPhone & Android.',
+      bannerAlt: 'People streaming on mobile devices',
+      aspectRatio: { width: 1920, height: 1080 },
+      track: track,
+      videoHref: '/music',
+      videoUrl: '/videos/People_streaming_on_mobile_devices.mp4#t=0.5',
+      aiPrompt: 'Show me how to build mobile playlists on ChanceTEK One!',
+      projectHref: '/playlists',
+    },
+    {
+      id: 'chancetek-one-loft-sessions',
+      badge: 'Culture & Lifestyle',
+      narrationText: 'Timeless Music In Every Space. Curate the atmosphere in your loft, studio, or lounge with ChanceTEK One.',
+      heading: 'Timeless Music In Every Space',
+      description: 'Curate the atmosphere in your loft, studio, or lounge with ChanceTEK One hi-res audio and playlists.',
+      bannerAlt: 'People streaming music in loft',
+      aspectRatio: { width: 1920, height: 1080 },
+      track: track,
+      videoHref: '/music',
+      videoUrl: '/videos/People_streaming_music_in_loft.mp4#t=0.5',
+      aiPrompt: 'Recommend timeless music for a relaxed loft listening session on ChanceTEK One!',
+      projectHref: '/music',
+    },
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -317,7 +359,9 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
               className={`relative rounded-2xl sm:rounded-3xl border border-white/15 bg-black shadow-[0_25px_70px_-15px_rgba(0,0,0,0.95)] p-0 overflow-hidden w-full ring-1 ring-brand-gold/15 flex items-center justify-center ${
                 currentSlide.id === 'mi-vida-loca'
                   ? 'min-h-[420px] h-[72vh] sm:h-[78vh] max-h-[820px]'
-                  : 'aspect-[1112/830] max-h-[72vh]'
+                  : currentSlide.id === 'saturday-night-sunday-morning'
+                    ? 'aspect-[1112/830] max-h-[72vh]'
+                    : 'aspect-video max-h-[72vh]'
               }`}
             >
               {currentSlide.id === 'mi-vida-loca' && (

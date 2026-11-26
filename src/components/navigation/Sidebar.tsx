@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -98,12 +99,27 @@ export const Sidebar: React.FC = () => {
   const { profile, isAdmin, signInAsDemo, signOut } = useAuth();
   const { openAI } = useAI();
   const { isInstallable, installPWA } = usePWA();
-  const { isCollapsed, toggleSidebar, isMobileOpen, closeMobileSidebar, isMobileNavHidden, toggleMobileNavHidden } = useSidebar();
+  const {
+    isCollapsed,
+    toggleSidebar,
+    isMobileOpen,
+    closeMobileSidebar,
+    isMobileNavHidden,
+    toggleMobileNavHidden,
+    isMobilePlayerHidden,
+    toggleMobilePlayerHidden,
+  } = useSidebar();
   const { openModal: openAccessibilityModal, fontScale } = useAccessibility();
   const { theme, isLight, toggleTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const navWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prefetchedSetRef = useRef<Set<string>>(new Set());
+  const drawerTouchStartXRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setPendingHref(null);
@@ -509,7 +525,7 @@ export const Sidebar: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm font-bold text-white leading-tight">ChanceTEK One AI</p>
-                  <p className="text-[11px] text-brand-neon font-medium">Agentic Sonic Concierge</p>
+                  <p className="text-[11px] text-brand-neon font-medium">ChanceTEK One Concierge</p>
                 </div>
               </div>
               <p className="text-xs text-neutral-300 leading-relaxed">
@@ -608,385 +624,399 @@ export const Sidebar: React.FC = () => {
       </aside>
 
       {/* ========================================================================= */}
-      {/* 2. FULL MOBILE & PORTRAIT TABLET SLIDE-OVER DRAWER                        */}
+      {/* 2. COMPACT VERTICAL-FRIENDLY MOBILE SLIDE-OVER DRAWER (Portaled to body)  */}
       {/* ========================================================================= */}
-      {/* Backdrop — mounted ONLY when mobile drawer is open so closed state never composites or blocks taps */}
-      {isMobileOpen && (
-        <div
-          onClick={closeMobileSidebar}
-          className="fixed inset-0 bg-black/75 z-[70] touch-manipulation animate-in fade-in duration-150"
-          aria-hidden={!isMobileOpen}
-        />
-      )}
-
-      {/* Slide Drawer Panel */}
-      <aside
-        className={`fixed inset-y-0 left-0 w-[88vw] sm:w-96 max-w-sm glass-panel border-r border-white/10 z-[80] bg-[#0c0c16]/98 flex flex-col h-[100dvh] shadow-[0_0_50px_rgba(0,0,0,0.9)] transition-transform duration-200 ease-out ${isMobileOpen ? 'translate-x-0 pointer-events-auto visible' : '-translate-x-full pointer-events-none invisible'
-          }`}
-        aria-label="Mobile Navigation Menu"
-        aria-hidden={!isMobileOpen}
-      >
-        {/* Mobile Drawer Header */}
-        <div data-drawer-header="true" className="p-4 pt-[calc(1rem+env(safe-area-inset-top))] border-b border-white/10 flex items-center justify-between bg-[#10101c]/80">
-          <Link
-            href="/"
-            prefetch={false}
-            onClick={(e) => handleMenuNavigate(e, '/', false, true)}
-            className="flex items-center gap-2.5 transition-transform active:scale-95 touch-manipulation"
-          >
-            <BrandLogo variant="mobile-drawer" showSlogan />
-          </Link>
-
-          {/* Close Button with generous touch target */}
-          <button
-            data-drawer-close="true"
+      {mounted && isMobileOpen && createPortal(
+        <>
+          {/* Dimmed Tap-Outside-To-Close Backdrop (leaves ~26% visible strip on right) */}
+          <div
             onClick={closeMobileSidebar}
-            className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-neutral-300 hover:text-white transition-colors flex items-center justify-center cursor-pointer touch-manipulation"
-            title="Close Menu"
-            aria-label="Close Menu"
+            style={{ position: 'fixed', inset: 0 }}
+            className="md:hidden bg-black/65 z-[80] touch-manipulation animate-in fade-in duration-150"
+            aria-label="Tap outside to close navigation menu"
+          />
+
+          {/* Compact Portrait Slide Drawer (74vw max 285px — never full-screen!) */}
+          <aside
+            onTouchStart={(e) => {
+              drawerTouchStartXRef.current = e.touches[0]?.clientX ?? null;
+            }}
+            onTouchEnd={(e) => {
+              if (drawerTouchStartXRef.current === null) return;
+              const endX = e.changedTouches[0]?.clientX ?? drawerTouchStartXRef.current;
+              const deltaX = endX - drawerTouchStartXRef.current;
+              drawerTouchStartXRef.current = null;
+              if (deltaX < -45) closeMobileSidebar();
+            }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              bottom: 0,
+              left: 0,
+              transform: 'translate3d(0, 0, 0)',
+              WebkitTransform: 'translate3d(0, 0, 0)',
+            }}
+            className="md:hidden w-[74vw] max-w-[285px] border-r border-white/15 z-[85] bg-[#0b0b15]/98 flex flex-col h-[100dvh] shadow-[12px_0_48px_rgba(0,0,0,0.92)] animate-in slide-in-from-left duration-150"
+            aria-label="Mobile Navigation Menu"
           >
-            <X className="w-5 h-5 text-white" />
-          </button>
-        </div>
-
-        {/* Mobile Drawer Scrollable Body */}
-        <div className="flex-1 touch-scroll-y px-3 py-4 space-y-6 pb-28">
-          {/* Discover Section */}
-          <div className="space-y-1">
-            <div className="px-3 mb-2 text-xs font-extrabold uppercase tracking-wider text-brand-gold flex items-center gap-1.5">
-              <span>Discover</span>
-              <div className="flex-1 h-px bg-white/10" />
-            </div>
-            <nav className="space-y-1">
-              {NAV_ITEMS.map((item) => {
-                const Icon = item.icon;
-                const isActive =
-                  !item.isExternal &&
-                  (activePath === item.href || (item.href !== '/' && activePath.startsWith(item.href)));
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    prefetch={false}
-                    target={item.isExternal ? '_blank' : undefined}
-                    rel={item.isExternal ? 'noopener noreferrer' : undefined}
-                    onMouseEnter={() => handleIntentPrefetch(item.href, item.isExternal)}
-                    onTouchStart={() => handleIntentPrefetch(item.href, item.isExternal)}
-                    onClick={(e) => handleMenuNavigate(e, item.href, item.isExternal, true)}
-                    data-nav-item="true"
-                    data-nav-active={isActive ? 'true' : undefined}
-                    className={`flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-[15px] font-semibold transition-all touch-manipulation ${isActive
-                      ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
-                      : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
-                      }`}
-                  >
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400'}`} />
-                      <span className="truncate">{item.label}</span>
-                    </div>
-
-                    {item.badge && (
-                      <span
-                        data-nav-badge="true"
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 shrink-0 whitespace-nowrap"
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-
-                    {item.isExternal && !item.badge && (
-                      <ExternalLink className="w-4 h-4 text-neutral-400 shrink-0" />
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-
-          {/* Your Space Section */}
-          <div className="space-y-1">
-            <div className="px-3 mb-2 text-xs font-extrabold uppercase tracking-wider text-brand-gold flex items-center gap-1.5">
-              <span>Your Space</span>
-              <div className="flex-1 h-px bg-white/10" />
-            </div>
-            <nav className="space-y-1">
-              {LIBRARY_ITEMS.map((item) => {
-                const Icon = item.icon;
-                const isActive = (pendingHref || pathname) === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    prefetch={false}
-                    onMouseEnter={() => handleIntentPrefetch(item.href)}
-                    onTouchStart={() => handleIntentPrefetch(item.href)}
-                    onClick={(e) => handleMenuNavigate(e, item.href, false, true)}
-                    data-nav-item="true"
-                    data-nav-active={isActive ? 'true' : undefined}
-                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[15px] font-semibold transition-all touch-manipulation ${isActive
-                      ? 'bg-white/10 text-white border border-white/15'
-                      : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
-                      }`}
-                  >
-                    <Icon className="w-5 h-5 text-neutral-400 shrink-0" />
-                    <span className="truncate">{item.label}</span>
-                  </Link>
-                );
-              })}
-
-              {/* Create Playlist Button */}
+            {/* Pinned Compact Header with Impossible-to-Miss Close Button */}
+            <div
+              data-drawer-header="true"
+              className="shrink-0 sticky top-0 z-20 px-3 py-2.5 pt-[max(0.75rem,env(safe-area-inset-top))] border-b border-white/10 flex items-center justify-between gap-2 bg-[#10101e]"
+            >
               <Link
-                data-create-playlist="true"
-                href="/playlists"
+                href="/"
                 prefetch={false}
-                onMouseEnter={() => handleIntentPrefetch('/playlists')}
-                onTouchStart={() => handleIntentPrefetch('/playlists')}
-                onClick={(e) => handleMenuNavigate(e, '/playlists', false, true)}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-[#ffd700]/20 to-[#f59e0b]/20 active:from-[#ffd700] active:to-[#f59e0b] text-brand-gold active:text-black border border-brand-gold/40 shadow-sm transition-all mt-1 touch-manipulation"
+                onClick={(e) => handleMenuNavigate(e, '/', false, true)}
+                className="flex items-center gap-2 min-w-0 flex-1 active:scale-95 transition-transform touch-manipulation"
               >
-                <ListMusic className="w-4 h-4 text-brand-gold shrink-0" />
-                <span>+ Create Playlist</span>
+                <BrandLogo variant="compact" showSlogan={false} className="[&_img]:w-7 [&_img]:h-7" />
+                <span className="text-sm font-black text-white truncate tracking-tight">
+                  ChanceTEK One
+                </span>
               </Link>
 
-              {/* Admin Operations & API Management shortcuts — strictly Admins Only */}
-              {Boolean(profile && isAdmin) && (
-                <>
-                  <Link
-                    data-nav-admin="true"
-                    href="/admin"
-                    prefetch={false}
-                    onMouseEnter={() => handleIntentPrefetch('/admin')}
-                    onTouchStart={() => handleIntentPrefetch('/admin')}
-                    onClick={(e) => handleMenuNavigate(e, '/admin', false, true)}
-                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[15px] font-bold text-red-400 bg-red-950/40 border border-red-500/40 active:border-red-500/70 transition-all mt-1 touch-manipulation"
-                  >
-                    <ShieldAlert className="w-5 h-5 text-red-400 shrink-0 animate-pulse" />
-                    <span>Admin Operations Center</span>
-                  </Link>
-
-                  <Link
-                    data-nav-api="true"
-                    href="/admin?tab=api-management"
-                    prefetch={false}
-                    onMouseEnter={() => handleIntentPrefetch('/admin?tab=api-management')}
-                    onTouchStart={() => handleIntentPrefetch('/admin?tab=api-management')}
-                    onClick={(e) => handleMenuNavigate(e, '/admin?tab=api-management', false, true)}
-                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[15px] font-bold text-cyan-300 bg-cyan-950/40 border border-cyan-500/40 active:border-cyan-500/70 transition-all mt-1 touch-manipulation"
-                  >
-                    <BarChart3 className="w-5 h-5 text-cyan-400 shrink-0" />
-                    <span>API Management</span>
-                  </Link>
-                </>
-              )}
-            </nav>
-          </div>
-
-          {/* Platform & Support Section */}
-          <div className="space-y-1">
-            <div className="px-3 mb-2 text-[11px] font-extrabold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
-              <span>Platform & Support</span>
-              <div className="flex-1 h-px bg-white/10" />
-            </div>
-            <nav className="space-y-1">
-              {INFO_ITEMS.map((item) => {
-                const Icon = item.icon;
-                const isActive = activePath === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    prefetch={false}
-                    onMouseEnter={() => handleIntentPrefetch(item.href)}
-                    onTouchStart={() => handleIntentPrefetch(item.href)}
-                    onClick={(e) => handleMenuNavigate(e, item.href, false, true)}
-                    data-nav-item="true"
-                    data-nav-active={isActive ? 'true' : undefined}
-                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all touch-manipulation ${isActive
-                      ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
-                      : 'text-neutral-300 hover:text-white hover:bg-white/5 active:bg-white/10'
-                      }`}
-                  >
-                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400'}`} />
-                    <span className="truncate">{item.label}</span>
-                  </Link>
-                );
-              })}
-
-              {/* Bottom Menu Bar Collapse / Show Toggle (Mobile PWA) */}
+              {/* Prominent Guaranteed-Visible Close Pill */}
               <button
                 type="button"
-                onClick={() => {
-                  toggleMobileNavHidden();
-                  closeMobileSidebar();
-                }}
-                className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all w-full cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <Sliders className="w-4 h-4 shrink-0 text-brand-gold" />
-                  <span>Bottom Menu Bar</span>
-                </div>
-                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-white/10 text-brand-gold font-mono font-bold">
-                  {isMobileNavHidden ? 'Hidden' : 'Shown'}
-                </span>
-              </button>
-
-              {/* Apple Music Light / Dark Mode Switcher (Mobile) */}
-              <button
-                onClick={toggleTheme}
-                className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all w-full cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  {isLight ? (
-                    <Moon className="w-4 h-4 shrink-0 text-brand-gold" />
-                  ) : (
-                    <Sun className="w-4 h-4 shrink-0 text-brand-gold" />
-                  )}
-                  <span>{isLight ? 'Light Mode' : 'Dark Mode'}</span>
-                </div>
-                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-white/10 text-brand-gold font-mono font-bold">
-                  {isLight ? 'Apple' : 'Dark'}
-                </span>
-              </button>
-
-              {/* Accessibility Font Scale Modal Trigger */}
-              <button
-                onClick={() => {
-                  closeMobileSidebar();
-                  openAccessibilityModal();
-                }}
-                className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-neutral-300 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all w-full cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <Type className="w-4 h-4 shrink-0 text-brand-gold" />
-                  <span>Text Size & Legibility</span>
-                </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-brand-gold font-mono font-bold">
-                  {fontScale}%
-                </span>
-              </button>
-            </nav>
-          </div>
-
-          {/* ChanceTEK One AI Assistant Interactive Card */}
-          <div data-light-card="true" className="p-3.5 rounded-2xl bg-gradient-to-br from-brand-purple/30 via-brand-dark to-brand-gold/10 border border-brand-purple/40 space-y-2 shadow-lg">
-            <div className="flex items-center gap-2.5">
-              <div data-solid-icon-badge="true" className="w-7 h-7 rounded-full bg-brand-gold flex items-center justify-center text-black">
-                <Sparkles className="w-4 h-4 fill-current" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white">ChanceTEK One AI</p>
-                <p className="text-[10px] text-brand-neon font-medium">Agentic Assistant</p>
-              </div>
-            </div>
-            <p className="text-xs text-neutral-300 leading-snug">
-              Agentic music, audiobook &amp; culture assistant with dual memory.
-            </p>
-            <button
-              data-solid-cta="true"
-              onClick={() => {
-                closeMobileSidebar();
-                openAI();
-              }}
-              className="w-full py-2 px-3 rounded-xl bg-brand-purple hover:bg-brand-violet active:scale-98 text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
-              Ask AI Assistant
-            </button>
-          </div>
-
-          {/* PWA Cross-Platform Install Action */}
-          {isInstallable && (
-            <div data-light-card="true" className="p-3 rounded-2xl bg-white/5 border border-brand-gold/40 space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-brand-gold/20 flex items-center justify-center text-brand-gold">
-                  <Download className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-white">Install Application</p>
-                  <p className="text-[10px] text-neutral-400">Lock-screen audio & offline playback</p>
-                </div>
-              </div>
-              <button
-                data-solid-cta="true"
-                onClick={() => {
-                  closeMobileSidebar();
-                  installPWA();
-                }}
-                className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-[#f5c344] via-[#ff9f1c] to-[#f5c344] text-[#08080c] text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(245,195,68,0.5)] active:scale-98 cursor-pointer"
-              >
-                <Download className="w-4 h-4 stroke-[3] text-[#08080c]" />
-                <span>Install ChanceTEK One</span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Mobile Drawer Footer with User Profile & Sign Out */}
-        <div
-          data-drawer-footer="true"
-          className="p-3.5 border-t border-white/10 bg-[#08080c]/90 pb-safe"
-        >
-          {profile ? (
-            <div className="flex items-center justify-between p-2 rounded-2xl bg-white/5 border border-white/10 hover:border-brand-gold/40 transition-all">
-              <Link
-                href="/profile"
+                data-drawer-close="true"
                 onClick={closeMobileSidebar}
-                className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-90 transition-opacity"
+                className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-brand-gold text-[#050509] font-black text-xs shadow-md active:scale-95 transition-all cursor-pointer touch-manipulation"
+                title="Close Menu"
+                aria-label="Close Menu"
               >
-                <UserAvatar
-                  avatarUrl={profile.avatarUrl}
-                  videoUrl={profile.profileVideoUrl}
-                  name={profile.name}
-                  size="sm"
-                  borderClassName="border border-brand-gold/50"
-                />
-                <div className="flex-1 min-w-0 text-left">
-                  <p className="text-xs font-bold text-white truncate hover:text-brand-gold transition-colors">
-                    {profile.name}
-                  </p>
-                  <p className="text-[10px] text-brand-gold truncate">
-                    {profile.role === 'admin' ? 'Super Admin' : profile.role || 'Member'}
-                  </p>
+                <X className="w-3.5 h-3.5 stroke-[3]" />
+                <span>Close</span>
+              </button>
+            </div>
+
+            {/* Compact Portrait Scrollable Body */}
+            <div className="flex-1 touch-scroll-y px-2.5 py-3 space-y-4 pb-6">
+              {/* Discover Section */}
+              <div className="space-y-0.5">
+                <div className="px-2.5 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-brand-gold flex items-center gap-1.5">
+                  <span>Discover</span>
+                  <div className="flex-1 h-px bg-white/10" />
                 </div>
-              </Link>
+                <nav className="space-y-0.5">
+                  {NAV_ITEMS.map((item) => {
+                    const Icon = item.icon;
+                    const isActive =
+                      !item.isExternal &&
+                      (activePath === item.href || (item.href !== '/' && activePath.startsWith(item.href)));
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        prefetch={false}
+                        target={item.isExternal ? '_blank' : undefined}
+                        rel={item.isExternal ? 'noopener noreferrer' : undefined}
+                        onMouseEnter={() => handleIntentPrefetch(item.href, item.isExternal)}
+                        onTouchStart={() => handleIntentPrefetch(item.href, item.isExternal)}
+                        onClick={(e) => handleMenuNavigate(e, item.href, item.isExternal, true)}
+                        data-nav-item="true"
+                        data-nav-active={isActive ? 'true' : undefined}
+                        className={`flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-[13.5px] font-semibold transition-all touch-manipulation ${isActive
+                          ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
+                          : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
+                          }`}
+                      >
+                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                          <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400'}`} />
+                          <span className="truncate">{item.label}</span>
+                        </div>
+
+                        {item.badge && (
+                          <span
+                            data-nav-badge="true"
+                            className="text-[9px] px-1.5 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-bold border border-brand-gold/30 shrink-0 whitespace-nowrap"
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+
+                        {item.isExternal && !item.badge && (
+                          <ExternalLink className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                        )}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* Your Space Section */}
+              <div className="space-y-0.5">
+                <div className="px-2.5 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-brand-gold flex items-center gap-1.5">
+                  <span>Your Space</span>
+                  <div className="flex-1 h-px bg-white/10" />
+                </div>
+                <nav className="space-y-0.5">
+                  {LIBRARY_ITEMS.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = (pendingHref || pathname) === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        prefetch={false}
+                        onMouseEnter={() => handleIntentPrefetch(item.href)}
+                        onTouchStart={() => handleIntentPrefetch(item.href)}
+                        onClick={(e) => handleMenuNavigate(e, item.href, false, true)}
+                        data-nav-item="true"
+                        data-nav-active={isActive ? 'true' : undefined}
+                        className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13.5px] font-semibold transition-all touch-manipulation ${isActive
+                          ? 'bg-white/10 text-white border border-white/15'
+                          : 'text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10'
+                          }`}
+                      >
+                        <Icon className="w-4 h-4 text-neutral-400 shrink-0" />
+                        <span className="truncate">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+
+                  {/* Create Playlist Button */}
+                  <Link
+                    data-create-playlist="true"
+                    href="/playlists"
+                    prefetch={false}
+                    onMouseEnter={() => handleIntentPrefetch('/playlists')}
+                    onTouchStart={() => handleIntentPrefetch('/playlists')}
+                    onClick={(e) => handleMenuNavigate(e, '/playlists', false, true)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-[#ffd700]/20 to-[#f59e0b]/20 active:from-[#ffd700] active:to-[#f59e0b] text-brand-gold active:text-black border border-brand-gold/40 shadow-sm transition-all mt-1 touch-manipulation"
+                  >
+                    <ListMusic className="w-4 h-4 text-brand-gold shrink-0" />
+                    <span>+ Create Playlist</span>
+                  </Link>
+
+                  {/* Admin Operations & API Management shortcuts — strictly Admins Only */}
+                  {Boolean(profile && isAdmin) && (
+                    <>
+                      <Link
+                        data-nav-admin="true"
+                        href="/admin"
+                        prefetch={false}
+                        onMouseEnter={() => handleIntentPrefetch('/admin')}
+                        onTouchStart={() => handleIntentPrefetch('/admin')}
+                        onClick={(e) => handleMenuNavigate(e, '/admin', false, true)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13.5px] font-bold text-red-400 bg-red-950/40 border border-red-500/40 active:border-red-500/70 transition-all mt-1 touch-manipulation"
+                      >
+                        <ShieldAlert className="w-4 h-4 text-red-400 shrink-0 animate-pulse" />
+                        <span>Admin Operations</span>
+                      </Link>
+
+                      <Link
+                        data-nav-api="true"
+                        href="/admin?tab=api-management"
+                        prefetch={false}
+                        onMouseEnter={() => handleIntentPrefetch('/admin?tab=api-management')}
+                        onTouchStart={() => handleIntentPrefetch('/admin?tab=api-management')}
+                        onClick={(e) => handleMenuNavigate(e, '/admin?tab=api-management', false, true)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13.5px] font-bold text-cyan-300 bg-cyan-950/40 border border-cyan-500/40 active:border-cyan-500/70 transition-all mt-1 touch-manipulation"
+                      >
+                        <BarChart3 className="w-4 h-4 text-cyan-400 shrink-0" />
+                        <span>API Management</span>
+                      </Link>
+                    </>
+                  )}
+                </nav>
+              </div>
+
+              {/* Platform & Mobile Display Controls */}
+              <div className="space-y-0.5">
+                <div className="px-2.5 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
+                  <span>Controls &amp; Support</span>
+                  <div className="flex-1 h-px bg-white/10" />
+                </div>
+                <nav className="space-y-0.5">
+                  {/* Bottom Menu Bar Toggle */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toggleMobileNavHidden();
+                      closeMobileSidebar();
+                    }}
+                    className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all w-full cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Sliders className="w-4 h-4 shrink-0 text-brand-gold" />
+                      <span>Bottom Menu Bar</span>
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-brand-gold font-mono font-bold">
+                      {isMobileNavHidden ? 'Hidden' : 'Shown'}
+                    </span>
+                  </button>
+
+                  {/* Music Player Bar Toggle */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toggleMobilePlayerHidden();
+                      closeMobileSidebar();
+                    }}
+                    className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all w-full cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Disc3 className="w-4 h-4 shrink-0 text-brand-gold" />
+                      <span>Music Player Bar</span>
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-brand-gold font-mono font-bold">
+                      {isMobilePlayerHidden ? 'Hidden' : 'Shown'}
+                    </span>
+                  </button>
+
+                  {/* Light / Dark Mode Switcher */}
+                  <button
+                    type="button"
+                    onClick={toggleTheme}
+                    className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all w-full cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {isLight ? (
+                        <Moon className="w-4 h-4 shrink-0 text-brand-gold" />
+                      ) : (
+                        <Sun className="w-4 h-4 shrink-0 text-brand-gold" />
+                      )}
+                      <span>{isLight ? 'Light Mode' : 'Dark Mode'}</span>
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-brand-gold font-mono font-bold">
+                      {isLight ? 'Apple' : 'Dark'}
+                    </span>
+                  </button>
+
+                  {/* Accessibility Font Scale */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeMobileSidebar();
+                      openAccessibilityModal();
+                    }}
+                    className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-neutral-300 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all w-full cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Type className="w-4 h-4 shrink-0 text-brand-gold" />
+                      <span>Text Size</span>
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-brand-gold font-mono font-bold">
+                      {fontScale}%
+                    </span>
+                  </button>
+
+                  {INFO_ITEMS.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activePath === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        prefetch={false}
+                        onMouseEnter={() => handleIntentPrefetch(item.href)}
+                        onTouchStart={() => handleIntentPrefetch(item.href)}
+                        onClick={(e) => handleMenuNavigate(e, item.href, false, true)}
+                        data-nav-item="true"
+                        data-nav-active={isActive ? 'true' : undefined}
+                        className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all touch-manipulation ${isActive
+                          ? 'bg-gradient-to-r from-brand-purple/40 to-brand-violet/20 text-white border border-brand-purple/50 shadow-sm'
+                          : 'text-neutral-300 hover:text-white hover:bg-white/5 active:bg-white/10'
+                          }`}
+                      >
+                        <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-brand-gold' : 'text-neutral-400'}`} />
+                        <span className="truncate">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* ChanceTEK One Assistant Interactive Card */}
+              <div data-light-card="true" className="p-3 rounded-2xl bg-gradient-to-br from-brand-purple/30 via-brand-dark to-brand-gold/10 border border-brand-purple/40 space-y-2 shadow-lg">
+                <div className="flex items-center gap-2">
+                  <div data-solid-icon-badge="true" className="w-6 h-6 rounded-full bg-brand-gold flex items-center justify-center text-black shrink-0">
+                    <Sparkles className="w-3.5 h-3.5 fill-current" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-white truncate">ChanceTEK One AI</p>
+                    <p className="text-[10px] text-brand-neon font-medium truncate">ChanceTEK One Assistant</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  data-solid-cta="true"
+                  onClick={() => {
+                    closeMobileSidebar();
+                    openAI();
+                  }}
+                  className="w-full py-2 px-3 rounded-xl bg-brand-purple hover:bg-brand-violet active:scale-98 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
+                  Ask ChanceTEK One
+                </button>
+              </div>
+            </div>
+
+            {/* Pinned Compact Footer with User Profile & Thumb-Reachable Close Button */}
+            <div
+              data-drawer-footer="true"
+              className="shrink-0 p-2.5 border-t border-white/10 bg-[#08080c]/95 pb-[max(0.75rem,env(safe-area-inset-bottom))] space-y-2"
+            >
+              {profile ? (
+                <div className="flex items-center justify-between p-1.5 rounded-xl bg-white/5 border border-white/10">
+                  <Link
+                    href="/profile"
+                    onClick={closeMobileSidebar}
+                    className="flex items-center gap-2 min-w-0 flex-1"
+                  >
+                    <UserAvatar
+                      avatarUrl={profile.avatarUrl}
+                      videoUrl={profile.profileVideoUrl}
+                      name={profile.name}
+                      size="sm"
+                      borderClassName="border border-brand-gold/50"
+                    />
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-xs font-bold text-white truncate">{profile.name}</p>
+                      <p className="text-[10px] text-brand-gold truncate">
+                        {profile.role === 'admin' ? 'Super Admin' : profile.role || 'Member'}
+                      </p>
+                    </div>
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      signOut();
+                      closeMobileSidebar();
+                    }}
+                    title="Sign Out"
+                    className="p-1.5 rounded-lg bg-white/5 hover:bg-red-500/20 text-neutral-300 hover:text-red-400 transition-colors cursor-pointer shrink-0 ml-1"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/signup"
+                  onClick={(e) => handleMenuNavigate(e, '/signup', false, true)}
+                  className="shimmer-cta w-full py-2 px-3 rounded-xl bg-gradient-to-r from-[#f7cf62] via-brand-gold to-amber-500 text-[#050509] text-xs font-extrabold shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <UserIcon className="w-3.5 h-3.5" />
+                  Sign In / Create Account
+                </Link>
+              )}
 
               <button
-                onClick={() => {
-                  signOut();
-                  closeMobileSidebar();
-                }}
-                title="Sign Out"
-                className="p-2 rounded-xl bg-white/5 hover:bg-red-500/20 active:bg-red-500/30 text-neutral-400 hover:text-red-400 transition-colors flex items-center gap-1 text-xs cursor-pointer ml-1"
+                type="button"
+                onClick={closeMobileSidebar}
+                className="w-full py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 active:bg-white/25 border border-white/15 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation"
               >
-                <LogOut className="w-4 h-4" />
-                <span className="text-[11px] font-semibold">Sign Out</span>
+                <X className="w-3.5 h-3.5 text-brand-gold" />
+                <span>Close Menu</span>
               </button>
             </div>
-          ) : (
-            <div className="space-y-2">
-              <Link
-                href="/signup"
-                onClick={(e) => handleMenuNavigate(e, '/signup', false, true)}
-                className="shimmer-cta w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#f7cf62] via-brand-gold to-amber-500 active:scale-98 text-[#050509] text-xs font-extrabold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <UserIcon className="w-4 h-4" />
-                Sign In / Create Account
-              </Link>
-              <button
-                data-solid-cta-secondary="true"
-                onClick={() => {
-                  signInAsDemo();
-                  closeMobileSidebar();
-                }}
-                className="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-brand-purple to-brand-violet active:scale-98 text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 text-brand-gold" />
-                <span>Demo Session</span>
-              </button>
-            </div>
-          )}
-        </div>
-      </aside>
+          </aside>
+        </>,
+        document.body
+      )}
     </>
   );
 };

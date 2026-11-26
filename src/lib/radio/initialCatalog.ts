@@ -1,5 +1,5 @@
 // ============================================================
-// Radio Initial Catalog — ChanceTEK One Agentic AI Radio
+// Radio Initial Catalog — ChanceTEK One Radio
 // Pre-seeded authentic test tracks for both stations.
 // All audio references point to platform-owned audio files.
 // ============================================================
@@ -12,7 +12,7 @@ export const RADIO_STATIONS: RadioStation[] = [
     name: 'Hip Hop Radio',
     tagline: 'Breaks, Bars & Culture — Non-Stop',
     description:
-      'Authentic drum breaks, boom bap, underground lyricism, and modern syncopated anthems powered by ChanceTEK One Agentic AI.',
+      'Authentic drum breaks, boom bap, underground lyricism, and modern syncopated anthems powered by ChanceTEK One.',
     genre: 'Hip-Hop',
     artworkUrl: '/images/radio-hiphop.jpg',
     accentColor: '#f5c344',
@@ -25,7 +25,7 @@ export const RADIO_STATIONS: RadioStation[] = [
     name: 'Neo Soul Radio',
     tagline: 'Rhodes, Groove & Soul — Always Vibrating',
     description:
-      'Syncopated soul rhythms, deep basslines, melodic grooves, and modern R&B — curated and broadcast by ChanceTEK One Agentic AI.',
+      'Syncopated soul rhythms, deep basslines, melodic grooves, and modern R&B — curated and broadcast by ChanceTEK One.',
     genre: 'Neo Soul',
     artworkUrl: '/images/radio-neosoul.jpg',
     accentColor: '#a855f7',

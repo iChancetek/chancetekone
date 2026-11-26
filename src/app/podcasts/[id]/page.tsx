@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   MessageSquare,
   ListPlus,
+  Plus,
   FileVideo,
   FileAudio,
   Radio,
@@ -251,9 +252,10 @@ export default function PodcastEpisodeDetailPage() {
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={() => setShowPlaylistModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-brand-purple/20 hover:bg-brand-purple/40 border border-brand-purple/50 text-brand-neon hover:text-white font-semibold text-xs transition-all shadow-md cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-brand-purple/20 hover:bg-brand-gold/25 border border-brand-purple/50 hover:border-brand-gold text-white hover:text-brand-gold font-bold text-xs transition-all shadow-md cursor-pointer"
+            title="Add to an existing playlist or create a new one"
           >
-            <ListPlus className="w-4 h-4 text-brand-gold" />
+            <Plus className="w-4 h-4 stroke-[3] text-brand-gold" />
             <span>Add to Playlist</span>
           </button>
 
@@ -354,11 +356,14 @@ export default function PodcastEpisodeDetailPage() {
           onClose={() => setShowPlaylistModal(false)}
           mediaItem={{
             mediaId: podcast.id,
-            mediaType: 'podcast' as any,
+            mediaType: 'podcast',
             title: podcast.title,
             artistName: `${podcast.showTitle} • ${podcast.host}`,
             coverUrl: podcast.coverUrl,
             duration: podcast.duration,
+            audioUrl: isVideo ? undefined : podcast.mediaUrl,
+            videoUrl: isVideo ? podcast.mediaUrl : undefined,
+            genre: podcast.category,
           }}
         />
       )}

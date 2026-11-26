@@ -591,7 +591,7 @@ export const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
               </label>
               <input
                 type="text"
-                placeholder="e.g. Agentic AI, Hip Hop Heritage, Visual Cinema, Health"
+                placeholder="e.g. ChanceTEK One, Hip Hop Heritage, Visual Cinema, Health"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-neutral-500 focus:border-brand-gold focus:outline-none"

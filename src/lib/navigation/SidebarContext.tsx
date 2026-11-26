@@ -14,25 +14,36 @@ interface SidebarContextType {
   isMobileNavHidden: boolean;
   toggleMobileNavHidden: () => void;
   setMobileNavHidden: (hidden: boolean) => void;
+  isMobilePlayerHidden: boolean;
+  toggleMobilePlayerHidden: () => void;
+  setMobilePlayerHidden: (hidden: boolean) => void;
+  hideAllMobileBars: () => void;
+  showAllMobileBars: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextType>({
   isCollapsed: false,
-  toggleSidebar: () => {},
-  setCollapsed: () => {},
+  toggleSidebar: () => { },
+  setCollapsed: () => { },
   isMobileOpen: false,
-  openMobileSidebar: () => {},
-  closeMobileSidebar: () => {},
-  toggleMobileSidebar: () => {},
+  openMobileSidebar: () => { },
+  closeMobileSidebar: () => { },
+  toggleMobileSidebar: () => { },
   isMobileNavHidden: false,
-  toggleMobileNavHidden: () => {},
-  setMobileNavHidden: () => {},
+  toggleMobileNavHidden: () => { },
+  setMobileNavHidden: () => { },
+  isMobilePlayerHidden: false,
+  toggleMobilePlayerHidden: () => { },
+  setMobilePlayerHidden: () => { },
+  hideAllMobileBars: () => { },
+  showAllMobileBars: () => { },
 });
 
 export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isCollapsed, setIsCollapsedState] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobileNavHidden, setIsMobileNavHiddenState] = useState(false);
+  const [isMobilePlayerHidden, setIsMobilePlayerHiddenState] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -45,7 +56,11 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (storedMobileNav !== null) {
         setIsMobileNavHiddenState(storedMobileNav === 'true');
       }
-    } catch (e) {}
+      const storedMobilePlayer = localStorage.getItem('chancetek_mobile_player_hidden');
+      if (storedMobilePlayer !== null) {
+        setIsMobilePlayerHiddenState(storedMobilePlayer === 'true');
+      }
+    } catch (e) { }
   }, []);
 
   // Auto-close mobile drawer when route changes
@@ -53,7 +68,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsMobileOpen(false);
   }, [pathname]);
 
-  // Handle Escape key and body scroll locking
+  // Handle Escape key and body scroll locking when drawer is open
   useEffect(() => {
     if (isMobileOpen) {
       const originalOverflow = document.body.style.overflow;
@@ -78,7 +93,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const next = !prev;
       try {
         localStorage.setItem('breakbeats_sidebar_collapsed', String(next));
-      } catch (e) {}
+      } catch (e) { }
       return next;
     });
   }, []);
@@ -87,7 +102,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsCollapsedState(collapsed);
     try {
       localStorage.setItem('breakbeats_sidebar_collapsed', String(collapsed));
-    } catch (e) {}
+    } catch (e) { }
   }, []);
 
   const openMobileSidebar = useCallback(() => {
@@ -107,7 +122,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const next = !prev;
       try {
         localStorage.setItem('chancetek_mobile_nav_hidden', String(next));
-      } catch (e) {}
+      } catch (e) { }
       return next;
     });
   }, []);
@@ -116,7 +131,42 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsMobileNavHiddenState(hidden);
     try {
       localStorage.setItem('chancetek_mobile_nav_hidden', String(hidden));
-    } catch (e) {}
+    } catch (e) { }
+  }, []);
+
+  const toggleMobilePlayerHidden = useCallback(() => {
+    setIsMobilePlayerHiddenState((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('chancetek_mobile_player_hidden', String(next));
+      } catch (e) { }
+      return next;
+    });
+  }, []);
+
+  const setMobilePlayerHidden = useCallback((hidden: boolean) => {
+    setIsMobilePlayerHiddenState(hidden);
+    try {
+      localStorage.setItem('chancetek_mobile_player_hidden', String(hidden));
+    } catch (e) { }
+  }, []);
+
+  const hideAllMobileBars = useCallback(() => {
+    setIsMobileNavHiddenState(true);
+    setIsMobilePlayerHiddenState(true);
+    try {
+      localStorage.setItem('chancetek_mobile_nav_hidden', 'true');
+      localStorage.setItem('chancetek_mobile_player_hidden', 'true');
+    } catch (e) { }
+  }, []);
+
+  const showAllMobileBars = useCallback(() => {
+    setIsMobileNavHiddenState(false);
+    setIsMobilePlayerHiddenState(false);
+    try {
+      localStorage.setItem('chancetek_mobile_nav_hidden', 'false');
+      localStorage.setItem('chancetek_mobile_player_hidden', 'false');
+    } catch (e) { }
   }, []);
 
   return (
@@ -132,6 +182,11 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
         isMobileNavHidden,
         toggleMobileNavHidden,
         setMobileNavHidden,
+        isMobilePlayerHidden,
+        toggleMobilePlayerHidden,
+        setMobilePlayerHidden,
+        hideAllMobileBars,
+        showAllMobileBars,
       }}
     >
       {children}
@@ -140,4 +195,3 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
 };
 
 export const useSidebar = () => useContext(SidebarContext);
-

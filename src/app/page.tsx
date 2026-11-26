@@ -162,7 +162,7 @@ export default function HomePage() {
                   <span>Digital Arts &amp; Entertainment Platform</span>
                 </div>
                 <VoiceNarrationButton
-                  text="Introducing an advance cultural and sonic system for Independent Artists & Creators. Using Digital Arts, Entertainment, Music and Videos, Streaming 4K Cultural Documentaries, Narrated Audiobooks and Podcasts. The Platform will also Introduce DJ Playlists, Online Radio, Agentic AI Music Discovery, Music Downloads, Apps, Merchandise and More."
+                  text="Introducing an advance cultural and sonic system for Independent Artists & Creators. Using Digital Arts, Entertainment, Music and Videos, Streaming 4K Cultural Documentaries, Narrated Audiobooks and Podcasts. The Platform will also Introduce DJ Playlists, Online Radio, ChanceTEK One Music Discovery, Music Downloads, Apps, Merchandise and More."
                   variant="dual"
                 />
               </div>
@@ -170,7 +170,7 @@ export default function HomePage() {
                 Introducing an advance cultural and sonic system for Independent Artists &amp; Creators
               </h2>
               <p className="text-sm sm:text-base text-neutral-300/90 leading-relaxed">
-                Using Digital Arts, Entertainment, Music and Videos, Streaming 4K Cultural Documentaries, Narrated Audiobooks and Podcasts. The Platform will also Introduce DJ Playlists, Online Radio, Agentic AI Music Discovery, Music Downloads, Apps, Merchandise and More.
+                Using Digital Arts, Entertainment, Music and Videos, Streaming 4K Cultural Documentaries, Narrated Audiobooks and Podcasts. The Platform will also Introduce DJ Playlists, Online Radio, ChanceTEK One Music Discovery, Music Downloads, Apps, Merchandise and More.
               </p>
             </div>
 

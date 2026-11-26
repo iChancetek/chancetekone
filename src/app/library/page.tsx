@@ -31,6 +31,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { CreatePlaylistModal } from '@/components/playlist/CreatePlaylistModal';
+import { AddToPlaylistButton } from '@/components/playlist/AddToPlaylistButton';
 import { EditPlaylistModal } from '@/components/playlist/EditPlaylistModal';
 import { SharePlaylistModal } from '@/components/playlist/SharePlaylistModal';
 import {
@@ -462,11 +463,10 @@ function LibraryContent() {
                 <button
                   type="button"
                   onClick={() => updateUserProfile({ isLibraryPublic: !profile.isLibraryPublic })}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                    profile.isLibraryPublic
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer ${profile.isLibraryPublic
                       ? 'bg-emerald-500/15 border-emerald-400/50 text-emerald-300 hover:bg-emerald-500/25'
                       : 'bg-white/5 border-white/15 text-neutral-300 hover:border-brand-gold/40 hover:text-brand-gold'
-                  }`}
+                    }`}
                   title={
                     profile.isLibraryPublic
                       ? 'Your Library is Public — click to make Private'
@@ -524,18 +524,16 @@ function LibraryContent() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                  isActive
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${isActive
                     ? 'bg-brand-gold text-black shadow-md'
                     : 'bg-white/5 hover:bg-white/10 text-neutral-300'
-                }`}
+                  }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{tab.label}</span>
                 <span
-                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                    isActive ? 'bg-black/20 text-black font-extrabold' : 'bg-white/10 text-neutral-400'
-                  }`}
+                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${isActive ? 'bg-black/20 text-black font-extrabold' : 'bg-white/10 text-neutral-400'
+                    }`}
                 >
                   {tab.count}
                 </span>
@@ -1077,15 +1075,30 @@ function LibraryContent() {
                       <Play className="w-3.5 h-3.5 fill-current" />
                       <span>Play</span>
                     </button>
-                    <FavoriteButton
-                      id={ep.id}
-                      category="podcasts"
-                      title={ep.title}
-                      subtitle={`${ep.showTitle} • ${ep.host}`}
-                      coverUrl={ep.coverUrl}
-                      variant="icon"
-                      size="sm"
-                    />
+                    <div className="flex items-center gap-1.5">
+                      <AddToPlaylistButton
+                        mediaId={ep.id}
+                        mediaType="podcast"
+                        title={ep.title}
+                        artistName={`${ep.showTitle} • ${ep.host}`}
+                        coverUrl={ep.coverUrl}
+                        duration={ep.duration}
+                        audioUrl={ep.mediaType === 'video' ? undefined : ep.mediaUrl}
+                        videoUrl={ep.mediaType === 'video' ? ep.mediaUrl : undefined}
+                        genre={ep.category}
+                        variant="icon"
+                        size="sm"
+                      />
+                      <FavoriteButton
+                        id={ep.id}
+                        category="podcasts"
+                        title={ep.title}
+                        subtitle={`${ep.showTitle} • ${ep.host}`}
+                        coverUrl={ep.coverUrl}
+                        variant="icon"
+                        size="sm"
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1406,23 +1419,22 @@ function LibraryContent() {
                           {item.title}
                         </h4>
                         <span
-                          className={`px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${
-                            item.mediaType === 'video'
+                          className={`px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${item.mediaType === 'video'
                               ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
                               : item.mediaType === 'audiobook'
-                              ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
-                              : item.mediaType === 'podcast'
-                              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
-                              : 'bg-brand-purple/20 text-brand-neon border border-brand-purple/40'
-                          }`}
+                                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
+                                : item.mediaType === 'podcast'
+                                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                                  : 'bg-brand-purple/20 text-brand-neon border border-brand-purple/40'
+                            }`}
                         >
                           {item.mediaType === 'video'
                             ? 'Video'
                             : item.mediaType === 'audiobook'
-                            ? 'Audiobook'
-                            : item.mediaType === 'podcast'
-                            ? 'Podcast'
-                            : 'Music'}
+                              ? 'Audiobook'
+                              : item.mediaType === 'podcast'
+                                ? 'Podcast'
+                                : 'Music'}
                         </span>
                       </div>
                       <p className="text-[11px] text-neutral-400 truncate mt-0.5">{item.subtitle}</p>
@@ -1435,23 +1447,38 @@ function LibraryContent() {
                       {formatRelativeTime(item.playedAt)}
                     </span>
                     {item.duration > 0 && <span>{formatDuration(item.duration)}</span>}
-                    <FavoriteButton
-                      id={item.mediaId}
-                      category={
-                        item.mediaType === 'video'
-                          ? 'videos'
-                          : item.mediaType === 'audiobook'
-                          ? 'audiobooks'
-                          : item.mediaType === 'podcast'
-                          ? 'podcasts'
-                          : 'music'
-                      }
-                      title={item.title}
-                      subtitle={item.subtitle}
-                      coverUrl={item.coverUrl}
-                      variant="icon"
-                      size="sm"
-                    />
+                    <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5">
+                      <AddToPlaylistButton
+                        mediaId={item.mediaId}
+                        mediaType={item.mediaType}
+                        title={item.title}
+                        artistName={item.subtitle}
+                        coverUrl={item.coverUrl}
+                        duration={item.duration}
+                        audioUrl={item.audioUrl}
+                        videoUrl={item.videoUrl}
+                        genre={item.genre}
+                        variant="icon"
+                        size="sm"
+                      />
+                      <FavoriteButton
+                        id={item.mediaId}
+                        category={
+                          item.mediaType === 'video'
+                            ? 'videos'
+                            : item.mediaType === 'audiobook'
+                              ? 'audiobooks'
+                              : item.mediaType === 'podcast'
+                                ? 'podcasts'
+                                : 'music'
+                        }
+                        title={item.title}
+                        subtitle={item.subtitle}
+                        coverUrl={item.coverUrl}
+                        variant="icon"
+                        size="sm"
+                      />
+                    </div>
                   </div>
                 </div>
               ))}

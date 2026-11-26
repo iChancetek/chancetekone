@@ -38,7 +38,7 @@ export const Footer: React.FC = () => {
             </Link>
 
             <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed max-w-md">
-              The definitive cultural streaming ecosystem uniting master-quality audio, 4K documentaries, narrated audiobooks, podcasts, collector vinyl pressings, and agentic AI music discovery.
+              The definitive cultural streaming ecosystem uniting master-quality audio, 4K documentaries, narrated audiobooks, podcasts, collector vinyl pressings, and ChanceTEK One music discovery.
             </p>
 
             <div className="pt-1 flex items-center gap-2">

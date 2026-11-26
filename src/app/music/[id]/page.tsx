@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Play, Pause, Disc3, Heart, Sparkles, Music, Flame, ListPlus, ArrowLeft, MessageSquare, Share2, Headphones, UserPlus } from 'lucide-react';
+import { Play, Pause, Plus, Disc3, Heart, Sparkles, Music, Flame, ListPlus, ArrowLeft, MessageSquare, Share2, Headphones, UserPlus } from 'lucide-react';
 import { MOCK_TRACKS } from '@/lib/mockData';
 import { MusicCatalogService, getDefaultCoverForTrack } from '@/lib/music/MusicCatalogService';
 import { usePlayer } from '@/lib/player/PlayerContext';
@@ -268,9 +268,10 @@ export default function TrackDetailPage() {
 
             <button
               onClick={() => setShowPlaylistModal(true)}
-              className="flex items-center gap-2 px-5 py-3 rounded-full bg-brand-purple/20 hover:bg-brand-purple/40 border border-brand-purple/50 text-brand-neon hover:text-white font-semibold text-xs transition-all shadow-md"
+              className="flex items-center gap-2 px-5 py-3 rounded-full bg-brand-purple/20 hover:bg-brand-gold/25 border border-brand-purple/50 hover:border-brand-gold text-white hover:text-brand-gold font-bold text-xs transition-all shadow-md cursor-pointer"
+              title="Add to an existing playlist or create a new one"
             >
-              <ListPlus className="w-4 h-4 text-brand-gold" />
+              <Plus className="w-4 h-4 stroke-[3] text-brand-gold" />
               <span>Add to Playlist</span>
             </button>
 

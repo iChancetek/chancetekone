@@ -1,7 +1,7 @@
 ﻿/**
  * ChanceTEK One — Autonomous Music Catalog & Cover Art Healing Agent
  * 
- * An autonomous agentic AI specialist that:
+ * An autonomous ChanceTEK One specialist that:
  * 1. Resolves why music in the Music Area fails to play by verifying, sanitizing,
  *    and repairing audio streams with authentic high-fidelity studio files.
  * 2. Normalizes full artist and album names (eliminating track numbers like '01', '08',
@@ -78,7 +78,7 @@ export interface CatalogHealingReport {
 
 export class MusicCatalogHealingAgent {
   public static readonly AGENT_ID = 'agent-catalog-audio-healing-v1';
-  public static readonly AGENT_NAME = 'Agentic AI Music Catalog & Cover Art Healing Specialist';
+  public static readonly AGENT_NAME = 'ChanceTEK One Music Catalog & Cover Art Healing Specialist';
 
   /**
    * Canonical album titles mapped by (artist, track title or keyword)

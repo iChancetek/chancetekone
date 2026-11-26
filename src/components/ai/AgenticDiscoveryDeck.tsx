@@ -24,6 +24,7 @@ import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
 import { HistoryService, HistoryEntry } from '@/lib/history/HistoryService';
 import { FavoritesService, FavoriteItem, FavoriteCategory } from '@/lib/favorites/FavoritesService';
 import { FavoriteButton } from '@/components/social/FavoriteButton';
+import { AddToPlaylistButton } from '@/components/playlist/AddToPlaylistButton';
 import { VideoThumbnail } from '@/components/media/VideoThumbnail';
 import { Track, Audiobook, PodcastEpisode, Video } from '@/types/media';
 
@@ -463,11 +464,11 @@ export const AgenticDiscoveryDeck: React.FC<AgenticDiscoveryDeckProps> = ({
 
   const defaultHeading =
     mode === 'music'
-      ? 'Agentic AI Music Companion'
+      ? 'ChanceTEK One Music Companion'
       : mode === 'audiobook'
-        ? 'Agentic AI Audiobook Guide'
+        ? 'ChanceTEK One Audiobook Guide'
         : mode === 'podcast'
-          ? 'Agentic AI Podcast Scout'
+          ? 'ChanceTEK One Podcast Scout'
           : 'ChanceTEK One — Recommended For You';
 
   const defaultSubheading =
@@ -496,7 +497,7 @@ export const AgenticDiscoveryDeck: React.FC<AgenticDiscoveryDeckProps> = ({
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-gold/15 border border-brand-gold/40 text-brand-gold text-[10px] font-black uppercase tracking-widest">
                 <Sparkles className="w-3 h-3" />
-                <span>Live Agentic AI</span>
+                <span>Live ChanceTEK One</span>
               </span>
               {currentTrack && isPlaying && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-400/40 text-emerald-300 text-[10px] font-bold">
@@ -530,7 +531,7 @@ export const AgenticDiscoveryDeck: React.FC<AgenticDiscoveryDeckProps> = ({
             type="button"
             onClick={() => setRefreshSeed((s) => s + 1)}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 text-neutral-200 hover:text-white text-xs font-bold transition-all cursor-pointer"
-            title="Generate fresh Agentic AI suggestions"
+            title="Generate fresh ChanceTEK One suggestions"
           >
             <RefreshCw className="w-3.5 h-3.5 text-brand-gold" />
             <span>Refresh Picks</span>
@@ -644,6 +645,33 @@ export const AgenticDiscoveryDeck: React.FC<AgenticDiscoveryDeckProps> = ({
                 </span>
 
                 <div className="flex items-center gap-1.5 shrink-0">
+                  <AddToPlaylistButton
+                    mediaId={item.id}
+                    mediaType={item.mediaType}
+                    title={item.title}
+                    artistName={item.subtitle}
+                    coverUrl={item.coverUrl}
+                    duration={(item.raw as any)?.duration}
+                    audioUrl={
+                      item.mediaType === 'music'
+                        ? (item.raw as Track).audioUrl
+                        : item.mediaType === 'podcast'
+                          ? (item.raw as PodcastEpisode).mediaUrl
+                          : item.mediaType === 'audiobook'
+                            ? (item.raw as Audiobook).chapters?.[0]?.audioUrl
+                            : undefined
+                    }
+                    videoUrl={
+                      item.mediaType === 'video'
+                        ? (item.raw as Video).videoUrl
+                        : item.mediaType === 'podcast' && (item.raw as PodcastEpisode).mediaType === 'video'
+                          ? (item.raw as PodcastEpisode).mediaUrl
+                          : undefined
+                    }
+                    genre={item.genre}
+                    variant="icon"
+                    size="sm"
+                  />
                   <FavoriteButton
                     id={item.id}
                     category={item.favoriteCategory}

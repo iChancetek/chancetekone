@@ -40,8 +40,10 @@ const AccessibilityControlsModal = dynamic(
 const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isOpen: isAIOpen, closeAI, openAI } = useAI();
   const { isPlayerCollapsed, isPlayerVisible, currentTrack, activeVideoModal, closeVideoModal } = usePlayer();
-  const { isCollapsed, isMobileNavHidden } = useSidebar();
+  const { isCollapsed, isMobileNavHidden, isMobilePlayerHidden } = useSidebar();
   const [showVideoShare, setShowVideoShare] = React.useState(false);
+
+  const isMobilePlayerShowing = Boolean(currentTrack && isPlayerVisible && !isMobilePlayerHidden);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#050509] relative">
@@ -71,13 +73,13 @@ const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
         {/* Global Page Footer */}
         <div
-          className={`transition-all duration-300 ${!currentTrack || !isPlayerVisible || isPlayerCollapsed
+          className={`transition-all duration-300 ${!isMobilePlayerShowing
               ? isMobileNavHidden
                 ? 'pb-12 md:pb-10'
-                : 'pb-24 md:pb-10'
+                : 'pb-20 md:pb-10'
               : isMobileNavHidden
-                ? 'pb-40 md:pb-32'
-                : 'pb-56 md:pb-32'
+                ? 'pb-32 md:pb-32'
+                : 'pb-48 md:pb-32'
             }`}
         >
           <Footer />
@@ -138,7 +140,7 @@ const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         </div>
       )}
 
-      {/* Floating Agentic AI Assistant */}
+      {/* Floating ChanceTEK One AI Assistant */}
       <BreakBeatsAssistant isOpen={isAIOpen} onClose={closeAI} />
 
       {/* Merchandise Cart Drawer */}

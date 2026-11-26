@@ -5,7 +5,7 @@
  * - Resumable, independently tracked jobs with SHA-256 checksums
  * - Smart Resume (skips already completed files on retry/resume)
  * - Automatic ID3 metadata & artwork extraction via id3Parser
- * - Agentic AI ingestion analysis & crate recommendations
+ * - ChanceTEK One ingestion analysis & crate recommendations
  * - Multi-signal duplicate detection
  * - Human-in-the-Loop track & batch approval
  * - Direct publication to MusicCatalogService
@@ -907,7 +907,7 @@ class MusicUploadServiceClass {
       this.notify();
     }
 
-    // Run Agentic AI Album Grouping and Authentic Artwork Verification
+    // Run ChanceTEK One Album Grouping and Authentic Artwork Verification
     try {
       await this.organizeBatchAlbums(batch.id);
     } catch (e) {
@@ -1119,7 +1119,7 @@ class MusicUploadServiceClass {
           MusicCatalogService.getAuthenticCoverForTrack(item.artist, item.album, item.title);
       }
 
-      // Autonomous Agentic AI Cover Art Discovery via Tavily when artwork is missing
+      // Autonomous ChanceTEK One Cover Art Discovery via Tavily when artwork is missing
       if (!resolvedCover && item.artist && item.artist !== 'Unknown Artist' && !item.artist.toLowerCase().includes('unknown')) {
         try {
           const enrichResult = await AgenticAICoverArtAgent.enrichTrackArtwork(item, {
@@ -1156,7 +1156,7 @@ class MusicUploadServiceClass {
         }
       }
 
-      // Agentic AI Ingestion analysis
+      // ChanceTEK One Ingestion analysis
       const aiResult = await AgenticAIMusicIngestionAgent.processIngestion(
         extracted,
         item.fileName,
@@ -1652,7 +1652,7 @@ class MusicUploadServiceClass {
   }
 
   /**
-   * Agentic AI Album Identification & Authentic Artwork Verification (spec §3, §4).
+   * ChanceTEK One Album Identification & Authentic Artwork Verification (spec §3, §4).
    * Groups batch tracks into albums based on metadata first (folder names are supplementary).
    * Reuses existing catalog album records when matched.
    * Plans artwork verification per album and per track, protecting authentic covers,
@@ -1841,13 +1841,13 @@ class MusicUploadServiceClass {
     ).length;
     this.persistBatches();
 
-    // Log Agentic AI audit trail
+    // Log ChanceTEK One audit trail
     AuditLogger.logAction({
       adminId: 'agentic_ai',
-      adminName: 'Agentic AI Ingestion Agent',
+      adminName: 'ChanceTEK One Ingestion Agent',
       adminRole: 'agentic_ai',
       eventType: 'ALBUM_GROUPING_ANALYZED',
-      action: `Agentic AI grouped batch "${batch.name}" into ${albumGroupRecords.length} album(s) with ${batch.albumsNeedingReviewCount} needing human review.`,
+      action: `ChanceTEK One grouped batch "${batch.name}" into ${albumGroupRecords.length} album(s) with ${batch.albumsNeedingReviewCount} needing human review.`,
       resource: 'Music Upload Center',
       resourceId: batchId,
       newValue: {
@@ -1870,7 +1870,7 @@ class MusicUploadServiceClass {
   }
 
   /**
-   * Autonomous Agentic AI: Scans batch for tracks/albums/folders with missing artwork,
+   * Autonomous ChanceTEK One: Scans batch for tracks/albums/folders with missing artwork,
    * searches the internet using Tavily, and attaches/embeds authentic cover art.
    */
   public async enrichBatchMissingArtworkWithAI(
@@ -2331,7 +2331,7 @@ class MusicUploadServiceClass {
     MusicCatalogService.forcePushAllToCloud();
     CloudCatalogClient.syncNow().catch(() => {});
 
-    // Agentic AI Audit Trail
+    // ChanceTEK One Audit Trail
     newTracks.forEach((trk) => {
       AuditLogger.logAction({
         adminId: batch.actorId,

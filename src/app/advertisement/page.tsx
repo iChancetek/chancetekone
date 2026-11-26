@@ -327,7 +327,7 @@ export default function AdvertisementPage() {
             </div>
 
             <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-              At ChanceTEK LLC, we empower forward-thinking organizations, enterprises, and visionary creators to command the new era of agentic intelligence. From autonomous agent orchestration and neural audio pipelines to precision cellular health computation, ChanceTEK delivers the foundational architecture for what comes next.
+              At ChanceTEK LLC, we empower forward-thinking organizations, enterprises, and visionary creators to command the new era of ChanceTEK One Intelligence. From autonomous agent orchestration and neural audio pipelines to precision cellular health computation, ChanceTEK delivers the foundational architecture for what comes next.
             </p>
 
             {/* Core Badges */}
@@ -428,7 +428,7 @@ export default function AdvertisementPage() {
                     </span>
                   </div>
                   <p className="text-[10px] text-neutral-300 font-medium truncate">
-                    ChanceTEK LLC · Agentic AI & Intelligent Media
+                    ChanceTEK LLC · ChanceTEK One & Intelligent Media
                   </p>
                 </div>
 
@@ -489,7 +489,7 @@ export default function AdvertisementPage() {
             Ready to Build the Agentic Future?
           </h2>
           <p className="text-xs sm:text-sm text-neutral-300">
-            Connect directly with Chancellor and the ChanceTEK engineering team at <strong>iChanceTEK.com</strong> to architect your agentic AI solution today.
+            Connect directly with Chancellor and the ChanceTEK engineering team at <strong>iChanceTEK.com</strong> to architect your ChanceTEK One solution today.
           </p>
         </div>
 

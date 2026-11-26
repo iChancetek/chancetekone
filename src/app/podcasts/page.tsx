@@ -25,6 +25,7 @@ import { usePlayer } from '@/lib/player/PlayerContext';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { ReactionButtons } from '@/components/social/ReactionButtons';
 import { FavoriteButton } from '@/components/social/FavoriteButton';
+import { AddToPlaylistButton } from '@/components/playlist/AddToPlaylistButton';
 import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussionModal';
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { AgenticDiscoveryDeck } from '@/components/ai/AgenticDiscoveryDeck';
@@ -149,7 +150,7 @@ export default function PodcastsPage() {
               </button>
             )}
             <VoiceNarrationButton
-              text="Welcome to ChanceTEK One Podcasts. Featuring episodic conversations on Agentic AI, sonic mastering, music culture history, cultural storytelling, and independent creative sovereignty."
+              text="Welcome to ChanceTEK One Podcasts. Featuring episodic conversations on ChanceTEK One, sonic mastering, music culture history, cultural storytelling, and independent creative sovereignty."
               variant="dual"
             />
           </div>
@@ -219,6 +220,21 @@ export default function PodcastsPage() {
                   </>
                 )}
               </button>
+
+              {/* + Add Featured Podcast to Playlist */}
+              <AddToPlaylistButton
+                mediaId={podcasts[0].id}
+                mediaType="podcast"
+                title={podcasts[0].title}
+                artistName={`${podcasts[0].showTitle} • ${podcasts[0].host}`}
+                coverUrl={podcasts[0].coverUrl}
+                duration={podcasts[0].duration}
+                audioUrl={podcasts[0].mediaType === 'video' ? undefined : podcasts[0].mediaUrl}
+                videoUrl={podcasts[0].mediaType === 'video' ? podcasts[0].mediaUrl : undefined}
+                genre={podcasts[0].category}
+                variant="pill"
+                size="md"
+              />
 
               {/* Favorite Featured Podcast */}
               <FavoriteButton
@@ -399,6 +415,21 @@ export default function PodcastsPage() {
                   />
 
                   <div className="flex items-center gap-1.5 ml-auto">
+                    {/* + Add to Playlist Trigger */}
+                    <AddToPlaylistButton
+                      mediaId={ep.id}
+                      mediaType="podcast"
+                      title={ep.title}
+                      artistName={`${ep.showTitle} • ${ep.host}`}
+                      coverUrl={ep.coverUrl}
+                      duration={ep.duration}
+                      audioUrl={isVideo ? undefined : ep.mediaUrl}
+                      videoUrl={isVideo ? ep.mediaUrl : undefined}
+                      genre={ep.category}
+                      variant="icon"
+                      size="sm"
+                    />
+
                     {/* Favorite Trigger */}
                     <FavoriteButton
                       id={ep.id}

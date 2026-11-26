@@ -1,5 +1,5 @@
 ﻿/**
- * ChanceTEK One — Agentic AI Music Ingestion Engine
+ * ChanceTEK One — ChanceTEK One Music Ingestion Engine
  * Autonomous AI agent responsible for metadata normalization, crate & folder recommendations,
  * duplicate detection across all signals, and human-in-the-loop review staging.
  */
@@ -32,7 +32,7 @@ export interface IngestionAnalysisResult {
 
 export class AgenticAIMusicIngestionAgent {
   public static readonly AGENT_ID = 'agent-breakbeats-ingest-v2';
-  public static readonly AGENT_NAME = 'Agentic AI Ingestion Specialist';
+  public static readonly AGENT_NAME = 'ChanceTEK One Ingestion Specialist';
 
   /**
    * Cleans and title-cases strings, removes audio rip noise
@@ -377,7 +377,7 @@ export class AgenticAIMusicIngestionAgent {
     // Log AI action to Audit Trail
     AuditLogger.logAction({
       adminId: 'agentic-ai-ingest',
-      adminName: 'Agentic AI Ingestion Agent',
+      adminName: 'ChanceTEK One Ingestion Agent',
       adminRole: 'content_admin',
       eventType: 'AI_INGESTION_ANALYSIS',
       action: `AI inspected and categorized "${normalizedTitle}" by "${normalizedArtist}"`,

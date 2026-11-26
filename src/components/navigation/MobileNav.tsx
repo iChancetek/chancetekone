@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Music, Video, Sparkles, Library, Menu, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Home, Music, Video, Library, Menu, X, ChevronDown, ChevronUp, Disc3 } from 'lucide-react';
 import { useSidebar } from '@/lib/navigation/SidebarContext';
 import { usePlayer } from '@/lib/player/PlayerContext';
 
-export const MobileNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => {
+export const MobileNav: React.FC<{ onOpenAI?: () => void }> = () => {
   const pathname = usePathname();
   const router = useRouter();
   const {
@@ -17,11 +18,18 @@ export const MobileNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => 
     isMobileNavHidden,
     setMobileNavHidden,
     toggleMobileNavHidden,
+    isMobilePlayerHidden,
+    setMobilePlayerHidden,
   } = useSidebar();
-  const { currentTrack, isPlayerVisible, isPlayerCollapsed } = usePlayer();
+  const { currentTrack, isPlayerVisible, isPlaying } = usePlayer();
+  const [mounted, setMounted] = useState(false);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const watchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchStartYRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setPendingHref(null);
@@ -39,7 +47,8 @@ export const MobileNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => 
   ];
 
   const activePath = pendingHref || pathname;
-  const isExpandedMobilePlayerDocked = Boolean(currentTrack && isPlayerVisible && !isPlayerCollapsed);
+  const hasActiveTrack = Boolean(currentTrack && isPlayerVisible);
+  const isPlayerDockedVisible = hasActiveTrack && !isMobilePlayerHidden;
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
@@ -78,51 +87,79 @@ export const MobileNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => 
     const endY = e.changedTouches[0]?.clientY ?? touchStartYRef.current;
     const deltaY = endY - touchStartYRef.current;
     touchStartYRef.current = null;
-    // Swipe down on the bottom bar to smoothly collapse/hide it
-    if (deltaY > 28) {
+    if (deltaY > 24) {
       setMobileNavHidden(true);
     }
   };
 
-  return (
+  if (!mounted) return null;
+
+  const showFloatingRestoreCorner =
+    !isMobileOpen && (isMobileNavHidden || (hasActiveTrack && isMobilePlayerHidden));
+
+  const mobileNavNode = (
     <>
-      {/* Sleek 1-Tap Restore Pill when Bottom Menu Bar is Hidden (auto-hidden when full docked player shows its own restore button) */}
-      {isMobileNavHidden && !isExpandedMobilePlayerDocked && !isMobileOpen && (
-        <div className="md:hidden fixed bottom-[calc(0.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-50">
-          <button
-            type="button"
-            onClick={() => setMobileNavHidden(false)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#0b0b16]/95 border border-brand-gold/45 text-brand-gold text-[11px] font-bold shadow-[0_8px_24px_rgba(0,0,0,0.75)] active:scale-95 transition-all cursor-pointer touch-manipulation"
-            title="Show Bottom Menu Bar"
-            aria-label="Show Bottom Menu Bar"
-          >
-            <ChevronUp className="w-3.5 h-3.5" />
-            <span>Menu</span>
-          </button>
+      {/* Unobtrusive Bottom-Right Corner Restore Pills (NEVER blocks center of song list!) */}
+      {showFloatingRestoreCorner && (
+        <div
+          style={{
+            position: 'fixed',
+            right: '0.625rem',
+            bottom: isPlayerDockedVisible
+              ? 'calc(6.5rem + env(safe-area-inset-bottom))'
+              : !isMobileNavHidden
+                ? 'calc(4.35rem + env(safe-area-inset-bottom))'
+                : 'calc(0.5rem + env(safe-area-inset-bottom))',
+            transform: 'translate3d(0, 0, 0)',
+            WebkitTransform: 'translate3d(0, 0, 0)',
+          }}
+          className="md:hidden z-[45] flex items-center gap-1.5"
+        >
+          {hasActiveTrack && isMobilePlayerHidden && (
+            <button
+              type="button"
+              onClick={() => setMobilePlayerHidden(false)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0b0b16]/92 border border-brand-gold/60 text-brand-gold text-[11px] font-extrabold shadow-[0_6px_20px_rgba(0,0,0,0.8)] active:scale-95 transition-all cursor-pointer touch-manipulation"
+              title="Show Music Player"
+              aria-label="Show Music Player"
+            >
+              <Disc3 className={`w-3.5 h-3.5 text-brand-gold ${isPlaying ? 'animate-spin-slow' : ''}`} />
+              <span>Player</span>
+            </button>
+          )}
+
+          {isMobileNavHidden && (
+            <button
+              type="button"
+              onClick={() => setMobileNavHidden(false)}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#0b0b16]/92 border border-white/25 text-white text-[11px] font-bold shadow-[0_6px_20px_rgba(0,0,0,0.8)] active:scale-95 transition-all cursor-pointer touch-manipulation"
+              title="Show Bottom Menu Bar"
+              aria-label="Show Bottom Menu Bar"
+            >
+              <ChevronUp className="w-3.5 h-3.5 text-brand-gold" />
+              <span>Menu</span>
+            </button>
+          )}
         </div>
       )}
 
-      {/* Collapsible Bottom Navigation Bar (Mobile / PWA < md) */}
+      {/* Viewport-Locked Bottom Navigation Bar (Portaled to body so iOS/Android PWA NEVER scrolls it!) */}
       <nav
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         aria-hidden={isMobileNavHidden}
-        className={`md:hidden fixed bottom-0 left-0 right-0 h-[calc(4.25rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] border-t border-white/[0.1] z-50 px-1.5 flex items-center justify-around bg-[#07070e]/96 shadow-[0_-12px_36px_rgba(0,0,0,0.85)] transition-transform duration-200 ease-out ${
-          isMobileNavHidden ? 'translate-y-full pointer-events-none invisible' : 'translate-y-0 pointer-events-auto visible'
+        style={{
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          transform: isMobileNavHidden ? 'translate3d(0, 115%, 0)' : 'translate3d(0, 0, 0)',
+          WebkitTransform: isMobileNavHidden ? 'translate3d(0, 115%, 0)' : 'translate3d(0, 0, 0)',
+        }}
+        className={`md:hidden h-[calc(3.85rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] border-t border-white/[0.12] z-40 px-1 flex items-center justify-around bg-[#07070e]/98 shadow-[0_-10px_30px_rgba(0,0,0,0.88)] transition-transform duration-200 ease-out ${
+          isMobileNavHidden ? 'pointer-events-none invisible' : 'pointer-events-auto visible'
         }`}
       >
-        {/* Top-Center Compact Collapse Tab (Hide Menu Bar out of the way of music) */}
-        <button
-          type="button"
-          onClick={toggleMobileNavHidden}
-          className="absolute -top-5 left-1/2 -translate-x-1/2 h-5 px-3 rounded-t-xl bg-[#07070e]/96 border-t border-x border-white/15 text-neutral-400 hover:text-brand-gold active:text-brand-gold flex items-center justify-center gap-1 text-[9px] font-bold uppercase tracking-wider shadow-md cursor-pointer touch-manipulation"
-          title="Hide Menu Bar"
-          aria-label="Hide Bottom Menu Bar"
-        >
-          <ChevronDown className="w-3 h-3 text-brand-gold" />
-          <span>Hide</span>
-        </button>
-
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = activePath === item.href || (item.href !== '/' && activePath.startsWith(item.href));
@@ -132,55 +169,55 @@ export const MobileNav: React.FC<{ onOpenAI?: () => void }> = ({ onOpenAI }) => 
               href={item.href}
               prefetch={false}
               onClick={(e) => handleNavClick(e, item.href)}
-              className={`relative flex flex-col items-center gap-1 py-1.5 px-2 rounded-2xl transition-all touch-manipulation min-w-[46px] min-h-[46px] justify-center ${
+              className={`relative flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition-all touch-manipulation min-w-[44px] min-h-[44px] justify-center ${
                 isActive && !isMobileOpen
                   ? 'text-brand-gold bg-brand-gold/10'
                   : 'text-neutral-400 hover:text-white'
               }`}
             >
               {isActive && !isMobileOpen && (
-                <span className="absolute -top-0.5 w-5 h-[2.5px] rounded-full bg-brand-gold shadow-[0_0_10px_#f5c344]" />
+                <span className="absolute top-0 w-5 h-[2px] rounded-full bg-brand-gold shadow-[0_0_8px_#f5c344]" />
               )}
-              <Icon className="w-5 h-5" />
-              <span className="text-[11px] font-semibold">{item.label}</span>
+              <Icon className="w-[18px] h-[18px]" />
+              <span className="text-[10px] font-semibold leading-none">{item.label}</span>
             </Link>
           );
         })}
 
-        {/* AI Assistant Quick Trigger */}
-        <button
-          type="button"
-          onClick={() => {
-            if (isMobileOpen) closeMobileSidebar();
-            onOpenAI?.();
-          }}
-          className="flex flex-col items-center gap-1 py-1.5 px-2 rounded-2xl bg-brand-purple/20 border border-brand-purple/35 text-brand-neon cursor-pointer touch-manipulation min-w-[46px] min-h-[46px] justify-center shadow-[0_0_16px_rgba(157,78,221,0.3)]"
-          title="ChanceTEK One AI"
-        >
-          <Sparkles className="w-5 h-5 text-brand-gold animate-pulse" />
-          <span className="text-[11px] font-bold text-white">AI</span>
-        </button>
-
-        {/* Dedicated Menu Drawer Toggle (Full access to all features) */}
+        {/* Compact Menu Drawer Toggle */}
         <button
           type="button"
           onClick={toggleMobileSidebar}
-          className={`flex flex-col items-center gap-1 py-1.5 px-2 rounded-2xl transition-all cursor-pointer touch-manipulation min-w-[46px] min-h-[46px] justify-center ${
+          className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl transition-all cursor-pointer touch-manipulation min-w-[44px] min-h-[44px] justify-center ${
             isMobileOpen
-              ? 'text-brand-gold bg-brand-gold/10 font-bold scale-105'
+              ? 'text-brand-gold bg-brand-gold/10 font-bold'
               : 'text-neutral-400 hover:text-white'
           }`}
-          title={isMobileOpen ? 'Close Menu' : 'Open Full Menu'}
-          aria-label={isMobileOpen ? 'Close Menu' : 'Open Full Menu'}
+          title={isMobileOpen ? 'Close Menu' : 'Open Menu'}
+          aria-label={isMobileOpen ? 'Close Menu' : 'Open Menu'}
         >
           {isMobileOpen ? (
-            <X className="w-5 h-5 text-brand-gold" />
+            <X className="w-[18px] h-[18px] text-brand-gold" />
           ) : (
-            <Menu className="w-5 h-5" />
+            <Menu className="w-[18px] h-[18px]" />
           )}
-          <span className="text-[11px] font-semibold">Menu</span>
+          <span className="text-[10px] font-semibold leading-none">Menu</span>
+        </button>
+
+        {/* Built-in 1-Tap Hide Menu Bar Button */}
+        <button
+          type="button"
+          onClick={toggleMobileNavHidden}
+          className="flex flex-col items-center gap-0.5 py-1 px-2 rounded-xl text-neutral-400 hover:text-brand-gold active:text-brand-gold transition-all cursor-pointer touch-manipulation min-w-[44px] min-h-[44px] justify-center"
+          title="Hide Bottom Menu Bar"
+          aria-label="Hide Bottom Menu Bar"
+        >
+          <ChevronDown className="w-[18px] h-[18px] text-brand-gold" />
+          <span className="text-[10px] font-semibold leading-none">Hide</span>
         </button>
       </nav>
     </>
   );
+
+  return createPortal(mobileNavNode, document.body);
 };

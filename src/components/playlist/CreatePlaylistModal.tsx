@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import {
   X,
@@ -20,10 +21,11 @@ import {
   Image as ImageIcon,
   Users,
   UserPlus,
+  Mic,
 } from 'lucide-react';
 import { Playlist, PlaylistType, PlaylistVisibility } from '@/types/playlist';
 import { MediaType } from '@/types/media';
-import { PlaylistService, PRESET_COVERS } from '@/lib/playlist/PlaylistService';
+import { PlaylistService, PlaylistMediaInput, PRESET_COVERS } from '@/lib/playlist/PlaylistService';
 import { getRandomCoverArt } from '@/lib/playlist/CoverArtCatalog';
 import { CoverArtPickerModal } from '@/components/playlist/CoverArtPickerModal';
 import { MOCK_TRACKS, MOCK_VIDEOS, MOCK_AUDIOBOOKS } from '@/lib/mockData';
@@ -34,17 +36,90 @@ import { useAuth } from '@/lib/auth/AuthContext';
 
 interface SelectedMedia {
   mediaId: string;
-  mediaType: MediaType;
+  mediaType: MediaType | 'podcast';
   title: string;
   artistName: string;
   coverUrl: string;
+  duration?: number;
+  audioUrl?: string;
+  videoUrl?: string;
+  genre?: string;
 }
 
 interface CreatePlaylistModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreated: (newPlaylist: Playlist) => void;
-  initialMediaItem?: { mediaId: string; mediaType: MediaType };
+  initialMediaItem?: PlaylistMediaInput;
+}
+
+function resolveInitialSelectedMedia(initialMediaItem?: PlaylistMediaInput): SelectedMedia[] {
+  if (!initialMediaItem) return [];
+
+  if (initialMediaItem.mediaType === 'podcast') {
+    const pod = MediaCatalogService.getAllPodcasts().find((p) => p.id === initialMediaItem.mediaId);
+    if (pod) {
+      return [
+        {
+          mediaId: pod.id,
+          mediaType: 'podcast',
+          title: pod.title,
+          artistName: `${pod.showTitle} • ${pod.host}`,
+          coverUrl: pod.coverUrl || '/images/studio_cover.jpg',
+          duration: pod.duration,
+          audioUrl: pod.mediaType === 'video' ? undefined : pod.mediaUrl,
+          videoUrl: pod.mediaType === 'video' ? pod.mediaUrl : undefined,
+          genre: pod.category,
+        },
+      ];
+    }
+  }
+
+  const track =
+    MusicCatalogService.getTrackById(initialMediaItem.mediaId) ||
+    MOCK_TRACKS.find((t) => t.id === initialMediaItem.mediaId);
+  const video =
+    MediaCatalogService.getAllVideos().find((v) => v.id === initialMediaItem.mediaId) ||
+    MOCK_VIDEOS.find((v) => v.id === initialMediaItem.mediaId);
+  const audiobook =
+    MediaCatalogService.getAllAudiobooks().find((a) => a.id === initialMediaItem.mediaId) ||
+    MOCK_AUDIOBOOKS.find((a) => a.id === initialMediaItem.mediaId);
+  const podcast = MediaCatalogService.getAllPodcasts().find((p) => p.id === initialMediaItem.mediaId);
+
+  const item: any = track || video || audiobook || podcast;
+  if (item) {
+    return [
+      {
+        mediaId: item.id,
+        mediaType: initialMediaItem.mediaType,
+        title: item.title,
+        artistName: item.artistName || item.author || item.host || initialMediaItem.artistName || '',
+        coverUrl: item.coverUrl || item.thumbnailUrl || initialMediaItem.coverUrl || '/images/studio_cover.jpg',
+        duration: item.duration ?? initialMediaItem.duration,
+        audioUrl: item.audioUrl ?? initialMediaItem.audioUrl,
+        videoUrl: item.videoUrl ?? initialMediaItem.videoUrl,
+        genre: item.genre || item.category || initialMediaItem.genre,
+      },
+    ];
+  }
+
+  if (initialMediaItem.title) {
+    return [
+      {
+        mediaId: initialMediaItem.mediaId,
+        mediaType: initialMediaItem.mediaType,
+        title: initialMediaItem.title,
+        artistName: initialMediaItem.artistName || 'ChanceTEK One',
+        coverUrl: initialMediaItem.coverUrl || '/images/studio_cover.jpg',
+        duration: initialMediaItem.duration,
+        audioUrl: initialMediaItem.audioUrl,
+        videoUrl: initialMediaItem.videoUrl,
+        genre: initialMediaItem.genre,
+      },
+    ];
+  }
+
+  return [];
 }
 
 export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
@@ -54,16 +129,23 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
   initialMediaItem,
 }) => {
   const { profile, user, isAdmin } = useAuth();
+  const [mounted, setMounted] = useState(false);
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<PlaylistType>(
-    initialMediaItem ? initialMediaItem.mediaType : 'mixed'
+    initialMediaItem
+      ? initialMediaItem.mediaType === 'podcast'
+        ? 'mixed'
+        : initialMediaItem.mediaType
+      : 'mixed'
   );
   const [visibility, setVisibility] = useState<PlaylistVisibility>(
     profile?.defaultPlaylistVisibility || 'private'
   );
-  const [selectedCover, setSelectedCover] = useState<string>(PRESET_COVERS[0]);
+  const [selectedCover, setSelectedCover] = useState<string>(
+    initialMediaItem?.coverUrl || PRESET_COVERS[0]
+  );
   const [customCoverUrl, setCustomCoverUrl] = useState<string>('');
   const [showCoverPickerModal, setShowCoverPickerModal] = useState(false);
   const [sharedWith, setSharedWith] = useState<string[]>([]);
@@ -71,32 +153,27 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Media browser state
-  const [selectedMedia, setSelectedMedia] = useState<SelectedMedia[]>(() => {
-    if (initialMediaItem) {
-      const track =
-        MusicCatalogService.getTrackById(initialMediaItem.mediaId) ||
-        MOCK_TRACKS.find((t) => t.id === initialMediaItem.mediaId);
-      const video = MOCK_VIDEOS.find((v) => v.id === initialMediaItem.mediaId);
-      const audiobook = MOCK_AUDIOBOOKS.find((a) => a.id === initialMediaItem.mediaId);
-      const item = track || video || audiobook;
-      if (item) {
-        return [
-          {
-            mediaId: item.id,
-            mediaType: initialMediaItem.mediaType,
-            title: item.title,
-            artistName: 'artistName' in item ? item.artistName : ('author' in item ? item.author : ''),
-            coverUrl: 'coverUrl' in item ? item.coverUrl : ('thumbnailUrl' in item ? (item as any).thumbnailUrl : '/images/studio_cover.jpg'),
-          },
-        ];
+  const [selectedMedia, setSelectedMedia] = useState<SelectedMedia[]>(() =>
+    resolveInitialSelectedMedia(initialMediaItem)
+  );
+  const [catalogQuery, setCatalogQuery] = useState('');
+  const [catalogType, setCatalogType] = useState<MediaType | 'podcast'>('music');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && initialMediaItem) {
+      setSelectedMedia(resolveInitialSelectedMedia(initialMediaItem));
+      setType(initialMediaItem.mediaType === 'podcast' ? 'mixed' : initialMediaItem.mediaType);
+      if (initialMediaItem.coverUrl) {
+        setSelectedCover(initialMediaItem.coverUrl);
       }
     }
-    return [];
-  });
-  const [catalogQuery, setCatalogQuery] = useState('');
-  const [catalogType, setCatalogType] = useState<MediaType>('music');
+  }, [isOpen, initialMediaItem]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleAddMember = () => {
     const val = memberInput.trim();
@@ -122,9 +199,16 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
     setIsSubmitting(true);
     try {
       const coverUrl = customCoverUrl.trim() || selectedCover;
-      const initialItems = selectedMedia.map((m) => ({
+      const initialItems: PlaylistMediaInput[] = selectedMedia.map((m) => ({
         mediaId: m.mediaId,
         mediaType: m.mediaType,
+        title: m.title,
+        artistName: m.artistName,
+        coverUrl: m.coverUrl,
+        duration: m.duration,
+        audioUrl: m.audioUrl,
+        videoUrl: m.videoUrl,
+        genre: m.genre,
       }));
 
       const newPl = PlaylistService.createPlaylist({
@@ -168,7 +252,7 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
     });
   };
 
-  const isSelected = (mediaId: string, mediaType: MediaType) =>
+  const isSelected = (mediaId: string, mediaType: MediaType | 'podcast') =>
     selectedMedia.some((m) => m.mediaId === mediaId && m.mediaType === mediaType);
 
   const getFilteredCatalog = () => {
@@ -184,6 +268,10 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
       const allBooks = MediaCatalogService.getAllAudiobooks();
       const list = allBooks.length > 0 ? allBooks : MOCK_AUDIOBOOKS;
       return list.filter((b) => matchesGenericMediaSearch(b, catalogQuery));
+    }
+    if (catalogType === 'podcast') {
+      const allPodcasts = MediaCatalogService.getAllPodcasts();
+      return allPodcasts.filter((p) => matchesGenericMediaSearch(p, catalogQuery));
     }
     return [];
   };
@@ -203,9 +291,18 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
 
   const filteredCatalog = getFilteredCatalog();
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl glass-panel p-6 sm:p-8 rounded-3xl border border-brand-purple/40 space-y-5 bg-gradient-to-b from-[#141024]/98 via-[#0c0916]/98 to-[#08080c]/98 shadow-[0_25px_70px_rgba(0,0,0,0.85)] max-h-[92vh] overflow-y-auto">
+  return createPortal(
+    <div
+      onClick={(e) => {
+        e.stopPropagation();
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-[9995] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-2xl glass-panel p-6 sm:p-8 rounded-3xl border border-brand-purple/40 space-y-5 bg-gradient-to-b from-[#141024]/98 via-[#0c0916]/98 to-[#08080c]/98 shadow-[0_25px_70px_rgba(0,0,0,0.85)] max-h-[92vh] overflow-y-auto"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-2.5">
@@ -342,6 +439,16 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
                 <BookOpen className="w-3 h-3" />
                 Audiobooks
               </button>
+              <button
+                type="button"
+                onClick={() => setCatalogType('podcast')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  catalogType === 'podcast' ? 'bg-brand-purple text-white shadow-sm' : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                <Mic className="w-3 h-3" />
+                Podcasts
+              </button>
             </div>
 
             {/* Search input */}
@@ -361,7 +468,11 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
               {filteredCatalog.map((item: any) => {
                 const mediaId = item.id;
                 const title = item.title;
-                const artistName = item.artistName || item.author || '';
+                const artistName =
+                  item.artistName ||
+                  item.author ||
+                  (item.showTitle ? `${item.showTitle} • ${item.host || ''}`.trim() : item.host) ||
+                  '';
                 const coverUrl = item.coverUrl || item.thumbnailUrl || '/images/studio_cover.jpg';
                 const selected = isSelected(mediaId, catalogType);
 
@@ -376,6 +487,10 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
                         title,
                         artistName,
                         coverUrl,
+                        duration: item.duration,
+                        audioUrl: item.audioUrl || (catalogType === 'podcast' && item.mediaType !== 'video' ? item.mediaUrl : undefined),
+                        videoUrl: item.videoUrl || (catalogType === 'podcast' && item.mediaType === 'video' ? item.mediaUrl : undefined),
+                        genre: item.genre || item.category,
                       })
                     }
                     className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all text-left ${
@@ -640,6 +755,7 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
           }}
         />
       )}
-    </div>
+    </div>,
+    document.body
   );
 };

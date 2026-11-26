@@ -8,6 +8,7 @@ import { usePlayer } from '@/lib/player/PlayerContext';
 import { Track, Album, Artist, Video, Audiobook, MediaType } from '@/types/media';
 import { MusicCatalogService, getDefaultCoverForTrack } from '@/lib/music/MusicCatalogService';
 import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
+import { AddToPlaylistButton } from '@/components/playlist/AddToPlaylistButton';
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { ReactionButtons } from '@/components/social/ReactionButtons';
 import { FavoriteButton } from '@/components/social/FavoriteButton';
@@ -365,15 +366,23 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, type }) => {
             </>
           )}
 
-          {/* Add to Playlist Quick Button */}
+          {/* Universal + Add to Playlist Quick Button — Always visible on mobile, PWA & desktop */}
           {isPlayableMedia && (
-            <button
-              onClick={handleAddToPlaylistClick}
-              className="absolute bottom-2 left-2 p-1.5 rounded-lg bg-black/70 hover:bg-brand-purple text-neutral-300 hover:text-white border border-white/10 opacity-0 group-hover:opacity-100 transition-all shadow-md cursor-pointer"
-              title="Add to Playlist"
-            >
-              <ListPlus className="w-3.5 h-3.5" />
-            </button>
+            <div className="absolute bottom-2 left-2 z-10">
+              <AddToPlaylistButton
+                mediaId={item.id}
+                mediaType={isTrack ? 'music' : isVideo ? 'video' : 'audiobook'}
+                title={getTitle()}
+                artistName={getSubtitle()}
+                coverUrl={resolvedCover || getImage() || '/images/studio_cover.jpg'}
+                duration={(item as any).duration}
+                audioUrl={isTrack ? (item as Track).audioUrl : isAudiobook ? (item as Audiobook).chapters?.[0]?.audioUrl : undefined}
+                videoUrl={isVideo ? (item as Video).videoUrl : isVideoAudiobook ? resolvedAudiobookUrl : undefined}
+                genre={(item as any).genre || (item as any).category}
+                variant="overlay"
+                size="sm"
+              />
+            </div>
           )}
 
           {/* Universal Favorite Heart Quick Button — Always accessible on every media card */}

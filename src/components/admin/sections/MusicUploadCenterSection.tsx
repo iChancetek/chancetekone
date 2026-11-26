@@ -646,12 +646,12 @@ export const MusicUploadCenterSection: React.FC<MusicUploadCenterSectionProps> =
   const handleAiEnrichArtwork = async () => {
     if (!activeBatchId) return;
     setIsEnrichingArtwork(true);
-    showToast('Agentic AI: Searching internet via Tavily for authentic cover art...');
+    showToast('ChanceTEK One: Searching internet via Tavily for authentic cover art...');
     try {
       const { enrichedCount } = await MusicUploadService.enrichBatchMissingArtworkWithAI(activeBatchId);
       setItems(MusicUploadService.getBatchItems(activeBatchId));
       setBatchFolders(MusicUploadService.getBatchFolders(activeBatchId));
-      showToast(`Agentic AI complete: Attached authentic cover art to ${enrichedCount} MP3s, albums & folders!`);
+      showToast(`ChanceTEK One complete: Attached authentic cover art to ${enrichedCount} MP3s, albums & folders!`);
     } catch (err: any) {
       showToast(`AI Cover Art search error: ${err.message || 'Error'}`);
     } finally {
@@ -1162,7 +1162,7 @@ export const MusicUploadCenterSection: React.FC<MusicUploadCenterSectionProps> =
             Drag and Drop Multiple Music Folders or MP3s Here
           </h3>
           <p className="text-xs sm:text-sm text-neutral-400 max-w-2xl mx-auto">
-            Drop entire artist and album folders or individual MP3 tracks. Agentic AI automatically extracts embedded ID3 cover art pictures for every MP3, detects companion folder artwork (<code className="text-brand-gold">Folder.jpg</code>, <code className="text-brand-gold">cover.jpg</code>), and populates album metadata.
+            Drop entire artist and album folders or individual MP3 tracks. ChanceTEK One automatically extracts embedded ID3 cover art pictures for every MP3, detects companion folder artwork (<code className="text-brand-gold">Folder.jpg</code>, <code className="text-brand-gold">cover.jpg</code>), and populates album metadata.
           </p>
         </div>
 
@@ -1327,7 +1327,7 @@ export const MusicUploadCenterSection: React.FC<MusicUploadCenterSectionProps> =
                 <span>Set Batch Cover Art</span>
               </button>
 
-              {/* Agentic AI Tavily Cover Art Finder Button */}
+              {/* ChanceTEK One Tavily Cover Art Finder Button */}
               <button
                 onClick={handleAiEnrichArtwork}
                 disabled={totalFiles === 0 || isEnrichingArtwork}
@@ -1837,7 +1837,7 @@ export const MusicUploadCenterSection: React.FC<MusicUploadCenterSectionProps> =
               Admin Music Upload Center
             </h2>
             <p className="text-xs sm:text-sm text-neutral-300 max-w-3xl leading-relaxed">
-              Industrial-grade music ingestion pipeline for administrators and Agentic AI agents. Features multi-folder recursive parsing (up to 300 folders per batch), automated ID3 metadata extraction, authentic companion artwork detection without cross-album contamination, multi-signal duplicate prevention, and Smart Resume.
+              Industrial-grade music ingestion pipeline for administrators and ChanceTEK One agents. Features multi-folder recursive parsing (up to 300 folders per batch), automated ID3 metadata extraction, authentic companion artwork detection without cross-album contamination, multi-signal duplicate prevention, and Smart Resume.
             </p>
           </div>
 

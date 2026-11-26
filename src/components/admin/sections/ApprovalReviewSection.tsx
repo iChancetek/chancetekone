@@ -318,12 +318,12 @@ export const ApprovalReviewSection: React.FC<ApprovalReviewSectionProps> = ({
   const handleAiEnrichArtwork = async () => {
     if (!selectedBatchId) return;
     setIsEnrichingArtwork(true);
-    setPublishedAlert('Agentic AI: Searching the internet via Tavily for authentic cover art...');
+    setPublishedAlert('ChanceTEK One: Searching the internet via Tavily for authentic cover art...');
     try {
       const { enrichedCount } = await MusicUploadService.enrichBatchMissingArtworkWithAI(selectedBatchId);
       setItems(MusicUploadService.getBatchItems(selectedBatchId));
       setAlbumGroups(MusicUploadService.getBatchAlbumGroups(selectedBatchId));
-      setPublishedAlert(`Agentic AI finished: Attached authentic cover art to ${enrichedCount} MP3s, albums & folders!`);
+      setPublishedAlert(`ChanceTEK One finished: Attached authentic cover art to ${enrichedCount} MP3s, albums & folders!`);
     } catch (err: any) {
       setPublishedAlert(`AI Cover Art search error: ${err.message || 'Error'}`);
     } finally {
@@ -1112,7 +1112,7 @@ export const ApprovalReviewSection: React.FC<ApprovalReviewSectionProps> = ({
                 <span>{selectedItemIds.size > 0 ? `Set Genre (${selectedItemIds.size})` : 'Set Batch Genre'}</span>
               </button>
 
-              {/* 4. Agentic AI Tavily Cover Search */}
+              {/* 4. ChanceTEK One Tavily Cover Search */}
               <button
                 onClick={handleAiEnrichArtwork}
                 disabled={items.length === 0 || isEnrichingArtwork}
@@ -1204,14 +1204,14 @@ export const ApprovalReviewSection: React.FC<ApprovalReviewSectionProps> = ({
         </div>
       </div>
 
-      {/* Detected Album Collections & Agentic AI Groupings in this Batch */}
+      {/* Detected Album Collections & ChanceTEK One Groupings in this Batch */}
       {(albumGroups.length > 0 || detectedAlbums.length > 0) && (
         <div className="p-5 sm:p-6 rounded-3xl glass-panel border border-brand-purple/30 bg-gradient-to-r from-purple-950/30 via-[#120a1f] to-purple-950/20 space-y-4 shadow-xl">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-2.5">
             <div className="flex items-center gap-2">
               <Folder className="w-4 h-4 text-brand-gold" />
               <h3 className="text-xs font-black uppercase tracking-wider text-white">
-                Agentic AI Album Groupings & Collections ({albumGroups.length || detectedAlbums.length})
+                ChanceTEK One Album Groupings & Collections ({albumGroups.length || detectedAlbums.length})
               </h3>
             </div>
             <span className="text-[11px] text-neutral-400">

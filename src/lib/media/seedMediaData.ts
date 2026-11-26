@@ -3,7 +3,7 @@ import type { PodcastEpisode } from '@/types/media';
 export const SEED_PODCASTS: PodcastEpisode[] = [
   {
     id: 'podcast-ep-1',
-    title: 'Episode 1: The Architecture of Agentic AI & Sonic Systems',
+    title: 'Episode 1: The Architecture of ChanceTEK One & Sonic Systems',
     showTitle: 'ChanceTEK Masterminds Podcast',
     host: 'Chancellor @ ChanceTEK LLC',
     description:

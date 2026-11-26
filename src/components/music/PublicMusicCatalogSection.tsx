@@ -23,6 +23,7 @@ import {
   Search,
   Play,
   Pause,
+  Plus,
   Share2,
   ListPlus,
   Calendar,
@@ -868,15 +869,16 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
                                                   <span className="hidden md:inline">Share</span>
                                                 </button>
 
-                                                {/* 3. Add to Playlist */}
+                                                {/* 3. + Add to Playlist */}
                                                 <button
                                                   type="button"
                                                   onClick={() => setPlaylistTrackTarget(track)}
-                                                  className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-brand-purple/20 text-neutral-300 hover:text-brand-purple border border-white/10 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
-                                                  title="Add this song to your playlists"
+                                                  className="px-2.5 py-1.5 rounded-xl bg-brand-gold/15 hover:bg-brand-gold text-brand-gold hover:text-black border border-brand-gold/40 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shadow-sm"
+                                                  title="Add this song to an existing playlist or create a new one"
+                                                  aria-label={`Add ${track.title} to playlist`}
                                                 >
-                                                  <ListPlus className="w-3.5 h-3.5 text-brand-purple" />
-                                                  <span className="hidden md:inline">Add to Playlist</span>
+                                                  <Plus className="w-4 h-4 stroke-[3]" />
+                                                  <span className="hidden md:inline">Playlist</span>
                                                 </button>
 
                                                 {/* 4. Emoji Reactions & Discussion Comments */}
@@ -1061,10 +1063,12 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
                             <button
                               type="button"
                               onClick={() => setPlaylistTrackTarget(t)}
-                              className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-brand-purple/20 text-neutral-300 hover:text-brand-purple border border-white/10 text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-xl bg-brand-gold/15 hover:bg-brand-gold text-brand-gold hover:text-black border border-brand-gold/40 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shadow-sm"
+                              title="Add this song to an existing playlist or create a new one"
+                              aria-label={`Add ${t.title} to playlist`}
                             >
-                              <ListPlus className="w-3.5 h-3.5 text-brand-purple" />
-                              <span>Add</span>
+                              <Plus className="w-4 h-4 stroke-[3]" />
+                              <span>Playlist</span>
                             </button>
 
                             {/* Flat list emojis & discussion */}
@@ -1138,6 +1142,8 @@ export const PublicMusicCatalogSection: React.FC<PublicMusicCatalogSectionProps>
               artistName: playlistTrackTarget.artistName,
               coverUrl: playlistTrackTarget.coverUrl || '/images/studio_cover.jpg',
               duration: playlistTrackTarget.duration,
+              audioUrl: playlistTrackTarget.audioUrl,
+              genre: playlistTrackTarget.genre,
             }}
           />
         )}

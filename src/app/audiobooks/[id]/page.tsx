@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { BookOpen, ListPlus, Share2, MessageSquare } from 'lucide-react';
+import { BookOpen, ListPlus, Plus, Share2, MessageSquare } from 'lucide-react';
 import { MOCK_AUDIOBOOKS } from '@/lib/mockData';
 import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
 import { AudiobookPlayer } from '@/components/player/AudiobookPlayer';
@@ -87,9 +87,10 @@ export default function AudiobookDetailPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowPlaylistModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-purple/20 hover:bg-brand-purple/40 border border-brand-purple/50 text-brand-neon hover:text-white font-semibold text-xs transition-all shadow-md cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-purple/20 hover:bg-brand-gold/25 border border-brand-purple/50 hover:border-brand-gold text-white hover:text-brand-gold font-bold text-xs transition-all shadow-md cursor-pointer"
+            title="Add to an existing playlist or create a new one"
           >
-            <ListPlus className="w-4 h-4 text-brand-gold" />
+            <Plus className="w-4 h-4 stroke-[3] text-brand-gold" />
             <span>Add to Playlist</span>
           </button>
 
@@ -193,6 +194,8 @@ export default function AudiobookDetailPage() {
             artistName: audiobook.author,
             coverUrl: audiobook.coverUrl,
             duration: audiobook.duration,
+            audioUrl: audiobook.chapters?.[0]?.audioUrl,
+            genre: audiobook.genre,
           }}
         />
       )}

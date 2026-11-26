@@ -21,6 +21,7 @@ import { usePlayer } from '@/lib/player/PlayerContext';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
 import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
 import { FavoriteButton } from '@/components/social/FavoriteButton';
+import { AddToPlaylistButton } from '@/components/playlist/AddToPlaylistButton';
 import { VideoThumbnail } from '@/components/media/VideoThumbnail';
 
 function formatRelativeTime(isoString: string): string {
@@ -303,7 +304,20 @@ export const RecentlyPlayedSection: React.FC = () => {
                   <p className="text-[11px] text-neutral-400 truncate">{entry.subtitle}</p>
                 </div>
 
-                <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+                <div onClick={(e) => e.stopPropagation()} className="shrink-0 flex items-center gap-1.5">
+                  <AddToPlaylistButton
+                    mediaId={entry.mediaId}
+                    mediaType={entry.mediaType}
+                    title={entry.title}
+                    artistName={entry.subtitle}
+                    coverUrl={entry.coverUrl}
+                    duration={entry.duration}
+                    audioUrl={entry.audioUrl}
+                    videoUrl={entry.videoUrl}
+                    genre={entry.genre}
+                    variant="icon"
+                    size="sm"
+                  />
                   <FavoriteButton
                     id={entry.mediaId}
                     category={favCategory}

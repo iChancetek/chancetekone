@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Video as VideoIcon, Eye, Calendar, ListPlus, MessageSquare, Share2 } from 'lucide-react';
+import { Video as VideoIcon, Eye, Calendar, ListPlus, Plus, MessageSquare, Share2 } from 'lucide-react';
 import { MOCK_VIDEOS } from '@/lib/mockData';
 import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
 import { VideoPlayer } from '@/components/player/VideoPlayer';
@@ -92,9 +92,10 @@ export default function VideoDetailPage() {
 
           <button
             onClick={() => setShowPlaylistModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-purple/20 hover:bg-brand-purple/40 border border-brand-purple/50 text-brand-neon hover:text-white font-semibold text-xs transition-all shadow-md"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-purple/20 hover:bg-brand-gold/25 border border-brand-purple/50 hover:border-brand-gold text-white hover:text-brand-gold font-bold text-xs transition-all shadow-md cursor-pointer"
+            title="Add to an existing playlist or create a new one"
           >
-            <ListPlus className="w-4 h-4 text-brand-gold" />
+            <Plus className="w-4 h-4 stroke-[3] text-brand-gold" />
             <span>Add to Playlist</span>
           </button>
 
@@ -179,6 +180,8 @@ export default function VideoDetailPage() {
             artistName: video.artistName,
             coverUrl: video.thumbnailUrl,
             duration: video.duration,
+            videoUrl: video.videoUrl,
+            genre: video.category,
           }}
         />
       )}

@@ -1,7 +1,7 @@
 ﻿'use client';
 
 // ============================================================
-// Radio Page — ChanceTEK One Agentic AI Radio
+// Radio Page — ChanceTEK One Radio
 // Consistent with existing design: glass-panel, brand-gold, brand-purple
 // ============================================================
 
@@ -305,7 +305,7 @@ function RadioPageInner() {
       <div className="border-b border-white/5 pb-6">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-gold/20 border border-brand-gold/40 text-brand-gold text-xs font-semibold uppercase tracking-wider mb-2">
           <Radio className="w-3.5 h-3.5" />
-          Agentic AI Radio
+          ChanceTEK One Radio
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
           ChanceTEK One Radio
