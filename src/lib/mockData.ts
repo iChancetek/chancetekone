@@ -13,7 +13,7 @@ export const MOCK_ARTISTS: Artist[] = [
     genres: ['Big Beat', 'Epic Tracks', 'Breakbeat', 'Turntablism'],
     verified: true,
     followerCount: 0,
-    popularTrackIds: ['track-1'],
+    popularTrackIds: [],
     socialLinks: {
       twitter: 'https://twitter.com',
       instagram: 'https://instagram.com',
@@ -64,59 +64,9 @@ export const MOCK_ARTISTS: Artist[] = [
   },
 ];
 
-export const MOCK_TRACKS: Track[] = [
-  {
-    id: 'track-1',
-    title: 'ChanceTEK One Break Beats',
-    artistId: 'artist-1',
-    artistName: 'ChanceTEK One',
-    label: 'ChanceTEK One',
-    albumId: 'album-1',
-    albumTitle: 'Genesis of the Concrete Beat',
-    audioUrl: '/audio/Fort_Apache.mp3',
-    coverUrl: '/images/studio_cover.jpg',
-    duration: 194,
-    genre: 'Hip Hop / Big Beat',
-    bpm: 130,
-    releaseYear: 2026,
-    lyrics: `[Intro - Scratching]\nYeah... ChanceTEK One in the session.\nChanceTEK One on the master deck.\nDropping the needle on the concrete floor.\n\n[Verse 1]\nWatch the fader flip, double-time rhythm kick,\nVinyl spinning steady with the needle on the tip.\nFrom the legendary roots to the future, hear the snare drum hit,\nChanceTEK One Break Beats, you can't fake this shit.\n\n[Chorus]\nBack to the groove, make the speakers move,\nNothing to hide and everything to prove.\nChanceTEK One Break Beats, feel the earth shake!\n`,
-    playCount: 0,
-    likeCount: 0,
-    dislikeCount: 0,
-    commentCount: 0,
-    featured: true,
-  },
-];
+export const MOCK_TRACKS: Track[] = [];
 
 export const MOCK_ALBUMS: Album[] = [
-  {
-    id: 'album-1',
-    title: 'ChanceTEK One Presents: Genesis of the Concrete Beat',
-    artistId: 'artist-1',
-    artistName: 'ChanceTEK One',
-    label: 'ChanceTEK One',
-    coverUrl: '/images/studio_cover.jpg',
-    releaseYear: 2026,
-    genre: 'Big Beat / Epic Tracks',
-    trackIds: ['track-1'],
-    description: 'The monumental collection of heavy drum breaks, epic track production, 12-bit sampler crunch, and street anthems that define the ChanceTEK One sound.',
-    likeCount: 0,
-    playCount: 0,
-  },
-  {
-    id: 'album-chancetek',
-    title: 'ChanceTEK One PRESENTS: ChanceTEK',
-    artistId: 'producer-2',
-    artistName: 'Chancellor @ ChanceTEK LLC',
-    label: 'ChanceTEK LLC & ChanceTEK One',
-    coverUrl: '/images/studio_cover.jpg',
-    releaseYear: 2026,
-    genre: 'Agentic AI / Audio Systems & Culture',
-    trackIds: ['track-1'],
-    description: 'The monumental ChanceTEK Project master album and architectural systems release engineered by Chancellor @ ChanceTEK LLC.',
-    likeCount: 0,
-    playCount: 0,
-  },
   {
     id: 'album-off-the-wall',
     title: 'Off The Wall',
@@ -891,70 +841,7 @@ export const MOCK_PRODUCTS: Product[] = [
 
 export const MOCK_COMMENTS: Comment[] = [];
 
-export const MOCK_PRODUCERS: Producer[] = [
-  {
-    id: 'producer-1',
-    name: 'ChanceTEK One',
-    handle: '@chancetekone',
-    role: 'Principal Sonic Architect & Crate Master',
-    label: 'ChanceTEK One',
-    bio: 'Founder and chief visionary behind ChanceTEK One. Specializing in 12-bit SP-1200 hardware sampling, Fort Apache drum reconstruction, and heavyweight vinyl soundscapes.',
-    avatarUrl: '/images/studio_cover.jpg',
-    bannerUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1600&auto=format&fit=crop&q=80',
-    gearSetup: [
-      'E-mu SP-1200 (1987 Original)',
-      'Akai MPC60 II (Roger Linn)',
-      'Technics SL-1200MK2 Turntables',
-      'Neve 1073 Mic Preamp & EQ',
-      'Studer A80 2-Inch Tape Machine',
-    ],
-    signatureBpmRange: '110 – 135 BPM',
-    favoriteBreaks: ['The Incredible Bongo Band — Apache', 'The Winstons — Amen, Brother', 'James Brown — Funky Drummer', 'The Honey Drippers — Impeach The President'],
-    featuredTrackIds: ['track-1'],
-    projectCount: 2,
-    credits: ['Genesis of the Concrete Beat (LP)', 'ChanceTEK One Break Beats (Single)'],
-    verified: true,
-    socialLinks: {
-      twitter: 'https://twitter.com/chancetekone',
-      instagram: 'https://instagram.com/chancetekone',
-      website: 'https://chancetekone.com',
-    },
-  },
-  {
-    id: 'producer-2',
-    name: 'Chancellor @ ChanceTEK',
-    handle: '@chancetek',
-    role: 'Executive Audio Engineer & Systems Architect',
-    label: 'ChanceTEK LLC',
-    bio: 'Lead developer and systems engineer for the ChanceTEK One ecosystem. Architecting real-time DSP audio pipelines, neural breakbeat analysis, and PWA lossless audio streaming.',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80',
-    bannerUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&auto=format&fit=crop&q=80',
-    gearSetup: [
-      'Universal Audio Apollo x8p',
-      'SSL G-Master Bus Compressor',
-      'Moog Sub 37 Analog Synthesizer',
-      'Neumann U87 Ai Microphone',
-      'Barefoot Sound MicroMain27 Monitors',
-    ],
-    signatureBpmRange: '88 – 174 BPM',
-    favoriteBreaks: ['Skull Snaps — It\'s a New Day', 'Melvin Bliss — Synthetic Substitution', 'Led Zeppelin — When The Levee Breaks'],
-    featuredTrackIds: ['track-1'],
-    projectCount: 2,
-    credits: [
-      'Agentic AI Systems & LangGraph Architecture',
-      'AI Security & Cyber Resilience',
-      'Healthy Living & Cellular Vitality',
-      'Intermittent Fasting Autophagy Science',
-      'iSkylar Neural Companion Engine',
-      'The Fam... Famio Generational Tape',
-    ],
-    verified: true,
-    socialLinks: {
-      twitter: 'https://twitter.com/chancetek',
-      website: 'https://chancetek.com',
-    },
-  },
-];
+export const MOCK_PRODUCERS: Producer[] = [];
 
 export const MOCK_PROJECTS: Project[] = [
   {
@@ -978,7 +865,7 @@ export const MOCK_PROJECTS: Project[] = [
     bpm: 130,
     description: 'A full-length documentary film & series and first-of-its-kind compilation Double Album Soundtrack built entirely from the original & classic Hip Hop breakbeat samples.',
     narrativeOverview: 'ChanceTEK One: The Foundation Beats is a full-length documentary film & series based on the early evolution of Hip Hop Music & Culture, with a deep focus on the musical foundation that started it all: The Break Beats.\n\nAlongside the documentary, ChanceTEK One will release a first-of-its-kind compilation Double Album Soundtrack, a collector\'s edition project that has never been attempted in Hip Hop\'s history. The album will feature original recordings by both legendary and upcoming rappers performing over newly produced tracks built entirely from the original & classic Hip Hop breakbeat samples.',
-    trackIds: ['track-1'],
+    trackIds: [],
     videoIds: ['video-1', 'video-2'],
     audiobookIds: ['audiobook-1'],
     vinylPressing: {
@@ -1009,7 +896,7 @@ export const MOCK_PROJECTS: Project[] = [
     bpm: 124,
     description: 'This is an advertisement ad for ChanceTEK, Your AI Solutions Partner. The definitive ChanceTEK Project release featuring Agentic AI, AI Security, Healthy Living, Intermittent Fasting, iSkylar, and The Fam... Famio by Chancellor @ ChanceTEK LLC.',
     narrativeOverview: 'A master technology, wellness, and sound research initiative uniting advanced agentic AI architectures, AI cybersecurity, cellular health & longevity, the iSkylar companion engine, and family heritage (Famio) in collaboration with ChanceTEK One.',
-    trackIds: ['track-1'],
+    trackIds: [],
     videoIds: [
       'video-1',
       'video-2',

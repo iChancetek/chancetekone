@@ -270,8 +270,8 @@ export const MusicUploadCenterSection: React.FC<MusicUploadCenterSectionProps> =
   const [selectedArtistName, setSelectedArtistName] = useState<string>('ChanceTEK One');
   const [artistFilterSearch, setArtistFilterSearch] = useState<string>('');
 
-  const [selectedProducerId, setSelectedProducerId] = useState<string>('producer-1');
-  const [selectedProducerName, setSelectedProducerName] = useState<string>('Chancellor');
+  const [selectedProducerId, setSelectedProducerId] = useState<string>('');
+  const [selectedProducerName, setSelectedProducerName] = useState<string>('');
   const [producerFilterSearch, setProducerFilterSearch] = useState<string>('');
 
   const [allProducers, setAllProducers] = useState<Producer[]>(() => ProducerCatalogService.getAllProducers());

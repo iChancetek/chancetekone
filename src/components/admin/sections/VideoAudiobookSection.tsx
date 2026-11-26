@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth/AuthContext';
 import { BarRankingChart, RankingItem } from '../charts/BarRankingChart';
 import { ConfirmDeletionModal, DeletableItem } from '../modals/ConfirmDeletionModal';
 import { MediaUploadModal } from '@/components/media/MediaUploadModal';
+import { VideoThumbnail } from '@/components/media/VideoThumbnail';
 import {
   Video,
   BookOpen,
@@ -344,7 +345,15 @@ export const VideoAudiobookSection: React.FC<VideoAudiobookSectionProps> = ({
                 className="p-4 rounded-2xl glass-panel border border-white/10 bg-white/5 hover:border-rose-500/40 transition-all flex flex-col justify-between space-y-3 group"
               >
                 <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-white/10 bg-neutral-900 shrink-0 flex items-center justify-center">
-                  {video.thumbnailUrl ? (
+                  {video.videoUrl ? (
+                    <VideoThumbnail
+                      videoUrl={video.videoUrl}
+                      thumbnailUrl={video.thumbnailUrl}
+                      alt={video.title}
+                      preferVideoFrame={true}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : video.thumbnailUrl ? (
                     <Image src={video.thumbnailUrl} alt={video.title} fill className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center bg-black/80">

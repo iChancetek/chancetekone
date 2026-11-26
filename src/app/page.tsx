@@ -55,7 +55,7 @@ export default function HomePage() {
     };
   }, []);
 
-  const featuredTrack = tracks[0] || MOCK_TRACKS[0];
+  const featuredTrack = tracks[0] || MusicCatalogService.getSSRBaselineTracks()[0];
   const trendingTracks = tracks.slice(0, 5);
 
   return (

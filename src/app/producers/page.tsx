@@ -108,36 +108,53 @@ export default function ProducersPage() {
       </div>
 
       {/* Gear Filter Badges */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-        <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
-          <Wrench className="w-3 h-3 text-brand-gold" /> Rig:
-        </span>
-        <button
-          onClick={() => setSelectedGearFilter('all')}
-          className={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 transition-all cursor-pointer ${
-            selectedGearFilter === 'all'
-              ? 'bg-brand-gold text-black font-extrabold shadow-md'
-              : 'bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/5'
-          }`}
-        >
-          All Producers ({producers.length})
-        </button>
-        {['SP-1200', 'MPC60', 'Tape', 'Modular', 'Neve'].map((gear) => (
+      {producers.length > 0 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+          <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
+            <Wrench className="w-3 h-3 text-brand-gold" /> Rig:
+          </span>
           <button
-            key={gear}
-            onClick={() => setSelectedGearFilter(gear)}
+            onClick={() => setSelectedGearFilter('all')}
             className={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 transition-all cursor-pointer ${
-              selectedGearFilter === gear
-                ? 'bg-brand-purple text-white shadow-md border border-brand-neon/50'
+              selectedGearFilter === 'all'
+                ? 'bg-brand-gold text-black font-extrabold shadow-md'
                 : 'bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/5'
             }`}
           >
-            {gear}
+            All Producers ({producers.length})
           </button>
-        ))}
-      </div>
+          {['SP-1200', 'MPC60', 'Tape', 'Modular', 'Neve'].map((gear) => (
+            <button
+              key={gear}
+              onClick={() => setSelectedGearFilter(gear)}
+              className={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 transition-all cursor-pointer ${
+                selectedGearFilter === gear
+                  ? 'bg-brand-purple text-white shadow-md border border-brand-neon/50'
+                  : 'bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/5'
+              }`}
+            >
+              {gear}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* Producers Grid */}
+      {/* Producers Grid or Empty State */}
+      {filteredProducers.length === 0 ? (
+        <div className="rounded-3xl glass-panel border border-white/10 bg-neutral-900/50 p-10 sm:p-14 text-center space-y-3 shadow-xl">
+          <div className="w-14 h-14 rounded-2xl bg-brand-gold/10 border border-brand-gold/30 flex items-center justify-center mx-auto text-brand-gold">
+            <Sliders className="w-7 h-7" />
+          </div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-white">
+            {producers.length === 0 ? 'Producers Directory Ready' : 'No Producers Match This Rig Filter'}
+          </h2>
+          <p className="text-sm text-neutral-400 max-w-lg mx-auto">
+            {producers.length === 0
+              ? 'Featured DJs, master producers, and beat-makers added to ChanceTEK One will appear here.'
+              : 'Try selecting "All Producers" to see every available producer on the platform.'}
+          </p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {filteredProducers.map((producer) => {
           const featuredTracks = MusicCatalogService.getAllTracks().filter(
@@ -325,6 +342,7 @@ export default function ProducersPage() {
           );
         })}
       </div>
+      )}
 
       {/* Community Comments & Discussion Threads */}
       <CommentSection

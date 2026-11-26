@@ -11,6 +11,7 @@ import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
 import { UniversalShareModal } from '@/components/social/UniversalShareModal';
 import { ReactionButtons } from '@/components/social/ReactionButtons';
 import { FavoriteButton } from '@/components/social/FavoriteButton';
+import { VideoThumbnail } from '@/components/media/VideoThumbnail';
 import { UniversalDiscussionModal } from '@/components/social/UniversalDiscussionModal';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
 
@@ -188,7 +189,13 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, type }) => {
     setIsHovered(false);
     if ((isVideo || isVideoAudiobook) && videoRef.current) {
       videoRef.current.pause();
-      videoRef.current.currentTime = 0;
+      const dur = videoRef.current.duration;
+      const thumbTime = dur && Number.isFinite(dur) && dur > 0.4 ? Math.min(1.5, Math.max(0.25, dur * 0.22)) : 1.5;
+      try {
+        videoRef.current.currentTime = thumbTime;
+      } catch {
+        // ignore
+      }
     }
   };
 
@@ -225,20 +232,20 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, type }) => {
         >
           {isVideo || (isVideoAudiobook && !resolvedCover) ? (
             <>
-              {/* Real Video Player with Hover Auto-Play */}
-              <video
-                ref={videoRef}
-                src={videoUrlForCard}
-                muted
-                loop
-                playsInline
-                preload="metadata"
+              {/* Real Video Frame Thumbnail with Hover Auto-Play (Never shows generic studio_cover.jpg) */}
+              <VideoThumbnail
+                videoUrl={videoUrlForCard}
+                thumbnailUrl={resolvedCover}
+                alt={getTitle()}
+                videoRef={videoRef}
+                isHovered={isHovered}
+                preferVideoFrame={true}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
 
               {/* Duration Pill */}
               {(item as any).duration > 0 && (
-                <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/80 backdrop-blur-md text-[10px] font-mono text-neutral-200 border border-white/10">
+                <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md text-[10px] font-mono font-bold text-neutral-100 border border-white/15">
                   {formatDuration((item as any).duration)}
                 </div>
               )}

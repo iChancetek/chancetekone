@@ -70,7 +70,12 @@ export default function TrackDetailPage() {
   });
 
   const [track, setTrack] = useState<Track>(() => {
-    return MusicCatalogService.getTrackById(trackId) || MOCK_TRACKS.find((t) => t.id === trackId) || MOCK_TRACKS[0];
+    return (
+      MusicCatalogService.getTrackById(trackId) ||
+      MOCK_TRACKS.find((t) => t.id === trackId) ||
+      MusicCatalogService.getAllTracks()[0] ||
+      MusicCatalogService.getSSRBaselineTracks()[0]
+    );
   });
 
   React.useEffect(() => {

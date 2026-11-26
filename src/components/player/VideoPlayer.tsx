@@ -15,6 +15,7 @@ import {
 import { Video } from '@/types/media';
 import { ContextualAIRecommendations } from '@/components/ai/ContextualAIRecommendations';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
+import { buildVideoFrameSrc, isGenericVideoCover } from '@/components/media/VideoThumbnail';
 import { useAI } from '@/lib/ai/AIContext';
 import { usePlayer } from '@/lib/player/PlayerContext';
 
@@ -163,12 +164,9 @@ export const VideoPlayer: React.FC<{ video: Video }> = ({ video }) => {
       >
         <video
           ref={videoRef}
-          src={video.videoUrl}
+          src={buildVideoFrameSrc(video.videoUrl, 0.5)}
           poster={
-            video.thumbnailUrl &&
-            video.thumbnailUrl !== '/images/logo.png' &&
-            video.thumbnailUrl !== '/images/chancetekone_banner.png' &&
-            video.thumbnailUrl !== '/images/the_lounge_ambient.jpg'
+            video.thumbnailUrl && !isGenericVideoCover(video.thumbnailUrl)
               ? video.thumbnailUrl
               : undefined
           }

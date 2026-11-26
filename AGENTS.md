@@ -2042,3 +2042,16 @@ esolvedAudioUrl is reset to '' (zero tolerance).
   - Upgraded `HistoryService` with `'podcast'` support, rich metadata (`genre`, `artistName`, `bpm`, `href`), guest+member merged history (`getMergedHistory`), and real-time `history-updated` subscriptions.
   - Built `<AgenticDiscoveryDeck />` to track live active playback, streaming history, and favorites in real time and recommend new & similar content on `/music`, `/audiobooks`, `/podcasts`, and the Home page (`/`).
   - Built `<RecentlyPlayedSection />` on the Home page (`src/app/page.tsx`) displaying recently played Music, Audiobooks, Podcasts, and 4K Videos with type filters, 1-click resume, and Favorite toggles.
+
+
+### 36. Library Empty-State Cleanup, Recommendation Branding, Real Video-Frame Thumbnails & Retirement of Break Beats Track and ChanceTEK Producers
+- **Library Empty-State & Recommendation Heading**:
+  - Removed the four shortcut action buttons (`Explore Music`, `Audiobooks`, `Podcasts`, `Create Playlist`) from the `"Your Library is ready for your favorites"` card in `src/app/library/page.tsx`.
+  - Renamed `"Agentic AI — Recommended For You"` to **`ChanceTEK One — Recommended For You`** in `src/components/ai/AgenticDiscoveryDeck.tsx`.
+- **Real Video-Frame Thumbnails (`src/components/media/VideoThumbnail.tsx`)**:
+  - Created `<VideoThumbnail />` which renders the actual video's frame (`#t=1.5` + `onLoadedMetadata` seek past black intro frames) whenever a video has a valid `videoUrl` and only generic/fallback artwork (`/images/studio_cover.jpg`, `/images/chancetekone_banner.png`, `/images/logo.png`).
+  - Wired `<VideoThumbnail />` across `MediaCard.tsx`, `VideoPlayer.tsx`, `RecentlyPlayedSection.tsx`, `AgenticDiscoveryDeck.tsx`, `ContextualAIRecommendations.tsx`, `src/app/library/page.tsx`, and `VideoAudiobookSection.tsx`.
+- **Permanent Retirement of `ChanceTEK One Break Beats` Track & `ChanceTEK One` / `Chancellor @ ChanceTEK` Producers**:
+  - Removed `BREAKBEAT_ANTHEM_TRACK` (`track-1`: `ChanceTEK One Break Beats`) from `PLATFORM_CANONICAL_TRACKS` (`src/lib/music/canonicalCatalogData.ts`), cleared `MOCK_TRACKS`, removed legacy `album-1` and `album-chancetek` from `MOCK_ALBUMS`, and cleared `MOCK_PRODUCERS` (`producer-1`: `ChanceTEK One`, `producer-2`: `Chancellor @ ChanceTEK`) in `src/lib/mockData.ts`.
+  - Added hard retirement guards in `MusicCatalogService.isTrackPermanentlyRemoved()` (`track-1`, `'chancetek one break beats'`, `'fort apache'`), `MusicCatalogService.isAlbumPermanentlyRemoved()` (`album-1`, `album-chancetek`), and `ProducerCatalogService.isRetiredProducer()` (`producer-1`, `producer-2`, `ChanceTEK One`, `ChanceTEK`, `Chancellor @ ChanceTEK`) so cached browser `localStorage` and Firestore cloud snapshots never resurface them.
+  - Guarded `MOCK_TRACKS[0]` fallbacks in `src/app/page.tsx` and `src/app/music/[id]/page.tsx`, reset `selectedProducerId` default in `MusicUploadCenterSection.tsx`, and added a clean empty-state card to `src/app/producers/page.tsx`.

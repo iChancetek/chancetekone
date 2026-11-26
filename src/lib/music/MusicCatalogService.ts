@@ -65,7 +65,6 @@ import {
   CHRIS_BROWN_TRACKS,
   BROWNSTONE_TRACKS,
   JERMAINE_DUPRI_TRACKS,
-  BREAKBEAT_ANTHEM_TRACK,
   PLATFORM_CANONICAL_TRACKS,
 } from './canonicalCatalogData';
 
@@ -177,6 +176,19 @@ class MusicCatalogServiceClass {
    */
   public isTrackPermanentlyRemoved(id?: string, title?: string, artist?: string): boolean {
     if (!id && !title) return false;
+    // Permanently retired track: ChanceTEK One Break Beats
+    if (id === 'track-1') return true;
+    if (title) {
+      const lowerTitle = title.toLowerCase().trim();
+      if (
+        lowerTitle === 'chancetek one break beats' ||
+        lowerTitle === 'chancetekone break beats' ||
+        lowerTitle === 'chancetek one break beat' ||
+        lowerTitle === 'fort apache'
+      ) {
+        return true;
+      }
+    }
     const removedSet = this.getRemovedTrackSet();
     if (id && removedSet.has(id)) return true;
 
@@ -199,13 +211,23 @@ class MusicCatalogServiceClass {
    */
   public isAlbumPermanentlyRemoved(id?: string, title?: string): boolean {
     if (!id && !title) return false;
+    // Permanently retired legacy albums associated with the removed break beat track
+    if (id === 'album-1' || id === 'album-chancetek') return true;
     const removedSet = this.getRemovedAlbumSet();
     if (id && removedSet.has(id)) return true;
 
     if (title) {
+      const lowerTitle = title.toLowerCase().trim();
+      if (
+        lowerTitle === 'genesis of the concrete beat' ||
+        lowerTitle === 'chancetek one presents: genesis of the concrete beat' ||
+        lowerTitle === 'chancetek one presents: chancetek'
+      ) {
+        return true;
+      }
       const titleKey = normalizeAlbumKey(title);
       if (removedSet.has(titleKey)) return true;
-      if (removedSet.has(title.toLowerCase().trim())) return true;
+      if (removedSet.has(lowerTitle)) return true;
       if (removedSet.has(`key:${titleKey}`)) return true;
     }
     return false;

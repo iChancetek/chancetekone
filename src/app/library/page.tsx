@@ -55,6 +55,7 @@ import { PlaylistService } from '@/lib/playlist/PlaylistService';
 import { Playlist } from '@/types/playlist';
 import { ReactionButtons } from '@/components/social/ReactionButtons';
 import { FavoriteButton } from '@/components/social/FavoriteButton';
+import { VideoThumbnail } from '@/components/media/VideoThumbnail';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { PodcastEpisode } from '@/types/media';
 
@@ -526,39 +527,6 @@ function LibraryContent() {
               <p className="text-xs sm:text-sm text-neutral-400 max-w-md mx-auto">
                 Tap the Favorite heart button on any song, album, artist, audiobook, podcast, 4K video, or playlist across ChanceTEK One and it will automatically appear here.
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                <Link
-                  href="/music"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-gold text-black font-extrabold text-xs uppercase tracking-wider hover:scale-105 transition-all"
-                >
-                  <Music className="w-4 h-4" />
-                  <span>Explore Music</span>
-                </Link>
-                <Link
-                  href="/audiobooks"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider transition-all"
-                >
-                  <BookOpen className="w-4 h-4 text-brand-gold" />
-                  <span>Audiobooks</span>
-                </Link>
-                <Link
-                  href="/podcasts"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider transition-all"
-                >
-                  <Mic className="w-4 h-4 text-brand-gold" />
-                  <span>Podcasts</span>
-                </Link>
-                <button
-                  onClick={() => {
-                    if (!isAuthenticated) setIsAuthModalOpen(true);
-                    else setShowCreatePlaylistModal(true);
-                  }}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-purple hover:bg-brand-violet text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Create Playlist</span>
-                </button>
-              </div>
             </div>
           ) : (
             <>
@@ -1380,13 +1348,23 @@ function LibraryContent() {
                 >
                   <div className="flex items-center gap-3.5 min-w-0 flex-1">
                     <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 shadow-md border border-white/10 bg-neutral-900">
-                      <Image
-                        src={item.coverUrl || '/images/studio_cover.jpg'}
-                        alt={item.title}
-                        fill
-                        sizes="48px"
-                        className="object-cover group-hover:scale-105 transition-transform"
-                      />
+                      {item.mediaType === 'video' && item.videoUrl ? (
+                        <VideoThumbnail
+                          videoUrl={item.videoUrl}
+                          thumbnailUrl={item.coverUrl}
+                          alt={item.title}
+                          preferVideoFrame={true}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                      ) : (
+                        <Image
+                          src={item.coverUrl || '/images/studio_cover.jpg'}
+                          alt={item.title}
+                          fill
+                          sizes="48px"
+                          className="object-cover group-hover:scale-105 transition-transform"
+                        />
+                      )}
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                         <Play className="w-4 h-4 fill-white text-white ml-0.5" />
                       </div>

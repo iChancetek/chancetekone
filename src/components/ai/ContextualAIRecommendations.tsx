@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
@@ -20,6 +20,7 @@ import { useAI } from '@/lib/ai/AIContext';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { MemoryManager } from '@/lib/agents/memory';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
+import { VideoThumbnail } from '@/components/media/VideoThumbnail';
 
 interface ContextualAIRecommendationsProps {
   currentMedia?: {
@@ -228,7 +229,13 @@ export const ContextualAIRecommendations: React.FC<ContextualAIRecommendationsPr
                   className="flex items-center gap-2.5 cursor-pointer group hover:bg-white/5 p-1 rounded-xl transition-all"
                 >
                   <div className="relative w-14 h-10 rounded-lg overflow-hidden flex-shrink-0">
-                    <Image src={vid.thumbnailUrl} alt={vid.title} fill className="object-cover group-hover:scale-105 transition-transform" />
+                    <VideoThumbnail
+                      videoUrl={vid.videoUrl}
+                      thumbnailUrl={vid.thumbnailUrl}
+                      alt={vid.title}
+                      preferVideoFrame={true}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
                     <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                       <Play className="w-3.5 h-3.5 text-white fill-current" />
                     </div>

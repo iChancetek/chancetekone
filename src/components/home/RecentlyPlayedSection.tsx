@@ -21,6 +21,7 @@ import { usePlayer } from '@/lib/player/PlayerContext';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
 import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
 import { FavoriteButton } from '@/components/social/FavoriteButton';
+import { VideoThumbnail } from '@/components/media/VideoThumbnail';
 
 function formatRelativeTime(isoString: string): string {
   try {
@@ -265,13 +266,23 @@ export const RecentlyPlayedSection: React.FC = () => {
                 className="group p-3.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-brand-gold/45 transition-all cursor-pointer flex items-center gap-3"
               >
                 <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-black/50">
-                  <Image
-                    src={entry.coverUrl || '/images/studio_cover.jpg'}
-                    alt={entry.title}
-                    fill
-                    sizes="56px"
-                    className="object-cover group-hover:scale-105 transition-transform"
-                  />
+                  {entry.mediaType === 'video' && entry.videoUrl ? (
+                    <VideoThumbnail
+                      videoUrl={entry.videoUrl}
+                      thumbnailUrl={entry.coverUrl}
+                      alt={entry.title}
+                      preferVideoFrame={true}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
+                  ) : (
+                    <Image
+                      src={entry.coverUrl || '/images/studio_cover.jpg'}
+                      alt={entry.title}
+                      fill
+                      sizes="56px"
+                      className="object-cover group-hover:scale-105 transition-transform"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                     <Play className="w-5 h-5 text-brand-gold fill-current ml-0.5" />
                   </div>

@@ -24,6 +24,7 @@ import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
 import { HistoryService, HistoryEntry } from '@/lib/history/HistoryService';
 import { FavoritesService, FavoriteItem, FavoriteCategory } from '@/lib/favorites/FavoritesService';
 import { FavoriteButton } from '@/components/social/FavoriteButton';
+import { VideoThumbnail } from '@/components/media/VideoThumbnail';
 import { Track, Audiobook, PodcastEpisode, Video } from '@/types/media';
 
 export interface AgenticDiscoveryDeckProps {
@@ -467,7 +468,7 @@ export const AgenticDiscoveryDeck: React.FC<AgenticDiscoveryDeckProps> = ({
         ? 'Agentic AI Audiobook Guide'
         : mode === 'podcast'
           ? 'Agentic AI Podcast Scout'
-          : 'Agentic AI — Recommended For You';
+          : 'ChanceTEK One — Recommended For You';
 
   const defaultSubheading =
     currentTrack && isPlaying
@@ -591,13 +592,23 @@ export const AgenticDiscoveryDeck: React.FC<AgenticDiscoveryDeckProps> = ({
                   onClick={() => handlePlayItem(item)}
                   className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-white/15 bg-black/50 cursor-pointer"
                 >
-                  <Image
-                    src={item.coverUrl || '/images/studio_cover.jpg'}
-                    alt={item.title}
-                    fill
-                    sizes="56px"
-                    className="object-cover group-hover:scale-105 transition-transform"
-                  />
+                  {item.mediaType === 'video' ? (
+                    <VideoThumbnail
+                      videoUrl={(item.raw as Video).videoUrl}
+                      thumbnailUrl={item.coverUrl}
+                      alt={item.title}
+                      preferVideoFrame={true}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
+                  ) : (
+                    <Image
+                      src={item.coverUrl || '/images/studio_cover.jpg'}
+                      alt={item.title}
+                      fill
+                      sizes="56px"
+                      className="object-cover group-hover:scale-105 transition-transform"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                     {isActivePlaying ? (
                       <Pause className="w-5 h-5 text-brand-gold fill-current" />

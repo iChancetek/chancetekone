@@ -130,6 +130,28 @@ class ProducerCatalogServiceClass {
   }
 
   /**
+   * Permanently retired built-in ChanceTEK / ChanceTEK One producer entries.
+   */
+  private isRetiredProducer(p: Producer): boolean {
+    if (!p) return true;
+    if (p.id === 'producer-1' || p.id === 'producer-2') return true;
+    const name = (p.name || '').toLowerCase().trim();
+    const handle = (p.handle || '').toLowerCase().trim();
+    if (
+      name === 'chancetek one' ||
+      name === 'chancetekone' ||
+      name === 'chancetek' ||
+      name === 'chancellor @ chancetek' ||
+      name === 'chancellor @ chancetek llc' ||
+      handle === '@chancetekone' ||
+      handle === '@chancetek'
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Retrieves all active live producers
    */
   public getAllProducers(): Producer[] {
@@ -138,7 +160,7 @@ class ProducerCatalogServiceClass {
     const unique = new Map<string, Producer>();
 
     combined.forEach((p) => {
-      if (!removedSet.has(p.id) && !unique.has(p.id)) {
+      if (!this.isRetiredProducer(p) && !removedSet.has(p.id) && !unique.has(p.id)) {
         unique.set(p.id, p);
       }
     });
