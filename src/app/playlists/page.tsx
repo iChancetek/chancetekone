@@ -69,21 +69,21 @@ export default function PlaylistsPage() {
     const filter: PlaylistFilter = {
       type: activeTab,
       searchQuery,
-      sortBy: 'popular',
+      sortBy: 'recent',
     };
 
-    let ownIds = new Set<string>();
     if (currentUserId || currentEmail) {
       const userPls = PlaylistService.getUserPlaylists(currentUserId, currentEmail, {
         type: activeTab,
         searchQuery,
+        sortBy: 'recent',
       });
       setUserPlaylists(userPls);
-      ownIds = new Set(userPls.map((p) => p.id));
 
       const sharedPls = PlaylistService.getSharedPlaylists(currentUserId, currentEmail, {
         type: activeTab,
         searchQuery,
+        sortBy: 'recent',
       });
       setSharedPlaylists(sharedPls);
 
@@ -95,13 +95,14 @@ export default function PlaylistsPage() {
       setSavedPlaylists([]);
     }
 
-    // Only real public playlists created by platform members
-    const pub = PlaylistService.getPublicPlaylists(filter).filter((p) => !ownIds.has(p.id));
+    // Show ALL public playlists created by platform members so every user can discover & play them
+    const pub = PlaylistService.getPublicPlaylists(filter);
     setPublicPlaylists(pub);
   };
 
   useEffect(() => {
     refreshPlaylists();
+    void PlaylistService.syncFromServer(true);
     const unsubscribe = PlaylistService.subscribe(() => {
       refreshPlaylists();
     });
@@ -574,9 +575,9 @@ export default function PlaylistsPage() {
         </section>
       )}
 
-      {/* 4. Public Member Playlists (Only real playlists created by platform members) */}
-      {publicPlaylists.length > 0 && (
-        <section className="space-y-4">
+      {/* 4. Public Member Playlists (Discoverable & playable by everyone on the platform) */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Globe className="w-5 h-5 text-brand-gold" />
             <div>
@@ -584,11 +585,21 @@ export default function PlaylistsPage() {
                 Public Member Playlists ({publicPlaylists.length})
               </h2>
               <p className="text-xs text-neutral-400">
-                Public playlists created and shared by members of ChanceTEK One
+                Public playlists created and shared by members of ChanceTEK One — open for anyone on the platform to play
               </p>
             </div>
           </div>
+        </div>
 
+        {publicPlaylists.length === 0 ? (
+          <div className="p-8 rounded-3xl glass-card border border-white/5 text-center space-y-2 bg-[#0d0d16]/70">
+            <Globe className="w-8 h-8 text-brand-gold/70 mx-auto" />
+            <h3 className="text-sm sm:text-base font-bold text-white">No public playlists yet</h3>
+            <p className="text-xs text-neutral-400 max-w-md mx-auto">
+              When any member creates a playlist and selects <span className="text-emerald-400 font-semibold">Public</span>, it appears right here for everyone on the platform to discover and play.
+            </p>
+          </div>
+        ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {publicPlaylists.map((pl) => {
               const TypeIcon = getTypeIcon(pl.type);
@@ -638,11 +649,17 @@ export default function PlaylistsPage() {
                   <Link href={`/playlists/${pl.id}`}>
                     <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-3 border border-white/5 bg-black/50">
                       <Image
-                        src={pl.coverUrl}
+                        src={pl.coverUrl || '/images/studio_cover.jpg'}
                         alt={pl.name}
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
+
+                      {/* Public Badge */}
+                      <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
+                        <Globe className="w-3 h-3 text-emerald-400" />
+                        <span>{isDirectOwner ? 'Yours · Public' : 'Public'}</span>
+                      </div>
 
                       {/* Type Badge */}
                       <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider text-brand-gold border border-white/10 flex items-center gap-1">
@@ -650,15 +667,17 @@ export default function PlaylistsPage() {
                         <span className="capitalize">{pl.type}</span>
                       </div>
 
-                      {/* Hover Play Button */}
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      {/* Always-accessible Play Button (visible on touch & hover) */}
+                      <div className="absolute bottom-2.5 right-2.5 z-10">
                         <button
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
                             playPlaylist(pl);
                           }}
-                          className="w-12 h-12 rounded-full bg-gradient-to-r from-brand-gold to-brand-amber text-black flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
+                          disabled={pl.items.length === 0}
+                          title={pl.items.length === 0 ? 'Add tracks to play' : `Play ${pl.name}`}
+                          className="w-11 h-11 rounded-full bg-gradient-to-r from-brand-gold to-brand-amber text-black flex items-center justify-center shadow-[0_6px_22px_rgba(245,158,11,0.55)] hover:scale-110 active:scale-95 transition-transform disabled:opacity-40 cursor-pointer"
                         >
                           <Play className="w-5 h-5 fill-current ml-0.5" />
                         </button>
@@ -727,7 +746,7 @@ export default function PlaylistsPage() {
                     </div>
 
                     <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed">
-                      {pl.description}
+                      {pl.description || `${pl.itemCount} ${pl.itemCount === 1 ? 'item' : 'items'} · Public playlist`}
                     </p>
 
                     {/* Creator Row & Metadata */}
@@ -744,6 +763,7 @@ export default function PlaylistsPage() {
                         <span className="truncate text-neutral-300">{pl.ownerName}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
+                        <span className="text-brand-neon font-mono text-[10px]">{pl.itemCount} items</span>
                         <ReactionButtons contentId={pl.id} contentType="playlist" contentTitle={pl.name} contextLocation="Member Playlists Section" variant="minimal" showShare={false} />
                         {(() => {
                           const plKey = buildCanonicalContentKey('playlist', pl.name);
@@ -771,8 +791,8 @@ export default function PlaylistsPage() {
               );
             })}
           </div>
-        </section>
-      )}
+        )}
+      </section>
 
       {/* Modals */}
       {showCreateModal && (

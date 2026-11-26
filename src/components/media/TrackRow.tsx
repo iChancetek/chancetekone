@@ -23,7 +23,7 @@ interface TrackRowProps {
   contextTracks?: Track[];
 }
 
-export const TrackRow: React.FC<TrackRowProps> = ({
+export const TrackRow: React.FC<TrackRowProps> = React.memo(({
   track,
   index,
   showCover = true,
@@ -89,11 +89,10 @@ export const TrackRow: React.FC<TrackRowProps> = ({
   return (
     <div
       onClick={() => handlePlay()}
-      className={`group flex items-center justify-between px-3 sm:px-3.5 py-2.5 sm:py-3 rounded-2xl transition-all duration-200 cursor-pointer touch-manipulation select-none ${
-        isCurrent
+      className={`group flex items-center justify-between px-3 sm:px-3.5 py-2.5 sm:py-3 rounded-2xl transition-all duration-200 cursor-pointer touch-manipulation select-none ${isCurrent
           ? 'bg-gradient-to-r from-brand-purple/25 via-brand-violet/15 to-transparent border border-brand-purple/40 text-white shadow-[inset_3px_0_0_#f5c344,0_8px_24px_-10px_rgba(157,78,221,0.35)]'
           : 'hover:bg-white/[0.05] active:bg-white/10 border border-transparent hover:border-white/[0.07] text-neutral-300'
-      }`}
+        }`}
     >
       {/* Left: Index & Play Button & Title */}
       <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
@@ -116,9 +115,8 @@ export const TrackRow: React.FC<TrackRowProps> = ({
               <button
                 type="button"
                 aria-label={`Play ${track.title}`}
-                className={`flex sm:hidden group-hover:!flex text-brand-gold hover:text-white transition-all transform active:scale-95 ${
-                  isCurrent ? '!flex text-brand-gold' : ''
-                }`}
+                className={`flex sm:hidden group-hover:!flex text-brand-gold hover:text-white transition-all transform active:scale-95 ${isCurrent ? '!flex text-brand-gold' : ''
+                  }`}
               >
                 {isCurrent && isPlaying ? (
                   <Pause className="w-3.5 h-3.5 fill-current" />
@@ -147,9 +145,8 @@ export const TrackRow: React.FC<TrackRowProps> = ({
               onError={() => setHasImgError(true)}
             />
             <div
-              className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity ${
-                isCurrent && isPlaying ? 'opacity-100' : 'opacity-0 group-hover/cover:opacity-100'
-              }`}
+              className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity ${isCurrent && isPlaying ? 'opacity-100' : 'opacity-0 group-hover/cover:opacity-100'
+                }`}
             >
               {isCurrent && isPlaying ? (
                 <Pause className="w-4 h-4 text-brand-gold fill-current" />
@@ -337,4 +334,5 @@ export const TrackRow: React.FC<TrackRowProps> = ({
       )}
     </div>
   );
-};
+});
+TrackRow.displayName = 'TrackRow';

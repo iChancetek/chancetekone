@@ -77,8 +77,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
   const currentUserId = profile?.id || user?.uid || (isAdmin ? 'admin' : '');
   const canManage = Boolean(isOwner || isAdmin);
 
-  const loadPlaylist = () => {
-    const res = PlaylistService.getPlaylistById(resolvedParams.id, currentUserId, currentEmail, isAdmin);
+  const applyLocalPlaylistResult = (res: ReturnType<typeof PlaylistService.getPlaylistById>) => {
     if (res.playlist) {
       setPlaylist(res.playlist);
       const isDirectOwner = Boolean(
@@ -91,18 +90,54 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
       setIsSaved(res.isSaved);
       setIsLiked(res.isLiked);
       setError(null);
-    } else {
-      setError(res.error || 'Playlist not found');
+      return true;
     }
+    return false;
+  };
+
+  const loadPlaylist = () => {
+    const res = PlaylistService.getPlaylistById(resolvedParams.id, currentUserId, currentEmail, isAdmin);
+    if (applyLocalPlaylistResult(res)) {
+      setLoading(false);
+      return true;
+    }
+    setError(res.error || 'Playlist not found');
     setLoading(false);
+    return false;
   };
 
   useEffect(() => {
-    loadPlaylist();
+    let active = true;
+    const localRes = PlaylistService.getPlaylistById(resolvedParams.id, currentUserId, currentEmail, isAdmin);
+    if (applyLocalPlaylistResult(localRes)) {
+      setLoading(false);
+      // Refresh latest version from server in background
+      void PlaylistService.fetchPlaylistFromServer(resolvedParams.id);
+    } else {
+      setLoading(true);
+      setError(null);
+      void PlaylistService.fetchPlaylistFromServer(resolvedParams.id).then((remote) => {
+        if (!active) return;
+        const afterRes = PlaylistService.getPlaylistById(resolvedParams.id, currentUserId, currentEmail, isAdmin);
+        if (!applyLocalPlaylistResult(afterRes)) {
+          if (remote) {
+            setPlaylist(remote);
+            setError(null);
+          } else {
+            setError(afterRes.error || 'Playlist not found');
+          }
+        }
+        setLoading(false);
+      });
+    }
+
     const unsubscribe = PlaylistService.subscribe(() => {
-      loadPlaylist();
+      if (active) loadPlaylist();
     });
-    return () => unsubscribe();
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [resolvedParams.id, currentUserId, currentEmail, isAdmin]);
 
   const handlePlayAll = () => {
@@ -622,16 +657,14 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                 >
                   {/* Left: Position / Play button & Thumbnail */}
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                    <div className="w-6 text-center shrink-0">
-                      <span className="text-xs font-mono text-neutral-400 group-hover:hidden">
-                        {index + 1}
-                      </span>
+                    <div className="w-7 text-center shrink-0">
                       <button
                         onClick={() => handlePlayItem(item, index)}
-                        className="hidden group-hover:flex w-6 h-6 rounded-full bg-brand-gold text-black items-center justify-center mx-auto hover:scale-110 transition-transform"
-                        title="Play item"
+                        className="w-7 h-7 rounded-full bg-brand-gold/90 hover:bg-brand-gold text-black flex items-center justify-center mx-auto hover:scale-110 active:scale-95 transition-transform cursor-pointer shadow-sm"
+                        title={`Play ${item.title}`}
+                        aria-label={`Play ${item.title}`}
                       >
-                        <Play className="w-3 h-3 fill-current ml-0.5" />
+                        <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
                       </button>
                     </div>
 
@@ -698,13 +731,6 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
           </div>
         )}
       </section>
-
-      {/* Community Comments & Discussion Threads */}
-      <CommentSection
-        contentId={playlist.id}
-        contentType="playlist"
-        contentTitle={playlist.name}
-      />
 
       {/* Modals */}
       {showDeleteConfirm && canManage && (

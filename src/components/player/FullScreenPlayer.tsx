@@ -25,7 +25,7 @@ import {
   MessageSquare,
   Share2,
 } from 'lucide-react';
-import { usePlayer } from '@/lib/player/PlayerContext';
+import { usePlayer, usePlayerTime } from '@/lib/player/PlayerContext';
 import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
 import { ContextualAIRecommendations } from '@/components/ai/ContextualAIRecommendations';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
@@ -117,7 +117,6 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
   const {
     currentTrack,
     isPlaying,
-    currentTime,
     duration,
     volume,
     isMuted,
@@ -137,6 +136,7 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
     likedTrackIds,
     toggleLikeTrack,
   } = usePlayer();
+  const { currentTime } = usePlayerTime();
 
   const [activeTab, setActiveTab] = useState<'live-lyrics' | 'lyrics' | 'queue' | 'ai-crate' | 'sample-dna'>('sample-dna');
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
@@ -188,14 +188,14 @@ export const FullScreenPlayer: React.FC<{ onAskAI?: (prompt: string) => void }> 
       data-fullscreen-player="true"
       className="fixed inset-0 z-[80] bg-[#050509]/98 backdrop-blur-3xl flex flex-col justify-between p-4 sm:p-6 md:p-10 overflow-y-auto animate-in fade-in zoom-in-95 duration-300"
     >
-      {/* Dynamic Album-Art Adaptive Color Wash */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {/* Dynamic Album-Art Adaptive Color Wash (blurred image on desktop, lightweight gradient on mobile) */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden bg-gradient-to-b from-[#170f28] via-[#090812] to-[#050509]">
         {currentTrack.coverUrl && (
           <Image
             src={currentTrack.coverUrl}
             alt=""
             fill
-            className="object-cover blur-[110px] scale-125 opacity-30 saturate-150 transition-all duration-1000"
+            className="hidden md:block object-cover blur-[110px] scale-125 opacity-30 saturate-150 transition-all duration-1000"
             unoptimized={Boolean(currentTrack.coverUrl.startsWith('data:') || currentTrack.coverUrl.startsWith('blob:'))}
           />
         )}

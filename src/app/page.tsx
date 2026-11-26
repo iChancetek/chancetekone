@@ -26,6 +26,7 @@ import { HeroBanner } from '@/components/media/HeroBanner';
 import { TrackRow } from '@/components/media/TrackRow';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 import { RecentlyPlayedSection } from '@/components/home/RecentlyPlayedSection';
+import { PublicPlaylistsShelf } from '@/components/home/PublicPlaylistsShelf';
 import { AgenticDiscoveryDeck } from '@/components/ai/AgenticDiscoveryDeck';
 import { BrandLogo, PLATFORM_SLOGAN } from '@/components/brand/BrandLogo';
 import { MOCK_TRACKS } from '@/lib/mockData';
@@ -69,7 +70,7 @@ export default function HomePage() {
 
       <div className="relative z-10 space-y-7 sm:space-y-9">
         {/* Top Music Licensing & Discovery Ribbon */}
-        <div className="specular-edge flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-5 py-3 rounded-2xl bg-[#0c0c16]/80 backdrop-blur-2xl border border-white/[0.08] shadow-[0_12px_40px_-14px_rgba(0,0,0,0.8)]">
+        <div className="specular-edge flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-5 py-3 rounded-2xl bg-[#0c0c16]/95 md:bg-[#0c0c16]/80 md:backdrop-blur-2xl border border-white/[0.08] shadow-[0_12px_40px_-14px_rgba(0,0,0,0.8)]">
           <div className="flex items-center gap-3 text-center sm:text-left">
             <BrandLogo variant="compact" showSlogan={false} />
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2.5 gap-y-0.5">
@@ -118,7 +119,7 @@ export default function HomePage() {
                 <Link
                   key={dest.href}
                   href={dest.href}
-                  className="group relative rounded-2xl p-3 bg-[#0e0e18]/75 hover:bg-[#161626]/95 border border-white/[0.07] hover:border-white/20 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.8)] overflow-hidden"
+                  className="group relative rounded-2xl p-3 bg-[#0e0e18]/92 md:bg-[#0e0e18]/75 hover:bg-[#161626]/95 border border-white/[0.07] hover:border-white/20 md:backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.8)] overflow-hidden"
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${dest.glow} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
                   <div className="relative z-10 flex items-center sm:flex-col sm:items-start gap-2.5 sm:gap-2">
@@ -146,13 +147,16 @@ export default function HomePage() {
         {/* Recently Played Across Music, Audiobooks, Podcasts & 4K Videos */}
         <RecentlyPlayedSection />
 
+        {/* Public Member Playlists Discoverable & Playable Platform-Wide */}
+        <PublicPlaylistsShelf />
+
         {/* Agentic AI Recommendations — New & Similar Content Across All Media */}
         <AgenticDiscoveryDeck mode="all" />
 
         {/* Cultural & Sonic System Spotlight Card */}
         <section className="specular-edge relative overflow-hidden glass-panel p-6 sm:p-9 rounded-3xl bg-gradient-to-br from-[#141026]/90 via-[#0c0c16]/90 to-[#120f1c]/90 space-y-5">
-          <div className="pointer-events-none absolute -right-24 -top-24 w-72 h-72 rounded-full bg-brand-gold/12 blur-[90px]" />
-          <div className="pointer-events-none absolute -left-24 -bottom-24 w-72 h-72 rounded-full bg-brand-purple/15 blur-[90px]" />
+          <div className="hidden md:block pointer-events-none absolute -right-24 -top-24 w-72 h-72 rounded-full bg-brand-gold/12 blur-[90px]" />
+          <div className="hidden md:block pointer-events-none absolute -left-24 -bottom-24 w-72 h-72 rounded-full bg-brand-purple/15 blur-[90px]" />
 
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-3.5 max-w-3xl">

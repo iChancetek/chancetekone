@@ -46,9 +46,20 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [isMobileScreen, setIsMobileScreen] = useState(false);
+  const videoRef = React.useRef<HTMLVideoElement | null>(null);
 
   const cleanVideoUrl = typeof videoUrl === 'string' && videoUrl.trim() ? videoUrl.trim() : null;
   const cleanAvatarUrl = typeof avatarUrl === 'string' && avatarUrl.trim() ? avatarUrl.trim() : null;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(max-width: 768px)');
+    setIsMobileScreen(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsMobileScreen(e.matches);
+    mq.addEventListener?.('change', onChange);
+    return () => mq.removeEventListener?.('change', onChange);
+  }, []);
 
   // Reset error states whenever media URL props change so newly saved/hydrated media renders immediately
   useEffect(() => {
@@ -66,8 +77,44 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     ? borderClassName
     : 'border border-brand-purple/40 shadow-sm';
 
-  const hasVideo = Boolean(cleanVideoUrl && showVideo && !videoError);
+  const isSmallNavAvatar = size === 'xs' || size === 'sm' || size === 'md';
+  // On mobile phones, avoid running continuous background H.264 decoders on tiny header/nav avatars
+  const allowLiveVideo = Boolean(cleanVideoUrl && showVideo && !videoError && !(isMobileScreen && isSmallNavAvatar));
+  const hasVideo = allowLiveVideo;
   const hasImage = Boolean(cleanAvatarUrl && !imageError);
+
+  // Pause video avatars when tab is hidden or avatar scrolls off-screen (eliminates background GPU/decoder heat)
+  useEffect(() => {
+    if (!hasVideo) return;
+    const el = videoRef.current;
+    if (!el || typeof window === 'undefined') return;
+    let isVisible = true;
+    const sync = () => {
+      if (document.hidden || !isVisible) {
+        el.pause();
+      } else {
+        el.play().catch(() => {});
+      }
+    };
+    const observer =
+      typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver(
+            (entries) => {
+              isVisible = Boolean(entries[0]?.isIntersecting);
+              sync();
+            },
+            { threshold: 0.1 }
+          )
+        : null;
+    observer?.observe(el);
+    document.addEventListener('visibilitychange', sync);
+    sync();
+    return () => {
+      observer?.disconnect();
+      document.removeEventListener('visibilitychange', sync);
+      el.pause();
+    };
+  }, [hasVideo, cleanVideoUrl]);
 
   return (
     <div
@@ -78,6 +125,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     >
       {hasVideo ? (
         <video
+          ref={videoRef}
           key={cleanVideoUrl!}
           src={cleanVideoUrl!}
           poster={
@@ -85,14 +133,10 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
               ? cleanAvatarUrl
               : undefined
           }
-          autoPlay
           loop
           muted
           playsInline
-          preload="auto"
-          onLoadedData={(e) => {
-            e.currentTarget.play().catch(() => {});
-          }}
+          preload="metadata"
           onError={() => setVideoError(true)}
           className="w-full h-full object-cover"
         />

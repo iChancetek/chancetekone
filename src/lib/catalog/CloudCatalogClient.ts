@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ChanceTEK One — Cloud Catalog Client (browser)
  *
  * Keeps every browser in sync with the shared catalog stored in Firestore/Storage:
@@ -24,7 +24,7 @@ import {
 } from './cloudShared';
 
 const AUTH_SESSION_KEY = 'spades_auth_session_v2'; // mirrors AuthContext
-const POLL_INTERVAL_MS = 12_000;
+const POLL_INTERVAL_MS = 60_000; // 60s idle poll lets mobile cellular/Wi-Fi radios sleep; Firestore onSnapshot + focus push instant updates
 const RETRY_DELAYS_MS = [3_000, 8_000, 20_000, 60_000];
 const POST_CHUNK = 150;
 const MAX_UPLOAD_BYTES = 30 * 1024 * 1024; // Cloud Run request ceiling is 32 MiB

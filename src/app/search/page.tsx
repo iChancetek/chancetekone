@@ -1,30 +1,44 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Search as SearchIcon, Sparkles, Music, Video as VideoIcon, BookOpen, Users, ShoppingBag } from 'lucide-react';
+import { Search as SearchIcon, Sparkles, Music, Video as VideoIcon, BookOpen, Users, ShoppingBag, ListMusic, Play, Globe } from 'lucide-react';
 import { MOCK_ARTISTS, MOCK_VIDEOS, MOCK_AUDIOBOOKS, MOCK_PRODUCTS } from '@/lib/mockData';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
 import { MediaCatalogService } from '@/lib/media/MediaCatalogService';
+import { PlaylistService } from '@/lib/playlist/PlaylistService';
+import { usePlayer } from '@/lib/player/PlayerContext';
 import { filterAndRankTracks, matchesGenericMediaSearch } from '@/lib/search/universalSearch';
 import { MediaCard } from '@/components/media/MediaCard';
 import { TrackRow } from '@/components/media/TrackRow';
 import { Track, Artist } from '@/types/media';
+import { Playlist } from '@/types/playlist';
 
 function SearchContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
+  const { playPlaylist } = usePlayer();
 
   const [query, setQuery] = useState(initialQuery);
-  const [activeTab, setActiveTab] = useState<'all' | 'music' | 'videos' | 'audiobooks' | 'artists' | 'merch'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'music' | 'playlists' | 'videos' | 'audiobooks' | 'artists' | 'merch'>('all');
   const [catalogTracks, setCatalogTracks] = useState<Track[]>(() => MusicCatalogService.getAllTracks());
+  const [publicPlaylists, setPublicPlaylists] = useState<Playlist[]>(() => PlaylistService.getPublicPlaylists({ sortBy: 'recent' }));
 
   useEffect(() => {
     setCatalogTracks(MusicCatalogService.getAllTracks());
     const unsub = MusicCatalogService.subscribe(() => {
       setCatalogTracks(MusicCatalogService.getAllTracks());
     });
-    return () => unsub();
+    const syncPl = () => setPublicPlaylists(PlaylistService.getPublicPlaylists({ sortBy: 'recent' }));
+    syncPl();
+    void PlaylistService.syncFromServer(false);
+    const unsubPl = PlaylistService.subscribe(syncPl);
+    return () => {
+      unsub();
+      unsubPl();
+    };
   }, []);
 
   useEffect(() => {
@@ -90,6 +104,17 @@ function SearchContent() {
     [allAudiobooks, query]
   );
 
+  const matchedPlaylists = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return publicPlaylists;
+    return publicPlaylists.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        (p.description || '').toLowerCase().includes(q) ||
+        (p.ownerName || '').toLowerCase().includes(q)
+    );
+  }, [publicPlaylists, query]);
+
   const matchedProducts = useMemo(
     () => MOCK_PRODUCTS.filter((p) => matchesGenericMediaSearch(p, query)),
     [query]
@@ -97,6 +122,7 @@ function SearchContent() {
 
   const totalMatches =
     matchedTracks.length +
+    matchedPlaylists.length +
     matchedArtists.length +
     matchedVideos.length +
     matchedAudiobooks.length +
@@ -127,6 +153,7 @@ function SearchContent() {
           {[
             { id: 'all', label: `All (${totalMatches})` },
             { id: 'music', label: `Tracks (${matchedTracks.length})`, icon: Music },
+            { id: 'playlists', label: `Playlists (${matchedPlaylists.length})`, icon: ListMusic },
             { id: 'artists', label: `Artists (${matchedArtists.length})`, icon: Users },
             { id: 'videos', label: `Videos (${matchedVideos.length})`, icon: VideoIcon },
             { id: 'audiobooks', label: `Audiobooks (${matchedAudiobooks.length})`, icon: BookOpen },
@@ -136,8 +163,8 @@ function SearchContent() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${activeTab === tab.id
-                  ? 'bg-brand-purple text-white shadow-md'
-                  : 'bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white'
+                ? 'bg-brand-purple text-white shadow-md'
+                : 'bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white'
                 }`}
             >
               {tab.label}
@@ -163,6 +190,55 @@ function SearchContent() {
               <div className="divide-y divide-white/5">
                 {matchedTracks.map((track, i) => (
                   <TrackRow key={track.id} track={track} index={i} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Public Playlists Section */}
+          {(activeTab === 'all' || activeTab === 'playlists') && matchedPlaylists.length > 0 && (
+            <section className="space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                <Globe className="w-4 h-4" />
+                <span>Public Member Playlists</span>
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {matchedPlaylists.map((pl) => (
+                  <div
+                    key={pl.id}
+                    className="group glass-card p-3 rounded-2xl border border-white/5 hover:border-brand-gold/40 transition-all flex flex-col justify-between"
+                  >
+                    <Link href={`/playlists/${pl.id}`} className="block">
+                      <div className="relative aspect-square w-full rounded-xl overflow-hidden mb-2.5 border border-white/10 bg-black/50">
+                        <Image
+                          src={pl.coverUrl || '/images/studio_cover.jpg'}
+                          alt={pl.name}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            playPlaylist(pl);
+                          }}
+                          disabled={pl.items.length === 0}
+                          className="absolute bottom-2 right-2 w-10 h-10 rounded-full bg-gradient-to-r from-brand-gold to-brand-amber text-black flex items-center justify-center shadow-lg hover:scale-110 transition-transform disabled:opacity-40 cursor-pointer"
+                          aria-label={`Play ${pl.name}`}
+                        >
+                          <Play className="w-4 h-4 fill-current ml-0.5" />
+                        </button>
+                      </div>
+                      <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-brand-gold truncate">
+                        {pl.name}
+                      </h4>
+                    </Link>
+                    <div className="flex items-center justify-between text-[11px] text-neutral-400 mt-1">
+                      <span className="truncate">By {pl.ownerName}</span>
+                      <span className="text-brand-neon font-mono shrink-0">{pl.itemCount} items</span>
+                    </div>
+                  </div>
                 ))}
               </div>
             </section>

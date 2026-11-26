@@ -120,18 +120,36 @@
 }
 
 @media (max-width: 1024px) {
+  /* Mobile Thermal & Battery Shield (iPhone WebKit & Android Chromium):
+     Eliminates continuous full-screen GPU backdrop-filter Gaussian blurs, giant blur orbs,
+     and decorative 120Hz compositor-waking infinite animations while preserving exact colors. */
   .glass-panel {
     background: rgba(13, 13, 22, 0.94);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
   .glass-card {
     background: rgba(18, 18, 30, 0.92);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .pointer-events-none[class*="blur-["] {
+    display: none !important;
+  }
+  [class*="blur-["] {
+    filter: none !important;
+    -webkit-filter: none !important;
   }
   .animate-aurora-slow,
-  .animate-aurora-reverse {
+  .animate-aurora-reverse,
+  .animate-pulse,
+  .animate-ping,
+  .animate-bounce,
+  .animate-spin-slow {
     animation: none !important;
   }
 }
@@ -299,15 +317,15 @@
   scrollbar-width: none;
 }
 
-/* Equalizer Bars Animation */
+/* Equalizer Bars Animation (GPU transform-only: zero layout reflows) */
 @keyframes eq {
-  0%, 100% { height: 4px; }
-  50% { height: 16px; }
+  0%, 100% { transform: scaleY(0.28); }
+  50% { transform: scaleY(1); }
 }
 
-.animate-eq-1 { animation: eq 0.8s ease-in-out infinite; }
-.animate-eq-2 { animation: eq 0.6s ease-in-out infinite 0.2s; }
-.animate-eq-3 { animation: eq 1s ease-in-out infinite 0.4s; }
+.animate-eq-1 { height: 14px; transform-origin: bottom; animation: eq 0.9s ease-in-out infinite; }
+.animate-eq-2 { height: 14px; transform-origin: bottom; animation: eq 0.7s ease-in-out infinite 0.2s; }
+.animate-eq-3 { height: 14px; transform-origin: bottom; animation: eq 1.1s ease-in-out infinite 0.4s; }
 
 /* Radio Station Wave Bar Animation */
 @keyframes radioBar {
@@ -1304,7 +1322,7 @@ html.light ::-webkit-scrollbar-thumb:hover {
   background: #fa233b;
 }
 
-/* Mobile PWA GPU Compositor Acceleration for Light Mode (eliminates 36px-38px backdrop-filter stalls on iPhone & Android) */
+/* Mobile PWA Thermal & GPU Compositor Protection for Light Mode (zero live backdrop-filter stalls/heat on iPhone & Android) */
 @media (max-width: 1024px) {
   html.light aside,
   html.light header,
@@ -1313,8 +1331,8 @@ html.light ::-webkit-scrollbar-thumb:hover {
   html.light .glass-panel,
   html.light .glass-card,
   html.light [data-genre-banner="true"] {
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 }
 

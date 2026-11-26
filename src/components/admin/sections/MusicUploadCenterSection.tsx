@@ -59,7 +59,7 @@ import { MusicUploadService } from '@/lib/admin/MusicUploadService';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
 import { MusicRecoveryService } from '@/lib/music/MusicRecoveryService';
 import { useAuth } from '@/lib/auth/AuthContext';
-import { usePlayer } from '@/lib/player/PlayerContext';
+import { usePlayer, usePlayerTime } from '@/lib/player/PlayerContext';
 import { ChangeCoverArtModal } from '@/components/admin/modals/ChangeCoverArtModal';
 import { CloudCatalogSyncBanner } from '@/components/admin/CloudCatalogSyncBanner';
 import { AudioStorageService } from '@/lib/audio/AudioStorageService';
@@ -134,7 +134,8 @@ export const MusicUploadCenterSection: React.FC<MusicUploadCenterSectionProps> =
   onOpenRecoverySection,
 }) => {
   const { profile } = useAuth();
-  const { playTrack, currentTrack, isPlaying, pause, resume, currentTime, duration, seek } = usePlayer();
+  const { playTrack, currentTrack, isPlaying, pause, resume, duration, seek } = usePlayer();
+  const { currentTime } = usePlayerTime();
   const [listeningItemId, setListeningItemId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const folderInputRef = useRef<HTMLInputElement | null>(null);

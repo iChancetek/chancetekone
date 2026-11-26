@@ -127,10 +127,48 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoSlideEnabled, setIsAutoSlideEnabled] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
+  const [isBannerVisible, setIsBannerVisible] = useState(true);
+  const [isTabVisible, setIsTabVisible] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [discussionSlide, setDiscussionSlide] = useState<ProjectBannerSlide | null>(null);
   const [, setCommentRefresh] = useState(0);
+  const bannerRootRef = React.useRef<HTMLDivElement | null>(null);
+  const activeVideoRef = React.useRef<HTMLVideoElement | null>(null);
+
+  // Pause carousel timer & hero video automatically when scrolled off-screen or tab is hidden (saves mobile battery & heat)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onVis = () => {
+      const visible = !document.hidden;
+      setIsTabVisible(visible);
+      if (!visible && activeVideoRef.current && !activeVideoRef.current.paused) {
+        activeVideoRef.current.pause();
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+
+    const node = bannerRootRef.current;
+    const observer =
+      node && typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver(
+            (entries) => {
+              const inView = Boolean(entries[0]?.isIntersecting);
+              setIsBannerVisible(inView);
+              if (!inView && activeVideoRef.current && !activeVideoRef.current.paused) {
+                activeVideoRef.current.pause();
+              }
+            },
+            { threshold: 0.1 }
+          )
+        : null;
+    if (observer && node) observer.observe(node);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVis);
+      observer?.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const unsub = SocialCommentService.subscribeAll(() => {
@@ -175,16 +213,16 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
     setIsAutoSlideEnabled((prev) => !prev);
   };
 
-  // Automatic slideshow timer — single setTimeout per slide (ZERO 50ms React re-render loop)
+  // Automatic slideshow timer — single setTimeout per slide (ZERO 50ms React re-render loop; pauses off-screen / hidden tab)
   useEffect(() => {
-    if (!isAutoSlideEnabled || isHovered || Boolean(discussionSlide)) return;
+    if (!isAutoSlideEnabled || isHovered || Boolean(discussionSlide) || !isBannerVisible || !isTabVisible) return;
 
     const timer = setTimeout(() => {
       nextSlide();
     }, AUTOPLAY_INTERVAL);
 
     return () => clearTimeout(timer);
-  }, [isAutoSlideEnabled, isHovered, discussionSlide, currentIndex, nextSlide]);
+  }, [isAutoSlideEnabled, isHovered, discussionSlide, isBannerVisible, isTabVisible, currentIndex, nextSlide]);
 
   const handlePlayToggle = () => {
     if (currentTrack?.id === currentSlide.track.id) {
@@ -204,16 +242,17 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
 
   return (
     <div
+      ref={bannerRootRef}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className="specular-edge relative rounded-[28px] overflow-hidden glass-panel p-5 sm:p-8 md:p-10 bg-gradient-to-br from-[#140e24]/95 via-[#0b0a14]/95 to-[#06060b]/98 group"
     >
-      {/* Subtle Ambient Stage Glows */}
-      <div className="pointer-events-none absolute -top-24 -right-20 w-80 h-80 rounded-full bg-brand-purple/20 blur-[110px]" />
-      <div className="pointer-events-none absolute -bottom-24 -left-20 w-72 h-72 rounded-full bg-brand-gold/12 blur-[110px]" />
+      {/* Subtle Ambient Stage Glows (desktop only — keeps mobile GPU ice-cool) */}
+      <div className="hidden md:block pointer-events-none absolute -top-24 -right-20 w-80 h-80 rounded-full bg-brand-purple/20 blur-[110px]" />
+      <div className="hidden md:block pointer-events-none absolute -bottom-24 -left-20 w-72 h-72 rounded-full bg-brand-gold/12 blur-[110px]" />
 
-      {/* Auto-Slide Progress Bar (pure GPU CSS animation — zero JS timer re-renders) */}
-      {isAutoSlideEnabled && !isHovered && !discussionSlide && (
+      {/* Auto-Slide Progress Bar (pure GPU CSS animation — paused when off-screen or tab hidden) */}
+      {isAutoSlideEnabled && !isHovered && !discussionSlide && isBannerVisible && isTabVisible && (
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-white/[0.06] overflow-hidden z-30 pointer-events-none">
           <div
             key={`progress-${currentIndex}`}
@@ -368,16 +407,23 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
               }`}
             >
               {currentSlide.id === 'mi-vida-loca' && (
-                /* Soft ambient side fill so portrait 9:16 video displays 100% uncropped (legs, street & skyline) */
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src="/images/video-thumbs/OrlandoFigueroa.jpg"
-                  alt=""
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-45"
-                />
+                /* Soft ambient side fill (blurred image on desktop, lightweight gradient on mobile to prevent GPU video-over-blur heat) */
+                <>
+                  <div
+                    aria-hidden="true"
+                    className="md:hidden pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(90,62,40,0.45)_0%,_rgba(12,10,18,0.96)_72%,_#000_100%)]"
+                  />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/video-thumbs/OrlandoFigueroa.jpg"
+                    alt=""
+                    aria-hidden="true"
+                    className="hidden md:block pointer-events-none absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-45"
+                  />
+                </>
               )}
               <video
+                ref={activeVideoRef}
                 key={`video-${currentSlide.id}`}
                 src={currentSlide.videoUrl}
                 poster={

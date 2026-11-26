@@ -778,8 +778,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     window.addEventListener('storage', handleStorage);
 
-    // 4. Session validity heartbeat & focus listener (ensures admin logout takes effect on inactive tabs immediately when user interacts)
+    // 4. Session validity heartbeat & focus listener (skips hidden tabs & uses 90s cadence to avoid waking mobile CPU/radios)
     const verifySessionState = () => {
+      if (typeof document !== 'undefined' && document.hidden) return;
       const cur = getActiveSession();
       if (!cur) return;
       const adminUser =
@@ -816,7 +817,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     window.addEventListener('focus', verifySessionState);
-    const heartbeat = setInterval(verifySessionState, 20000);
+    const heartbeat = setInterval(verifySessionState, 90000);
 
     // 5. Firebase Auth state listener
     const unsubscribeFb = onAuthStateChanged(auth, (fbUser) => {

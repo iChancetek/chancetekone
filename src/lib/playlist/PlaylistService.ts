@@ -7,6 +7,10 @@ import { AnalyticsEngine } from '@/lib/analytics/AnalyticsEngine';
 import { FavoritesService } from '@/lib/favorites/FavoritesService';
 import { EngagementMetricsService } from '@/lib/analytics/EngagementMetricsService';
 import { AuditLogger } from '@/lib/admin/AuditLogger';
+import { auth } from '@/lib/firebase/client';
+
+const AUTH_SESSION_STORAGE_KEY = 'spades_auth_session_v2';
+const PLAYLIST_SYNC_POLL_MS = 60_000; // 60s idle poll lets mobile radios sleep; mutations, focus & route mounts sync immediately
 
 export interface PlaylistMediaInput {
   mediaId: string;
@@ -57,6 +61,14 @@ const LEGACY_SYNTHETIC_PLAYLIST_IDS = new Set<string>([
 
 export class PlaylistService {
   private static listeners: Set<() => void> = new Set();
+  private static syncStarted = false;
+  private static lastServerRevision: number | null = null;
+  private static lastSyncedAt = 0;
+  private static isFetchingServer = false;
+  private static pendingUpserts = new Map<string, Playlist>();
+  private static pendingDeletes = new Set<string>();
+  private static pushedLegacyIds = new Set<string>();
+  private static syncIdentity: { userId?: string; email?: string; isAdmin?: boolean } = {};
 
   public static subscribe(listener: () => void): () => void {
     this.listeners.add(listener);
@@ -73,6 +85,324 @@ export class PlaylistService {
         console.error('Error in playlist subscriber:', err);
       }
     });
+  }
+
+  private static readSessionIdentity(): { userId?: string; email?: string; isAdmin?: boolean } {
+    if (typeof window === 'undefined') return this.syncIdentity;
+    try {
+      const raw = localStorage.getItem(AUTH_SESSION_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const userId = parsed?.profile?.id || parsed?.userId || this.syncIdentity.userId;
+        const email = (parsed?.profile?.email || parsed?.email || this.syncIdentity.email || '').trim().toLowerCase() || undefined;
+        const role = parsed?.profile?.role;
+        const isAdmin =
+          Boolean(this.syncIdentity.isAdmin) ||
+          role === 'admin' ||
+          role === 'super_admin' ||
+          role === 'executive';
+        return { userId, email, isAdmin };
+      }
+    } catch {
+      /* ignore */
+    }
+    if (auth?.currentUser) {
+      return {
+        userId: this.syncIdentity.userId || auth.currentUser.uid,
+        email: this.syncIdentity.email || auth.currentUser.email?.trim().toLowerCase() || undefined,
+        isAdmin: this.syncIdentity.isAdmin,
+      };
+    }
+    return this.syncIdentity;
+  }
+
+  private static async buildSyncHeaders(
+    includeContentType = true,
+    fallbackActor?: { userId?: string; email?: string }
+  ): Promise<Record<string, string>> {
+    const headers: Record<string, string> = {};
+    if (includeContentType) {
+      headers['Content-Type'] = 'application/json';
+    }
+    const id = this.readSessionIdentity();
+    const effectiveUserId = id.userId || fallbackActor?.userId;
+    const effectiveEmail = id.email || fallbackActor?.email?.trim().toLowerCase();
+    if (effectiveUserId) headers['x-user-id'] = effectiveUserId;
+    if (effectiveEmail) {
+      headers['x-user-email'] = effectiveEmail;
+      if (id.isAdmin) headers['x-admin-email'] = effectiveEmail;
+    }
+    try {
+      if (auth?.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+      }
+    } catch {
+      /* fall back to session headers */
+    }
+    return headers;
+  }
+
+  public static setSyncIdentity(identity: { userId?: string; email?: string; isAdmin?: boolean }): void {
+    const nextEmail = identity.email?.trim().toLowerCase() || undefined;
+    const changed =
+      this.syncIdentity.userId !== identity.userId ||
+      this.syncIdentity.email !== nextEmail ||
+      Boolean(this.syncIdentity.isAdmin) !== Boolean(identity.isAdmin);
+    this.syncIdentity = {
+      userId: identity.userId,
+      email: nextEmail,
+      isAdmin: identity.isAdmin,
+    };
+    if (changed && typeof window !== 'undefined') {
+      void this.syncFromServer(true);
+    }
+  }
+
+  public static startCloudSync(): void {
+    if (this.syncStarted || typeof window === 'undefined') return;
+    this.syncStarted = true;
+
+    void this.syncFromServer(true);
+
+    window.setInterval(() => {
+      if (!document.hidden) {
+        void this.syncFromServer(false);
+      }
+    }, PLAYLIST_SYNC_POLL_MS);
+
+    window.addEventListener('focus', () => {
+      if (Date.now() - this.lastSyncedAt > 6_000) {
+        void this.syncFromServer(false);
+      }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && Date.now() - this.lastSyncedAt > 6_000) {
+        void this.syncFromServer(false);
+      }
+    });
+
+    window.addEventListener('online', () => {
+      void this.flushPendingToServer();
+      void this.syncFromServer(true);
+    });
+  }
+
+  private static async pushPlaylistToServer(playlist: Playlist): Promise<void> {
+    if (typeof window === 'undefined') return;
+    this.pendingDeletes.delete(playlist.id);
+    this.pendingUpserts.set(playlist.id, playlist);
+    try {
+      const headers = await this.buildSyncHeaders(true, {
+        userId: playlist.ownerId,
+        email: playlist.ownerEmail,
+      });
+      const res = await fetch('/api/playlists', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ action: 'upsert', playlist }),
+      });
+      if (res.ok) {
+        const body = await res.json().catch(() => null);
+        if (this.pendingUpserts.get(playlist.id) === playlist) {
+          this.pendingUpserts.delete(playlist.id);
+        }
+        if (typeof body?.revision === 'number') {
+          this.lastServerRevision = body.revision;
+        }
+      }
+    } catch (err) {
+      console.warn('[PlaylistService] Background server upsert deferred:', err);
+    }
+  }
+
+  private static async pushDeleteToServer(playlistId: string, permanent = false): Promise<void> {
+    if (typeof window === 'undefined') return;
+    this.pendingUpserts.delete(playlistId);
+    this.pendingDeletes.add(playlistId);
+    try {
+      const headers = await this.buildSyncHeaders(true);
+      const res = await fetch('/api/playlists', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ action: 'delete', playlistId, permanent }),
+      });
+      if (res.ok) {
+        const body = await res.json().catch(() => null);
+        this.pendingDeletes.delete(playlistId);
+        if (typeof body?.revision === 'number') {
+          this.lastServerRevision = body.revision;
+        }
+      }
+    } catch (err) {
+      console.warn('[PlaylistService] Background server delete deferred:', err);
+    }
+  }
+
+  private static async pushStatToServer(
+    playlistId: string,
+    field: 'plays' | 'saves' | 'likes' | 'shares',
+    delta = 1
+  ): Promise<void> {
+    if (typeof window === 'undefined') return;
+    try {
+      await fetch('/api/playlists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'stat', playlistId, field, delta }),
+      });
+    } catch {
+      /* non-fatal */
+    }
+  }
+
+  private static async flushPendingToServer(): Promise<void> {
+    const upserts = Array.from(this.pendingUpserts.values());
+    for (const pl of upserts) {
+      await this.pushPlaylistToServer(pl);
+    }
+    const deletes = Array.from(this.pendingDeletes.values());
+    for (const id of deletes) {
+      await this.pushDeleteToServer(id, false);
+    }
+  }
+
+  public static async syncFromServer(force = false): Promise<Playlist[]> {
+    if (typeof window === 'undefined') return [];
+    if (this.isFetchingServer) return this.loadAll();
+    this.isFetchingServer = true;
+    try {
+      if (this.pendingUpserts.size > 0 || this.pendingDeletes.size > 0) {
+        await this.flushPendingToServer();
+      }
+
+      const headers = await this.buildSyncHeaders(false);
+      const url =
+        !force && this.lastServerRevision !== null
+          ? `/api/playlists?rev=${this.lastServerRevision}`
+          : '/api/playlists';
+      const res = await fetch(url, { headers, cache: 'no-store' });
+      if (!res.ok) return this.loadAll();
+
+      const body = await res.json().catch(() => null);
+      this.lastSyncedAt = Date.now();
+      if (!body?.ok) return this.loadAll();
+      if (body.unchanged) return this.loadAll();
+
+      const serverPlaylists: Playlist[] = Array.isArray(body.playlists) ? body.playlists : [];
+      if (typeof body.revision === 'number') {
+        this.lastServerRevision = body.revision;
+      }
+
+      const localRaw = this.getRawAll();
+      const mergedMap = new Map<string, Playlist>();
+
+      // Start with local playlists
+      localRaw.forEach((p) => {
+        if (p && p.id) mergedMap.set(p.id, p);
+      });
+
+      const serverIds = new Set<string>();
+      const session = this.readSessionIdentity();
+
+      // Merge authoritative server playlists
+      serverPlaylists.forEach((sp) => {
+        if (!sp || !sp.id || LEGACY_SYNTHETIC_PLAYLIST_IDS.has(sp.id)) return;
+        serverIds.add(sp.id);
+        if (this.pendingDeletes.has(sp.id) || this.pendingUpserts.has(sp.id)) return;
+
+        const existing = mergedMap.get(sp.id);
+        if (!existing) {
+          mergedMap.set(sp.id, this.sanitizePlaylist(sp));
+          return;
+        }
+
+        const isOwnedLocally = this.canUserModifyPlaylist(
+          existing,
+          session.userId,
+          false,
+          session.email
+        );
+        const existingTs = Date.parse(existing.updatedAt || existing.createdAt || '') || 0;
+        const serverTs = Date.parse(sp.updatedAt || sp.createdAt || '') || 0;
+        // For other users' playlists, always take latest server state; for own playlists, newest wins
+        if (!isOwnedLocally || serverTs >= existingTs) {
+          mergedMap.set(sp.id, this.sanitizePlaylist(sp));
+        }
+      });
+
+      // Remove public playlists from OTHER users that were deleted or made private on the server
+      const finalList: Playlist[] = [];
+      mergedMap.forEach((pl) => {
+        if (pl.isDeleted) {
+          finalList.push(pl);
+          return;
+        }
+        const isOwnedOrAdmin = this.canUserModifyPlaylist(
+          pl,
+          session.userId,
+          false,
+          session.email
+        );
+        if (!serverIds.has(pl.id) && !isOwnedOrAdmin && !this.pendingUpserts.has(pl.id)) {
+          // Was a remote user's public/shared playlist that is no longer visible on server
+          return;
+        }
+        finalList.push(pl);
+      });
+
+      // Auto-migrate any existing local-only playlists created by the active user up to the server
+      if (session.userId || session.email) {
+        const localOnlyToMigrate = finalList.filter((pl) => {
+          if (pl.isDeleted || serverIds.has(pl.id) || this.pushedLegacyIds.has(pl.id)) return false;
+          return this.canUserModifyPlaylist(pl, session.userId, false, session.email);
+        });
+        localOnlyToMigrate.forEach((pl) => {
+          this.pushedLegacyIds.add(pl.id);
+          void this.pushPlaylistToServer(pl);
+        });
+      }
+
+      const prevJson = JSON.stringify(localRaw);
+      const nextJson = JSON.stringify(finalList);
+      if (prevJson !== nextJson) {
+        this.saveRaw(finalList);
+      }
+
+      return finalList.filter((p) => !p.isDeleted);
+    } catch {
+      return this.loadAll();
+    } finally {
+      this.isFetchingServer = false;
+    }
+  }
+
+  public static async fetchPlaylistFromServer(playlistId: string): Promise<Playlist | null> {
+    if (typeof window === 'undefined' || !playlistId) return null;
+    try {
+      const headers = await this.buildSyncHeaders(false);
+      const res = await fetch(`/api/playlists?id=${encodeURIComponent(playlistId)}`, {
+        headers,
+        cache: 'no-store',
+      });
+      if (!res.ok) return null;
+      const body = await res.json().catch(() => null);
+      if (!body?.ok || !body.playlist) return null;
+
+      const remotePl = this.sanitizePlaylist(body.playlist as Playlist);
+      const raw = this.getRawAll();
+      const idx = raw.findIndex((p) => p.id === remotePl.id);
+      if (idx >= 0) {
+        raw[idx] = remotePl;
+      } else {
+        raw.unshift(remotePl);
+      }
+      this.saveRaw(raw);
+      return remotePl;
+    } catch {
+      return null;
+    }
   }
 
   private static sanitizePlaylist(p: Playlist): Playlist {
@@ -260,7 +590,7 @@ export class PlaylistService {
       return (
         (Boolean(userId) && p.ownerId === userId) ||
         Boolean(normalizedEmail && p.ownerEmail && p.ownerEmail.toLowerCase() === normalizedEmail) ||
-        (Boolean(userId) && p.ownerId === 'usr-member' && !p.ownerEmail)
+        (userId === 'usr-member' && p.ownerId === 'usr-member' && !p.ownerEmail)
       );
     });
     return this.applyFilter(all, filter);
@@ -423,6 +753,7 @@ export class PlaylistService {
 
     all.unshift(newPlaylist);
     this.saveAll(all);
+    void this.pushPlaylistToServer(newPlaylist);
 
     AnalyticsEngine.trackEvent('playlist_created', {
       playlistId: newPlaylist.id,
@@ -474,6 +805,7 @@ export class PlaylistService {
 
     all[idx] = updated;
     this.saveAll(all);
+    void this.pushPlaylistToServer(updated);
     return { success: true, playlist: updated };
   }
 
@@ -501,6 +833,7 @@ export class PlaylistService {
       updatedAt: new Date().toISOString(),
     };
     this.saveRaw(raw);
+    void this.pushDeleteToServer(playlistId, false);
 
     // Archive into 45-day Playlist Recovery Vault
     const vault = this.loadRecoveryVault();
@@ -576,6 +909,7 @@ export class PlaylistService {
     }
 
     this.saveRaw(raw);
+    void this.pushPlaylistToServer(restoredPlaylist);
 
     // Remove from recovery vault
     if (recIdx >= 0) {
@@ -612,6 +946,7 @@ export class PlaylistService {
     const raw = this.getRawAll();
     const filteredRaw = raw.filter((p) => p.id !== playlistId);
     this.saveRaw(filteredRaw);
+    void this.pushDeleteToServer(playlistId, true);
 
     try {
       AuditLogger.logAction({
@@ -670,6 +1005,7 @@ export class PlaylistService {
 
     all[idx] = playlist;
     this.saveAll(all);
+    void this.pushPlaylistToServer(playlist);
     return { success: true, item: newItem };
   }
 
@@ -705,6 +1041,7 @@ export class PlaylistService {
 
     all[idx] = playlist;
     this.saveAll(all);
+    void this.pushPlaylistToServer(playlist);
     return { success: true };
   }
 
@@ -741,6 +1078,7 @@ export class PlaylistService {
 
     all[idx] = playlist;
     this.saveAll(all);
+    void this.pushPlaylistToServer(playlist);
     return { success: true, items: reordered };
   }
 
@@ -766,6 +1104,7 @@ export class PlaylistService {
     if (p) {
       p.stats.likes = Math.max(0, p.stats.likes + (isLiked ? -1 : 1));
       this.saveAll(all);
+      void this.pushStatToServer(playlistId, 'likes', isLiked ? -1 : 1);
 
       EngagementMetricsService.recordInteraction({
         contentId: playlistId,
@@ -809,6 +1148,7 @@ export class PlaylistService {
     if (p) {
       p.stats.saves = Math.max(0, p.stats.saves + (isSaved ? -1 : 1));
       this.saveAll(all);
+      void this.pushStatToServer(playlistId, 'saves', isSaved ? -1 : 1);
     }
 
     if (!isSaved) {
@@ -827,6 +1167,7 @@ export class PlaylistService {
       p.stats.plays += 1;
       this.saveAll(all);
     }
+    void this.pushStatToServer(playlistId, 'plays', 1);
   }
 
   public static recordPlaylistShare(playlistId: string): void {
@@ -836,6 +1177,7 @@ export class PlaylistService {
       p.stats.shares += 1;
       this.saveAll(all);
     }
+    void this.pushStatToServer(playlistId, 'shares', 1);
   }
 
   public static shareWithUser(
@@ -866,6 +1208,7 @@ export class PlaylistService {
       playlist.updatedAt = new Date().toISOString();
       all[idx] = playlist;
       this.saveAll(all);
+      void this.pushPlaylistToServer(playlist);
 
       AnalyticsEngine.trackEvent('playlist_share', {
         playlistId: playlist.id,
@@ -899,6 +1242,7 @@ export class PlaylistService {
       playlist.updatedAt = new Date().toISOString();
       all[idx] = playlist;
       this.saveAll(all);
+      void this.pushPlaylistToServer(playlist);
     }
 
     return { success: true, sharedWith: playlist.sharedWith || [] };

@@ -187,6 +187,7 @@ function LibraryContent() {
       }
     };
     loadPlaylists();
+    void PlaylistService.syncFromServer(false);
     const unsubPlaylists = PlaylistService.subscribe(loadPlaylists);
     const onPlaylistsEvent = () => loadPlaylists();
     window.addEventListener('playlists-updated', onPlaylistsEvent);

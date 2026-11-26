@@ -21,7 +21,7 @@ interface MediaCardProps {
   type: 'track' | 'album' | 'artist' | 'video' | 'audiobook';
 }
 
-export const MediaCard: React.FC<MediaCardProps> = ({ item, type }) => {
+export const MediaCard: React.FC<MediaCardProps> = React.memo(({ item, type }) => {
   const { playTrack } = usePlayer();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -514,4 +514,5 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, type }) => {
       )}
     </>
   );
-};
+});
+MediaCard.displayName = 'MediaCard';

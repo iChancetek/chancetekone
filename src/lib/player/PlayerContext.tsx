@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Track, Audiobook, AudiobookChapter, Video } from '@/types/media';
 import { Playlist, PlaylistItem } from '@/types/playlist';
@@ -56,7 +56,6 @@ interface PlayerContextType {
   currentChapter: AudiobookChapter | null;
   activeVideoModal: Video | null;
   isPlaying: boolean;
-  currentTime: number;
   duration: number;
   volume: number;
   isMuted: boolean;
@@ -101,7 +100,46 @@ interface PlayerContextType {
   requireStreamAuth: (actionName?: string) => boolean;
 }
 
+interface PlayerTimeContextType {
+  currentTime: number;
+  duration: number;
+}
+
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
+const PlayerTimeContext = createContext<PlayerTimeContextType>({ currentTime: 0, duration: 0 });
+
+/**
+ * Isolated time provider so high-frequency audio `timeupdate` ticks NEVER re-render
+ * PlayerProvider or the 35+ components subscribed to `usePlayer()` (TrackRows, MediaCards,
+ * AppShell, MobileNav, HeroBanner, etc.). Dramatically lowers mobile CPU load & device heat.
+ */
+const PlayerTimeProvider: React.FC<{
+  duration: number;
+  subscribeTime: (fn: (t: number) => void) => () => void;
+  getCurrentTime: () => number;
+  children: React.ReactNode;
+}> = ({ duration, subscribeTime, getCurrentTime, children }) => {
+  const [currentTime, setCurrentTime] = useState<number>(() => getCurrentTime());
+
+  useEffect(() => {
+    const unsub = subscribeTime((nextTime) => {
+      setCurrentTime((prev) => (Math.abs(prev - nextTime) < 0.05 && nextTime !== 0 ? prev : nextTime));
+    });
+    const onVisibility = () => {
+      if (typeof document !== 'undefined' && !document.hidden) {
+        setCurrentTime(getCurrentTime());
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      unsub();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [subscribeTime, getCurrentTime]);
+
+  const value = useMemo(() => ({ currentTime, duration }), [currentTime, duration]);
+  return <PlayerTimeContext.Provider value={value}>{children}</PlayerTimeContext.Provider>;
+};
 
 /**
  * Resolves artwork and media URLs to fully qualified absolute URLs.
@@ -311,7 +349,22 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [isPlaying]);
 
   const lastPositionUpdateRef = useRef<number>(0);
-  const [currentTime, setCurrentTime] = useState<number>(0);
+  const lastUiTimeEmitRef = useRef<number>(0);
+  const timeListenersRef = useRef<Set<(t: number) => void>>(new Set());
+  const setCurrentTime = useCallback((nextTime: number) => {
+    timeListenersRef.current.forEach((fn) => {
+      try {
+        fn(nextTime);
+      } catch {}
+    });
+  }, []);
+  const subscribeTime = useCallback((fn: (t: number) => void) => {
+    timeListenersRef.current.add(fn);
+    return () => {
+      timeListenersRef.current.delete(fn);
+    };
+  }, []);
+  const getCurrentTime = useCallback(() => audioRef.current?.currentTime || 0, []);
   const [duration, setDuration] = useState<number>(194);
   const [volume, setVolumeState] = useState<number>(0.8);
   const [isMuted, setIsMuted] = useState<boolean>(false);
@@ -514,11 +567,18 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const onTimeUpdate = () => {
       if (!audio) return;
-      setCurrentTime(audio.currentTime);
-
-      // Throttled MediaSession position update (prevents OS daemon thrashing)
       const now = Date.now();
-      if (now - lastPositionUpdateRef.current > 1000) {
+
+      // Only emit UI progress ticks when tab is visible AND throttled to ~2Hz (500ms)
+      // to keep mobile CPU cool & prevent background battery/thermal drain.
+      const isDocHidden = typeof document !== 'undefined' && document.hidden;
+      if (!isDocHidden && now - lastUiTimeEmitRef.current >= 480) {
+        lastUiTimeEmitRef.current = now;
+        setCurrentTime(audio.currentTime);
+      }
+
+      // Throttled MediaSession position update (every 2s prevents OS daemon thrashing on iOS/Android)
+      if (now - lastPositionUpdateRef.current > 2000) {
         lastPositionUpdateRef.current = now;
         if (
           typeof window !== 'undefined' &&
@@ -1336,30 +1396,66 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       playTrack(track, upcomingTracks, precedingTracks);
     } else if (startItem.mediaType === 'video') {
-      const vid = MOCK_VIDEOS.find((v) => v.id === startItem.mediaId) || {
-        id: startItem.mediaId,
-        title: startItem.title,
-        artistId: 'artist-1',
-        artistName: startItem.artistName,
-        videoUrl: startItem.videoUrl || '/videos/FatherTime4K.mp4',
-        thumbnailUrl: startItem.coverUrl,
-        duration: startItem.duration,
-        views: 0,
-        likeCount: 0,
-        dislikeCount: 0,
-        commentCount: 0,
-        description: 'Playlist video track',
-        category: 'Music Video',
-        releaseDate: '2026-02-28',
-      };
+      const liveVideos = MediaCatalogService.getAllVideos();
+      const matchedPodcast = MediaCatalogService.getAllPodcasts().find((p) => p.id === startItem.mediaId);
+      const vid =
+        liveVideos.find((v) => v.id === startItem.mediaId) ||
+        MOCK_VIDEOS.find((v) => v.id === startItem.mediaId) || {
+          id: startItem.mediaId,
+          title: startItem.title,
+          artistId: 'artist-1',
+          artistName: startItem.artistName,
+          videoUrl: startItem.videoUrl || matchedPodcast?.mediaUrl || '/videos/FatherTime4K.mp4',
+          thumbnailUrl: startItem.coverUrl,
+          duration: startItem.duration,
+          views: 0,
+          likeCount: 0,
+          dislikeCount: 0,
+          commentCount: 0,
+          description: matchedPodcast?.description || 'Playlist video track',
+          category: startItem.genre || 'Music Video',
+          releaseDate: '2026-02-28',
+        };
       if (audioRef.current) audioRef.current.pause();
       setIsPlaying(false);
       setActiveVideoModal(vid);
     } else if (startItem.mediaType === 'audiobook') {
-      const book = MOCK_AUDIOBOOKS.find((b) => b.id === startItem.mediaId) || MOCK_AUDIOBOOKS[0];
-      const chapter =
-        book.chapters.find((c) => c.chapterIndex === (startItem.chapterIndex || 1)) || book.chapters[0];
-      playAudiobookChapter(book, chapter);
+      const liveBooks = MediaCatalogService.getAllAudiobooks();
+      const book =
+        liveBooks.find((b) => b.id === startItem.mediaId) ||
+        MOCK_AUDIOBOOKS.find((b) => b.id === startItem.mediaId) ||
+        liveBooks[0] ||
+        MOCK_AUDIOBOOKS[0];
+      const firstChapter =
+        book?.chapters?.find((c) => c.chapterIndex === (startItem.chapterIndex || 1)) ||
+        book?.chapters?.[0];
+      const firstUrl = startItem.videoUrl || firstChapter?.audioUrl || '';
+      const isVideoBook =
+        book?.mediaFormat === 'video' ||
+        firstUrl.toLowerCase().endsWith('.mp4') ||
+        firstUrl.toLowerCase().endsWith('.mov');
+      if (isVideoBook && firstUrl) {
+        if (audioRef.current) audioRef.current.pause();
+        setIsPlaying(false);
+        setActiveVideoModal({
+          id: book?.id || startItem.mediaId,
+          title: book?.title || startItem.title,
+          artistId: 'author',
+          artistName: book?.author || startItem.artistName,
+          videoUrl: firstUrl,
+          thumbnailUrl: book?.coverUrl || startItem.coverUrl,
+          duration: firstChapter?.duration || startItem.duration || 0,
+          views: 0,
+          likeCount: 0,
+          dislikeCount: 0,
+          commentCount: 0,
+          description: book?.description || 'Audiobook video edition',
+          category: 'Audiobook',
+          releaseDate: '2026-02-28',
+        });
+      } else if (book && firstChapter) {
+        playAudiobookChapter(book, firstChapter);
+      }
     }
   };
 
@@ -1759,7 +1855,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         currentChapter,
         activeVideoModal,
         isPlaying,
-        currentTime,
         duration,
         volume,
         isMuted,
@@ -1802,7 +1897,13 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         requireStreamAuth,
       }}
     >
-      {children}
+      <PlayerTimeProvider
+        duration={duration}
+        subscribeTime={subscribeTime}
+        getCurrentTime={getCurrentTime}
+      >
+        {children}
+      </PlayerTimeProvider>
       <AuthModal
         isOpen={isAuthGateModalOpen}
         onClose={() => setIsAuthGateModalOpen(false)}
@@ -1822,4 +1923,8 @@ export const usePlayer = () => {
   const context = useContext(PlayerContext);
   if (!context) throw new Error('usePlayer must be used within a PlayerProvider');
   return context;
+};
+
+export const usePlayerTime = () => {
+  return useContext(PlayerTimeContext);
 };

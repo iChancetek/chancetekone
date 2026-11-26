@@ -149,13 +149,17 @@ export default function AudiobooksPage() {
           </div>
         </div>
         <div className="relative w-full bg-black overflow-hidden flex items-center justify-center min-h-[420px] h-[72vh] sm:h-[78vh] max-h-[840px]">
-          {/* Soft blurred ambient backdrop so the full 9:16 video displays 100% uncropped from skyline to street */}
+          {/* Soft ambient side fill so the full 9:16 video displays 100% uncropped (lightweight gradient on mobile, blurred frame on desktop) */}
+          <div
+            aria-hidden="true"
+            className="md:hidden pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(90,62,40,0.45)_0%,_rgba(12,10,18,0.96)_72%,_#000_100%)]"
+          />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/video-thumbs/OrlandoFigueroa.jpg"
             alt=""
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-45"
+            className="hidden md:block pointer-events-none absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-45"
           />
           <video
             src="/videos/OrlandoFigueroa.mp4#t=0.5"

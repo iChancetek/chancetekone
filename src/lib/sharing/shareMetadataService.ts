@@ -133,7 +133,7 @@ export function resolveAuthenticCover(type: ShareContentType, item: any): string
         if (resolved && !isDefaultOrInvalidCover(resolved) && !isGenericGenreCover(resolved)) {
           return resolved;
         }
-      } catch {}
+      } catch { }
 
       // 3. Matching album cover if track itself didn't hold an explicit URL
       if (mergedTrack.albumTitle || mergedTrack.albumId) {
@@ -147,13 +147,13 @@ export function resolveAuthenticCover(type: ShareContentType, item: any): string
           if (resolvedAlbum && !isDefaultOrInvalidCover(resolvedAlbum) && !isGenericGenreCover(resolvedAlbum)) {
             return resolvedAlbum;
           }
-        } catch {}
+        } catch { }
       }
 
       // 4. Last resort: genre-matched default cover
       try {
         return getDefaultCoverForTrack(mergedTrack);
-      } catch {}
+      } catch { }
     }
 
     return '/images/genres/rnb-neo-soul.jpg';
@@ -364,7 +364,7 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
         break;
       case 'playlist':
         try {
-          item = PlaylistService.getPlaylistById(id);
+          item = PlaylistService.getPlaylistById(id)?.playlist;
         } catch {
           item = undefined;
         }
@@ -494,7 +494,7 @@ export function resolveShareMetadata(input: ShareableInput): ResolvedShareMetada
   const coverUrl =
     type === 'video'
       ? resolveAuthenticVideoThumbnail(effectiveId, item?.videoUrl, input.customCoverUrl || item?.thumbnailUrl) ||
-        resolveAuthenticCover(type, item)
+      resolveAuthenticCover(type, item)
       : input.customCoverUrl && !isDefaultOrInvalidCover(input.customCoverUrl) && !isGenericGenreCover(input.customCoverUrl)
         ? input.customCoverUrl
         : resolveAuthenticCover(type, item);
@@ -630,10 +630,10 @@ export function resolveShareMetadataById(type: ShareContentType, id: string): Re
       type === 'song' || type === 'beat'
         ? `/share/track/${encodeURIComponent(id)}`
         : type === 'project'
-        ? `/projects#${id}`
-        : type === 'merch'
-        ? `/merch/${id}`
-        : `/${type}s/${id}`;
+          ? `/projects#${id}`
+          : type === 'merch'
+            ? `/merch/${id}`
+            : `/${type}s/${id}`;
     const canonicalUrl = `https://chancetekone.us${relPath}`;
     const encodedUrl = encodeURIComponent(canonicalUrl);
     return {

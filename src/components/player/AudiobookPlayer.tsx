@@ -22,7 +22,7 @@ import {
   Minimize2,
 } from 'lucide-react';
 import { Audiobook, AudiobookChapter } from '@/types/media';
-import { usePlayer } from '@/lib/player/PlayerContext';
+import { usePlayer, usePlayerTime } from '@/lib/player/PlayerContext';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { HistoryService, resolveHistoryUserId } from '@/lib/history/HistoryService';
 import { ShareAudiobookModal } from '@/components/audiobook/ShareAudiobookModal';
@@ -50,7 +50,6 @@ export const AudiobookPlayer: React.FC<{ audiobook: Audiobook }> = ({ audiobook 
     currentAudiobook,
     currentChapter,
     isPlaying,
-    currentTime,
     duration,
     playbackRate,
     setPlaybackRate,
@@ -59,6 +58,7 @@ export const AudiobookPlayer: React.FC<{ audiobook: Audiobook }> = ({ audiobook 
     seek,
     requireStreamAuth,
   } = usePlayer();
+  const { currentTime } = usePlayerTime();
 
   const { profile, user, isAdmin } = useAuth();
   const videoRef = React.useRef<HTMLVideoElement | null>(null);

@@ -328,6 +328,95 @@ export default function MusicPage() {
     setIsGenreVideoUnmuted(nextUnmuted);
   };
 
+  // Mobile Thermal & Battery Protection:
+  // Never run TWO simultaneous hardware H.264 video decoders on iPhone/Android!
+  // Only decode a video when it is visible in viewport, tab is active, and (on mobile) music isn't playing.
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isMobileViewport = () => window.matchMedia('(max-width: 768px)').matches;
+    const heroVisibleRef = { current: false };
+    const genreVisibleRef = { current: false };
+
+    const reconcilePlayback = () => {
+      const heroVid = heroVideoRef.current;
+      const genreVid = genreVideoRef.current;
+      const docHidden = document.hidden;
+      const mobile = isMobileViewport();
+
+      // When tab is hidden, pause all decorative videos immediately
+      if (docHidden) {
+        heroVid?.pause();
+        genreVid?.pause();
+        return;
+      }
+
+      // If user explicitly unmuted one video, keep ONLY that one playing when visible
+      if (isHeroVideoUnmuted && heroVid) {
+        genreVid?.pause();
+        if (heroVisibleRef.current) heroVid.play().catch(() => {});
+        else heroVid.pause();
+        return;
+      }
+      if (isGenreVideoUnmuted && genreVid) {
+        heroVid?.pause();
+        if (genreVisibleRef.current) genreVid.play().catch(() => {});
+        else genreVid.pause();
+        return;
+      }
+
+      // On mobile while music is actively streaming, shut down muted decorative decoders to keep device cool
+      if (mobile && isPlaying) {
+        heroVid?.pause();
+        genreVid?.pause();
+        return;
+      }
+
+      // Mutual exclusion: decode at most ONE visible muted video at a time
+      if (heroVisibleRef.current && heroVid) {
+        genreVid?.pause();
+        heroVid.play().catch(() => {});
+      } else if (genreVisibleRef.current && genreVid) {
+        heroVid?.pause();
+        genreVid.play().catch(() => {});
+      } else {
+        heroVid?.pause();
+        genreVid?.pause();
+      }
+    };
+
+    const observer =
+      typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.target === heroVideoRef.current) {
+                  heroVisibleRef.current = entry.isIntersecting;
+                } else if (entry.target === genreVideoRef.current) {
+                  genreVisibleRef.current = entry.isIntersecting;
+                }
+              });
+              reconcilePlayback();
+            },
+            { threshold: 0.25 }
+          )
+        : null;
+
+    if (observer) {
+      if (heroVideoRef.current) observer.observe(heroVideoRef.current);
+      if (genreVideoRef.current) observer.observe(genreVideoRef.current);
+    }
+
+    document.addEventListener('visibilitychange', reconcilePlayback);
+    reconcilePlayback();
+
+    return () => {
+      observer?.disconnect();
+      document.removeEventListener('visibilitychange', reconcilePlayback);
+      heroVideoRef.current?.pause();
+      genreVideoRef.current?.pause();
+    };
+  }, [isPlaying, isHeroVideoUnmuted, isGenreVideoUnmuted, selectedGenre]);
+
   React.useEffect(() => {
     setMounted(true);
     const syncTracks = () => {
@@ -421,11 +510,11 @@ export default function MusicPage() {
         <div className="relative w-full aspect-video max-h-[540px] bg-black overflow-hidden">
           <video
             ref={heroVideoRef}
-            autoPlay
             loop
             muted={!isHeroVideoUnmuted}
             playsInline
             preload="metadata"
+            poster="/images/genres/all-genres.jpg"
             className="w-full h-full object-cover object-center block"
           >
             <source src="/videos/chancetekone1.mp4" type="video/mp4" />
@@ -647,7 +736,6 @@ export default function MusicPage() {
                   <video
                     ref={genreVideoRef}
                     key={activeGenreMeta.video}
-                    autoPlay
                     loop
                     muted={!isGenreVideoUnmuted}
                     playsInline
