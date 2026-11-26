@@ -11,6 +11,9 @@ interface SidebarContextType {
   openMobileSidebar: () => void;
   closeMobileSidebar: () => void;
   toggleMobileSidebar: () => void;
+  isMobileNavHidden: boolean;
+  toggleMobileNavHidden: () => void;
+  setMobileNavHidden: (hidden: boolean) => void;
 }
 
 const SidebarContext = createContext<SidebarContextType>({
@@ -21,11 +24,15 @@ const SidebarContext = createContext<SidebarContextType>({
   openMobileSidebar: () => {},
   closeMobileSidebar: () => {},
   toggleMobileSidebar: () => {},
+  isMobileNavHidden: false,
+  toggleMobileNavHidden: () => {},
+  setMobileNavHidden: () => {},
 });
 
 export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isCollapsed, setIsCollapsedState] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isMobileNavHidden, setIsMobileNavHiddenState] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -33,6 +40,10 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const stored = localStorage.getItem('breakbeats_sidebar_collapsed');
       if (stored !== null) {
         setIsCollapsedState(stored === 'true');
+      }
+      const storedMobileNav = localStorage.getItem('chancetek_mobile_nav_hidden');
+      if (storedMobileNav !== null) {
+        setIsMobileNavHiddenState(storedMobileNav === 'true');
       }
     } catch (e) {}
   }, []);
@@ -91,6 +102,23 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsMobileOpen((prev) => !prev);
   }, []);
 
+  const toggleMobileNavHidden = useCallback(() => {
+    setIsMobileNavHiddenState((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('chancetek_mobile_nav_hidden', String(next));
+      } catch (e) {}
+      return next;
+    });
+  }, []);
+
+  const setMobileNavHidden = useCallback((hidden: boolean) => {
+    setIsMobileNavHiddenState(hidden);
+    try {
+      localStorage.setItem('chancetek_mobile_nav_hidden', String(hidden));
+    } catch (e) {}
+  }, []);
+
   return (
     <SidebarContext.Provider
       value={{
@@ -101,6 +129,9 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
         openMobileSidebar,
         closeMobileSidebar,
         toggleMobileSidebar,
+        isMobileNavHidden,
+        toggleMobileNavHidden,
+        setMobileNavHidden,
       }}
     >
       {children}

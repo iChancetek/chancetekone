@@ -477,7 +477,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
               return {
                 type: 'audiobook',
                 id: 'audiobook-1793148157988-bnzl3',
-                customTitle: 'Mi Vida Loca',
+                customTitle: 'Mi Vida Loca... By Author, Orlando Figueroa',
                 customCreator: 'Author Orlando Figueroa',
                 customDescription: currentSlide.narrationText,
                 customCoverUrl: '/images/video-thumbs/OrlandoFigueroa_share.jpg',
@@ -487,7 +487,7 @@ export const HeroBanner: React.FC<{ track: Track; onOpenAI?: () => void }> = ({ 
               return {
                 type: 'audiobook',
                 id: 'audiobook-kwame-thompson',
-                customTitle: 'Saturday Night, Sunday Morning',
+                customTitle: 'Saturday Night, Sunday Morning... By Author, Kwame Thompson',
                 customCreator: 'Author Kwame Thompson',
                 customDescription: currentSlide.narrationText,
                 customCoverUrl: '/images/video-thumbs/Kwame_Book_Promo_1.jpg',

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { BookOpen, ListPlus, Share2, MessageSquare } from 'lucide-react';
 import { MOCK_AUDIOBOOKS } from '@/lib/mockData';
@@ -13,17 +13,69 @@ import { ShareAudiobookModal } from '@/components/audiobook/ShareAudiobookModal'
 import { ContextualAIRecommendations } from '@/components/ai/ContextualAIRecommendations';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/SocialCommentService';
+import { Audiobook } from '@/types/media';
 
 export default function AudiobookDetailPage() {
   const params = useParams();
-  const audiobookId = params.id as string;
+  const audiobookId = decodeURIComponent((params.id as string) || '');
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
-  const audiobook =
+  const resolveLocal = () =>
     MediaCatalogService.getAudiobookById(audiobookId) ||
     MOCK_AUDIOBOOKS.find((ab) => ab.id === audiobookId) ||
-    MOCK_AUDIOBOOKS[0];
+    null;
+
+  const [audiobook, setAudiobook] = useState<Audiobook>(() => resolveLocal() || MOCK_AUDIOBOOKS[0]);
+  const [loadingShared, setLoadingShared] = useState<boolean>(() => !resolveLocal());
+
+  useEffect(() => {
+    let cancelled = false;
+    const syncLocal = () => {
+      const found = resolveLocal();
+      if (found) {
+        setAudiobook(found);
+        setLoadingShared(false);
+        return true;
+      }
+      return false;
+    };
+
+    if (!syncLocal()) {
+      setLoadingShared(true);
+      fetch(`/api/share/item?type=audiobook&id=${encodeURIComponent(audiobookId)}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (cancelled) return;
+          if (data?.ok && data.item) {
+            setAudiobook(data.item as Audiobook);
+          }
+          setLoadingShared(false);
+        })
+        .catch(() => {
+          if (!cancelled) setLoadingShared(false);
+        });
+    }
+
+    const unsub = MediaCatalogService.subscribe(() => {
+      syncLocal();
+    });
+    window.addEventListener('media-catalog-updated', syncLocal);
+    return () => {
+      cancelled = true;
+      unsub();
+      window.removeEventListener('media-catalog-updated', syncLocal);
+    };
+  }, [audiobookId]);
+
+  if (loadingShared && audiobook.id !== audiobookId) {
+    return (
+      <div className="py-16 max-w-4xl mx-auto text-center space-y-3">
+        <div className="w-10 h-10 rounded-full border-2 border-brand-gold border-t-transparent animate-spin mx-auto" />
+        <p className="text-sm text-neutral-300 font-semibold">Loading shared video audiobook...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 py-6 max-w-5xl mx-auto animate-in fade-in duration-300">

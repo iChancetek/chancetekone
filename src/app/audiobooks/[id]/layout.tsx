@@ -14,6 +14,22 @@ export async function generateMetadata({
     const pageUrl = `${resolved.origin}/audiobooks/${encodeURIComponent(resolved.id)}`;
 
     const isWidescreenThumb = resolved.ogImageUrl.includes('OrlandoFigueroa_share') || resolved.ogImageUrl.includes('/video-thumbs/');
+    const otherMeta: Record<string, string> = {
+      'og:image:secure_url': resolved.ogImageUrl,
+      'og:image:type': resolved.ogImageType,
+      'og:image:width': String(isWidescreenThumb ? 1280 : 1200),
+      'og:image:height': String(isWidescreenThumb ? 720 : 1200),
+      'twitter:image:src': resolved.ogImageUrl,
+    };
+
+    if (resolved.videoUrl) {
+      otherMeta['og:video'] = resolved.videoUrl;
+      otherMeta['og:video:url'] = resolved.videoUrl;
+      otherMeta['og:video:secure_url'] = resolved.videoUrl;
+      otherMeta['og:video:type'] = 'video/mp4';
+      otherMeta['og:video:width'] = '1280';
+      otherMeta['og:video:height'] = '720';
+    }
 
     return {
       title: `${resolved.title} — ${resolved.artist}`,
@@ -22,7 +38,7 @@ export async function generateMetadata({
       openGraph: {
         title: `${resolved.title} — ${resolved.artist}`,
         description: resolved.description,
-        type: 'book',
+        type: resolved.videoUrl ? 'video.other' : 'book',
         url: pageUrl,
         siteName: 'ChanceTEK One',
         images: [
@@ -35,6 +51,19 @@ export async function generateMetadata({
             alt: `${resolved.title} by ${resolved.artist}`,
           },
         ],
+        ...(resolved.videoUrl
+          ? {
+              videos: [
+                {
+                  url: resolved.videoUrl,
+                  secureUrl: resolved.videoUrl,
+                  type: 'video/mp4',
+                  width: 1280,
+                  height: 720,
+                },
+              ],
+            }
+          : {}),
       },
       twitter: {
         card: 'summary_large_image',
@@ -47,10 +76,7 @@ export async function generateMetadata({
           },
         ],
       },
-      other: {
-        'og:image:secure_url': resolved.ogImageUrl,
-        'og:image:type': resolved.ogImageType,
-      },
+      other: otherMeta,
     };
   } catch {
     return {

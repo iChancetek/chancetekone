@@ -40,7 +40,7 @@ const AccessibilityControlsModal = dynamic(
 const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isOpen: isAIOpen, closeAI, openAI } = useAI();
   const { isPlayerCollapsed, isPlayerVisible, currentTrack, activeVideoModal, closeVideoModal } = usePlayer();
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, isMobileNavHidden } = useSidebar();
   const [showVideoShare, setShowVideoShare] = React.useState(false);
 
   return (
@@ -71,7 +71,13 @@ const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
         {/* Global Page Footer */}
         <div
-          className={`transition-all duration-300 ${!currentTrack || !isPlayerVisible || isPlayerCollapsed ? 'pb-24 md:pb-10' : 'pb-56 md:pb-32'
+          className={`transition-all duration-300 ${!currentTrack || !isPlayerVisible || isPlayerCollapsed
+              ? isMobileNavHidden
+                ? 'pb-12 md:pb-10'
+                : 'pb-24 md:pb-10'
+              : isMobileNavHidden
+                ? 'pb-40 md:pb-32'
+                : 'pb-56 md:pb-32'
             }`}
         >
           <Footer />
@@ -141,11 +147,8 @@ const AppShellInner: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {/* Text & Font Visibility Accessibility Controls Modal */}
       <AccessibilityControlsModal />
 
-      {/* PWA Service Worker Auto-Registration & Updates */}
+      {/* Silent PWA Service Worker Registration (Zero popups) */}
       <PWARegister />
-
-      {/* PWA Cross-Platform Install Banner */}
-      <PWAInstallBanner />
     </div>
   );
 };

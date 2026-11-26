@@ -148,7 +148,7 @@ export default function AudiobooksPage() {
               category="audiobooks"
               title="Saturday Night, Sunday Morning... By Author, Kwame Thompson"
               subtitle="By Kwame Thompson"
-              coverUrl="/images/audiobooks/famio.jpg"
+              coverUrl="/images/video-thumbs/Kwame_Book_Promo_1.jpg"
               artistName="Kwame Thompson"
               url="/audiobooks/audiobook-kwame-thompson"
               variant="pill"
@@ -158,11 +158,11 @@ export default function AudiobooksPage() {
               onClick={() =>
                 setSharingAudiobook({
                   id: 'audiobook-kwame-thompson',
-                  title: 'Saturday Night, Sunday Morning',
+                  title: 'Saturday Night, Sunday Morning... By Author, Kwame Thompson',
                   author: 'Kwame Thompson',
                   description:
                     'Featured Upcoming Works. Saturday Night, Sunday Morning... By Author, Kwame Thompson.',
-                  coverUrl: '/images/audiobooks/famio.jpg',
+                  coverUrl: '/images/video-thumbs/Kwame_Book_Promo_1.jpg',
                 })
               }
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 border border-brand-gold/40 text-brand-gold hover:text-amber-300 font-semibold text-xs transition-all shadow-md cursor-pointer"
@@ -176,11 +176,12 @@ export default function AudiobooksPage() {
         <div className="relative w-full bg-black overflow-hidden aspect-[1112/830] max-h-[75vh]">
           <video
             src="/videos/Kwame Book Promo 1.mp4#t=0.5"
+            poster="/images/video-thumbs/Kwame_Book_Promo_1.jpg"
             controls
             playsInline
-            preload="auto"
+            preload="metadata"
             onPlay={handleFeaturedVideoPlay}
-            className="w-full h-full object-cover object-center block bg-black"
+            className="w-full h-full object-contain block bg-black"
           />
         </div>
       </section>
@@ -196,14 +197,27 @@ export default function AudiobooksPage() {
             <span>Complete Spoken Audiobooks Library</span>
           </h2>
           <span className="text-xs text-neutral-400 font-mono">
-            {audiobooks.length} Masterworks
+            {
+              audiobooks.filter(
+                (a) =>
+                  a.id !== 'audiobook-1793148157988-bnzl3' &&
+                  a.id !== 'audiobook-kwame-thompson'
+              ).length
+            }{' '}
+            Masterworks
           </span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {audiobooks.map((audiobook) => (
-            <MediaCard key={audiobook.id} item={audiobook} type="audiobook" />
-          ))}
+          {audiobooks
+            .filter(
+              (a) =>
+                a.id !== 'audiobook-1793148157988-bnzl3' &&
+                a.id !== 'audiobook-kwame-thompson'
+            )
+            .map((audiobook) => (
+              <MediaCard key={audiobook.id} item={audiobook} type="audiobook" />
+            ))}
         </div>
       </div>
 

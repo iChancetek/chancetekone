@@ -25,9 +25,12 @@ import {
   GripVertical,
   MessageSquare,
   Share2,
+  PanelBottomClose,
+  PanelBottomOpen,
 } from 'lucide-react';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { useAI } from '@/lib/ai/AIContext';
+import { useSidebar } from '@/lib/navigation/SidebarContext';
 import { AddToPlaylistModal } from '@/components/playlist/AddToPlaylistModal';
 import { ContextualAIRecommendations } from '@/components/ai/ContextualAIRecommendations';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
@@ -38,6 +41,7 @@ import { SocialCommentService, buildCanonicalContentKey } from '@/lib/social/Soc
 
 export const GlobalMusicPlayer: React.FC = () => {
   const { openAI } = useAI();
+  const { isMobileNavHidden, toggleMobileNavHidden } = useSidebar();
   const [showAIPocket, setShowAIPocket] = useState(false);
   const [showSampleModal, setShowSampleModal] = useState(false);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
@@ -465,8 +469,15 @@ export const GlobalMusicPlayer: React.FC = () => {
 
       {/* ========================================================================= */}
       {/* MOBILE / PWA PORTRAIT DOCKED PLAYER (< md) — Spacious 2-row touch layout  */}
+      {/* Automatically docks flush at bottom-0 when MobileNav is collapsed/hidden  */}
       {/* ========================================================================= */}
-      <div className="md:hidden fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-0 right-0 border-t border-white/[0.12] z-40 px-3.5 pt-2.5 pb-2.5 flex flex-col gap-2 bg-[#07070f]/96 backdrop-blur-2xl shadow-[0_-18px_50px_rgba(0,0,0,0.88)] max-w-full touch-manipulation">
+      <div
+        className={`md:hidden fixed left-0 right-0 border-t border-white/[0.12] z-40 px-3.5 pt-2.5 flex flex-col gap-2 bg-[#07070f]/98 shadow-[0_-18px_50px_rgba(0,0,0,0.88)] max-w-full touch-manipulation transition-[bottom] duration-200 ease-out ${
+          isMobileNavHidden
+            ? 'bottom-0 pb-[calc(0.625rem+env(safe-area-inset-bottom))]'
+            : 'bottom-[calc(4.25rem+env(safe-area-inset-bottom))] pb-2.5'
+        }`}
+      >
         {/* Top Ambient Hairline Progress Glow */}
         <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-white/[0.06] pointer-events-none">
           <div
@@ -501,11 +512,28 @@ export const GlobalMusicPlayer: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={toggleMobileNavHidden}
+              className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
+                isMobileNavHidden
+                  ? 'bg-brand-purple/25 text-brand-gold border-brand-gold/40'
+                  : 'bg-white/[0.07] hover:bg-white/15 text-neutral-200 border-white/10'
+              }`}
+              title={isMobileNavHidden ? 'Show Bottom Menu Bar' : 'Hide Bottom Menu Bar'}
+              aria-label={isMobileNavHidden ? 'Show Bottom Menu Bar' : 'Hide Bottom Menu Bar'}
+            >
+              {isMobileNavHidden ? (
+                <PanelBottomOpen className="w-4 h-4" />
+              ) : (
+                <PanelBottomClose className="w-4 h-4" />
+              )}
+            </button>
             <button
               type="button"
               onClick={() => setShowShareModal(true)}
-              className="w-10 h-10 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 text-brand-gold border border-brand-gold/40 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+              className="w-9 h-9 rounded-full bg-brand-gold/15 hover:bg-brand-gold/30 text-brand-gold border border-brand-gold/40 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
               title="Share what's playing"
               aria-label={`Share ${currentTrack.title}`}
             >
@@ -514,7 +542,7 @@ export const GlobalMusicPlayer: React.FC = () => {
             <button
               type="button"
               onClick={openFullScreen}
-              className="w-10 h-10 rounded-full bg-white/[0.07] hover:bg-white/15 text-neutral-200 border border-white/10 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+              className="w-9 h-9 rounded-full bg-white/[0.07] hover:bg-white/15 text-neutral-200 border border-white/10 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
               title="Open Full Screen Player"
               aria-label="Open Full Screen Player"
             >
@@ -523,7 +551,7 @@ export const GlobalMusicPlayer: React.FC = () => {
             <button
               type="button"
               onClick={closePlayer}
-              className="w-10 h-10 rounded-full bg-white/[0.07] hover:bg-red-500/20 text-neutral-300 hover:text-red-400 border border-white/10 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+              className="w-9 h-9 rounded-full bg-white/[0.07] hover:bg-red-500/20 text-neutral-300 hover:text-red-400 border border-white/10 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
               title="Close Music Player"
               aria-label="Close Music Player"
             >

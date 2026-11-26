@@ -486,6 +486,24 @@ export async function lookupAudiobookForShareMetadata(
     'audiobook'
   );
 
+  const firstChapterUrl = merged?.chapters?.[0]?.audioUrl || '';
+  const isVideoChapterUrl =
+    merged?.mediaFormat === 'video' ||
+    /\.(mp4|mov|m4v|webm)(\?|#|$)/i.test(firstChapterUrl) ||
+    isMiVidaLoca;
+
+  const resolvedVideoRel = isMiVidaLoca
+    ? '/videos/OrlandoFigueroa.mp4'
+    : isVideoChapterUrl && firstChapterUrl
+      ? firstChapterUrl
+      : '';
+
+  const normalizedVideoUrl = resolvedVideoRel
+    ? resolvedVideoRel.startsWith('http://') || resolvedVideoRel.startsWith('https://')
+      ? resolvedVideoRel
+      : `${safeOrigin}${encodeURI(resolvedVideoRel.startsWith('/') ? resolvedVideoRel : `/${resolvedVideoRel}`)}`
+    : undefined;
+
   return {
     id: decodedId,
     title,
@@ -495,6 +513,7 @@ export async function lookupAudiobookForShareMetadata(
     ogImageUrl,
     ogImageType,
     clientCoverUrl,
+    videoUrl: normalizedVideoUrl,
     origin: safeOrigin,
   };
 }

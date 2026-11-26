@@ -1,34 +1,20 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { RefreshCw, WifiOff, X } from 'lucide-react';
+import React, { useEffect } from 'react';
 
 const CHUNK_RECOVERY_KEY = 'chancetekone_chunk_reload_ts';
 const SW_RELOAD_KEY = 'chancetekone_sw_reload_ts';
 
+/**
+ * Silent background PWA Service Worker registration & self-healing chunk recovery.
+ * Zero visual popups (no "Platform Updated / Reload" or "Install" dialogue boxes).
+ */
 export const PWARegister: React.FC = () => {
-  const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
-  const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [isOffline, setIsOffline] = useState(false);
-  const [dismissedOfflineToast, setDismissedOfflineToast] = useState(false);
-
   useEffect(() => {
     let updateTimer: ReturnType<typeof setInterval> | undefined;
     let cleanupListeners: () => void = () => {};
 
-    // 1. Monitor online/offline network connectivity
-    const updateOnlineStatus = () => {
-      const offline = !navigator.onLine;
-      setIsOffline(offline);
-      if (!offline) setDismissedOfflineToast(false);
-    };
-
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
-    updateOnlineStatus();
-
-    // 2. Self-healing stale chunk / hydration mismatch recovery for installed iPhone & Android PWAs
-    // If a newly deployed build invalidates old JS chunks, clear caches and reload cleanly (max once per 30s).
+    // Self-healing stale chunk / hydration mismatch recovery for installed iPhone & Android PWAs
     const recoverFromStaleChunk = () => {
       try {
         const lastReload = Number(sessionStorage.getItem(CHUNK_RECOVERY_KEY) || '0');
@@ -82,7 +68,6 @@ export const PWARegister: React.FC = () => {
     window.addEventListener('error', handleWindowError, true);
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
-    // 3. Register Service Worker in production; unregister and clear caches in development
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       if (process.env.NODE_ENV === 'development') {
         navigator.serviceWorker.getRegistrations().then((registrations) => {
@@ -98,8 +83,6 @@ export const PWARegister: React.FC = () => {
           });
         }
         return () => {
-          window.removeEventListener('online', updateOnlineStatus);
-          window.removeEventListener('offline', updateOnlineStatus);
           window.removeEventListener('error', handleWindowError, true);
           window.removeEventListener('unhandledrejection', handleUnhandledRejection);
         };
@@ -122,10 +105,16 @@ export const PWARegister: React.FC = () => {
       navigator.serviceWorker
         .register('/sw.js', { updateViaCache: 'none' })
         .then((registration) => {
-          setSwRegistration(registration);
+          const activateWaitingSilently = () => {
+            if (registration.waiting) {
+              registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+          };
 
           const checkForUpdate = () => registration.update().catch(() => {});
           checkForUpdate();
+          activateWaitingSilently();
+
           updateTimer = setInterval(checkForUpdate, 5 * 60 * 1000);
           const onVisible = () => {
             if (document.visibilityState === 'visible') checkForUpdate();
@@ -140,16 +129,12 @@ export const PWARegister: React.FC = () => {
             window.removeEventListener('online', checkForUpdate);
           };
 
-          if (registration.waiting) {
-            setUpdateAvailable(true);
-          }
-
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  setUpdateAvailable(true);
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
                 }
               });
             }
@@ -163,60 +148,10 @@ export const PWARegister: React.FC = () => {
     return () => {
       if (updateTimer) clearInterval(updateTimer);
       cleanupListeners();
-      window.removeEventListener('online', updateOnlineStatus);
-      window.removeEventListener('offline', updateOnlineStatus);
       window.removeEventListener('error', handleWindowError, true);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
 
-  const handleUpdate = () => {
-    if (swRegistration && swRegistration.waiting) {
-      swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      setTimeout(() => window.location.reload(), 150);
-    } else {
-      window.location.reload();
-    }
-  };
-
-  return (
-    <>
-      {/* Offline Alert Toast */}
-      {isOffline && !dismissedOfflineToast && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[75] animate-in slide-in-from-top duration-300 pointer-events-auto">
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-full bg-red-950/90 border border-red-500/50 backdrop-blur-md shadow-2xl text-xs text-red-200">
-            <WifiOff className="w-4 h-4 text-red-400 shrink-0" />
-            <span className="font-semibold">Offline Mode Active — Playing from local cache</span>
-            <button
-              onClick={() => setDismissedOfflineToast(true)}
-              className="p-1 hover:bg-white/10 rounded-full transition-colors text-red-400 hover:text-white cursor-pointer"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* App Update Available Notification */}
-      {updateAvailable && (
-        <div className="fixed bottom-[calc(9.5rem+env(safe-area-inset-bottom))] md:bottom-28 left-4 right-4 md:right-auto md:left-8 z-[75] animate-in slide-in-from-bottom duration-300 pointer-events-auto">
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#141024]/95 border border-brand-gold/60 backdrop-blur-xl shadow-2xl text-xs text-white max-w-sm">
-            <div className="p-2 rounded-xl bg-brand-gold/20 text-brand-gold shrink-0">
-              <RefreshCw className="w-4 h-4 animate-spin-slow" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-white">Platform Updated</p>
-              <p className="text-[10px] text-neutral-300">Synchronized with newest features & music.</p>
-            </div>
-            <button
-              onClick={handleUpdate}
-              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#f5c344] via-[#ff9f1c] to-[#f5c344] text-[#08080c] font-black text-xs uppercase tracking-wider shrink-0 shadow-[0_0_15px_rgba(245,195,68,0.6)] hover:shadow-[0_0_25px_rgba(245,195,68,0.9)] border border-amber-200/60 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
-            >
-              Reload
-            </button>
-          </div>
-        </div>
-      )}
-    </>
-  );
+  return null;
 };

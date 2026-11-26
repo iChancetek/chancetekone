@@ -98,7 +98,7 @@ export const Sidebar: React.FC = () => {
   const { profile, isAdmin, signInAsDemo, signOut } = useAuth();
   const { openAI } = useAI();
   const { isInstallable, installPWA } = usePWA();
-  const { isCollapsed, toggleSidebar, isMobileOpen, closeMobileSidebar } = useSidebar();
+  const { isCollapsed, toggleSidebar, isMobileOpen, closeMobileSidebar, isMobileNavHidden, toggleMobileNavHidden } = useSidebar();
   const { openModal: openAccessibilityModal, fontScale } = useAccessibility();
   const { theme, isLight, toggleTheme } = useTheme();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
@@ -811,6 +811,24 @@ export const Sidebar: React.FC = () => {
                   </Link>
                 );
               })}
+
+              {/* Bottom Menu Bar Collapse / Show Toggle (Mobile PWA) */}
+              <button
+                type="button"
+                onClick={() => {
+                  toggleMobileNavHidden();
+                  closeMobileSidebar();
+                }}
+                className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold text-neutral-200 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all w-full cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <Sliders className="w-4 h-4 shrink-0 text-brand-gold" />
+                  <span>Bottom Menu Bar</span>
+                </div>
+                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-white/10 text-brand-gold font-mono font-bold">
+                  {isMobileNavHidden ? 'Hidden' : 'Shown'}
+                </span>
+              </button>
 
               {/* Apple Music Light / Dark Mode Switcher (Mobile) */}
               <button

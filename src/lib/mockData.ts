@@ -399,6 +399,52 @@ export const MOCK_VIDEOS: Video[] = [
 
 export const MOCK_AUDIOBOOKS: Audiobook[] = [
   {
+    id: 'audiobook-1793148157988-bnzl3',
+    title: 'Mi Vida Loca... By Author, Orlando Figueroa',
+    author: 'Orlando Figueroa',
+    narrator: 'Orlando Figueroa',
+    coverUrl: '/images/video-thumbs/OrlandoFigueroa_share.jpg',
+    duration: 45,
+    genre: 'Book | AudioBook Cinema',
+    mediaFormat: 'video',
+    description: 'Featured Upcoming Works. Mi Vida Loca... By Author, Orlando Figueroa. Master spoken work and visual cinema presentation on ChanceTEK One.',
+    likeCount: 0,
+    rating: 5.0,
+    releaseYear: 2026,
+    chapters: [
+      {
+        id: 'ch-mi-vida-loca-1',
+        chapterIndex: 1,
+        title: 'Mi Vida Loca — Official Video Presentation',
+        duration: 45,
+        audioUrl: '/videos/OrlandoFigueroa.mp4',
+      },
+    ],
+  },
+  {
+    id: 'audiobook-kwame-thompson',
+    title: 'Saturday Night, Sunday Morning... By Author, Kwame Thompson',
+    author: 'Kwame Thompson',
+    narrator: 'Kwame Thompson',
+    coverUrl: '/images/video-thumbs/Kwame_Book_Promo_1.jpg',
+    duration: 30,
+    genre: 'Book | AudioBook Cinema',
+    mediaFormat: 'video',
+    description: 'Featured Upcoming Works. Saturday Night, Sunday Morning... By Author, Kwame Thompson. Official visual book premiere on ChanceTEK One.',
+    likeCount: 0,
+    rating: 5.0,
+    releaseYear: 2026,
+    chapters: [
+      {
+        id: 'ch-kwame-thompson-1',
+        chapterIndex: 1,
+        title: 'Saturday Night, Sunday Morning — Official Video Presentation',
+        duration: 30,
+        audioUrl: '/videos/Kwame Book Promo 1.mp4',
+      },
+    ],
+  },
+  {
     id: 'audiobook-1',
     title: 'Agentic AI',
     author: 'Chancellor @ ChanceTEK LLC',
