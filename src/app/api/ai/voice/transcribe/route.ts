@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAIClient, AI_CONFIG } from '@/lib/openai/config';
+import { tracedOpenAIWhisper } from '@/lib/telemetry/wyres';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,11 +17,19 @@ export async function POST(req: NextRequest) {
     // Convert Blob to File object suitable for OpenAI SDK
     const audioFile = new File([file], 'audio.webm', { type: file.type || 'audio/webm' });
 
-    const transcription = await openai.audio.transcriptions.create({
-      file: audioFile,
-      model: AI_CONFIG.whisperModel,
-      ...(requestedLanguage ? { language: requestedLanguage } : {}),
-    });
+    const transcription = await tracedOpenAIWhisper(
+      openai,
+      {
+        file: audioFile,
+        model: AI_CONFIG.whisperModel,
+        ...(requestedLanguage ? { language: requestedLanguage } : {}),
+      },
+      {
+        name: 'voice-copilot:whisper-transcribe',
+        feature: 'voice-transcription',
+        tags: ['voice-copilot', 'stt'],
+      }
+    );
 
     return NextResponse.json({ text: transcription.text });
   } catch (error: any) {

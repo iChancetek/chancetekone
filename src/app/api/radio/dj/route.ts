@@ -8,6 +8,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAIClient, AI_CONFIG } from '@/lib/openai/config';
 import { AIDjAgent } from '@/lib/radio/agents/AIDjAgent';
 import { RADIO_STATIONS, RADIO_INITIAL_CATALOG } from '@/lib/radio/initialCatalog';
+import {
+  emitWyresTraceAsync,
+  generateWyresId,
+  tracedOpenAIChatCompletion,
+  tracedOpenAITts,
+} from '@/lib/telemetry/wyres';
 
 // ── Server-side Rate Limiter ───────────────────────────────────
 // In-memory counters reset every hour. Prevents runaway TTS costs
@@ -39,6 +45,11 @@ function checkRateLimit(stationId: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  const agentRunId = generateWyresId('wyr_dj');
+  const traceId = agentRunId;
+  const startedMs = Date.now();
+  const startTime = new Date(startedMs).toISOString();
+
   try {
     const { stationId, script, upcomingSongId, previousSongId } = await req.json();
 
@@ -55,11 +66,28 @@ export async function POST(req: NextRequest) {
     // If over budget, skip TTS gracefully — music plays without an intro.
     if (!checkRateLimit(stationId)) {
       console.warn(`[Radio DJ API] Rate limit reached for station "${stationId}" — skipping TTS.`);
+      emitWyresTraceAsync({
+        id: agentRunId,
+        traceId,
+        name: 'radio-dj:broadcast-intro',
+        runType: 'agent',
+        provider: 'chancetek-radio',
+        model: AI_CONFIG.ttsModel,
+        category: 'radio_ai',
+        feature: 'ai-radio-dj',
+        startTime,
+        endTime: new Date().toISOString(),
+        latencyMs: Date.now() - startedMs,
+        input: { stationId, upcomingSongId },
+        output: { skipped: true, reason: 'rate_limit' },
+        tags: ['radio-dj', stationId, 'rate-limited'],
+      });
       return NextResponse.json({ audioUrl: null, script: script || '' });
     }
 
     // Use pre-built script if provided, otherwise generate via AI
     let finalScript = script;
+    let scriptSource: 'prebuilt' | 'openai' | 'heuristic' = script ? 'prebuilt' : 'heuristic';
     if (!finalScript) {
       const upcoming = RADIO_INITIAL_CATALOG.find((s) => s.id === upcomingSongId);
       const previous = previousSongId
@@ -71,20 +99,34 @@ export async function POST(req: NextRequest) {
         try {
           const openai = getOpenAIClient();
           const { system, user } = AIDjAgent.buildAIPrompt(station, upcoming, previous ?? null);
-          const completion = await openai.chat.completions.create({
-            model: AI_CONFIG.defaultModel,
-            max_completion_tokens: 100,
-            temperature: 0.9,
-            messages: [
-              { role: 'system', content: system },
-              { role: 'user', content: user },
-            ],
-          });
+          const completion = await tracedOpenAIChatCompletion(
+            openai,
+            {
+              model: AI_CONFIG.defaultModel,
+              max_completion_tokens: 100,
+              temperature: 0.9,
+              messages: [
+                { role: 'system', content: system },
+                { role: 'user', content: user },
+              ],
+            },
+            {
+              name: 'radio-dj:script-generation',
+              feature: 'ai-radio-dj',
+              category: 'radio_ai',
+              traceId,
+              parentRunId: agentRunId,
+              tags: ['radio-dj', stationId],
+              metadata: { stationId, upcomingSongId },
+            }
+          );
           finalScript = completion.choices[0]?.message?.content?.trim() ?? '';
+          if (finalScript) scriptSource = 'openai';
         } catch (aiError) {
           console.warn('[Radio DJ API] AI generation failed, using heuristic script:', aiError);
           const result = AIDjAgent.generateIntroScript(station, upcoming, previous ?? null, true);
           finalScript = result.script;
+          scriptSource = 'heuristic';
         }
       }
     }
@@ -95,20 +137,64 @@ export async function POST(req: NextRequest) {
 
     // Convert script to speech — cap input length to minimise TTS token cost
     const openai = getOpenAIClient();
-    const mp3 = await openai.audio.speech.create({
-      model: AI_CONFIG.ttsModel,
-      voice: station.djVoice,
-      input: finalScript.slice(0, 200), // hard cap: 200 chars max per intro
-    });
+    const buffer = await tracedOpenAITts(
+      openai,
+      {
+        model: AI_CONFIG.ttsModel,
+        voice: station.djVoice,
+        input: finalScript.slice(0, 200), // hard cap: 200 chars max per intro
+      },
+      {
+        name: 'radio-dj:voice-synthesis',
+        feature: 'ai-radio-dj',
+        traceId,
+        parentRunId: agentRunId,
+        tags: ['radio-dj', stationId],
+        metadata: { stationId, scriptSource },
+      }
+    );
 
-    const buffer = Buffer.from(await mp3.arrayBuffer());
     const base64Audio = buffer.toString('base64');
     const audioUrl = `data:audio/mpeg;base64,${base64Audio}`;
+
+    emitWyresTraceAsync({
+      id: agentRunId,
+      traceId,
+      name: 'radio-dj:broadcast-intro',
+      runType: 'agent',
+      provider: 'openai',
+      model: AI_CONFIG.ttsModel,
+      category: 'radio_ai',
+      feature: 'ai-radio-dj',
+      startTime,
+      endTime: new Date().toISOString(),
+      latencyMs: Date.now() - startedMs,
+      input: { stationId, upcomingSongId, previousSongId, scriptSource },
+      output: { script: finalScript, audioBytes: buffer.length },
+      tags: ['radio-dj', stationId, scriptSource],
+      metadata: { stationId, djVoice: station.djVoice, scriptSource },
+    });
 
     return NextResponse.json({ audioUrl, script: finalScript });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'DJ route error';
     console.error('[Radio DJ API] Error:', msg);
+    emitWyresTraceAsync({
+      id: agentRunId,
+      traceId,
+      name: 'radio-dj:broadcast-intro',
+      runType: 'agent',
+      provider: 'chancetek-radio',
+      model: AI_CONFIG.ttsModel,
+      category: 'radio_ai',
+      feature: 'ai-radio-dj',
+      status: 'error',
+      startTime,
+      endTime: new Date().toISOString(),
+      latencyMs: Date.now() - startedMs,
+      error: msg,
+      tags: ['radio-dj', 'error'],
+    });
     // Graceful degradation: return null audio so music continues uninterrupted
     return NextResponse.json({ audioUrl: null, script: '', error: msg });
   }

@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAIClient, AI_CONFIG } from '@/lib/openai/config';
 import { MOCK_TRACKS, MOCK_VIDEOS, MOCK_AUDIOBOOKS, MOCK_PRODUCTS } from '@/lib/mockData';
 import { PLATFORM_CANONICAL_TRACKS } from '@/lib/music/MusicCatalogService';
+import {
+  emitWyresTraceAsync,
+  generateWyresId,
+  tracedOpenAIChatCompletion,
+} from '@/lib/telemetry/wyres';
 
 // ── Rate Limiter ─────────────────────────────────────────────
 // 30 recommendation calls per hour (server-wide).
@@ -21,6 +26,11 @@ function checkRecsLimit(): boolean {
 const ALL_AVAILABLE_TRACKS = [...MOCK_TRACKS, ...PLATFORM_CANONICAL_TRACKS];
 
 export async function POST(req: NextRequest) {
+  const agentRunId = generateWyresId('wyr_rec');
+  const traceId = agentRunId;
+  const startedMs = Date.now();
+  const startTime = new Date(startedMs).toISOString();
+
   try {
     const { currentMedia, userContext } = await req.json();
 
@@ -32,6 +42,24 @@ export async function POST(req: NextRequest) {
     if (!checkRecsLimit()) {
       console.warn('[Recommendations] Rate limit reached — using deterministic fallback.');
       const fallbackTracks = ALL_AVAILABLE_TRACKS.slice(0, 3);
+      emitWyresTraceAsync({
+        id: agentRunId,
+        traceId,
+        name: 'crate-curator:recommendations',
+        runType: 'agent',
+        provider: 'chancetek-agent',
+        model: 'deterministic-fallback',
+        category: 'agentic_agent',
+        feature: 'contextual-recommendations',
+        startTime,
+        endTime: new Date().toISOString(),
+        latencyMs: Date.now() - startedMs,
+        userId: userContext?.userId || userContext?.id || undefined,
+        input: { title: currentMedia.title, genre: currentMedia.genre, bpm: currentMedia.bpm },
+        output: { tracksCount: fallbackTracks.length, rateLimited: true },
+        tags: ['curator-agent', 'rate-limited', 'fallback'],
+        metadata: { isFallback: true, rateLimited: true },
+      });
       return NextResponse.json({
         agentName: 'Agentic Music Curator',
         agentRationale: 'Serving curated selections from the catalog.',
@@ -125,12 +153,26 @@ Provide the harmonic, cross-media recommendations in strict JSON format now.`;
     }
 
     let parsedResult: any = null;
+    let usedFallback = false;
+    let llmUsage: any = null;
+    let resolvedModel = model;
 
     try {
-      const completion = await openai.chat.completions.create(completionParams);
+      const completion = await tracedOpenAIChatCompletion(openai, completionParams, {
+        name: 'crate-curator:chat.completions',
+        feature: 'contextual-recommendations',
+        category: 'agentic_agent',
+        traceId,
+        parentRunId: agentRunId,
+        userId: userContext?.userId || userContext?.id || undefined,
+        tags: ['curator-agent', 'recommendations'],
+      });
       const text = completion.choices[0]?.message?.content || '{}';
       parsedResult = JSON.parse(text);
+      llmUsage = completion.usage || null;
+      resolvedModel = completion.model || model;
     } catch (aiErr: any) {
+      usedFallback = true;
       console.warn('AI recommendations fallback triggered:', aiErr.message);
       // Deterministic cultural fallback based on BPM & Genre
       const curBpm = typeof currentMedia.bpm === 'number' ? currentMedia.bpm : 100;
@@ -160,6 +202,35 @@ Provide the harmonic, cross-media recommendations in strict JSON format now.`;
       parsedResult.recommendedAudiobookIds?.includes(a.id)
     );
 
+    const endedMs = Date.now();
+    emitWyresTraceAsync({
+      id: agentRunId,
+      traceId,
+      name: 'crate-curator:recommendations',
+      runType: 'agent',
+      provider: usedFallback ? 'chancetek-agent' : 'openai',
+      model: usedFallback ? 'deterministic-bpm-matcher' : resolvedModel,
+      category: 'agentic_agent',
+      feature: 'contextual-recommendations',
+      startTime,
+      endTime: new Date(endedMs).toISOString(),
+      latencyMs: endedMs - startedMs,
+      promptTokens: Number(llmUsage?.prompt_tokens || 0),
+      completionTokens: Number(llmUsage?.completion_tokens || 0),
+      totalTokens: Number(llmUsage?.total_tokens || 0),
+      userId: userContext?.userId || userContext?.id || undefined,
+      input: { title: currentMedia.title, artist: currentMedia.artist, genre: currentMedia.genre, bpm: currentMedia.bpm },
+      output: {
+        agentName: parsedResult.agentName || 'Agentic Music Curator',
+        vibeTag: parsedResult.vibeTag || 'Harmonic Flow',
+        recommendedTracksCount: recommendedTracks.length,
+        recommendedVideosCount: recommendedVideos.length,
+        recommendedAudiobooksCount: recommendedAudiobooks.length,
+      },
+      tags: ['curator-agent', 'recommendations', ...(usedFallback ? ['fallback'] : ['openai'])],
+      metadata: { isFallback: usedFallback },
+    });
+
     return NextResponse.json({
       agentName: parsedResult.agentName || 'Agentic Music Curator',
       agentRationale: parsedResult.agentRationale || 'Curated to match your current tempo and listening vibe.',
@@ -172,6 +243,22 @@ Provide the harmonic, cross-media recommendations in strict JSON format now.`;
     });
   } catch (error: any) {
     console.error('Recommendations API error:', error);
+    emitWyresTraceAsync({
+      id: agentRunId,
+      traceId,
+      name: 'crate-curator:recommendations',
+      runType: 'agent',
+      provider: 'openai',
+      model: AI_CONFIG.defaultModel,
+      category: 'agentic_agent',
+      feature: 'contextual-recommendations',
+      status: 'error',
+      startTime,
+      endTime: new Date().toISOString(),
+      latencyMs: Date.now() - startedMs,
+      error: error?.message || 'Failed to generate recommendations',
+      tags: ['curator-agent', 'error'],
+    });
     return NextResponse.json({ error: error.message || 'Failed to generate recommendations' }, { status: 500 });
   }
 }

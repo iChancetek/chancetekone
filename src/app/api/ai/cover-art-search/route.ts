@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TavilyCoverArtService } from '@/lib/ai/tavilyCoverArt';
+import { traceWyresExecution } from '@/lib/telemetry/wyres';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,12 +17,30 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const candidates = await TavilyCoverArtService.searchCoverArt({
-        artist: artist || '',
-        album: album || '',
-        title: title || '',
-        genre: genre || '',
-      });
+      const candidates = await traceWyresExecution(
+        {
+          name: 'cover-art-agent:tavily-search',
+          runType: 'retriever',
+          provider: 'tavily',
+          model: 'tavily-cover-search',
+          category: 'rag_retriever',
+          feature: 'cover-art-search',
+          input: { artist: artist || '', album: album || '', title: title || '', genre: genre || '' },
+          tags: ['cover-art-agent', 'tavily', 'retriever'],
+          extractOutput: (list) => ({
+            count: list.length,
+            topDomain: list[0]?.domain || null,
+            topConfidence: list[0]?.confidenceScore ?? null,
+          }),
+        },
+        () =>
+          TavilyCoverArtService.searchCoverArt({
+            artist: artist || '',
+            album: album || '',
+            title: title || '',
+            genre: genre || '',
+          })
+      );
 
       return NextResponse.json({
         success: true,
@@ -42,7 +61,23 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const verified = await TavilyCoverArtService.fetchAndVerifyImage(imageUrl);
+      const verified = await traceWyresExecution(
+        {
+          name: 'cover-art-agent:fetch-verify',
+          runType: 'tool',
+          provider: 'tavily',
+          model: 'cover-art-verifier',
+          category: 'agentic_agent',
+          feature: 'cover-art-fetch',
+          input: { imageUrl },
+          tags: ['cover-art-agent', 'image-verify'],
+          extractOutput: (res) => ({
+            mimeType: res.mimeType,
+            sizeBytes: res.bytes.length,
+          }),
+        },
+        () => TavilyCoverArtService.fetchAndVerifyImage(imageUrl)
+      );
       return NextResponse.json({
         success: true,
         dataUrl: verified.dataUrl,

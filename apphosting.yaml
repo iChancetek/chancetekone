@@ -47,3 +47,28 @@ env:
     availability:
       - BUILD
       - RUNTIME
+  # Wyres Live Telemetry Configuration (by ChanceTEK)
+  - variable: WYRES_TRACING
+    value: "true"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: WYRES_API_KEY
+    value: wyr_live_e43ad5853ad096074454bc0ebed172d25e626b0e457eff04
+    availability:
+      - RUNTIME
+  - variable: WYRES_PROJECT
+    value: chancetek-one
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: WYRES_ENVIRONMENT
+    value: production
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: WYRES_ENDPOINT
+    value: https://wyres.us/v1/traces
+    availability:
+      - BUILD
+      - RUNTIME

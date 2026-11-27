@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { VoiceRecorder } from '@/components/ai/VoiceRecorder';
 import { useAI } from '@/lib/ai/AIContext';
+import { reportClientAiMetric } from '@/lib/telemetry/wyresClient';
 
 interface GlobalVoiceSearchModalProps {
   isOpen: boolean;
@@ -52,6 +53,7 @@ export const GlobalVoiceSearchModal: React.FC<GlobalVoiceSearchModalProps> = ({
       onClose();
 
       // Smart Voice Intent Routing
+      let routeTarget = 'search';
       if (
         lower.startsWith('tell me') ||
         lower.startsWith('who') ||
@@ -60,17 +62,33 @@ export const GlobalVoiceSearchModal: React.FC<GlobalVoiceSearchModalProps> = ({
         lower.includes('history of') ||
         lower.includes('how to')
       ) {
+        routeTarget = 'ai_assistant';
         // Route to ChanceTEK One AI Assistant
         openAI(text);
       } else if (lower.includes('video') || lower.includes('documentary')) {
+        routeTarget = 'videos';
         router.push(`/videos?q=${encodeURIComponent(text)}`);
       } else if (lower.includes('audiobook') || lower.includes('book')) {
+        routeTarget = 'audiobooks';
         router.push(`/audiobooks?q=${encodeURIComponent(text)}`);
       } else if (lower.includes('playlist') || lower.includes('crate')) {
+        routeTarget = 'playlists';
         router.push(`/playlists?q=${encodeURIComponent(text)}`);
       } else {
         router.push(`/search?q=${encodeURIComponent(text)}`);
       }
+
+      reportClientAiMetric({
+        name: 'voice-search-copilot:intent-route',
+        runType: 'agent',
+        provider: 'chancetek-copilot',
+        model: 'voice-intent-router-v1',
+        category: 'copilot',
+        feature: 'global-voice-search',
+        input: { transcript: text },
+        output: { routeTarget },
+        tags: ['voice-copilot', 'intent-router', routeTarget],
+      });
     }, 1200);
   };
 

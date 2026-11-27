@@ -1,10 +1,11 @@
-﻿/**
+/**
  * ChanceTEK One — Music & Cover Art MCP (Model Context Protocol) Server
  * Implements MCP specification tools for autonomous cover art discovery and MP3 tagging.
  */
 
 import { TavilyCoverArtService, CoverArtCandidate } from '../ai/tavilyCoverArt';
 import { attachCoverArtToMP3File, dataUrlToImageBytes, writeID3v2TagToMP3 } from '../audio/id3Writer';
+import { reportClientAiMetric } from '@/lib/telemetry/wyresClient';
 
 export interface McpToolDefinition {
   name: string;
@@ -103,6 +104,61 @@ export class MusicMcpServer {
   }
 
   public static async callTool(name: string, args: Record<string, any>): Promise<any> {
+    const startedMs = Date.now();
+    const startTime = new Date(startedMs).toISOString();
+    try {
+      const result = await this.executeTool(name, args);
+      const endedMs = Date.now();
+      const tracePayload = {
+        name: `music-mcp.${name}`,
+        runType: 'tool' as const,
+        provider: 'chancetek-mcp',
+        model: 'chancetekone-music-mcp-v1',
+        category: 'mcp_agent' as const,
+        feature: 'music-mcp-server',
+        status: 'success' as const,
+        startTime,
+        endTime: new Date(endedMs).toISOString(),
+        latencyMs: endedMs - startedMs,
+        input: args,
+        output: { toolName: name, success: true },
+        tags: ['mcp', 'music-mcp', name],
+      };
+      if (typeof window !== 'undefined') {
+        reportClientAiMetric(tracePayload);
+      } else {
+        const { emitWyresTraceAsync } = await import('@/lib/telemetry/wyres');
+        emitWyresTraceAsync(tracePayload);
+      }
+      return result;
+    } catch (err: any) {
+      const endedMs = Date.now();
+      const errPayload = {
+        name: `music-mcp.${name}`,
+        runType: 'tool' as const,
+        provider: 'chancetek-mcp',
+        model: 'chancetekone-music-mcp-v1',
+        category: 'mcp_agent' as const,
+        feature: 'music-mcp-server',
+        status: 'error' as const,
+        startTime,
+        endTime: new Date(endedMs).toISOString(),
+        latencyMs: endedMs - startedMs,
+        input: args,
+        error: err?.message || String(err),
+        tags: ['mcp', 'music-mcp', name, 'error'],
+      };
+      if (typeof window !== 'undefined') {
+        reportClientAiMetric(errPayload);
+      } else {
+        const { emitWyresTraceAsync } = await import('@/lib/telemetry/wyres');
+        emitWyresTraceAsync(errPayload);
+      }
+      throw err;
+    }
+  }
+
+  private static async executeTool(name: string, args: Record<string, any>): Promise<any> {
     switch (name) {
       case 'search_cover_art_tavily': {
         const candidates = await TavilyCoverArtService.searchCoverArt({

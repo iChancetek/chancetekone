@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ChanceTEK One — ChanceTEK One Music Ingestion Engine
  * Autonomous AI agent responsible for metadata normalization, crate & folder recommendations,
  * duplicate detection across all signals, and human-in-the-loop review staging.
@@ -15,6 +15,7 @@ import { Track } from '@/types/media';
 import { AuditLogger } from '@/lib/admin/AuditLogger';
 import { isCrossArtistAudioMismatch } from '@/lib/music/authenticAudioMap';
 import { classifyGenre } from '@/lib/music/genreClassifier';
+import { reportClientAiMetric } from '@/lib/telemetry/wyresClient';
 
 export interface IngestionAnalysisResult {
   normalizedMetadata: {
@@ -391,6 +392,25 @@ export class AgenticAIMusicIngestionAgent {
       },
       status: flaggedIssues.length > 0 ? 'WARNING' : 'SUCCESS',
       details: rec.reasoning,
+    });
+
+    reportClientAiMetric({
+      name: 'music-ingestion-agent:analyze',
+      runType: 'agent',
+      provider: 'chancetek-agent',
+      model: this.AGENT_ID,
+      category: 'ingestion_agent',
+      feature: 'music-ingestion-pipeline',
+      input: { fileName, rawGenre: raw.genre, targetCrateIdHint: targetCrateIdHint || null },
+      output: {
+        normalizedTitle,
+        normalizedArtist,
+        recommendedCrateId: rec.crate.id,
+        confidencePercent: rec.confidence,
+        isDuplicate: duplicateInfo.isDuplicate,
+        flaggedIssuesCount: flaggedIssues.length,
+      },
+      tags: ['ingestion-agent', rec.crate.id],
     });
 
     return {

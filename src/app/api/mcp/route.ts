@@ -17,6 +17,7 @@ import {
 } from '@/lib/server/strideiqCatalog';
 import { recordStrideIqTelemetry, getStrideIqTelemetrySummary } from '@/lib/server/strideiqStore';
 import { resolvePublicOrigin } from '@/lib/server/strideiqStore';
+import { emitWyresTraceAsync } from '@/lib/telemetry/wyres';
 
 export const dynamic = 'force-dynamic';
 
@@ -306,6 +307,30 @@ export async function POST(request: NextRequest) {
       case 'tools/call': {
         const toolName = params?.name;
         const args = params?.arguments || {};
+        const mcpStartMs = Date.now();
+        const mcpStartIso = new Date(mcpStartMs).toISOString();
+
+        const respondTraced = (payload: any, status = 200, isError = false, errorText?: string) => {
+          const endedMs = Date.now();
+          emitWyresTraceAsync({
+            name: `mcp.${toolName || 'unknown'}`,
+            runType: 'tool',
+            provider: 'chancetek-mcp',
+            model: 'chancetekone-mcp-v1',
+            category: 'mcp_agent',
+            feature: 'mcp-http-server',
+            status: isError ? 'error' : 'success',
+            startTime: mcpStartIso,
+            endTime: new Date(endedMs).toISOString(),
+            latencyMs: endedMs - mcpStartMs,
+            input: { toolName, args },
+            output: isError ? null : { ok: true, toolName },
+            error: isError ? errorText || `MCP tool ${toolName} returned error` : null,
+            tags: ['mcp', 'http-jsonrpc', String(toolName || 'unknown')],
+            metadata: { transport: 'http', toolName },
+          });
+          return NextResponse.json(payload, { status, headers });
+        };
 
         switch (toolName) {
           case 'get_platform_health': {
@@ -317,35 +342,32 @@ export async function POST(request: NextRequest) {
             ]);
             const totalChapters = books.reduce((acc, b) => acc + (b.chapters?.length || 0), 0);
 
-            return NextResponse.json(
-              {
-                jsonrpc: '2.0',
-                id,
-                result: {
-                  content: [
-                    {
-                      type: 'text',
-                      text: JSON.stringify(
-                        {
-                          ok: true,
-                          platform: 'ChanceTEK One',
-                          version: '1.0.0',
-                          publicOrigin,
-                          playableTracksCount: tracks.length,
-                          playableAudiobooksCount: books.length,
-                          playableAudiobookChaptersCount: totalChapters,
-                          playablePodcastsCount: pods.length,
-                          telemetrySummary: telemetry,
-                        },
-                        null,
-                        2
-                      ),
-                    },
-                  ],
-                },
+            return respondTraced({
+              jsonrpc: '2.0',
+              id,
+              result: {
+                content: [
+                  {
+                    type: 'text',
+                    text: JSON.stringify(
+                      {
+                        ok: true,
+                        platform: 'ChanceTEK One',
+                        version: '1.0.0',
+                        publicOrigin,
+                        playableTracksCount: tracks.length,
+                        playableAudiobooksCount: books.length,
+                        playableAudiobookChaptersCount: totalChapters,
+                        playablePodcastsCount: pods.length,
+                        telemetrySummary: telemetry,
+                      },
+                      null,
+                      2
+                    ),
+                  },
+                ],
               },
-              { headers }
-            );
+            });
           }
 
           case 'search_music': {
@@ -360,33 +382,38 @@ export async function POST(request: NextRequest) {
               limit: args.limit,
               offset: args.offset,
             });
-            return NextResponse.json(
-              { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] } },
-              { headers }
-            );
+            return respondTraced({
+              jsonrpc: '2.0',
+              id,
+              result: { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] },
+            });
           }
 
           case 'get_track': {
             const rawTrack = await getStrideIqTrackById(args.trackId);
             if (!rawTrack) {
-              return NextResponse.json(
+              return respondTraced(
                 { jsonrpc: '2.0', id, result: { isError: true, content: [{ type: 'text', text: `Track ${args.trackId} not found.` }] } },
-                { headers }
+                200,
+                true,
+                `Track ${args.trackId} not found.`
               );
             }
             const track = await toStrideIqTrackDto(rawTrack, publicOrigin);
-            return NextResponse.json(
-              { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify(track, null, 2) }] } },
-              { headers }
-            );
+            return respondTraced({
+              jsonrpc: '2.0',
+              id,
+              result: { content: [{ type: 'text', text: JSON.stringify(track, null, 2) }] },
+            });
           }
 
           case 'list_crates': {
             const crates = await getStrideIqCrates(publicOrigin);
-            return NextResponse.json(
-              { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, crates }, null, 2) }] } },
-              { headers }
-            );
+            return respondTraced({
+              jsonrpc: '2.0',
+              id,
+              result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, crates }, null, 2) }] },
+            });
           }
 
           case 'generate_workout_mix': {
@@ -401,17 +428,19 @@ export async function POST(request: NextRequest) {
               genre: args.genre,
               q: args.q,
             });
-            return NextResponse.json(
-              { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, mix }, null, 2) }] } },
-              { headers }
-            );
+            return respondTraced({
+              jsonrpc: '2.0',
+              id,
+              result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, mix }, null, 2) }] },
+            });
           }
 
           case 'get_workout_profiles': {
-            return NextResponse.json(
-              { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, profiles: WORKOUT_PROFILES }, null, 2) }] } },
-              { headers }
-            );
+            return respondTraced({
+              jsonrpc: '2.0',
+              id,
+              result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, profiles: WORKOUT_PROFILES }, null, 2) }] },
+            });
           }
 
           case 'list_audiobooks': {
@@ -423,24 +452,28 @@ export async function POST(request: NextRequest) {
               limit: args.limit,
               offset: args.offset,
             });
-            return NextResponse.json(
-              { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] } },
-              { headers }
-            );
+            return respondTraced({
+              jsonrpc: '2.0',
+              id,
+              result: { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] },
+            });
           }
 
           case 'get_audiobook': {
             const audiobook = await getStrideIqAudiobookById(args.id, publicOrigin);
             if (!audiobook) {
-              return NextResponse.json(
+              return respondTraced(
                 { jsonrpc: '2.0', id, result: { isError: true, content: [{ type: 'text', text: `Audiobook ${args.id} not found.` }] } },
-                { headers }
+                200,
+                true,
+                `Audiobook ${args.id} not found.`
               );
             }
-            return NextResponse.json(
-              { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, audiobook }, null, 2) }] } },
-              { headers }
-            );
+            return respondTraced({
+              jsonrpc: '2.0',
+              id,
+              result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, audiobook }, null, 2) }] },
+            });
           }
 
           case 'list_podcasts': {
@@ -453,41 +486,47 @@ export async function POST(request: NextRequest) {
               limit: args.limit,
               offset: args.offset,
             });
-            return NextResponse.json(
-              { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] } },
-              { headers }
-            );
+            return respondTraced({
+              jsonrpc: '2.0',
+              id,
+              result: { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] },
+            });
           }
 
           case 'get_podcast': {
             const podcast = await getStrideIqPodcastById(args.id, publicOrigin);
             if (!podcast) {
-              return NextResponse.json(
+              return respondTraced(
                 { jsonrpc: '2.0', id, result: { isError: true, content: [{ type: 'text', text: `Podcast ${args.id} not found.` }] } },
-                { headers }
+                200,
+                true,
+                `Podcast ${args.id} not found.`
               );
             }
-            return NextResponse.json(
-              { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, podcast }, null, 2) }] } },
-              { headers }
-            );
+            return respondTraced({
+              jsonrpc: '2.0',
+              id,
+              result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, podcast }, null, 2) }] },
+            });
           }
 
           case 'list_radio_stations': {
             const stations = await getStrideIqRadioFeed(publicOrigin);
-            return NextResponse.json(
-              { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, stations }, null, 2) }] } },
-              { headers }
-            );
+            return respondTraced({
+              jsonrpc: '2.0',
+              id,
+              result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, stations }, null, 2) }] },
+            });
           }
 
           case 'get_openapi_spec': {
             const specRes = await fetch(`${publicOrigin}/api/strideiq/v1/openapi.json`).catch(() => null);
             const spec = specRes && specRes.ok ? await specRes.json() : { title: 'ChanceTEK One API' };
-            return NextResponse.json(
-              { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify(spec, null, 2) }] } },
-              { headers }
-            );
+            return respondTraced({
+              jsonrpc: '2.0',
+              id,
+              result: { content: [{ type: 'text', text: JSON.stringify(spec, null, 2) }] },
+            });
           }
 
           case 'report_workout_telemetry': {
@@ -499,16 +538,19 @@ export async function POST(request: NextRequest) {
               cadenceSpm: args.cadenceSpm,
               heartRateBpm: args.heartRateBpm,
             });
-            return NextResponse.json(
-              { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, recorded }, null, 2) }] } },
-              { headers }
-            );
+            return respondTraced({
+              jsonrpc: '2.0',
+              id,
+              result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, recorded }, null, 2) }] },
+            });
           }
 
           default:
-            return NextResponse.json(
+            return respondTraced(
               { jsonrpc: '2.0', id, error: { code: -32601, message: `Tool "${toolName}" not found` } },
-              { status: 404, headers }
+              404,
+              true,
+              `Tool "${toolName}" not found`
             );
         }
       }

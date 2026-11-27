@@ -19,6 +19,7 @@ import {
   detectImageMimeType,
   isValidImageBuffer,
 } from '@/lib/admin/id3CoverEmbedder';
+import { reportClientAiMetric } from '@/lib/telemetry/wyresClient';
 
 export type ExportFolderLayout = 'artist-album' | 'artist' | 'flat';
 
@@ -871,10 +872,38 @@ class MusicExportAgentController {
       });
     } catch { }
 
+    const exportCompletedAt = Date.now();
     this.emit({
       phase: 'completed',
-      completedAt: Date.now(),
+      completedAt: exportCompletedAt,
       currentTrackTitle: null,
+    });
+
+    reportClientAiMetric({
+      name: 'music-export-agent:run',
+      runType: 'agent',
+      provider: 'chancetek-agent',
+      model: 'music-export-agent-v1',
+      category: 'export_agent',
+      feature: 'autonomous-music-export',
+      userId: options.actor.email,
+      startTime: this.snapshot.startedAt ? new Date(this.snapshot.startedAt).toISOString() : undefined,
+      endTime: new Date(exportCompletedAt).toISOString(),
+      latencyMs: this.snapshot.startedAt ? Math.max(0, exportCompletedAt - this.snapshot.startedAt) : 0,
+      status: failedCount > 0 && completedCount === 0 ? 'error' : 'success',
+      input: {
+        totalRequested: options.tracks.length,
+        folderLayout: options.folderLayout,
+        embedId3CoverArt: options.embedId3CoverArt,
+      },
+      output: {
+        completedCount,
+        failedCount,
+        retriedCount,
+        coversEmbeddedCount,
+        totalBytesWritten,
+      },
+      tags: ['export-agent', 'super-admin'],
     });
 
     this.log(

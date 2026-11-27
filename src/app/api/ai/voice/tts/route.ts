@@ -1,5 +1,11 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAIClient, AI_CONFIG } from '@/lib/openai/config';
+import {
+  emitWyresTraceAsync,
+  generateWyresId,
+  tracedOpenAIChatCompletion,
+  tracedOpenAITts,
+} from '@/lib/telemetry/wyres';
 
 // ── Rate Limiter ─────────────────────────────────────────────
 // 20 TTS calls per hour, across all users (server-wide).
@@ -18,6 +24,11 @@ function checkTtsLimit(): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  const chainRunId = generateWyresId('wyr_voice');
+  const traceId = chainRunId;
+  const startedMs = Date.now();
+  const startTime = new Date(startedMs).toISOString();
+
   try {
     const { text, voice, language } = await req.json();
 
@@ -28,6 +39,22 @@ export async function POST(req: NextRequest) {
     // Rate limit check
     if (!checkTtsLimit()) {
       console.warn('[TTS] Rate limit reached — skipping synthesis.');
+      emitWyresTraceAsync({
+        id: chainRunId,
+        traceId,
+        name: 'voice-copilot:tts',
+        runType: 'chain',
+        provider: 'openai',
+        model: AI_CONFIG.ttsModel,
+        category: 'voice_ai',
+        feature: 'voice-tts',
+        status: 'error',
+        startTime,
+        endTime: new Date().toISOString(),
+        latencyMs: Date.now() - startedMs,
+        error: 'TTS rate limit reached (429)',
+        tags: ['voice-copilot', 'tts', 'rate-limited'],
+      });
       return NextResponse.json({ error: 'TTS rate limit reached. Try again later.' }, { status: 429 });
     }
 
@@ -38,20 +65,31 @@ export async function POST(req: NextRequest) {
     // If Spanish language is explicitly requested, translate if not already in Spanish
     if (language === 'es') {
       try {
-        const translation = await openai.chat.completions.create({
-          model: AI_CONFIG.defaultModel,
-          messages: [
-            {
-              role: 'system',
-              content:
-                'You are a professional translator for ChanceTEK One. Translate the following text into fluent, natural, calm Spanish for audio narration. Keep all proper nouns like ChanceTEK One, ChanceTEK One AI, and SP-1200 intact. Return only the Spanish translation.',
-            },
-            {
-              role: 'user',
-              content: spokenText,
-            },
-          ],
-        });
+        const translation = await tracedOpenAIChatCompletion(
+          openai,
+          {
+            model: AI_CONFIG.defaultModel,
+            messages: [
+              {
+                role: 'system',
+                content:
+                  'You are a professional translator for ChanceTEK One. Translate the following text into fluent, natural, calm Spanish for audio narration. Keep all proper nouns like ChanceTEK One, ChanceTEK One AI, and SP-1200 intact. Return only the Spanish translation.',
+              },
+              {
+                role: 'user',
+                content: spokenText,
+              },
+            ],
+          },
+          {
+            name: 'voice-copilot:translate-es',
+            feature: 'voice-tts',
+            category: 'voice_ai',
+            traceId,
+            parentRunId: chainRunId,
+            tags: ['translation', 'es'],
+          }
+        );
         const translatedContent = translation.choices[0]?.message?.content;
         if (translatedContent) {
           spokenText = translatedContent.slice(0, 2000);
@@ -61,15 +99,41 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const mp3 = await openai.audio.speech.create({
+    const buffer = await tracedOpenAITts(
+      openai,
+      {
+        model: AI_CONFIG.ttsModel,
+        voice: voice || 'nova', // Default to Nova calm voice
+        input: spokenText,
+      },
+      {
+        name: 'voice-copilot:speech-synthesis',
+        feature: 'voice-tts',
+        traceId,
+        parentRunId: chainRunId,
+        language: language || 'en',
+        tags: ['voice-copilot', 'narration'],
+      }
+    );
+
+    emitWyresTraceAsync({
+      id: chainRunId,
+      traceId,
+      name: 'voice-copilot:tts',
+      runType: 'chain',
+      provider: 'openai',
       model: AI_CONFIG.ttsModel,
-      voice: voice || 'nova', // Default to Nova calm voice
-      input: spokenText,
+      category: 'voice_ai',
+      feature: 'voice-tts',
+      startTime,
+      endTime: new Date().toISOString(),
+      latencyMs: Date.now() - startedMs,
+      input: { voice: voice || 'nova', language: language || 'en', inputChars: spokenText.length },
+      output: { audioBytes: buffer.length },
+      tags: ['voice-copilot', 'tts'],
     });
 
-    const buffer = Buffer.from(await mp3.arrayBuffer());
-
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         'Content-Type': 'audio/mpeg',
         'Content-Length': buffer.length.toString(),
@@ -77,6 +141,22 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error('OpenAI TTS error:', error);
+    emitWyresTraceAsync({
+      id: chainRunId,
+      traceId,
+      name: 'voice-copilot:tts',
+      runType: 'chain',
+      provider: 'openai',
+      model: AI_CONFIG.ttsModel,
+      category: 'voice_ai',
+      feature: 'voice-tts',
+      status: 'error',
+      startTime,
+      endTime: new Date().toISOString(),
+      latencyMs: Date.now() - startedMs,
+      error: error?.message || 'TTS failed',
+      tags: ['voice-copilot', 'tts', 'error'],
+    });
     return NextResponse.json({ error: error.message || 'TTS failed' }, { status: 500 });
   }
 }

@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAIClient, AI_CONFIG } from '@/lib/openai/config';
+import {
+  emitWyresTraceAsync,
+  generateWyresId,
+  tracedOpenAIChatCompletion,
+} from '@/lib/telemetry/wyres';
 
 // ── Rate Limiter ─────────────────────────────────────────────
 // 15 sample breakdown analyses per hour (server-wide).
@@ -17,6 +22,11 @@ function checkBreakdownLimit(): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  const agentRunId = generateWyresId('wyr_smp');
+  const traceId = agentRunId;
+  const startedMs = Date.now();
+  const startTime = new Date(startedMs).toISOString();
+
   try {
     const { trackTitle, artistName, genre, bpm } = await req.json();
 
@@ -27,6 +37,23 @@ export async function POST(req: NextRequest) {
     // Rate limit check
     if (!checkBreakdownLimit()) {
       console.warn('[Sample Breakdown] Rate limit reached — returning 429.');
+      emitWyresTraceAsync({
+        id: agentRunId,
+        traceId,
+        name: 'sample-detective:genealogy',
+        runType: 'agent',
+        provider: 'chancetek-agent',
+        model: AI_CONFIG.defaultModel,
+        category: 'agentic_agent',
+        feature: 'sample-breakdown',
+        status: 'error',
+        startTime,
+        endTime: new Date().toISOString(),
+        latencyMs: Date.now() - startedMs,
+        input: { trackTitle, artistName, genre, bpm },
+        error: 'Rate limit reached (429)',
+        tags: ['sample-detective', 'rate-limited'],
+      });
       return NextResponse.json({ error: 'Rate limit reached. Try again later.' }, { status: 429 });
     }
 
@@ -105,12 +132,25 @@ Provide the complete break genealogy in strict JSON format now.`;
     }
 
     let parsedResult: any = null;
+    let usedFallback = false;
+    let llmUsage: any = null;
+    let resolvedModel = model;
 
     try {
-      const completion = await openai.chat.completions.create(completionParams);
+      const completion = await tracedOpenAIChatCompletion(openai, completionParams, {
+        name: 'sample-detective:chat.completions',
+        feature: 'sample-breakdown',
+        category: 'agentic_agent',
+        traceId,
+        parentRunId: agentRunId,
+        tags: ['sample-detective', 'genealogy'],
+      });
       const text = completion.choices[0]?.message?.content || '{}';
       parsedResult = JSON.parse(text);
+      llmUsage = completion.usage || null;
+      resolvedModel = completion.model || model;
     } catch (aiErr: any) {
+      usedFallback = true;
       console.warn('Sample Detective fallback triggered:', aiErr.message);
       parsedResult = {
         breakName: 'Amen & Funky Drummer Hybrid Crate',
@@ -139,9 +179,47 @@ Provide the complete break genealogy in strict JSON format now.`;
       };
     }
 
+    const endedMs = Date.now();
+    emitWyresTraceAsync({
+      id: agentRunId,
+      traceId,
+      name: 'sample-detective:genealogy',
+      runType: 'agent',
+      provider: usedFallback ? 'chancetek-agent' : 'openai',
+      model: usedFallback ? 'sample-detective-fallback' : resolvedModel,
+      category: 'agentic_agent',
+      feature: 'sample-breakdown',
+      startTime,
+      endTime: new Date(endedMs).toISOString(),
+      latencyMs: endedMs - startedMs,
+      promptTokens: Number(llmUsage?.prompt_tokens || 0),
+      completionTokens: Number(llmUsage?.completion_tokens || 0),
+      totalTokens: Number(llmUsage?.total_tokens || 0),
+      input: { trackTitle, artistName, genre, bpm },
+      output: { breakName: parsedResult.breakName, sampler: parsedResult.samplerLore?.machineName },
+      tags: ['sample-detective', ...(usedFallback ? ['fallback'] : ['openai'])],
+      metadata: { isFallback: usedFallback },
+    });
+
     return NextResponse.json(parsedResult);
   } catch (error: any) {
     console.error('Sample Detective error:', error);
+    emitWyresTraceAsync({
+      id: agentRunId,
+      traceId,
+      name: 'sample-detective:genealogy',
+      runType: 'agent',
+      provider: 'openai',
+      model: AI_CONFIG.defaultModel,
+      category: 'agentic_agent',
+      feature: 'sample-breakdown',
+      status: 'error',
+      startTime,
+      endTime: new Date().toISOString(),
+      latencyMs: Date.now() - startedMs,
+      error: error?.message || 'Sample breakdown failed',
+      tags: ['sample-detective', 'error'],
+    });
     return NextResponse.json({ error: error.message || 'Sample breakdown failed' }, { status: 500 });
   }
 }

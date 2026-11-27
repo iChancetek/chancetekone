@@ -1,10 +1,11 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { PlatformCatalogScannerAgent } from '@/lib/ai/platformCatalogScannerAgent';
 import fs from 'fs';
 import path from 'path';
 import { TavilyCoverArtService } from '@/lib/ai/tavilyCoverArt';
 import { extractCoverArtFromBuffer } from '@/lib/audio/id3Parser';
 import { writeID3v2TagToMP3, dataUrlToImageBytes } from '@/lib/audio/id3Writer';
+import { traceWyresExecution } from '@/lib/telemetry/wyres';
 
 export const runtime = 'nodejs';
 
@@ -17,36 +18,58 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const crateId = searchParams.get('crateId') || undefined;
 
-    const report = await PlatformCatalogScannerAgent.scanPlatformArtwork({ crateId });
+    const { report, localMp3Stats } = await traceWyresExecution(
+      {
+        name: 'catalog-artwork-scanner:audit',
+        runType: 'agent',
+        provider: 'chancetek-agent',
+        model: 'platform-artwork-scanner-v1',
+        category: 'healing_agent',
+        feature: 'catalog-artwork-scan',
+        input: { crateId: crateId || 'all' },
+        tags: ['artwork-agent', 'catalog-audit'],
+        extractOutput: (res) => ({
+          missingTracksCount: res.report?.missingTracksCount ?? 0,
+          missingAlbumsCount: res.report?.missingAlbumsCount ?? 0,
+          totalLocalMp3s: res.localMp3Stats.totalLocalMp3s,
+          localMissingCoverArtCount: res.localMp3Stats.missingCoverArtCount,
+        }),
+      },
+      async () => {
+        const report = await PlatformCatalogScannerAgent.scanPlatformArtwork({ crateId });
 
-    // Also inspect public/audio/uploads directory on the server
-    const uploadsDir = path.join(process.cwd(), 'public', 'audio', 'uploads');
-    let localMp3Stats = {
-      totalLocalMp3s: 0,
-      missingCoverArtCount: 0,
-      filesNeedingArt: [] as string[],
-    };
+        // Also inspect public/audio/uploads directory on the server
+        const uploadsDir = path.join(process.cwd(), 'public', 'audio', 'uploads');
+        const localMp3Stats = {
+          totalLocalMp3s: 0,
+          missingCoverArtCount: 0,
+          filesNeedingArt: [] as string[],
+        };
 
-    if (fs.existsSync(uploadsDir)) {
-      const files = fs.readdirSync(uploadsDir).filter((f) => f.endsWith('.mp3'));
-      localMp3Stats.totalLocalMp3s = files.length;
+        if (fs.existsSync(uploadsDir)) {
+          const files = fs.readdirSync(uploadsDir).filter((f) => f.endsWith('.mp3'));
+          localMp3Stats.totalLocalMp3s = files.length;
 
-      for (const file of files) {
-        try {
-          const filePath = path.join(uploadsDir, file);
-          const fd = fs.openSync(filePath, 'r');
-          const headerBuf = Buffer.alloc(256 * 1024);
-          const bytesRead = fs.readSync(fd, headerBuf, 0, headerBuf.length, 0);
-          fs.closeSync(fd);
+          for (const file of files) {
+            try {
+              const filePath = path.join(uploadsDir, file);
+              const fd = fs.openSync(filePath, 'r');
+              const headerBuf = Buffer.alloc(256 * 1024);
+              const bytesRead = fs.readSync(fd, headerBuf, 0, headerBuf.length, 0);
+              fs.closeSync(fd);
 
-          const art = extractCoverArtFromBuffer(headerBuf.subarray(0, bytesRead));
-          if (!art) {
-            localMp3Stats.missingCoverArtCount++;
-            localMp3Stats.filesNeedingArt.push(file);
+              const art = extractCoverArtFromBuffer(headerBuf.subarray(0, bytesRead));
+              if (!art) {
+                localMp3Stats.missingCoverArtCount++;
+                localMp3Stats.filesNeedingArt.push(file);
+              }
+            } catch {}
           }
-        } catch {}
+        }
+
+        return { report, localMp3Stats };
       }
-    }
+    );
 
     return NextResponse.json({
       status: 'success',
@@ -77,55 +100,77 @@ export async function POST(req: NextRequest) {
       repairLocalMp3Files = false,
     } = body;
 
-    // 1. Run Autonomous Catalog Repair
-    const summary = await PlatformCatalogScannerAgent.runAutonomousCatalogRepair({
-      limit,
-      crateId,
-      trackIds,
-      albumIds,
-      dryRun,
-    });
+    const { summary, localRepairs } = await traceWyresExecution(
+      {
+        name: 'catalog-artwork-scanner:auto-repair',
+        runType: 'agent',
+        provider: 'chancetek-agent',
+        model: 'platform-artwork-scanner-v1',
+        category: 'healing_agent',
+        feature: 'catalog-artwork-repair',
+        input: { limit, crateId: crateId || 'all', dryRun, repairLocalMp3Files },
+        tags: ['artwork-agent', 'auto-repair', ...(dryRun ? ['dry-run'] : [])],
+        extractOutput: (res) => ({
+          totalProcessed: res.summary?.totalProcessed ?? 0,
+          repairedCount: res.summary?.repairedCount ?? 0,
+          failedCount: res.summary?.failedCount ?? 0,
+          localRepairsCount: res.localRepairs.filter((r) => r.success).length,
+        }),
+      },
+      async () => {
+        // 1. Run Autonomous Catalog Repair
+        const summary = await PlatformCatalogScannerAgent.runAutonomousCatalogRepair({
+          limit,
+          crateId,
+          trackIds,
+          albumIds,
+          dryRun,
+        });
 
-    // 2. Optionally repair local physical MP3 files in public/audio/uploads if requested
-    const localRepairs: Array<{ file: string; success: boolean; error?: string }> = [];
-    if (repairLocalMp3Files && !dryRun) {
-      const uploadsDir = path.join(process.cwd(), 'public', 'audio', 'uploads');
-      if (fs.existsSync(uploadsDir)) {
-        const files = fs.readdirSync(uploadsDir).filter((f) => f.endsWith('.mp3'));
-        for (const file of files) {
-          try {
-            const filePath = path.join(uploadsDir, file);
-            const buf = fs.readFileSync(filePath);
-            const art = extractCoverArtFromBuffer(buf);
-            if (!art) {
-              // Parse artist and title from filename (e.g. "Artist_-_Title.mp3" or "Artist_Title.mp3")
-              const cleanName = file.replace(/\.mp3$/i, '').replace(/_/g, ' ');
-              const parts = cleanName.split('-');
-              const artist = parts[0]?.trim() || 'ChanceTEK One';
-              const title = (parts[1] || parts[0]).trim();
+        // 2. Optionally repair local physical MP3 files in public/audio/uploads if requested
+        const localRepairs: Array<{ file: string; success: boolean; error?: string }> = [];
+        if (repairLocalMp3Files && !dryRun) {
+          const uploadsDir = path.join(process.cwd(), 'public', 'audio', 'uploads');
+          if (fs.existsSync(uploadsDir)) {
+            const files = fs.readdirSync(uploadsDir).filter((f) => f.endsWith('.mp3'));
+            for (const file of files) {
+              try {
+                const filePath = path.join(uploadsDir, file);
+                const buf = fs.readFileSync(filePath);
+                const art = extractCoverArtFromBuffer(buf);
+                if (!art) {
+                  // Parse artist and title from filename (e.g. "Artist_-_Title.mp3" or "Artist_Title.mp3")
+                  const cleanName = file.replace(/\.mp3$/i, '').replace(/_/g, ' ');
+                  const parts = cleanName.split('-');
+                  const artist = parts[0]?.trim() || 'ChanceTEK One';
+                  const title = (parts[1] || parts[0]).trim();
 
-              const candidates = await TavilyCoverArtService.searchCoverArt({ artist, title });
-              if (candidates.length > 0) {
-                const verified = await TavilyCoverArtService.fetchAndVerifyImage(candidates[0].url);
-                const imageBytes = dataUrlToImageBytes(verified.dataUrl);
-                const taggedBuffer = writeID3v2TagToMP3(new Uint8Array(buf), {
-                  title,
-                  artist,
-                  coverImageBytes: imageBytes.bytes,
-                  coverMimeType: verified.mimeType || 'image/jpeg',
-                });
-                fs.writeFileSync(filePath, Buffer.from(taggedBuffer));
-                localRepairs.push({ file, success: true });
-              } else {
-                localRepairs.push({ file, success: false, error: 'No candidates found' });
+                  const candidates = await TavilyCoverArtService.searchCoverArt({ artist, title });
+                  if (candidates.length > 0) {
+                    const verified = await TavilyCoverArtService.fetchAndVerifyImage(candidates[0].url);
+                    const imageBytes = dataUrlToImageBytes(verified.dataUrl);
+                    const taggedBuffer = writeID3v2TagToMP3(new Uint8Array(buf), {
+                      title,
+                      artist,
+                      coverImageBytes: imageBytes.bytes,
+                      coverMimeType: verified.mimeType || 'image/jpeg',
+                    });
+                    fs.writeFileSync(filePath, Buffer.from(taggedBuffer));
+                    localRepairs.push({ file, success: true });
+                  } else {
+                    localRepairs.push({ file, success: false, error: 'No candidates found' });
+                  }
+                }
+              } catch (err: any) {
+                localRepairs.push({ file, success: false, error: err?.message });
               }
             }
-          } catch (err: any) {
-            localRepairs.push({ file, success: false, error: err?.message });
           }
         }
+
+        return { summary, localRepairs };
       }
-    }
+    );
 
     return NextResponse.json({
       status: 'success',

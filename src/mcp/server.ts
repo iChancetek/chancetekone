@@ -36,6 +36,7 @@ import {
   resolveServerPodcasts,
 } from '@/lib/server/strideiqCatalog';
 import { recordStrideIqTelemetry, getStrideIqTelemetrySummary } from '@/lib/server/strideiqStore';
+import { emitWyresTraceAsync } from '@/lib/telemetry/wyres';
 
 export interface ChanceTekMcpServerOptions {
   publicOrigin?: string;
@@ -245,9 +246,34 @@ export function createChanceTekMcpServer(options?: ChanceTekMcpServerOptions): S
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args = {} } = request.params;
+    const startedMs = Date.now();
+    const startTime = new Date(startedMs).toISOString();
+
+    const finishTrace = <T extends { isError?: boolean; content: any[] }>(res: T): T => {
+      const endedMs = Date.now();
+      emitWyresTraceAsync({
+        name: `mcp.${name}`,
+        runType: 'tool',
+        provider: 'chancetek-mcp',
+        model: `${serverName}-${serverVersion}`,
+        category: 'mcp_agent',
+        feature: 'mcp-stdio-server',
+        status: res.isError ? 'error' : 'success',
+        startTime,
+        endTime: new Date(endedMs).toISOString(),
+        latencyMs: endedMs - startedMs,
+        input: { toolName: name, args },
+        output: res.isError ? null : { ok: true, toolName: name },
+        error: res.isError ? String(res.content?.[0]?.text || 'MCP tool error') : null,
+        tags: ['mcp', 'stdio', name],
+        metadata: { transport: 'stdio', toolName: name },
+      });
+      return res;
+    };
 
     try {
-      switch (name) {
+      const result = await (async () => {
+        switch (name) {
         case 'get_platform_health': {
           const [tracks, audiobooks, podcasts, telemetry] = await Promise.all([
             resolveServerCatalog({ includeUnplayable: false }),
@@ -531,11 +557,13 @@ export function createChanceTekMcpServer(options?: ChanceTekMcpServerOptions): S
             content: [{ type: 'text', text: `Unknown tool name: ${name}` }],
           };
       }
+      })();
+      return finishTrace(result);
     } catch (err: any) {
-      return {
+      return finishTrace({
         isError: true,
         content: [{ type: 'text', text: `Execution error in "${name}": ${err?.message || String(err)}` }],
-      };
+      });
     }
   });
 

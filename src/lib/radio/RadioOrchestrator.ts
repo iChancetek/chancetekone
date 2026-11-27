@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // Radio Orchestrator — ChanceTEK One
 // Central coordinator for all 6 AI radio agents.
 // Manages dual-station lifecycle, queue automation, and telemetry.
@@ -20,6 +20,7 @@ import { ProgrammingAgent } from './agents/ProgrammingAgent';
 import { AIDjAgent, STATION_ID_EVERY_N_SONGS } from './agents/AIDjAgent';
 import { BroadcastAgent } from './agents/BroadcastAgent';
 import { AnalyticsAgent } from './agents/AnalyticsAgent';
+import { reportClientAiMetric } from '@/lib/telemetry/wyresClient';
 
 // ----- Singleton Orchestrator -----
 
@@ -96,6 +97,18 @@ class RadioOrchestrator {
 
     this.initialized = true;
     this.emit();
+
+    reportClientAiMetric({
+      name: 'radio-orchestrator:initialize',
+      runType: 'agent',
+      provider: 'chancetek-radio',
+      model: 'radio-orchestrator-6-agents',
+      category: 'radio_ai',
+      feature: 'ai-radio-orchestrator',
+      input: { stationsCount: RADIO_STATIONS.length },
+      output: { catalogSize: this.catalog.length, agentsActive: 6 },
+      tags: ['radio-ai', 'multi-agent', 'orchestrator'],
+    });
   }
 
   // ── Playback Control ──────────────────────────────────────
@@ -117,6 +130,17 @@ class RadioOrchestrator {
     this.pauseCatalogPlayer?.();
 
     AnalyticsAgent.trackStationStart(stationId);
+    reportClientAiMetric({
+      name: 'radio-orchestrator:tune-in',
+      runType: 'agent',
+      provider: 'chancetek-radio',
+      model: 'broadcast-agent-v1',
+      category: 'radio_ai',
+      feature: 'ai-radio-broadcast',
+      input: { stationId },
+      output: { status: 'playing', queueSize: this.stationStates[stationId]?.upNext.length ?? 0 },
+      tags: ['radio-ai', stationId, 'broadcast'],
+    });
     this.setAgent('broadcast', 'running', `Broadcasting ${stationId}`);
     this.updateState(stationId, { playbackState: 'playing' });
     await this.playNext(stationId, true);

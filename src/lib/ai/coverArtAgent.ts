@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ChanceTEK One — Autonomous ChanceTEK One Cover Art Specialist
  * An autonomous agent that searches the internet using Tavily to find authentic
  * cover art for artists, albums, and MP3 tracks, and embeds/attaches it across
@@ -13,6 +13,7 @@ import { AudioStorageService } from '../audio/AudioStorageService';
 import { AuditLogger } from '../admin/AuditLogger';
 import { UploadItem, UploadBatch, UploadAlbumGroupRecord, UploadFolderRecord } from '@/types/catalog';
 import { MusicCatalogService } from '../music/MusicCatalogService';
+import { reportClientAiMetric } from '@/lib/telemetry/wyresClient';
 
 export interface CoverArtEnrichmentResult {
   success: boolean;
@@ -172,6 +173,23 @@ export class AgenticAICoverArtAgent {
         details: reasoning,
       });
 
+      reportClientAiMetric({
+        name: 'cover-art-agent:enrich-track',
+        runType: 'agent',
+        provider: 'tavily',
+        model: this.AGENT_ID,
+        category: 'agentic_agent',
+        feature: 'cover-art-enrichment',
+        userId: options?.actorEmail,
+        input: { artist, album, title },
+        output: {
+          domain: bestCandidate.domain,
+          confidenceScore: bestCandidate.confidenceScore,
+          embeddedInMP3,
+        },
+        tags: ['cover-art-agent', 'tavily'],
+      });
+
       return {
         success: true,
         coverUrl: optimizedDataUrl,
@@ -183,6 +201,19 @@ export class AgenticAICoverArtAgent {
       };
     } catch (err: any) {
       console.error('[AgenticAICoverArtAgent Error]', err);
+      reportClientAiMetric({
+        name: 'cover-art-agent:enrich-track',
+        runType: 'agent',
+        provider: 'tavily',
+        model: this.AGENT_ID,
+        category: 'agentic_agent',
+        feature: 'cover-art-enrichment',
+        status: 'error',
+        userId: options?.actorEmail,
+        input: { artist, album, title },
+        error: err?.message || String(err),
+        tags: ['cover-art-agent', 'tavily', 'error'],
+      });
       return {
         success: false,
         reasoning: `Cover art search failed: ${err.message || String(err)}`,

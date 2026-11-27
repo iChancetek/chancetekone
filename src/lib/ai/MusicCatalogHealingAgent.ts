@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ChanceTEK One — Autonomous Music Catalog & Cover Art Healing Agent
  * 
  * An autonomous ChanceTEK One specialist that:
@@ -26,6 +26,7 @@ import { optimizeCoverArtDataUrl } from '../audio/id3Parser';
 import { AudioStorageService } from '../audio/AudioStorageService';
 import { AuditLogger } from '../admin/AuditLogger';
 import { classifyGenre, isGenericOrInvalidGenre } from '@/lib/music/genreClassifier';
+import { reportClientAiMetric } from '@/lib/telemetry/wyresClient';
 
 export interface CatalogDiagnosticReport {
   timestamp: string;
@@ -677,6 +678,30 @@ export class MusicCatalogHealingAgent {
           genresRepairedCount,
         },
         status: 'SUCCESS',
+      });
+    }
+
+    if (typeof window !== 'undefined') {
+      reportClientAiMetric({
+        name: 'catalog-healing-agent:heal-client',
+        runType: 'agent',
+        provider: 'chancetek-agent',
+        model: this.AGENT_ID,
+        category: 'healing_agent',
+        feature: 'music-catalog-heal',
+        userId: options?.actorEmail,
+        startTime: startedAt,
+        endTime: completedAt,
+        latencyMs: Math.max(0, new Date(completedAt).getTime() - new Date(startedAt).getTime()),
+        input: { dryRun: Boolean(options?.dryRun), forceTavily: Boolean(options?.forceTavily) },
+        output: {
+          totalTracksProcessed: allTracks.length,
+          audioRepairedCount,
+          coversRepairedCount,
+          namesRepairedCount,
+          genresRepairedCount,
+        },
+        tags: ['healing-agent', 'client-run'],
       });
     }
 

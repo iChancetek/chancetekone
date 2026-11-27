@@ -3,14 +3,25 @@ import { getOpenAIClient, AI_CONFIG } from '@/lib/openai/config';
 import { buildContextualPrompt } from '@/lib/agents/prompts';
 import { AGENT_TOOLS_DEFINITIONS } from '@/lib/agents/tool-definitions';
 import { LocalRAGEngine } from '@/lib/ai/LocalRAGEngine';
+import {
+  emitWyresTraceAsync,
+  generateWyresId,
+  tracedOpenAIChatCompletion,
+  traceWyresExecution,
+} from '@/lib/telemetry/wyres';
 
 export async function POST(req: NextRequest) {
   let latestUserMessage = '';
   let contextPayload: any = null;
+  const agentRunId = generateWyresId('wyr_agent');
+  const traceId = agentRunId;
+  const agentStartedMs = Date.now();
+  const agentStartTime = new Date(agentStartedMs).toISOString();
 
   try {
     const { messages, context } = await req.json();
     contextPayload = context;
+    const userId = context?.userId || undefined;
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'Messages array is required' }, { status: 400 });
@@ -24,7 +35,55 @@ export async function POST(req: NextRequest) {
 
     if (!hasValidApiKey) {
       // Direct Local RAG execution (instant, zero cost, 100% offline capable)
+      const ragStart = Date.now();
       const localResult = LocalRAGEngine.processQuery(latestUserMessage, context);
+      const ragEnd = Date.now();
+
+      emitWyresTraceAsync({
+        traceId,
+        parentRunId: agentRunId,
+        name: 'breakbeats-assistant:local-rag',
+        runType: 'retriever',
+        provider: 'chancetek-rag',
+        model: 'local-rag-v1',
+        category: 'rag_retriever',
+        feature: 'breakbeats-assistant',
+        startTime: new Date(ragStart).toISOString(),
+        endTime: new Date(ragEnd).toISOString(),
+        latencyMs: ragEnd - ragStart,
+        userId,
+        input: { query: latestUserMessage, currentPage: context?.currentPage || null },
+        output: {
+          contentPreview: (localResult.content || '').slice(0, 600),
+          toolCallsCount: localResult.toolCalls?.length || 0,
+        },
+        tags: ['ai-assistant', 'local-rag', 'rag'],
+      });
+
+      emitWyresTraceAsync({
+        id: agentRunId,
+        traceId,
+        parentRunId: null,
+        name: 'breakbeats-assistant:agent',
+        runType: 'agent',
+        provider: 'chancetek-rag',
+        model: 'local-rag-v1',
+        category: 'ai_assistant',
+        feature: 'breakbeats-assistant',
+        startTime: agentStartTime,
+        endTime: new Date(ragEnd).toISOString(),
+        latencyMs: ragEnd - agentStartedMs,
+        userId,
+        input: { query: latestUserMessage, messageCount: messages.length, currentPage: context?.currentPage || null },
+        output: {
+          mode: 'local-rag',
+          toolCallsCount: localResult.toolCalls?.length || 0,
+          contentPreview: (localResult.content || '').slice(0, 600),
+        },
+        tags: ['ai-assistant', 'copilot', 'local-rag'],
+        metadata: { executionMode: 'local-rag', currentPage: context?.currentPage || null },
+      });
+
       return NextResponse.json(
         {
           content: localResult.content,
@@ -66,7 +125,16 @@ export async function POST(req: NextRequest) {
       completionParams.reasoning_effort = 'none';
     }
 
-    const response = await openai.chat.completions.create(completionParams);
+    const response = await tracedOpenAIChatCompletion(openai, completionParams, {
+      name: 'breakbeats-assistant:chat.completions',
+      feature: 'breakbeats-assistant',
+      category: 'ai_assistant',
+      traceId,
+      parentRunId: agentRunId,
+      userId,
+      tags: ['ai-assistant', 'copilot', 'chat'],
+      metadata: { currentPage: context?.currentPage || null },
+    });
 
     const choice = response.choices[0];
     const message = choice?.message;
@@ -99,10 +167,27 @@ export async function POST(req: NextRequest) {
             toolArgs = JSON.parse(toolCall.function.arguments || '{}');
           } catch (e) {}
 
-          const { result, recommendations, memoryUpdates } = await executeAgentTool(
-            toolName,
-            toolArgs,
-            context?.userId
+          const { result, recommendations, memoryUpdates } = await traceWyresExecution(
+            {
+              traceId,
+              parentRunId: agentRunId,
+              name: `tool.${toolName}`,
+              runType: 'tool',
+              provider: 'chancetek-tool',
+              model: `tool.${toolName}`,
+              category: 'agentic_agent',
+              feature: 'breakbeats-assistant',
+              userId,
+              input: toolArgs,
+              tags: ['tool', toolName, 'ai-assistant'],
+              metadata: { toolName },
+              extractOutput: (res) => ({
+                hasRecommendations: Boolean(res?.recommendations),
+                hasMemoryUpdates: Boolean(res?.memoryUpdates),
+                count: typeof res?.result?.count === 'number' ? res.result.count : undefined,
+              }),
+            },
+            () => executeAgentTool(toolName, toolArgs, context?.userId)
           );
 
           executedToolCalls.push({
@@ -142,6 +227,7 @@ export async function POST(req: NextRequest) {
       ];
 
       let followUpContent = '';
+      let followUpUsage: any = null;
       try {
         const followUpParams: any = {
           model,
@@ -152,11 +238,58 @@ export async function POST(req: NextRequest) {
           followUpParams.reasoning_effort = 'none';
         }
 
-        const followUpResponse = await openai.chat.completions.create(followUpParams);
+        const followUpResponse = await tracedOpenAIChatCompletion(openai, followUpParams, {
+          name: 'breakbeats-assistant:synthesis',
+          feature: 'breakbeats-assistant',
+          category: 'ai_assistant',
+          traceId,
+          parentRunId: agentRunId,
+          userId,
+          tags: ['ai-assistant', 'tool-synthesis'],
+          metadata: { executedTools: executedToolCalls.map((t) => t.toolName) },
+        });
         followUpContent = followUpResponse.choices?.[0]?.message?.content || '';
+        followUpUsage = followUpResponse.usage || null;
       } catch (err: any) {
         console.warn('Error during AI follow-up synthesis:', err?.message || err);
       }
+
+      const endedMs = Date.now();
+      const totalPromptTokens =
+        Number(response?.usage?.prompt_tokens || 0) + Number(followUpUsage?.prompt_tokens || 0);
+      const totalCompletionTokens =
+        Number(response?.usage?.completion_tokens || 0) + Number(followUpUsage?.completion_tokens || 0);
+
+      emitWyresTraceAsync({
+        id: agentRunId,
+        traceId,
+        parentRunId: null,
+        name: 'breakbeats-assistant:agent',
+        runType: 'agent',
+        provider: 'openai',
+        model: response?.model || model,
+        category: 'ai_assistant',
+        feature: 'breakbeats-assistant',
+        startTime: agentStartTime,
+        endTime: new Date(endedMs).toISOString(),
+        latencyMs: endedMs - agentStartedMs,
+        promptTokens: totalPromptTokens,
+        completionTokens: totalCompletionTokens,
+        totalTokens: totalPromptTokens + totalCompletionTokens,
+        userId,
+        input: { query: latestUserMessage, messageCount: messages.length },
+        output: {
+          mode: 'openai-agent-tools',
+          toolsExecuted: executedToolCalls.map((t) => t.toolName),
+          contentPreview: (followUpContent || '').slice(0, 600),
+        },
+        tags: ['ai-assistant', 'agentic-tools', 'copilot'],
+        metadata: {
+          executionMode: 'openai-tools',
+          toolCallsCount: executedToolCalls.length,
+          currentPage: context?.currentPage || null,
+        },
+      });
 
       return NextResponse.json(
         {
@@ -174,6 +307,33 @@ export async function POST(req: NextRequest) {
         }
       );
     }
+
+    const endedMs = Date.now();
+    emitWyresTraceAsync({
+      id: agentRunId,
+      traceId,
+      parentRunId: null,
+      name: 'breakbeats-assistant:agent',
+      runType: 'agent',
+      provider: 'openai',
+      model: response?.model || model,
+      category: 'ai_assistant',
+      feature: 'breakbeats-assistant',
+      startTime: agentStartTime,
+      endTime: new Date(endedMs).toISOString(),
+      latencyMs: endedMs - agentStartedMs,
+      promptTokens: Number(response?.usage?.prompt_tokens || 0),
+      completionTokens: Number(response?.usage?.completion_tokens || 0),
+      totalTokens: Number(response?.usage?.total_tokens || 0),
+      userId,
+      input: { query: latestUserMessage, messageCount: messages.length },
+      output: {
+        mode: 'openai-direct',
+        contentPreview: (message.content || '').slice(0, 600),
+      },
+      tags: ['ai-assistant', 'copilot'],
+      metadata: { executionMode: 'openai-direct', currentPage: context?.currentPage || null },
+    });
 
     return NextResponse.json(
       {
@@ -197,7 +357,38 @@ export async function POST(req: NextRequest) {
 
     // Seamless Autonomous Local RAG execution
     try {
+      const ragStart = Date.now();
       const localResult = LocalRAGEngine.processQuery(latestUserMessage, contextPayload);
+      const ragEnd = Date.now();
+
+      emitWyresTraceAsync({
+        id: agentRunId,
+        traceId,
+        parentRunId: null,
+        name: 'breakbeats-assistant:agent',
+        runType: 'agent',
+        provider: 'chancetek-rag',
+        model: 'local-rag-v1',
+        category: 'ai_assistant',
+        feature: 'breakbeats-assistant',
+        startTime: agentStartTime,
+        endTime: new Date(ragEnd).toISOString(),
+        latencyMs: ragEnd - agentStartedMs,
+        userId: contextPayload?.userId || undefined,
+        input: { query: latestUserMessage },
+        output: {
+          mode: 'local-rag-fallback',
+          toolCallsCount: localResult.toolCalls?.length || 0,
+          contentPreview: (localResult.content || '').slice(0, 600),
+        },
+        tags: ['ai-assistant', 'local-rag', 'fallback'],
+        metadata: {
+          isFallback: true,
+          fallbackReason: error?.message || String(error),
+          ragLatencyMs: ragEnd - ragStart,
+        },
+      });
+
       return NextResponse.json(
         {
           content: localResult.content,
@@ -213,6 +404,27 @@ export async function POST(req: NextRequest) {
       );
     } catch (localErr: any) {
       console.error('[AI Chat] Local RAG processing error:', localErr);
+      const endedMs = Date.now();
+      emitWyresTraceAsync({
+        id: agentRunId,
+        traceId,
+        parentRunId: null,
+        name: 'breakbeats-assistant:agent',
+        runType: 'agent',
+        provider: 'chancetek-rag',
+        model: 'local-rag-v1',
+        category: 'ai_assistant',
+        feature: 'breakbeats-assistant',
+        status: 'error',
+        startTime: agentStartTime,
+        endTime: new Date(endedMs).toISOString(),
+        latencyMs: endedMs - agentStartedMs,
+        userId: contextPayload?.userId || undefined,
+        input: { query: latestUserMessage },
+        error: localErr?.message || String(localErr),
+        tags: ['ai-assistant', 'error'],
+      });
+
       return NextResponse.json(
         {
           content:
