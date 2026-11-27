@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import {
   X,
@@ -54,8 +55,14 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
   const [memberInput, setMemberInput] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
 
   const handleAddMember = () => {
     const val = memberInput.trim();
@@ -69,35 +76,41 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
     setSharedWith(sharedWith.filter((m) => m !== member));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const currentId = profile?.id || user?.uid || (isAdmin ? 'admin' : '');
     const currentEmail = (profile?.email || user?.email) || undefined;
-    if (!name.trim() || !currentId) return;
+    if (!name.trim() || !currentId || isSaving) return;
 
     setErrorMessage(null);
-    const coverUrl = customCoverUrl.trim() || selectedCover;
+    setIsSaving(true);
+    try {
+      const coverUrl = customCoverUrl.trim() || selectedCover;
 
-    const res = PlaylistService.updatePlaylist(
-      playlist.id,
-      currentId,
-      {
-        name: name.trim(),
-        description: description.trim(),
-        type,
-        visibility,
-        coverUrl,
-        sharedWith,
-      },
-      isAdmin,
-      currentEmail
-    );
+      const res = PlaylistService.updatePlaylist(
+        playlist.id,
+        currentId,
+        {
+          name: name.trim(),
+          description: description.trim(),
+          type,
+          visibility,
+          coverUrl,
+          sharedWith,
+        },
+        isAdmin,
+        currentEmail
+      );
 
-    if (res.success && res.playlist) {
-      onUpdated(res.playlist);
-      onClose();
-    } else {
-      setErrorMessage(res.error || 'Failed to update playlist.');
+      if (res.success && res.playlist) {
+        await PlaylistService.syncPlaylistNow(res.playlist);
+        onUpdated(res.playlist);
+        onClose();
+      } else {
+        setErrorMessage(res.error || 'Failed to update playlist.');
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -128,8 +141,8 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
     { id: 'private', label: 'Private', icon: Lock, desc: 'Only visible to you & invited members' },
   ];
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[9995] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-xl glass-panel p-6 sm:p-8 rounded-3xl border border-brand-purple/40 space-y-6 bg-gradient-to-b from-[#141024]/98 via-[#0c0916]/98 to-[#08080c]/98 shadow-[0_25px_70px_rgba(0,0,0,0.85)] max-h-[92vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
@@ -427,6 +440,7 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
           }}
         />
       )}
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -26,6 +26,7 @@ import {
   Trash2,
   Users,
   MessageSquare,
+  RefreshCw,
 } from 'lucide-react';
 import { Playlist, PlaylistType, PlaylistFilter } from '@/types/playlist';
 import { PlaylistService } from '@/lib/playlist/PlaylistService';
@@ -45,6 +46,7 @@ export default function PlaylistsPage() {
   const { playPlaylist } = usePlayer();
 
   const [activeTab, setActiveTab] = useState<'all' | PlaylistType>('all');
+  const [sectionScope, setSectionScope] = useState<'all' | 'public' | 'mine'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [publicPlaylists, setPublicPlaylists] = useState<Playlist[]>([]);
   const [userPlaylists, setUserPlaylists] = useState<Playlist[]>([]);
@@ -59,6 +61,7 @@ export default function PlaylistsPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authPromptAction, setAuthPromptAction] = useState<string>('create');
   const [discussionPlaylist, setDiscussionPlaylist] = useState<Playlist | null>(null);
+  const [isSyncingPublic, setIsSyncingPublic] = useState(false);
   const [, setCommentTick] = useState(0);
 
   const currentEmail = (profile?.email || user?.email) || undefined;
@@ -247,7 +250,47 @@ export default function PlaylistsPage() {
         </div>
       </div>
 
+      {/* 2b. Scope Switcher: All / Public Member Playlists / My Playlists */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <button
+          type="button"
+          onClick={() => setSectionScope('all')}
+          className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer border ${
+            sectionScope === 'all'
+              ? 'bg-brand-gold text-black border-brand-gold shadow-md'
+              : 'bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10'
+          }`}
+        >
+          All Sections
+        </button>
+        <button
+          type="button"
+          onClick={() => setSectionScope('public')}
+          className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer border ${
+            sectionScope === 'public'
+              ? 'bg-emerald-500 text-black border-emerald-400 shadow-md'
+              : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
+          }`}
+        >
+          <Globe className="w-3.5 h-3.5" />
+          <span>Public Playlists ({publicPlaylists.length})</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setSectionScope('mine')}
+          className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer border ${
+            sectionScope === 'mine'
+              ? 'bg-brand-purple text-white border-brand-neon shadow-md'
+              : 'bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10'
+          }`}
+        >
+          <Radio className="w-3.5 h-3.5 text-brand-gold" />
+          <span>My Playlists ({userPlaylists.length})</span>
+        </button>
+      </div>
+
       {/* 3. My Playlists Section (Authenticated) or Guest Intro */}
+      {sectionScope !== 'public' && (
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -479,9 +522,10 @@ export default function PlaylistsPage() {
           </div>
         )}
       </section>
+      )}
 
       {/* 3b. Shared With You Section (Authenticated) */}
-      {profile && sharedPlaylists.length > 0 && (
+      {sectionScope !== 'public' && profile && sharedPlaylists.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-brand-neon" />
@@ -576,8 +620,9 @@ export default function PlaylistsPage() {
       )}
 
       {/* 4. Public Member Playlists (Discoverable & playable by everyone on the platform) */}
+      {sectionScope !== 'mine' && (
       <section className="space-y-4">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <Globe className="w-5 h-5 text-brand-gold" />
             <div>
@@ -589,6 +634,24 @@ export default function PlaylistsPage() {
               </p>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={async () => {
+              setIsSyncingPublic(true);
+              try {
+                await PlaylistService.syncFromServer(true);
+                refreshPlaylists();
+              } finally {
+                setIsSyncingPublic(false);
+              }
+            }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/5 hover:bg-brand-gold/15 border border-white/10 hover:border-brand-gold/40 text-xs font-bold text-neutral-200 hover:text-brand-gold transition-all cursor-pointer"
+            title="Sync latest public playlists from all members"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncingPublic ? 'animate-spin text-brand-gold' : ''}`} />
+            <span>{isSyncingPublic ? 'Syncing...' : 'Refresh Public'}</span>
+          </button>
         </div>
 
         {publicPlaylists.length === 0 ? (
@@ -793,6 +856,7 @@ export default function PlaylistsPage() {
           </div>
         )}
       </section>
+      )}
 
       {/* Modals */}
       {showCreateModal && (

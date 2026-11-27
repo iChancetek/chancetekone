@@ -22,7 +22,7 @@ export const PublicPlaylistsShelf: React.FC = () => {
       setPlaylists(pub.slice(0, 8));
     };
     sync();
-    void PlaylistService.syncFromServer(false);
+    void PlaylistService.syncFromServer(true);
     const unsub = PlaylistService.subscribe(sync);
     window.addEventListener('playlists-updated', sync);
     window.addEventListener('storage', sync);

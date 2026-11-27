@@ -5,8 +5,9 @@
  * when available (App Hosting / Cloud Run), with automatic local JSON fallback
  * (`.data/member_playlists.json`) for instant 0-latency local development.
  *
- * Enables any user on any device or browser to immediately discover, open, and
- * play Public playlists created by any member of the platform.
+ * Writes revision nudges to `catalog_meta/playlists_state` (already publicly
+ * readable in firestore.rules) so all connected clients get instant real-time
+ * push updates via Firestore `onSnapshot`.
  */
 
 import fs from 'fs';
@@ -15,8 +16,8 @@ import { getFirebaseAdmin } from '../../../firebaseAdmin.js';
 import { Playlist, PlaylistItem, PlaylistVisibility } from '@/types/playlist';
 
 const PLAYLISTS_COLLECTION = 'member_playlists';
-const META_COLLECTION = 'platform_meta';
-const META_DOC_ID = 'member_playlists_meta';
+export const PLAYLISTS_META_COLLECTION = 'catalog_meta';
+export const PLAYLISTS_META_DOC_ID = 'playlists_state';
 const MAX_DOC_BYTES = 850_000; // Safe margin under Firestore 1 MiB limit
 const CACHE_TTL_MS = 2_000;
 
@@ -90,12 +91,16 @@ function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T
   });
 }
 
+/** Deeply removes all `undefined` values so Firestore Admin SDK never rejects a write. */
+function stripUndefined<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj)) as T;
+}
+
 function sanitizeUrl(url?: string, fallback = '/images/studio_cover.jpg'): string {
   if (!url || typeof url !== 'string') return fallback;
   const trimmed = url.trim();
   if (!trimmed) return fallback;
   if (trimmed.startsWith('blob:')) return fallback;
-  // Strip huge inline base64 images so Firestore documents stay small and fast
   if (trimmed.startsWith('data:') && trimmed.length > 16_000) return fallback;
   return trimmed;
 }
@@ -119,6 +124,8 @@ function sanitizePlaylistItem(raw: any, playlistId: string, index: number): Play
     raw.mediaType === 'music' || raw.mediaType === 'video' || raw.mediaType === 'audiobook'
       ? raw.mediaType
       : 'music';
+  const cleanAudio = sanitizeOptionalUrl(raw.audioUrl);
+  const cleanVideo = sanitizeOptionalUrl(raw.videoUrl);
   return {
     id: typeof raw.id === 'string' && raw.id ? raw.id : `item-${index}-${String(raw.mediaId)}`,
     playlistId,
@@ -133,8 +140,8 @@ function sanitizePlaylistItem(raw: any, playlistId: string, index: number): Play
     duration: Number.isFinite(Number(raw.duration)) ? Math.max(0, Number(raw.duration)) : 0,
     position: Number.isFinite(Number(raw.position)) ? Number(raw.position) : index,
     addedAt: typeof raw.addedAt === 'string' ? raw.addedAt : new Date().toISOString(),
-    ...(sanitizeOptionalUrl(raw.audioUrl) ? { audioUrl: sanitizeOptionalUrl(raw.audioUrl) } : {}),
-    ...(sanitizeOptionalUrl(raw.videoUrl) ? { videoUrl: sanitizeOptionalUrl(raw.videoUrl) } : {}),
+    ...(cleanAudio ? { audioUrl: cleanAudio } : {}),
+    ...(cleanVideo ? { videoUrl: cleanVideo } : {}),
     ...(Number.isFinite(Number(raw.chapterIndex)) ? { chapterIndex: Number(raw.chapterIndex) } : {}),
     ...(Number.isFinite(Number(raw.bpm)) ? { bpm: Number(raw.bpm) } : {}),
     ...(typeof raw.genre === 'string' && raw.genre.trim() ? { genre: raw.genre.trim().slice(0, 80) } : {}),
@@ -167,6 +174,12 @@ export function sanitizePlaylistForServer(raw: any): Playlist | null {
         .map((s: string) => s.trim().toLowerCase())
     : [];
 
+  const cleanOwnerAvatar = sanitizeOptionalUrl(raw.ownerAvatarUrl);
+  const cleanOwnerEmail =
+    typeof raw.ownerEmail === 'string' && raw.ownerEmail.trim()
+      ? raw.ownerEmail.trim().toLowerCase()
+      : undefined;
+
   const sanitized: Playlist = {
     id,
     ownerId: typeof raw.ownerId === 'string' && raw.ownerId.trim() ? raw.ownerId.trim() : 'usr-member',
@@ -174,12 +187,8 @@ export function sanitizePlaylistForServer(raw: any): Playlist | null {
       typeof raw.ownerName === 'string' && raw.ownerName.trim()
         ? raw.ownerName.trim().slice(0, 120)
         : 'ChanceTEK One Member',
-    ...(sanitizeOptionalUrl(raw.ownerAvatarUrl)
-      ? { ownerAvatarUrl: sanitizeOptionalUrl(raw.ownerAvatarUrl) }
-      : {}),
-    ...(typeof raw.ownerEmail === 'string' && raw.ownerEmail.trim()
-      ? { ownerEmail: raw.ownerEmail.trim().toLowerCase() }
-      : {}),
+    ...(cleanOwnerAvatar ? { ownerAvatarUrl: cleanOwnerAvatar } : {}),
+    ...(cleanOwnerEmail ? { ownerEmail: cleanOwnerEmail } : {}),
     name: name.slice(0, 120),
     description: typeof raw.description === 'string' ? raw.description.trim().slice(0, 500) : '',
     type,
@@ -201,7 +210,7 @@ export function sanitizePlaylistForServer(raw: any): Playlist | null {
     ...(raw.isDeleted ? { isDeleted: true } : {}),
   };
 
-  return JSON.parse(JSON.stringify(sanitized)) as Playlist;
+  return stripUndefined(sanitized);
 }
 
 export function invalidatePlaylistStoreCache(): void {
@@ -244,33 +253,41 @@ function canViewerSee(
   return false;
 }
 
-export async function getPlaylistsRevision(): Promise<number> {
+export async function getPlaylistsRevision(): Promise<{ revision: number; cloudOk: boolean }> {
   let cloudRev = 0;
+  let cloudOk = !canUseFirebaseAdmin();
   if (canUseFirebaseAdmin()) {
     try {
-      cloudRev = await withTimeout(
+      const result = await withTimeout<{ rev: number; ok: boolean }>(
         (async () => {
           const { adminDb } = await getFirebaseAdmin();
-          const snap = await adminDb.collection(META_COLLECTION).doc(META_DOC_ID).get();
-          return snap.exists ? Number(snap.data()?.revision || 0) : 0;
+          const snap = await adminDb
+            .collection(PLAYLISTS_META_COLLECTION)
+            .doc(PLAYLISTS_META_DOC_ID)
+            .get();
+          return { rev: snap.exists ? Number(snap.data()?.revision || 0) : 0, ok: true };
         })(),
-        1_500,
-        0
+        6_000,
+        { rev: 0, ok: false }
       );
+      cloudRev = result.rev;
+      cloudOk = result.ok;
     } catch {
       cloudRev = 0;
+      cloudOk = false;
     }
   }
   const local = readLocalStore();
-  return Math.max(cloudRev, local.revision || 0);
+  return { revision: Math.max(cloudRev, local.revision || 0), cloudOk };
 }
 
 async function readAllServerPlaylists(): Promise<{ revision: number; playlists: Playlist[] }> {
-  const revision = await getPlaylistsRevision();
+  const { revision, cloudOk } = await getPlaylistsRevision();
   const now = Date.now();
 
   if (
     memoryCache &&
+    cloudOk &&
     memoryCache.revision === revision &&
     now - memoryCache.timestamp < CACHE_TTL_MS
   ) {
@@ -296,7 +313,7 @@ async function readAllServerPlaylists(): Promise<{ revision: number; playlists: 
           });
           return true;
         })(),
-        4_500,
+        8_000,
         false
       );
     } catch (err) {
@@ -322,14 +339,19 @@ async function readAllServerPlaylists(): Promise<{ revision: number; playlists: 
   });
 
   const playlists = Array.from(mergedMap.values()).sort(
-    (a, b) => (Date.parse(b.updatedAt || b.createdAt || '') || 0) - (Date.parse(a.updatedAt || a.createdAt || '') || 0)
+    (a, b) =>
+      (Date.parse(b.updatedAt || b.createdAt || '') || 0) -
+      (Date.parse(a.updatedAt || a.createdAt || '') || 0)
   );
 
+  // If Firestore had docs even though meta doc wasn't initialized yet, ensure revision >= 1
+  const effectiveRevision = playlists.length > 0 && revision === 0 ? 1 : revision;
+
   if (cloudLoaded || playlists.length > 0 || !canUseFirebaseAdmin()) {
-    memoryCache = { revision, playlists, timestamp: now };
+    memoryCache = { revision: effectiveRevision, playlists, timestamp: now };
   }
 
-  return { revision, playlists };
+  return { revision: effectiveRevision, playlists };
 }
 
 export async function listVisibleServerPlaylists(viewer?: {
@@ -349,7 +371,6 @@ export async function getServerPlaylistById(
   const cleanId = String(id || '').trim();
   if (!cleanId) return null;
 
-  // Check warm memory cache first
   if (memoryCache && Date.now() - memoryCache.timestamp < CACHE_TTL_MS * 3) {
     const cached = memoryCache.playlists.find((p) => p.id === cleanId);
     if (cached) {
@@ -357,7 +378,6 @@ export async function getServerPlaylistById(
     }
   }
 
-  // Direct single-doc Firestore lookup for fast cold starts
   if (canUseFirebaseAdmin()) {
     try {
       const cloudPlaylist = await withTimeout<Playlist | null>(
@@ -371,7 +391,7 @@ export async function getServerPlaylistById(
           const { _updatedAt, ...data } = snap.data() || {};
           return sanitizePlaylistForServer({ ...data, id: data.id || cleanId });
         })(),
-        3_000,
+        6_000,
         null
       );
       if (cloudPlaylist) {
@@ -411,10 +431,13 @@ export async function upsertServerPlaylist(
   }
 
   const now = new Date().toISOString();
-  const merged: Playlist = {
+  const resolvedOwnerEmail =
+    existing?.ownerEmail || sanitized.ownerEmail || actor.email?.trim().toLowerCase() || undefined;
+
+  const merged: Playlist = stripUndefined({
     ...sanitized,
     ownerId: existing ? existing.ownerId : sanitized.ownerId || actor.userId || 'usr-member',
-    ownerEmail: existing?.ownerEmail || sanitized.ownerEmail || actor.email?.trim().toLowerCase(),
+    ...(resolvedOwnerEmail ? { ownerEmail: resolvedOwnerEmail } : {}),
     createdAt: existing?.createdAt || sanitized.createdAt || now,
     updatedAt: now,
     stats: {
@@ -423,20 +446,14 @@ export async function upsertServerPlaylist(
       likes: Math.max(existing?.stats?.likes || 0, sanitized.stats?.likes || 0),
       shares: Math.max(existing?.stats?.shares || 0, sanitized.stats?.shares || 0),
     },
-  };
+  });
 
   const payloadBytes = Buffer.byteLength(JSON.stringify(merged));
   if (payloadBytes > MAX_DOC_BYTES) {
     return { ok: false, error: 'Playlist payload exceeds maximum size.', status: 413 };
   }
 
-  // 1. Write local store immediately
-  const local = readLocalStore();
-  local.playlists[merged.id] = merged;
-  local.revision = (local.revision || 0) + 1;
-  writeLocalStore(local);
-
-  // 2. Write Firestore when available
+  // 1. Write Firestore FIRST in cloud environments so we never pretend a failed write succeeded
   if (canUseFirebaseAdmin()) {
     try {
       const { admin, adminDb } = await getFirebaseAdmin();
@@ -451,23 +468,37 @@ export async function upsertServerPlaylist(
           { merge: false }
         );
       await adminDb
-        .collection(META_COLLECTION)
-        .doc(META_DOC_ID)
+        .collection(PLAYLISTS_META_COLLECTION)
+        .doc(PLAYLISTS_META_DOC_ID)
         .set(
           {
             revision: admin.firestore.FieldValue.increment(1),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            lastPlaylistId: merged.id,
           },
           { merge: true }
         );
-    } catch (err) {
-      console.warn('[playlistStore] Firestore write warning (local write succeeded):', err);
+    } catch (err: any) {
+      console.error('[playlistStore] Firestore write failed:', err);
+      if (process.env.K_SERVICE) {
+        return {
+          ok: false,
+          error: `Cloud database write failed: ${err?.message || 'Unknown error'}`,
+          status: 500,
+        };
+      }
     }
   }
 
+  // 2. Also update local JSON store for 0-latency local dev / warm instance reads
+  const local = readLocalStore();
+  local.playlists[merged.id] = merged;
+  local.revision = (local.revision || 0) + 1;
+  writeLocalStore(local);
+
   invalidatePlaylistStoreCache();
-  const revision = await getPlaylistsRevision();
-  return { ok: true, playlist: merged, revision };
+  const { revision } = await getPlaylistsRevision();
+  return { ok: true, playlist: merged, revision: Math.max(1, revision) };
 }
 
 export async function deleteServerPlaylist(
@@ -488,6 +519,46 @@ export async function deleteServerPlaylist(
   }
 
   const now = new Date().toISOString();
+
+  if (canUseFirebaseAdmin()) {
+    try {
+      const { admin, adminDb } = await getFirebaseAdmin();
+      const ref = adminDb.collection(PLAYLISTS_COLLECTION).doc(encodeDocId(cleanId));
+      if (permanent) {
+        await ref.delete();
+      } else if (existing) {
+        await ref.set(
+          stripUndefined({
+            ...existing,
+            isDeleted: true,
+            updatedAt: now,
+          }),
+          { merge: true }
+        );
+      }
+      await adminDb
+        .collection(PLAYLISTS_META_COLLECTION)
+        .doc(PLAYLISTS_META_DOC_ID)
+        .set(
+          {
+            revision: admin.firestore.FieldValue.increment(1),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            lastPlaylistId: cleanId,
+          },
+          { merge: true }
+        );
+    } catch (err: any) {
+      console.error('[playlistStore] Firestore delete failed:', err);
+      if (process.env.K_SERVICE) {
+        return {
+          ok: false,
+          error: `Cloud database delete failed: ${err?.message || 'Unknown error'}`,
+          status: 500,
+        };
+      }
+    }
+  }
+
   const local = readLocalStore();
   if (permanent) {
     delete local.playlists[cleanId];
@@ -501,41 +572,9 @@ export async function deleteServerPlaylist(
   local.revision = (local.revision || 0) + 1;
   writeLocalStore(local);
 
-  if (canUseFirebaseAdmin()) {
-    try {
-      const { admin, adminDb } = await getFirebaseAdmin();
-      const ref = adminDb.collection(PLAYLISTS_COLLECTION).doc(encodeDocId(cleanId));
-      if (permanent) {
-        await ref.delete();
-      } else if (existing) {
-        await ref.set(
-          {
-            ...existing,
-            isDeleted: true,
-            updatedAt: now,
-            _updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
-          { merge: true }
-        );
-      }
-      await adminDb
-        .collection(META_COLLECTION)
-        .doc(META_DOC_ID)
-        .set(
-          {
-            revision: admin.firestore.FieldValue.increment(1),
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
-          { merge: true }
-        );
-    } catch (err) {
-      console.warn('[playlistStore] Firestore delete warning:', err);
-    }
-  }
-
   invalidatePlaylistStoreCache();
-  const revision = await getPlaylistsRevision();
-  return { ok: true, revision };
+  const { revision } = await getPlaylistsRevision();
+  return { ok: true, revision: Math.max(1, revision) };
 }
 
 export async function updateServerPlaylistStat(
@@ -546,22 +585,18 @@ export async function updateServerPlaylistStat(
   const cleanId = String(id || '').trim();
   const existing = await getServerPlaylistById(cleanId, { isAdmin: true });
   if (!existing) {
-    return { ok: false, revision: await getPlaylistsRevision() };
+    const { revision } = await getPlaylistsRevision();
+    return { ok: false, revision };
   }
 
   const nextVal = Math.max(0, Number(existing.stats?.[field] || 0) + (Number(delta) || 1));
-  const updated: Playlist = {
+  const updated: Playlist = stripUndefined({
     ...existing,
     stats: {
       ...existing.stats,
       [field]: nextVal,
     },
-  };
-
-  const local = readLocalStore();
-  local.playlists[cleanId] = updated;
-  local.revision = (local.revision || 0) + 1;
-  writeLocalStore(local);
+  });
 
   if (canUseFirebaseAdmin()) {
     try {
@@ -581,7 +616,12 @@ export async function updateServerPlaylistStat(
     }
   }
 
-  invalidatePlaylistStoreCache();
-  return { ok: true, revision: await getPlaylistsRevision() };
-}
+  const local = readLocalStore();
+  local.playlists[cleanId] = updated;
+  local.revision = (local.revision || 0) + 1;
+  writeLocalStore(local);
 
+  invalidatePlaylistStoreCache();
+  const { revision } = await getPlaylistsRevision();
+  return { ok: true, revision };
+}

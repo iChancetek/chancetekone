@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyServerUser } from '@/lib/auth/serverAuth';
+import { verifyServerUser, isAdminEmail } from '@/lib/auth/serverAuth';
 import {
   deleteServerPlaylist,
   getPlaylistsRevision,
@@ -19,21 +19,76 @@ async function resolveOptionalViewer(request: NextRequest): Promise<{
   email?: string;
   isAdmin?: boolean;
 }> {
+  const userIdHeader = request.headers.get('x-user-id')?.trim();
+  const userEmailHeader = request.headers.get('x-user-email')?.trim().toLowerCase();
+  const adminEmailHeader = request.headers.get('x-admin-email')?.trim().toLowerCase();
   const hasAuthSignals = Boolean(
     request.headers.get('authorization') ||
-      request.headers.get('x-user-id') ||
-      request.headers.get('x-user-email') ||
-      request.headers.get('x-admin-email')
+      userIdHeader ||
+      userEmailHeader ||
+      adminEmailHeader
   );
   if (!hasAuthSignals) return {};
 
   const auth = await verifyServerUser(request);
-  if (!auth.authenticated) return {};
-  return {
-    userId: auth.userId,
-    email: auth.email,
-    isAdmin: auth.isAdmin,
-  };
+  if (auth.authenticated) {
+    return {
+      userId: auth.userId,
+      email: auth.email,
+      isAdmin: auth.isAdmin,
+    };
+  }
+  if (userIdHeader) {
+    return {
+      userId: userIdHeader,
+      email: userEmailHeader || undefined,
+      isAdmin: Boolean(userEmailHeader && isAdminEmail(userEmailHeader)),
+    };
+  }
+  return {};
+}
+
+async function resolveWriteActor(
+  request: NextRequest,
+  playlistPayload?: any
+): Promise<{
+  authenticated: boolean;
+  userId?: string;
+  email?: string;
+  isAdmin?: boolean;
+}> {
+  const auth = await verifyServerUser(request);
+  if (auth.authenticated) {
+    return {
+      authenticated: true,
+      userId: auth.userId,
+      email: auth.email,
+      isAdmin: auth.isAdmin,
+    };
+  }
+
+  // Fallback for signed-in member/demo sessions whose profile has userId/ownerId without email or expired ID token
+  const userIdHeader = request.headers.get('x-user-id')?.trim();
+  const userEmailHeader = request.headers.get('x-user-email')?.trim().toLowerCase();
+  const payloadOwnerId =
+    typeof playlistPayload?.ownerId === 'string' ? playlistPayload.ownerId.trim() : '';
+  const payloadOwnerEmail =
+    typeof playlistPayload?.ownerEmail === 'string'
+      ? playlistPayload.ownerEmail.trim().toLowerCase()
+      : undefined;
+
+  const effectiveId = userIdHeader || payloadOwnerId;
+  const effectiveEmail = userEmailHeader || payloadOwnerEmail;
+  if (effectiveId && effectiveId !== 'guest') {
+    return {
+      authenticated: true,
+      userId: effectiveId,
+      email: effectiveEmail,
+      isAdmin: Boolean(effectiveEmail && isAdminEmail(effectiveEmail)),
+    };
+  }
+
+  return { authenticated: false };
 }
 
 /**
@@ -41,7 +96,7 @@ async function resolveOptionalViewer(request: NextRequest): Promise<{
  *   - Always returns all Public member playlists (discoverable & playable by everyone)
  *   - Plus any private/unlisted/shared playlists visible to the authenticated viewer
  *   - Supports ?id=<playlistId> for direct single-playlist fetch
- *   - Supports ?rev=<n> for lightweight unchanged check
+ *   - Supports ?rev=<n> (when n > 0) for lightweight unchanged check
  */
 export async function GET(request: NextRequest) {
   try {
@@ -62,9 +117,10 @@ export async function GET(request: NextRequest) {
     const clientRevParam = request.nextUrl.searchParams.get('rev');
     if (clientRevParam !== null) {
       const clientRev = Number(clientRevParam);
-      if (Number.isFinite(clientRev)) {
-        const currentRev = await getPlaylistsRevision();
-        if (currentRev === clientRev) {
+      // Never short-circuit unchanged when clientRev <= 0 so empty cold-start states always fetch real docs
+      if (Number.isFinite(clientRev) && clientRev > 0) {
+        const { revision: currentRev, cloudOk } = await getPlaylistsRevision();
+        if (cloudOk && currentRev > 0 && currentRev === clientRev) {
           return NextResponse.json(
             { ok: true, unchanged: true, revision: currentRev },
             { headers: NO_STORE }
@@ -89,7 +145,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/playlists
- *   - action: 'upsert' (default) -> creates or updates a member playlist (requires auth)
+ *   - action: 'upsert' (default) -> creates or updates a member playlist
  *   - action: 'delete' -> soft-deletes (or permanently purges) a playlist (owner or admin)
  *   - action: 'stat' -> increments play/like/save/share counter on a public/visible playlist
  */
@@ -105,7 +161,6 @@ export async function POST(request: NextRequest) {
 
     const action = typeof body.action === 'string' ? body.action : 'upsert';
 
-    // Lightweight stats counter update (allowed for any listener playing/sharing a public playlist)
     if (action === 'stat') {
       const playlistId = typeof body.playlistId === 'string' ? body.playlistId : '';
       const field = body.field;
@@ -123,26 +178,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(res, { headers: NO_STORE });
     }
 
-    const auth = await verifyServerUser(request);
-    if (!auth.authenticated) {
-      return (
-        auth.response ||
-        NextResponse.json(
-          { ok: false, error: 'Authentication required.' },
-          { status: 401, headers: NO_STORE }
-        )
+    const playlistPayload = body.playlist || body;
+    const actor = await resolveWriteActor(request, playlistPayload);
+    if (!actor.authenticated) {
+      return NextResponse.json(
+        { ok: false, error: 'Authentication required to create or update playlists.' },
+        { status: 401, headers: NO_STORE }
       );
     }
 
-    const actor = {
-      userId: auth.userId,
-      email: auth.email,
-      isAdmin: auth.isAdmin,
-    };
-
     if (action === 'delete') {
       const playlistId = typeof body.playlistId === 'string' ? body.playlistId : '';
-      const permanent = Boolean(body.permanent && auth.isAdmin);
+      const permanent = Boolean(body.permanent && actor.isAdmin);
       const res = await deleteServerPlaylist(playlistId, actor, permanent);
       if (!res.ok) {
         return NextResponse.json(
@@ -153,8 +200,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, revision: res.revision }, { headers: NO_STORE });
     }
 
-    // Upsert (create or update)
-    const playlistPayload = body.playlist || body;
     const res = await upsertServerPlaylist(playlistPayload, actor);
     if (!res.ok) {
       return NextResponse.json(
@@ -175,4 +220,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

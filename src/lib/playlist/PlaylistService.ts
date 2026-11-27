@@ -7,10 +7,13 @@ import { AnalyticsEngine } from '@/lib/analytics/AnalyticsEngine';
 import { FavoritesService } from '@/lib/favorites/FavoritesService';
 import { EngagementMetricsService } from '@/lib/analytics/EngagementMetricsService';
 import { AuditLogger } from '@/lib/admin/AuditLogger';
-import { auth } from '@/lib/firebase/client';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase/client';
 
 const AUTH_SESSION_STORAGE_KEY = 'spades_auth_session_v2';
-const PLAYLIST_SYNC_POLL_MS = 60_000; // 60s idle poll lets mobile radios sleep; mutations, focus & route mounts sync immediately
+const PLAYLIST_OUTBOX_STORAGE_KEY = '8spades_playlists_outbox_v1';
+const PLAYLIST_KNOWN_REMOTE_KEY = '8spades_playlists_remote_ids_v1';
+const PLAYLIST_SYNC_POLL_MS = 60_000; // 60s idle poll lets mobile radios sleep; Firestore onSnapshot + mutations + focus push instantly
 
 export interface PlaylistMediaInput {
   mediaId: string;
@@ -65,10 +68,86 @@ export class PlaylistService {
   private static lastServerRevision: number | null = null;
   private static lastSyncedAt = 0;
   private static isFetchingServer = false;
+  private static refetchQueued = false;
+  private static refetchForceQueued = false;
   private static pendingUpserts = new Map<string, Playlist>();
   private static pendingDeletes = new Set<string>();
   private static pushedLegacyIds = new Set<string>();
+  private static retryTimer: ReturnType<typeof setTimeout> | null = null;
+  private static metaUnsub: (() => void) | null = null;
   private static syncIdentity: { userId?: string; email?: string; isAdmin?: boolean } = {};
+
+  private static loadPersistedOutbox(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = localStorage.getItem(PLAYLIST_OUTBOX_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed?.upserts)) {
+        parsed.upserts.forEach((p: Playlist) => {
+          if (p && p.id && !this.pendingUpserts.has(p.id)) {
+            this.pendingUpserts.set(p.id, p);
+          }
+        });
+      }
+      if (Array.isArray(parsed?.deletes)) {
+        parsed.deletes.forEach((id: string) => {
+          if (typeof id === 'string' && id) this.pendingDeletes.add(id);
+        });
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  private static persistOutbox(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(
+        PLAYLIST_OUTBOX_STORAGE_KEY,
+        JSON.stringify({
+          upserts: Array.from(this.pendingUpserts.values()),
+          deletes: Array.from(this.pendingDeletes.values()),
+        })
+      );
+    } catch {
+      /* ignore */
+    }
+  }
+
+  private static loadKnownRemoteIds(): Set<string> {
+    if (typeof window === 'undefined') return new Set();
+    try {
+      const raw = localStorage.getItem(PLAYLIST_KNOWN_REMOTE_KEY);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) return new Set(arr.filter((s) => typeof s === 'string'));
+      }
+    } catch {
+      /* ignore */
+    }
+    return new Set();
+  }
+
+  private static saveKnownRemoteIds(ids: Set<string>): void {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(PLAYLIST_KNOWN_REMOTE_KEY, JSON.stringify(Array.from(ids)));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  private static scheduleOutboxRetry(delayMs = 3_500): void {
+    if (typeof window === 'undefined') return;
+    if (this.retryTimer) clearTimeout(this.retryTimer);
+    this.retryTimer = setTimeout(() => {
+      this.retryTimer = null;
+      if (this.pendingUpserts.size > 0 || this.pendingDeletes.size > 0) {
+        void this.flushPendingToServer();
+      }
+    }, delayMs);
+  }
 
   public static subscribe(listener: () => void): () => void {
     this.listeners.add(listener);
@@ -94,7 +173,9 @@ export class PlaylistService {
       if (raw) {
         const parsed = JSON.parse(raw);
         const userId = parsed?.profile?.id || parsed?.userId || this.syncIdentity.userId;
-        const email = (parsed?.profile?.email || parsed?.email || this.syncIdentity.email || '').trim().toLowerCase() || undefined;
+        const email =
+          (parsed?.profile?.email || parsed?.email || this.syncIdentity.email || '').trim().toLowerCase() ||
+          undefined;
         const role = parsed?.profile?.role;
         const isAdmin =
           Boolean(this.syncIdentity.isAdmin) ||
@@ -162,6 +243,7 @@ export class PlaylistService {
   public static startCloudSync(): void {
     if (this.syncStarted || typeof window === 'undefined') return;
     this.syncStarted = true;
+    this.loadPersistedOutbox();
 
     void this.syncFromServer(true);
 
@@ -172,27 +254,53 @@ export class PlaylistService {
     }, PLAYLIST_SYNC_POLL_MS);
 
     window.addEventListener('focus', () => {
-      if (Date.now() - this.lastSyncedAt > 6_000) {
-        void this.syncFromServer(false);
+      if (Date.now() - this.lastSyncedAt > 4_000) {
+        void this.syncFromServer(true);
       }
     });
 
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && Date.now() - this.lastSyncedAt > 6_000) {
-        void this.syncFromServer(false);
+      if (!document.hidden && Date.now() - this.lastSyncedAt > 4_000) {
+        void this.syncFromServer(true);
       }
     });
 
     window.addEventListener('online', () => {
-      void this.flushPendingToServer();
-      void this.syncFromServer(true);
+      void this.flushPendingToServer().then(() => this.syncFromServer(true));
     });
+
+    // Near-instant real-time push across all users & devices when ANY member creates/updates a Public playlist
+    try {
+      this.metaUnsub = onSnapshot(
+        doc(db, 'catalog_meta', 'playlists_state'),
+        (snap) => {
+          const rev = Number(snap.data()?.revision || 0);
+          if (rev > 0 && rev !== (this.lastServerRevision ?? -1)) {
+            void this.syncFromServer(true);
+          }
+        },
+        () => {
+          /* permission denied / offline — polling + focus covers it */
+        }
+      );
+    } catch {
+      /* ignore */
+    }
   }
 
-  private static async pushPlaylistToServer(playlist: Playlist): Promise<void> {
-    if (typeof window === 'undefined') return;
+  public static async syncPlaylistNow(
+    playlist: Playlist
+  ): Promise<{ ok: boolean; error?: string }> {
+    return this.pushPlaylistToServer(playlist);
+  }
+
+  private static async pushPlaylistToServer(
+    playlist: Playlist
+  ): Promise<{ ok: boolean; error?: string }> {
+    if (typeof window === 'undefined') return { ok: false, error: 'SSR context' };
     this.pendingDeletes.delete(playlist.id);
     this.pendingUpserts.set(playlist.id, playlist);
+    this.persistOutbox();
     try {
       const headers = await this.buildSyncHeaders(true, {
         userId: playlist.ownerId,
@@ -201,19 +309,32 @@ export class PlaylistService {
       const res = await fetch('/api/playlists', {
         method: 'POST',
         headers,
+        keepalive: true,
         body: JSON.stringify({ action: 'upsert', playlist }),
       });
-      if (res.ok) {
-        const body = await res.json().catch(() => null);
+      const body = await res.json().catch(() => null);
+      if (res.ok && body?.ok) {
         if (this.pendingUpserts.get(playlist.id) === playlist) {
           this.pendingUpserts.delete(playlist.id);
+          this.persistOutbox();
         }
+        this.pushedLegacyIds.add(playlist.id);
+        const known = this.loadKnownRemoteIds();
+        known.add(playlist.id);
+        this.saveKnownRemoteIds(known);
         if (typeof body?.revision === 'number') {
           this.lastServerRevision = body.revision;
         }
+        return { ok: true };
       }
-    } catch (err) {
-      console.warn('[PlaylistService] Background server upsert deferred:', err);
+      const errMsg = body?.error || `Server returned ${res.status}`;
+      console.warn('[PlaylistService] Server upsert failed, will retry:', errMsg);
+      this.scheduleOutboxRetry(3_500);
+      return { ok: false, error: errMsg };
+    } catch (err: any) {
+      console.warn('[PlaylistService] Background server upsert deferred, will retry:', err);
+      this.scheduleOutboxRetry(4_000);
+      return { ok: false, error: err?.message || 'Network error' };
     }
   }
 
@@ -221,22 +342,28 @@ export class PlaylistService {
     if (typeof window === 'undefined') return;
     this.pendingUpserts.delete(playlistId);
     this.pendingDeletes.add(playlistId);
+    this.persistOutbox();
     try {
       const headers = await this.buildSyncHeaders(true);
       const res = await fetch('/api/playlists', {
         method: 'POST',
         headers,
+        keepalive: true,
         body: JSON.stringify({ action: 'delete', playlistId, permanent }),
       });
       if (res.ok) {
         const body = await res.json().catch(() => null);
         this.pendingDeletes.delete(playlistId);
+        this.persistOutbox();
         if (typeof body?.revision === 'number') {
           this.lastServerRevision = body.revision;
         }
+      } else {
+        this.scheduleOutboxRetry(4_000);
       }
     } catch (err) {
       console.warn('[PlaylistService] Background server delete deferred:', err);
+      this.scheduleOutboxRetry(4_000);
     }
   }
 
@@ -250,6 +377,7 @@ export class PlaylistService {
       await fetch('/api/playlists', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
         body: JSON.stringify({ action: 'stat', playlistId, field, delta }),
       });
     } catch {
@@ -270,16 +398,21 @@ export class PlaylistService {
 
   public static async syncFromServer(force = false): Promise<Playlist[]> {
     if (typeof window === 'undefined') return [];
-    if (this.isFetchingServer) return this.loadAll();
+    if (this.isFetchingServer) {
+      this.refetchQueued = true;
+      if (force) this.refetchForceQueued = true;
+      return this.loadAll();
+    }
     this.isFetchingServer = true;
     try {
+      this.loadPersistedOutbox();
       if (this.pendingUpserts.size > 0 || this.pendingDeletes.size > 0) {
         await this.flushPendingToServer();
       }
 
       const headers = await this.buildSyncHeaders(false);
       const url =
-        !force && this.lastServerRevision !== null
+        !force && this.lastServerRevision !== null && this.lastServerRevision > 0
           ? `/api/playlists?rev=${this.lastServerRevision}`
           : '/api/playlists';
       const res = await fetch(url, { headers, cache: 'no-store' });
@@ -297,8 +430,9 @@ export class PlaylistService {
 
       const localRaw = this.getRawAll();
       const mergedMap = new Map<string, Playlist>();
+      const previouslyKnownRemote = this.loadKnownRemoteIds();
 
-      // Start with local playlists
+      // Start with all local playlists (NEVER drop locally created playlists!)
       localRaw.forEach((p) => {
         if (p && p.id) mergedMap.set(p.id, p);
       });
@@ -326,43 +460,43 @@ export class PlaylistService {
         );
         const existingTs = Date.parse(existing.updatedAt || existing.createdAt || '') || 0;
         const serverTs = Date.parse(sp.updatedAt || sp.createdAt || '') || 0;
-        // For other users' playlists, always take latest server state; for own playlists, newest wins
         if (!isOwnedLocally || serverTs >= existingTs) {
           mergedMap.set(sp.id, this.sanitizePlaylist(sp));
         }
       });
 
-      // Remove public playlists from OTHER users that were deleted or made private on the server
+      // Only prune a playlist if it was PREVIOUSLY fetched from the server (remote-origin)
+      // and is now gone from the server — NEVER prune local-only playlists before migration!
       const finalList: Playlist[] = [];
       mergedMap.forEach((pl) => {
         if (pl.isDeleted) {
           finalList.push(pl);
           return;
         }
-        const isOwnedOrAdmin = this.canUserModifyPlaylist(
-          pl,
-          session.userId,
-          false,
-          session.email
-        );
-        if (!serverIds.has(pl.id) && !isOwnedOrAdmin && !this.pendingUpserts.has(pl.id)) {
-          // Was a remote user's public/shared playlist that is no longer visible on server
+        const isOwned = this.canUserModifyPlaylist(pl, session.userId, false, session.email);
+        const wasRemoteOnly = previouslyKnownRemote.has(pl.id) && !isOwned;
+        if (wasRemoteOnly && !serverIds.has(pl.id) && !this.pendingUpserts.has(pl.id)) {
           return;
         }
         finalList.push(pl);
       });
 
-      // Auto-migrate any existing local-only playlists created by the active user up to the server
-      if (session.userId || session.email) {
-        const localOnlyToMigrate = finalList.filter((pl) => {
-          if (pl.isDeleted || serverIds.has(pl.id) || this.pushedLegacyIds.has(pl.id)) return false;
-          return this.canUserModifyPlaylist(pl, session.userId, false, session.email);
-        });
-        localOnlyToMigrate.forEach((pl) => {
-          this.pushedLegacyIds.add(pl.id);
-          void this.pushPlaylistToServer(pl);
-        });
-      }
+      // Persist updated set of known remote IDs
+      const nextKnownRemote = new Set<string>(serverIds);
+      this.saveKnownRemoteIds(nextKnownRemote);
+
+      // Auto-migrate any existing local-only playlists (public OR owned by current user) up to the server!
+      const localOnlyToMigrate = finalList.filter((pl) => {
+        if (pl.isDeleted || serverIds.has(pl.id) || this.pushedLegacyIds.has(pl.id)) return false;
+        if (pl.visibility === 'public') return true;
+        if (session.userId || session.email) {
+          return this.canUserModifyPlaylist(pl, session.userId, session.isAdmin, session.email);
+        }
+        return false;
+      });
+      localOnlyToMigrate.forEach((pl) => {
+        void this.pushPlaylistToServer(pl);
+      });
 
       const prevJson = JSON.stringify(localRaw);
       const nextJson = JSON.stringify(finalList);
@@ -375,6 +509,12 @@ export class PlaylistService {
       return this.loadAll();
     } finally {
       this.isFetchingServer = false;
+      if (this.refetchQueued) {
+        const nextForce = this.refetchForceQueued;
+        this.refetchQueued = false;
+        this.refetchForceQueued = false;
+        void this.syncFromServer(nextForce);
+      }
     }
   }
 

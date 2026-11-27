@@ -183,7 +183,7 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
     }
   };
 
-  const handleQuickCreateSubmit = (e: React.FormEvent) => {
+  const handleQuickCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
     const trimmed = newPlaylistName.trim();
@@ -208,7 +208,12 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
     setNewPlaylistName('');
     setShowQuickCreate(false);
     syncUserPlaylists();
-    showToast(`Created "${newPl.name}" & added "${mediaItem.title}"!`);
+    showToast(
+      newPlaylistVisibility === 'public'
+        ? `Published "${newPl.name}" publicly & added "${mediaItem.title}"!`
+        : `Created "${newPl.name}" & added "${mediaItem.title}"!`
+    );
+    await PlaylistService.syncPlaylistNow(newPl);
   };
 
   const handlePlaylistCreated = (newPl: Playlist) => {

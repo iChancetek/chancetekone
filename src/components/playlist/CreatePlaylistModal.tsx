@@ -187,14 +187,14 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
     setSharedWith(sharedWith.filter((m) => m !== member));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const effectiveOwnerId = profile?.id || user?.uid || (isAdmin ? 'admin' : 'usr-member');
     const effectiveOwnerName = profile?.name || user?.displayName || (isAdmin ? 'Administrator' : 'Platform Member');
     const effectiveOwnerEmail = (profile?.email || user?.email) || undefined;
     const effectiveAvatar = profile?.avatarUrl || user?.photoURL || undefined;
 
-    if (!name.trim()) return;
+    if (!name.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
     try {
@@ -225,13 +225,16 @@ export const CreatePlaylistModal: React.FC<CreatePlaylistModalProps> = ({
         sharedWith,
       });
 
+      // Guarantee server/Firestore persistence completes before closing modal so mobile browsers never drop it
+      await PlaylistService.syncPlaylistNow(newPl);
+
       onCreated(newPl);
       onClose();
       // Reset
       setName('');
       setDescription('');
       setType('mixed');
-      setVisibility('public');
+      setVisibility(profile?.defaultPlaylistVisibility || 'private');
       setSelectedMedia([]);
       setSharedWith([]);
       setMemberInput('');

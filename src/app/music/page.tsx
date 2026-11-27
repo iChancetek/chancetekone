@@ -35,6 +35,7 @@ import { Track } from '@/types/media';
 import { MOCK_TRACKS } from '@/lib/mockData';
 import { MediaCard } from '@/components/media/MediaCard';
 import { PublicMusicCatalogSection } from '@/components/music/PublicMusicCatalogSection';
+import { PublicPlaylistsShelf } from '@/components/home/PublicPlaylistsShelf';
 import { AgenticDiscoveryDeck } from '@/components/ai/AgenticDiscoveryDeck';
 import { MusicSortOption, MUSIC_SORT_OPTIONS, sortTracks } from '@/lib/music/trackSorting';
 
@@ -784,8 +785,11 @@ export default function MusicPage() {
         </div>
       </div>
 
-      {/* 2c. Agentic AI Music Companion — Tracks streaming history & suggests similar & new songs */}
+      {/* 2c. ChanceTEK One Music Companion — Tracks streaming history & suggests similar & new songs */}
       <AgenticDiscoveryDeck mode="music" />
+
+      {/* 2d. Public Member Playlists Created by Platform Users */}
+      <PublicPlaylistsShelf />
 
       {/* 3. Featured Grid */}
       <div className="space-y-4">
