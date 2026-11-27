@@ -22,8 +22,14 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { Playlist, PlaylistType, PlaylistVisibility } from '@/types/playlist';
-import { PlaylistService, PRESET_COVERS } from '@/lib/playlist/PlaylistService';
-import { getRandomCoverArt } from '@/lib/playlist/CoverArtCatalog';
+import { PlaylistService } from '@/lib/playlist/PlaylistService';
+import {
+  PLAIN_COLOR_COVERS,
+  DEFAULT_PLAIN_COLOR_COVER,
+  createPlainColorCoverUrl,
+  getPlainColorHex,
+  isPlainColorCover,
+} from '@/lib/playlist/CoverArtCatalog';
 import { CoverArtPickerModal } from '@/components/playlist/CoverArtPickerModal';
 import { useAuth } from '@/lib/auth/AuthContext';
 
@@ -48,8 +54,25 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
   const [description, setDescription] = useState(playlist.description || '');
   const [type, setType] = useState<PlaylistType>(playlist.type);
   const [visibility, setVisibility] = useState<PlaylistVisibility>(playlist.visibility);
-  const [selectedCover, setSelectedCover] = useState<string>(playlist.coverUrl);
-  const [customCoverUrl, setCustomCoverUrl] = useState<string>('');
+  const initialIsColor =
+    isPlainColorCover(playlist.coverUrl) &&
+    (playlist.isCustomCover === true ||
+      (playlist.isCustomCover !== false && playlist.coverUrl !== DEFAULT_PLAIN_COLOR_COVER));
+  const initialMode: 'first_song' | 'color' | 'custom' = initialIsColor
+    ? 'color'
+    : playlist.isCustomCover
+    ? 'custom'
+    : 'first_song';
+  const [coverMode, setCoverMode] = useState<'first_song' | 'color' | 'custom'>(initialMode);
+  const [selectedColorUrl, setSelectedColorUrl] = useState<string>(
+    initialIsColor ? playlist.coverUrl : PLAIN_COLOR_COVERS[2].url
+  );
+  const [customHexColor, setCustomHexColor] = useState<string>(
+    getPlainColorHex(playlist.coverUrl) || '#6d28d9'
+  );
+  const [customCoverUrl, setCustomCoverUrl] = useState<string>(
+    initialMode === 'custom' ? playlist.coverUrl : ''
+  );
   const [showCoverPickerModal, setShowCoverPickerModal] = useState(false);
   const [sharedWith, setSharedWith] = useState<string[]>(playlist.sharedWith || []);
   const [memberInput, setMemberInput] = useState('');
@@ -85,7 +108,14 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
     setErrorMessage(null);
     setIsSaving(true);
     try {
-      const coverUrl = customCoverUrl.trim() || selectedCover;
+      const firstSongCover = playlist.items[0]?.coverUrl || DEFAULT_PLAIN_COLOR_COVER;
+      const isExplicitCustom = coverMode === 'color' || (coverMode === 'custom' && Boolean(customCoverUrl.trim()));
+      const coverUrl =
+        coverMode === 'color'
+          ? selectedColorUrl
+          : coverMode === 'custom' && customCoverUrl.trim()
+          ? customCoverUrl.trim()
+          : firstSongCover;
 
       const res = PlaylistService.updatePlaylist(
         playlist.id,
@@ -96,6 +126,7 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
           type,
           visibility,
           coverUrl,
+          isCustomCover: isExplicitCustom,
           sharedWith,
         },
         isAdmin,
@@ -325,76 +356,147 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
               )}
             </div>
 
-            {/* Cover Selector with 100 Artworks Gallery */}
-            <div className="space-y-3 p-4 rounded-2xl bg-white/[0.03] border border-white/10">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-neutral-300 flex items-center gap-2">
-                    <ImageIcon className="w-4 h-4 text-brand-gold" />
-                    <span>Cover Artwork</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold font-mono border border-brand-gold/30">
-                      100 Curated Arts
-                    </span>
-                  </label>
-                  <p className="text-[11px] text-neutral-400 mt-0.5">
-                    Select from 100 studio hardware, vinyl, and music cover visuals.
-                  </p>
-                </div>
+            {/* Cover Selector: First Song Cover (Default) or Plain Color */}
+            {(() => {
+              const firstSongCover = playlist.items[0]?.coverUrl || DEFAULT_PLAIN_COLOR_COVER;
+              const activePreviewUrl =
+                coverMode === 'color'
+                  ? selectedColorUrl
+                  : coverMode === 'custom' && customCoverUrl.trim()
+                  ? customCoverUrl.trim()
+                  : firstSongCover;
 
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedCover(getRandomCoverArt())}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-neutral-300 hover:text-white transition-all cursor-pointer"
-                    title="Choose random cover art"
-                  >
-                    <Shuffle className="w-3.5 h-3.5 text-brand-gold" />
-                    <span>Surprise Me</span>
-                  </button>
+              return (
+                <div className="space-y-3.5 p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <label className="text-xs font-bold uppercase tracking-wider text-neutral-300 flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4 text-brand-gold" />
+                        <span>Playlist Cover</span>
+                      </label>
+                      <p className="text-[11px] text-neutral-400 mt-0.5">
+                        Use the cover art of the first song in this playlist — or select a plain color.
+                      </p>
+                    </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setShowCoverPickerModal(true)}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-brand-gold to-brand-amber text-black text-xs font-black uppercase tracking-wider shadow-md hover:scale-105 transition-all cursor-pointer"
-                  >
-                    <ImageIcon className="w-3.5 h-3.5" />
-                    <span>Browse 100 Covers</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Current Cover Preview Card */}
-              <div className="flex items-center gap-4 pt-1">
-                <div
-                  onClick={() => setShowCoverPickerModal(true)}
-                  className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-brand-gold/60 shadow-lg cursor-pointer group shrink-0"
-                >
-                  <Image
-                    src={customCoverUrl.trim() || selectedCover}
-                    alt="Selected Cover"
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-[10px] font-bold">
-                    Change
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => setCoverMode('first_song')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                          coverMode === 'first_song'
+                            ? 'bg-gradient-to-r from-brand-gold to-brand-amber text-black border-brand-gold shadow-md'
+                            : 'bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10'
+                        }`}
+                      >
+                        First Song Cover
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCoverMode('color')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                          coverMode === 'color'
+                            ? 'bg-brand-purple text-white border-brand-neon shadow-md'
+                            : 'bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10'
+                        }`}
+                      >
+                        Plain Color
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowCoverPickerModal(true)}
+                        className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-neutral-300 hover:text-white transition-all cursor-pointer"
+                      >
+                        More
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex-1 space-y-1.5 min-w-0">
-                  <p className="text-xs font-bold text-white">Active Artwork</p>
-                  <p className="text-[11px] text-neutral-400">
-                    Click the thumbnail or "Browse 100 Covers" to switch styles.
-                  </p>
-                  <input
-                    type="url"
-                    value={customCoverUrl}
-                    onChange={(e) => setCustomCoverUrl(e.target.value)}
-                    placeholder="Or paste external image URL..."
-                    className="w-full max-w-sm px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-brand-gold"
-                  />
+                  {/* Current Cover Preview Card */}
+                  <div className="flex items-center gap-4 pt-1">
+                    <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-brand-gold/60 shadow-lg shrink-0 bg-[#0d0d16]">
+                      <Image
+                        src={activePreviewUrl}
+                        alt="Selected Cover"
+                        fill
+                        unoptimized
+                        className="object-cover"
+                      />
+                    </div>
+
+                    <div className="flex-1 space-y-1 min-w-0">
+                      <p className="text-xs font-bold text-white">
+                        {coverMode === 'first_song'
+                          ? 'Using First Song Cover Art'
+                          : coverMode === 'color'
+                          ? 'Plain Color Playlist Cover'
+                          : 'Custom Playlist Cover'}
+                      </p>
+                      <p className="text-[11px] text-neutral-400">
+                        {coverMode === 'first_song'
+                          ? playlist.items[0]
+                            ? `Matched to "${playlist.items[0].title}". Updates automatically when track #1 changes.`
+                            : 'Will automatically display the cover art of the first song you add.'
+                          : coverMode === 'color'
+                          ? 'Pick any solid color swatch or custom hex color below.'
+                          : 'Using custom selected artwork.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {coverMode === 'color' && (
+                    <div className="pt-2 border-t border-white/10 flex flex-wrap items-center gap-2">
+                      {PLAIN_COLOR_COVERS.map((swatch) => {
+                        const isPicked = selectedColorUrl === swatch.url;
+                        return (
+                          <button
+                            key={swatch.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedColorUrl(swatch.url);
+                              setCustomHexColor(swatch.hex);
+                            }}
+                            title={swatch.name}
+                            aria-label={`Select ${swatch.name} plain color`}
+                            style={{ backgroundColor: swatch.hex }}
+                            className={`w-8 h-8 rounded-xl border-2 transition-all flex items-center justify-center cursor-pointer ${
+                              isPicked
+                                ? 'border-brand-gold scale-110 ring-2 ring-brand-gold/50 shadow-lg'
+                                : 'border-white/25 hover:scale-105 hover:border-white/70'
+                            }`}
+                          >
+                            {isPicked && (
+                              <Check
+                                className={`w-4 h-4 stroke-[3] ${
+                                  swatch.hex === '#e5e5e0' ? 'text-black' : 'text-white'
+                                }`}
+                              />
+                            )}
+                          </button>
+                        );
+                      })}
+
+                      <label
+                        className="inline-flex items-center gap-1.5 px-2.5 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-[11px] font-bold text-neutral-200 cursor-pointer"
+                        title="Pick any custom plain color"
+                      >
+                        <input
+                          type="color"
+                          value={customHexColor}
+                          onChange={(e) => {
+                            const hex = e.target.value;
+                            setCustomHexColor(hex);
+                            setSelectedColorUrl(createPlainColorCoverUrl(hex));
+                          }}
+                          className="w-5 h-5 rounded border-0 bg-transparent cursor-pointer p-0"
+                        />
+                        <span>Custom</span>
+                      </label>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Actions */}
             <div className="flex items-center justify-between pt-3 border-t border-white/10">
@@ -433,10 +535,22 @@ export const EditPlaylistModal: React.FC<EditPlaylistModalProps> = ({
         <CoverArtPickerModal
           isOpen={showCoverPickerModal}
           onClose={() => setShowCoverPickerModal(false)}
-          selectedUrl={customCoverUrl.trim() || selectedCover}
+          selectedUrl={
+            coverMode === 'color'
+              ? selectedColorUrl
+              : customCoverUrl.trim() || playlist.items[0]?.coverUrl || DEFAULT_PLAIN_COLOR_COVER
+          }
           onSelect={(url) => {
-            setSelectedCover(url);
-            setCustomCoverUrl('');
+            if (isPlainColorCover(url)) {
+              setCoverMode('color');
+              setSelectedColorUrl(url);
+              const hex = getPlainColorHex(url);
+              if (hex) setCustomHexColor(hex);
+              setCustomCoverUrl('');
+            } else {
+              setCoverMode('custom');
+              setCustomCoverUrl(url);
+            }
           }}
         />
       )}

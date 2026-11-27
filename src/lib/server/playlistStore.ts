@@ -194,6 +194,7 @@ export function sanitizePlaylistForServer(raw: any): Playlist | null {
     type,
     visibility: normalizeVisibility(raw.visibility),
     coverUrl: sanitizeUrl(raw.coverUrl, '/images/studio_cover.jpg'),
+    ...(typeof raw.isCustomCover === 'boolean' ? { isCustomCover: raw.isCustomCover } : {}),
     items,
     itemCount: items.length,
     totalDuration,

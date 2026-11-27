@@ -88,7 +88,18 @@ export const BarRankingChart: React.FC<BarRankingChartProps> = ({
                   {/* Optional Cover */}
                   {item.coverUrl && (
                     <div className="relative w-7 h-7 rounded-lg overflow-hidden border border-white/10 shrink-0 bg-neutral-900">
-                      <Image src={item.coverUrl} alt={item.title} fill className="object-cover" />
+                      <Image
+                        src={item.coverUrl}
+                        alt={item.title}
+                        fill
+                        unoptimized={Boolean(
+                          item.coverUrl.startsWith('data:') ||
+                            item.coverUrl.startsWith('blob:') ||
+                            item.coverUrl.startsWith('http') ||
+                            item.coverUrl.startsWith('/api/')
+                        )}
+                        className="object-cover"
+                      />
                     </div>
                   )}
 

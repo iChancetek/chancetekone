@@ -21,9 +21,16 @@ export async function generateMetadata({
         `Listen to "${serverPl.name}" (${serverPl.itemCount} items) curated by ${serverPl.ownerName} on ChanceTEK One.`
       : meta.description;
     const rawCover = serverPl?.coverUrl || meta?.coverUrl || '/images/genres/rnb-neo-soul.jpg';
-    const image = rawCover.startsWith('http')
-      ? rawCover
-      : `https://chancetekone.us${rawCover}`;
+    const firstItemCover = serverPl?.items?.[0]?.coverUrl;
+    const safeCover =
+      rawCover.startsWith('data:') || rawCover.startsWith('blob:')
+        ? firstItemCover && !firstItemCover.startsWith('data:') && !firstItemCover.startsWith('blob:')
+          ? firstItemCover
+          : '/images/genres/rnb-neo-soul.jpg'
+        : rawCover;
+    const image = safeCover.startsWith('http')
+      ? safeCover
+      : `https://chancetekone.us${safeCover}`;
 
     return {
       title: titleText,

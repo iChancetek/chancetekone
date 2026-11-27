@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
@@ -402,7 +402,19 @@ export const PlaylistAnalyticsSection: React.FC<PlaylistAnalyticsSectionProps> =
                         <td className="py-3 px-3">
                           <div className="flex items-center gap-3">
                             <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-white/10 shrink-0 bg-neutral-900 shadow-md">
-                              <Image src={pl.coverUrl} alt={pl.name} fill className="object-cover" />
+                              <Image
+                                src={pl.coverUrl || '/images/studio_cover.jpg'}
+                                alt={pl.name}
+                                fill
+                                unoptimized={Boolean(
+                                  pl.coverUrl &&
+                                    (pl.coverUrl.startsWith('data:') ||
+                                      pl.coverUrl.startsWith('blob:') ||
+                                      pl.coverUrl.startsWith('http') ||
+                                      pl.coverUrl.startsWith('/api/'))
+                                )}
+                                className="object-cover"
+                              />
                             </div>
                             <div className="min-w-0">
                               <span className="font-bold text-white font-sans truncate block group-hover:text-brand-gold transition-colors">
@@ -554,7 +566,19 @@ export const PlaylistAnalyticsSection: React.FC<PlaylistAnalyticsSectionProps> =
                         <td className="py-3 px-3">
                           <div className="flex items-center gap-3">
                             <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-white/10 shrink-0 bg-neutral-900 shadow-md opacity-80 group-hover:opacity-100 transition-opacity">
-                              <Image src={item.playlist.coverUrl} alt={item.playlist.name} fill className="object-cover" />
+                              <Image
+                                src={item.playlist.coverUrl || '/images/studio_cover.jpg'}
+                                alt={item.playlist.name}
+                                fill
+                                unoptimized={Boolean(
+                                  item.playlist.coverUrl &&
+                                    (item.playlist.coverUrl.startsWith('data:') ||
+                                      item.playlist.coverUrl.startsWith('blob:') ||
+                                      item.playlist.coverUrl.startsWith('http') ||
+                                      item.playlist.coverUrl.startsWith('/api/'))
+                                )}
+                                className="object-cover"
+                              />
                             </div>
                             <div className="min-w-0">
                               <span className="font-bold text-white font-sans truncate block">

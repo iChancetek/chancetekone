@@ -20,6 +20,7 @@ import {
 import { Playlist, PlaylistType, PlaylistVisibility } from '@/types/playlist';
 import { MediaType } from '@/types/media';
 import { PlaylistService, PlaylistMediaInput } from '@/lib/playlist/PlaylistService';
+import { PLAIN_COLOR_COVERS, createPlainColorCoverUrl } from '@/lib/playlist/CoverArtCatalog';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { AuthPromptModal } from '@/components/auth/AuthPromptModal';
 import { CreatePlaylistModal } from './CreatePlaylistModal';
@@ -59,6 +60,9 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
   const [newPlaylistVisibility, setNewPlaylistVisibility] = useState<PlaylistVisibility>(
     profile?.defaultPlaylistVisibility || 'private'
   );
+  // null = default (First Song Cover Art); string = selected Plain Color SVG data URL
+  const [quickPlainColorUrl, setQuickPlainColorUrl] = useState<string | null>(null);
+  const [quickCustomHex, setQuickCustomHex] = useState<string>('#6d28d9');
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -201,11 +205,13 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
       description: '',
       type: inferredType,
       visibility: newPlaylistVisibility,
-      coverUrl: mediaItem.coverUrl || undefined,
+      coverUrl: quickPlainColorUrl || mediaItem.coverUrl || undefined,
+      isCustomCover: Boolean(quickPlainColorUrl),
       initialItems: [mediaPayload],
     });
 
     setNewPlaylistName('');
+    setQuickPlainColorUrl(null);
     setShowQuickCreate(false);
     syncUserPlaylists();
     showToast(
@@ -387,13 +393,74 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
                 </button>
               </div>
 
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  <span>Cover Art</span>
+                  <span className="text-brand-gold normal-case font-semibold">
+                    {quickPlainColorUrl ? 'Plain Color' : 'First Song Cover (Default)'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setQuickPlainColorUrl(null)}
+                    className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                      !quickPlainColorUrl
+                        ? 'bg-brand-gold text-black border-brand-gold'
+                        : 'bg-white/5 text-neutral-300 border-white/10 hover:text-white'
+                    }`}
+                    title="Use the first song's cover art"
+                  >
+                    1st Song
+                  </button>
+                  {PLAIN_COLOR_COVERS.slice(0, 8).map((swatch) => {
+                    const active = quickPlainColorUrl === swatch.url;
+                    return (
+                      <button
+                        key={swatch.id}
+                        type="button"
+                        onClick={() => {
+                          setQuickPlainColorUrl(swatch.url);
+                          setQuickCustomHex(swatch.hex);
+                        }}
+                        title={`Plain ${swatch.name}`}
+                        aria-label={`Select ${swatch.name} plain color`}
+                        style={{ backgroundColor: swatch.hex }}
+                        className={`w-6 h-6 rounded-full border-2 transition-all flex items-center justify-center cursor-pointer ${
+                          active
+                            ? 'border-brand-gold scale-110 ring-2 ring-brand-gold/50'
+                            : 'border-white/25 hover:scale-105'
+                        }`}
+                      >
+                        {active && <Check className="w-3 h-3 text-white stroke-[3]" />}
+                      </button>
+                    );
+                  })}
+                  <label
+                    className="inline-flex items-center gap-1 px-1.5 h-6 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-[10px] font-bold text-neutral-300 cursor-pointer"
+                    title="Pick any custom plain color"
+                  >
+                    <input
+                      type="color"
+                      value={quickCustomHex}
+                      onChange={(e) => {
+                        setQuickCustomHex(e.target.value);
+                        setQuickPlainColorUrl(createPlainColorCoverUrl(e.target.value));
+                      }}
+                      className="w-4 h-4 rounded-full border-0 bg-transparent p-0 cursor-pointer"
+                    />
+                    <span>Color</span>
+                  </label>
+                </div>
+              </div>
+
               <button
                 type="button"
                 onClick={() => setShowCreateModal(true)}
                 className="w-full pt-1.5 border-t border-white/10 text-[11px] text-neutral-300 hover:text-brand-gold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 <SlidersHorizontal className="w-3 h-3" />
-                <span>More options (cover art, description, share with members)</span>
+                <span>More options (all plain colors, description, share with members)</span>
               </button>
             </form>
           )}
@@ -433,6 +500,13 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
                           src={pl.coverUrl || '/images/studio_cover.jpg'}
                           alt={pl.name}
                           fill
+                          unoptimized={Boolean(
+                            pl.coverUrl &&
+                              (pl.coverUrl.startsWith('data:') ||
+                                pl.coverUrl.startsWith('blob:') ||
+                                pl.coverUrl.startsWith('http') ||
+                                pl.coverUrl.startsWith('/api/'))
+                          )}
                           className="object-cover"
                         />
                       </div>

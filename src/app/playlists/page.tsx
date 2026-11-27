@@ -389,9 +389,16 @@ export default function PlaylistsPage() {
                     <Link href={`/playlists/${pl.id}`}>
                       <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-3 border border-white/5 bg-black/50">
                         <Image
-                          src={pl.coverUrl}
+                          src={pl.coverUrl || '/images/studio_cover.jpg'}
                           alt={pl.name}
                           fill
+                          unoptimized={Boolean(
+                            pl.coverUrl &&
+                              (pl.coverUrl.startsWith('data:') ||
+                                pl.coverUrl.startsWith('blob:') ||
+                                pl.coverUrl.startsWith('http') ||
+                                pl.coverUrl.startsWith('/api/'))
+                          )}
                           className="object-cover transition-transform duration-500 group-hover:scale-105"
                         />
 
@@ -571,9 +578,16 @@ export default function PlaylistsPage() {
                   <Link href={`/playlists/${pl.id}`}>
                     <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-3 border border-white/5 bg-black/50">
                       <Image
-                        src={pl.coverUrl}
+                        src={pl.coverUrl || '/images/studio_cover.jpg'}
                         alt={pl.name}
                         fill
+                        unoptimized={Boolean(
+                          pl.coverUrl &&
+                            (pl.coverUrl.startsWith('data:') ||
+                              pl.coverUrl.startsWith('blob:') ||
+                              pl.coverUrl.startsWith('http') ||
+                              pl.coverUrl.startsWith('/api/'))
+                        )}
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
 

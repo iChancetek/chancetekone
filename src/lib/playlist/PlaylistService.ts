@@ -48,9 +48,18 @@ const PLAYLIST_STORAGE_KEY = '8spades_playlists_v2';
 const SAVED_PLAYLISTS_STORAGE_KEY = '8spades_saved_playlists_v2';
 const LIKED_PLAYLISTS_STORAGE_KEY = '8spades_liked_playlists_v2';
 
-import { COVER_ART_CATALOG } from '@/lib/playlist/CoverArtCatalog';
+import {
+  COVER_ART_CATALOG,
+  DEFAULT_PLAIN_COLOR_COVER,
+  isPlainColorCover,
+} from '@/lib/playlist/CoverArtCatalog';
 
 export const PRESET_COVERS = COVER_ART_CATALOG.map((c) => c.url);
+const LEGACY_PRESET_COVER_SET = new Set<string>([
+  ...PRESET_COVERS,
+  '/images/studio_cover.jpg',
+  '/images/genres/rnb-neo-soul.jpg',
+]);
 
 // Zero synthetic/mock seed playlists — ONLY real member-created playlists exist on the platform.
 export const INITIAL_PUBLIC_PLAYLISTS: Playlist[] = [];
@@ -616,18 +625,49 @@ export class PlaylistService {
   }
 
   private static sanitizePlaylist(p: Playlist): Playlist {
-    if (!p.items || p.items.length === 0) return p;
-    const sanitizedItems = p.items.filter((item) => {
-      if (item.mediaType === 'music') {
-        return !MusicCatalogService.isTrackPermanentlyRemoved(item.mediaId, item.title, item.artistName);
-      }
-      return true;
-    });
+    const sanitizedItems =
+      !p.items || p.items.length === 0
+        ? []
+        : p.items.filter((item) => {
+          if (item.mediaType === 'music') {
+            return !MusicCatalogService.isTrackPermanentlyRemoved(item.mediaId, item.title, item.artistName);
+          }
+          return true;
+        });
+
+    // Enforce default First-Song Cover Art unless creator explicitly chose a Plain Color or custom artwork
+    const autoFirstSong = this.isAutoFirstSongCover(p);
+    const firstItemCover = sanitizedItems[0]?.coverUrl?.trim();
+    let resolvedCover = p.coverUrl;
+    if (
+      autoFirstSong &&
+      firstItemCover &&
+      (p.isCustomCover === false ||
+        !resolvedCover ||
+        resolvedCover === DEFAULT_PLAIN_COLOR_COVER ||
+        LEGACY_PRESET_COVER_SET.has(resolvedCover))
+    ) {
+      resolvedCover = firstItemCover;
+    } else if (!resolvedCover) {
+      resolvedCover = firstItemCover || DEFAULT_PLAIN_COLOR_COVER;
+    }
+
     return {
       ...p,
+      coverUrl: resolvedCover,
       items: sanitizedItems,
       itemCount: sanitizedItems.length,
     };
+  }
+
+  /**
+   * Returns true when a playlist should automatically display the cover art of its first item.
+   * Honors explicit `isCustomCover: false` even while an empty playlist displays the neutral placeholder.
+   */
+  private static isAutoFirstSongCover(playlist: Pick<Playlist, 'isCustomCover' | 'coverUrl'>): boolean {
+    if (playlist.isCustomCover === true) return false;
+    if (playlist.isCustomCover === false) return true;
+    return !isPlainColorCover(playlist.coverUrl) || playlist.coverUrl === DEFAULT_PLAIN_COLOR_COVER;
   }
 
   private static loadRecoveryVault(): RecoverablePlaylistItem[] {
@@ -911,6 +951,7 @@ export class PlaylistService {
     type: PlaylistType;
     visibility: PlaylistVisibility;
     coverUrl?: string;
+    isCustomCover?: boolean;
     initialItems?: PlaylistMediaInput[];
     sharedWith?: string[];
   }): Playlist {
@@ -936,6 +977,14 @@ export class PlaylistService {
       }
     }
 
+    const explicitCustomCover = Boolean(
+      params.isCustomCover === true ||
+      (params.isCustomCover !== false && params.coverUrl && isPlainColorCover(params.coverUrl))
+    );
+    const resolvedCover = explicitCustomCover
+      ? params.coverUrl || DEFAULT_PLAIN_COLOR_COVER
+      : items[0]?.coverUrl || params.coverUrl || DEFAULT_PLAIN_COLOR_COVER;
+
     const newPlaylist: Playlist = {
       id: playlistId,
       ownerId: params.ownerId,
@@ -946,7 +995,8 @@ export class PlaylistService {
       description: params.description?.trim() || '',
       type: resolvedType,
       visibility: params.visibility,
-      coverUrl: params.coverUrl || (items.length > 0 ? items[0].coverUrl : PRESET_COVERS[Math.floor(Math.random() * PRESET_COVERS.length)]),
+      coverUrl: resolvedCover,
+      isCustomCover: explicitCustomCover,
       items,
       itemCount: items.length,
       totalDuration,
@@ -979,7 +1029,7 @@ export class PlaylistService {
   public static updatePlaylist(
     playlistId: string,
     userId: string,
-    updates: Partial<Pick<Playlist, 'name' | 'description' | 'visibility' | 'coverUrl' | 'type' | 'sharedWith'>>,
+    updates: Partial<Pick<Playlist, 'name' | 'description' | 'visibility' | 'coverUrl' | 'isCustomCover' | 'type' | 'sharedWith'>>,
     isAdmin?: boolean,
     userEmail?: string
   ): { success: boolean; playlist?: Playlist; error?: string } {
@@ -1007,9 +1057,23 @@ export class PlaylistService {
       }
     }
 
+    const nextIsCustom =
+      updates.isCustomCover !== undefined
+        ? updates.isCustomCover
+        : updates.coverUrl && isPlainColorCover(updates.coverUrl)
+          ? true
+          : playlist.isCustomCover;
+
+    const nextCoverUrl =
+      nextIsCustom === false
+        ? playlist.items[0]?.coverUrl || DEFAULT_PLAIN_COLOR_COVER
+        : updates.coverUrl || playlist.coverUrl;
+
     const updated: Playlist = {
       ...playlist,
       ...updates,
+      isCustomCover: nextIsCustom,
+      coverUrl: nextCoverUrl,
       updatedAt: new Date().toISOString(),
     };
 
@@ -1079,7 +1143,7 @@ export class PlaylistService {
         resource: 'Playlist Management',
         resourceId: playlist.id,
       });
-    } catch {}
+    } catch { }
 
     return { success: true };
   }
@@ -1138,7 +1202,7 @@ export class PlaylistService {
         resource: 'Playlist Management',
         resourceId: restoredPlaylist.id,
       });
-    } catch {}
+    } catch { }
 
     return { success: true, playlist: restoredPlaylist };
   }
@@ -1168,7 +1232,7 @@ export class PlaylistService {
         resource: 'Playlist Management',
         resourceId: playlistId,
       });
-    } catch {}
+    } catch { }
 
     return { success: true };
   }
@@ -1211,6 +1275,10 @@ export class PlaylistService {
     playlist.items.push(newItem);
     playlist.itemCount = playlist.items.length;
     playlist.totalDuration = playlist.items.reduce((acc, curr) => acc + (curr.duration || 0), 0);
+    // Keep playlist artwork matched to the first song unless user picked a Plain Color / custom cover
+    if (this.isAutoFirstSongCover(playlist) && playlist.items[0]?.coverUrl) {
+      playlist.coverUrl = playlist.items[0].coverUrl;
+    }
     playlist.updatedAt = new Date().toISOString();
 
     all[idx] = playlist;
@@ -1247,6 +1315,9 @@ export class PlaylistService {
 
     playlist.itemCount = playlist.items.length;
     playlist.totalDuration = playlist.items.reduce((acc, curr) => acc + (curr.duration || 0), 0);
+    if (this.isAutoFirstSongCover(playlist)) {
+      playlist.coverUrl = playlist.items[0]?.coverUrl || DEFAULT_PLAIN_COLOR_COVER;
+    }
     playlist.updatedAt = new Date().toISOString();
 
     all[idx] = playlist;
@@ -1284,6 +1355,9 @@ export class PlaylistService {
     });
 
     playlist.items = reordered;
+    if (this.isAutoFirstSongCover(playlist)) {
+      playlist.coverUrl = reordered[0]?.coverUrl || DEFAULT_PLAIN_COLOR_COVER;
+    }
     playlist.updatedAt = new Date().toISOString();
 
     all[idx] = playlist;
@@ -1298,7 +1372,7 @@ export class PlaylistService {
     let likedIds: string[] = [];
     try {
       likedIds = JSON.parse(localStorage.getItem(key) || '[]');
-    } catch (e) {}
+    } catch (e) { }
 
     const isLiked = likedIds.includes(playlistId);
     if (isLiked) {
@@ -1343,7 +1417,7 @@ export class PlaylistService {
     let savedIds: string[] = [];
     try {
       savedIds = JSON.parse(localStorage.getItem(key) || '[]');
-    } catch (e) {}
+    } catch (e) { }
 
     const isSaved = savedIds.includes(playlistId);
     if (isSaved) {

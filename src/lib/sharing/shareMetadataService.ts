@@ -243,8 +243,22 @@ export function resolveAuthenticCover(type: ShareContentType, item: any): string
 
     case 'playlist': {
       const playlist = item as Playlist;
-      if (playlist?.coverUrl && !isDefaultOrInvalidCover(playlist.coverUrl)) {
+      if (
+        playlist?.coverUrl &&
+        !playlist.coverUrl.startsWith('data:') &&
+        !playlist.coverUrl.startsWith('blob:') &&
+        !isDefaultOrInvalidCover(playlist.coverUrl)
+      ) {
         return playlist.coverUrl;
+      }
+      const firstCover = playlist?.items?.[0]?.coverUrl;
+      if (
+        firstCover &&
+        !firstCover.startsWith('data:') &&
+        !firstCover.startsWith('blob:') &&
+        !isDefaultOrInvalidCover(firstCover)
+      ) {
+        return firstCover;
       }
       return '/images/genres/rnb-neo-soul.jpg';
     }

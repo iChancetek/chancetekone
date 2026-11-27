@@ -60,7 +60,18 @@ export const UniversalDiscussionModal: React.FC<UniversalDiscussionModalProps> =
           <div className="flex items-center gap-3 min-w-0 flex-1">
             {coverUrl ? (
               <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-white/10 flex-shrink-0 shadow-md">
-                <Image src={coverUrl} alt={contentTitle} fill className="object-cover" />
+                <Image
+                  src={coverUrl}
+                  alt={contentTitle}
+                  fill
+                  unoptimized={Boolean(
+                    coverUrl.startsWith('data:') ||
+                      coverUrl.startsWith('blob:') ||
+                      coverUrl.startsWith('http') ||
+                      coverUrl.startsWith('/api/')
+                  )}
+                  className="object-cover"
+                />
               </div>
             ) : (
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-gold/20 to-brand-amber/10 border border-brand-gold/40 flex items-center justify-center text-brand-gold flex-shrink-0 shadow-md">

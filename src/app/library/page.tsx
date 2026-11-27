@@ -587,7 +587,19 @@ function LibraryContent() {
                         className="group p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-brand-gold/40 transition-all flex items-center gap-3.5"
                       >
                         <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-white/10">
-                          <Image src={pl.coverUrl || '/images/studio_cover.jpg'} alt={pl.name} fill className="object-cover" />
+                          <Image
+                            src={pl.coverUrl || '/images/studio_cover.jpg'}
+                            alt={pl.name}
+                            fill
+                            unoptimized={Boolean(
+                              pl.coverUrl &&
+                                (pl.coverUrl.startsWith('data:') ||
+                                  pl.coverUrl.startsWith('blob:') ||
+                                  pl.coverUrl.startsWith('http') ||
+                                  pl.coverUrl.startsWith('/api/'))
+                            )}
+                            className="object-cover"
+                          />
                         </div>
                         <div className="min-w-0 flex-1">
                           <h4 className="text-sm font-bold text-white group-hover:text-brand-gold truncate">{pl.name}</h4>
@@ -885,6 +897,13 @@ function LibraryContent() {
                         src={pl.coverUrl || '/images/studio_cover.jpg'}
                         alt={pl.name}
                         fill
+                        unoptimized={Boolean(
+                          pl.coverUrl &&
+                            (pl.coverUrl.startsWith('data:') ||
+                              pl.coverUrl.startsWith('blob:') ||
+                              pl.coverUrl.startsWith('http') ||
+                              pl.coverUrl.startsWith('/api/'))
+                        )}
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       <button
@@ -1444,6 +1463,13 @@ function LibraryContent() {
                           alt={item.title}
                           fill
                           sizes="48px"
+                          unoptimized={Boolean(
+                            item.coverUrl &&
+                              (item.coverUrl.startsWith('data:') ||
+                                item.coverUrl.startsWith('blob:') ||
+                                item.coverUrl.startsWith('http') ||
+                                item.coverUrl.startsWith('/api/'))
+                          )}
                           className="object-cover group-hover:scale-105 transition-transform"
                         />
                       )}

@@ -323,6 +323,13 @@ export const SharePlaylistModal: React.FC<SharePlaylistModalProps> = ({
                   }
                   alt={playlist.name}
                   fill
+                  unoptimized={Boolean(
+                    playlist.coverUrl &&
+                      (playlist.coverUrl.startsWith('data:') ||
+                        playlist.coverUrl.startsWith('blob:') ||
+                        playlist.coverUrl.startsWith('http') ||
+                        playlist.coverUrl.startsWith('/api/'))
+                  )}
                   className="object-cover"
                 />
               </div>

@@ -1,13 +1,65 @@
+export interface PlainColorCover {
+  id: string;
+  name: string;
+  hex: string;
+  url: string;
+}
+
+/** Generates a lightweight (~140-byte) pure plain-color SVG data URI that works in <img>, next/image, and Firestore. */
+export function createPlainColorCoverUrl(hex: string): string {
+  const cleanHex = /^#[0-9a-fA-F]{6}$/.test(hex.trim()) ? hex.trim().toLowerCase() : '#11111b';
+  const encodedHex = encodeURIComponent(cleanHex);
+  return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600"><rect width="600" height="600" fill="${encodedHex}"/></svg>`;
+}
+
+export function isPlainColorCover(url?: string | null): boolean {
+  if (!url || typeof url !== 'string') return false;
+  return url.startsWith('data:image/svg+xml');
+}
+
+export function getPlainColorHex(url?: string | null): string | null {
+  if (!isPlainColorCover(url)) return null;
+  const match = url!.match(/fill="(?:%23|#)([0-9a-fA-F]{6})"/i);
+  return match ? `#${match[1].toLowerCase()}` : null;
+}
+
+const PLAIN_COLOR_SWATCHES: Array<{ id: string; name: string; hex: string }> = [
+  { id: 'color-obsidian', name: 'Obsidian Black', hex: '#0d0d16' },
+  { id: 'color-midnight', name: 'Midnight Indigo', hex: '#1e1b4b' },
+  { id: 'color-royal-purple', name: 'Royal Purple', hex: '#6d28d9' },
+  { id: 'color-crimson', name: 'Crimson Red', hex: '#be123c' },
+  { id: 'color-gold', name: 'Studio Gold', hex: '#d97706' },
+  { id: 'color-emerald', name: 'Emerald Green', hex: '#047857' },
+  { id: 'color-cobalt', name: 'Cobalt Blue', hex: '#1d4ed8' },
+  { id: 'color-ocean', name: 'Deep Ocean', hex: '#0369a1' },
+  { id: 'color-teal', name: 'Deep Teal', hex: '#0f766e' },
+  { id: 'color-magenta', name: 'Electric Rose', hex: '#be185d' },
+  { id: 'color-violet', name: 'Velvet Plum', hex: '#581c87' },
+  { id: 'color-slate', name: 'Charcoal Slate', hex: '#334155' },
+  { id: 'color-espresso', name: 'Warm Espresso', hex: '#5c2d16' },
+  { id: 'color-forest', name: 'Pine Forest', hex: '#14532d' },
+  { id: 'color-ruby', name: 'Ruby Wine', hex: '#7f1d1d' },
+  { id: 'color-ivory', name: 'Clean Ivory', hex: '#e5e5e0' },
+];
+
+export const PLAIN_COLOR_COVERS: PlainColorCover[] = PLAIN_COLOR_SWATCHES.map((swatch) => ({
+  ...swatch,
+  url: createPlainColorCoverUrl(swatch.hex),
+}));
+
+export const DEFAULT_PLAIN_COLOR_COVER = PLAIN_COLOR_COVERS[0].url;
+
 export interface CoverArtItem {
   id: string;
   title: string;
-  category: 'big_beat' | 'turntables' | 'hardware' | 'neon' | 'boombox' | 'tape_vinyl' | 'abstract';
+  category: 'plain_colors' | 'big_beat' | 'turntables' | 'hardware' | 'neon' | 'boombox' | 'tape_vinyl' | 'abstract';
   url: string;
   tags: string[];
 }
 
 export const COVER_ART_CATEGORIES = [
-  { id: 'all', label: 'All Covers (100)' },
+  { id: 'plain_colors', label: 'Plain Colors' },
+  { id: 'all', label: 'All Artwork' },
   { id: 'big_beat', label: 'Big Beat & Breakbeats' },
   { id: 'turntables', label: 'Turntablism & Scratch' },
   { id: 'hardware', label: 'SP-1200 & Hardware Rigs' },

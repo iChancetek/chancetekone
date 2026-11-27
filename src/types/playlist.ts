@@ -39,6 +39,8 @@ export interface Playlist {
   type: PlaylistType;
   visibility: PlaylistVisibility;
   coverUrl: string;
+  /** True when the creator explicitly chose a Plain Color or custom artwork; false/undefined auto-uses the first song's cover art. */
+  isCustomCover?: boolean;
   items: PlaylistItem[];
   itemCount: number;
   totalDuration: number; // in seconds

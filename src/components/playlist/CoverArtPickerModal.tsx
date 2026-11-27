@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import {
   X,
@@ -14,7 +15,9 @@ import {
 import {
   COVER_ART_CATALOG,
   COVER_ART_CATEGORIES,
-  CoverArtItem,
+  PLAIN_COLOR_COVERS,
+  createPlainColorCoverUrl,
+  getPlainColorHex,
   getRandomCoverArt,
 } from '@/lib/playlist/CoverArtCatalog';
 
@@ -31,13 +34,19 @@ export const CoverArtPickerModal: React.FC<CoverArtPickerModalProps> = ({
   selectedUrl,
   onSelect,
 }) => {
-  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [mounted, setMounted] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>('plain_colors');
   const [searchQuery, setSearchQuery] = useState('');
   const [customUrlInput, setCustomUrlInput] = useState('');
-  const [previewCustom, setPreviewCustom] = useState(false);
+  const [customHex, setCustomHex] = useState<string>(getPlainColorHex(selectedUrl) || '#6d28d9');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const filteredCovers = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
+    if (activeCategory === 'plain_colors') return [];
     return COVER_ART_CATALOG.filter((item) => {
       const matchCat = activeCategory === 'all' || item.category === activeCategory;
       const matchQuery =
@@ -48,7 +57,15 @@ export const CoverArtPickerModal: React.FC<CoverArtPickerModalProps> = ({
     });
   }, [activeCategory, searchQuery]);
 
-  if (!isOpen) return null;
+  const filteredPlainColors = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return PLAIN_COLOR_COVERS;
+    return PLAIN_COLOR_COVERS.filter(
+      (c) => c.name.toLowerCase().includes(q) || c.hex.toLowerCase().includes(q)
+    );
+  }, [searchQuery]);
+
+  if (!isOpen || !mounted) return null;
 
   const handleSelectCover = (url: string) => {
     onSelect(url);
@@ -68,8 +85,8 @@ export const CoverArtPickerModal: React.FC<CoverArtPickerModalProps> = ({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[9998] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-4xl glass-panel rounded-3xl border border-brand-purple/40 bg-gradient-to-b from-[#141024]/98 via-[#0c0916]/98 to-[#08080c]/98 shadow-[0_25px_80px_rgba(0,0,0,0.9)] flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 shrink-0">
@@ -141,9 +158,71 @@ export const CoverArtPickerModal: React.FC<CoverArtPickerModalProps> = ({
           </div>
         </div>
 
-        {/* Grid of Covers */}
+        {/* Grid of Covers / Plain Colors */}
         <div className="p-4 sm:p-6 overflow-y-auto flex-1">
-          {filteredCovers.length === 0 ? (
+          {activeCategory === 'plain_colors' ? (
+            <div className="space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-white/[0.04] border border-white/10">
+                <div>
+                  <p className="text-xs font-bold text-white">Custom Plain Color</p>
+                  <p className="text-[11px] text-neutral-400">
+                    Choose any custom solid color for your playlist cover.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={customHex}
+                    onChange={(e) => setCustomHex(e.target.value)}
+                    className="w-10 h-10 rounded-xl border border-white/20 bg-transparent cursor-pointer"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSelectCover(createPlainColorCoverUrl(customHex))}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-brand-gold to-brand-amber text-black text-xs font-black uppercase tracking-wider cursor-pointer hover:scale-105 transition-transform"
+                  >
+                    Use {customHex.toUpperCase()}
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {filteredPlainColors.map((swatch) => {
+                  const isSelected = selectedUrl === swatch.url;
+                  const isLightSwatch = swatch.hex === '#e5e5e0';
+                  return (
+                    <button
+                      key={swatch.id}
+                      type="button"
+                      onClick={() => handleSelectCover(swatch.url)}
+                      style={{ backgroundColor: swatch.hex }}
+                      className={`group relative rounded-2xl aspect-square border-2 p-3 flex flex-col justify-between text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-brand-gold ring-2 ring-brand-gold shadow-[0_0_20px_rgba(255,215,0,0.4)] scale-[0.98]'
+                          : 'border-white/15 hover:border-white/70 hover:scale-[1.02]'
+                      }`}
+                    >
+                      <div className="flex justify-end">
+                        {isSelected && (
+                          <div className="w-7 h-7 rounded-full bg-brand-gold text-black flex items-center justify-center shadow-lg">
+                            <Check className="w-4 h-4 stroke-[3]" />
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        className={`px-2 py-1 rounded-lg backdrop-blur-sm ${
+                          isLightSwatch ? 'bg-black/10 text-black' : 'bg-black/35 text-white'
+                        }`}
+                      >
+                        <p className="text-xs font-bold leading-snug">{swatch.name}</p>
+                        <p className="text-[10px] font-mono opacity-80">{swatch.hex.toUpperCase()}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : filteredCovers.length === 0 ? (
             <div className="py-16 text-center space-y-3">
               <Sparkles className="w-8 h-8 text-neutral-500 mx-auto" />
               <p className="text-sm font-semibold text-white">No cover art matches your filter</p>
@@ -243,6 +322,7 @@ export const CoverArtPickerModal: React.FC<CoverArtPickerModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

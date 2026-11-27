@@ -314,9 +314,16 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
           {/* Cover Art */}
           <div className="relative w-40 h-40 sm:w-52 sm:h-52 md:w-60 md:h-60 rounded-3xl overflow-hidden shadow-2xl border border-white/15 shrink-0 bg-black/60">
             <Image
-              src={playlist.coverUrl}
+              src={playlist.coverUrl || '/images/studio_cover.jpg'}
               alt={playlist.name}
               fill
+              unoptimized={Boolean(
+                playlist.coverUrl &&
+                  (playlist.coverUrl.startsWith('data:') ||
+                    playlist.coverUrl.startsWith('blob:') ||
+                    playlist.coverUrl.startsWith('http') ||
+                    playlist.coverUrl.startsWith('/api/'))
+              )}
               className="object-cover"
               priority
             />

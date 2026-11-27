@@ -214,6 +214,13 @@ function SearchContent() {
                           src={pl.coverUrl || '/images/studio_cover.jpg'}
                           alt={pl.name}
                           fill
+                          unoptimized={Boolean(
+                            pl.coverUrl &&
+                              (pl.coverUrl.startsWith('data:') ||
+                                pl.coverUrl.startsWith('blob:') ||
+                                pl.coverUrl.startsWith('http') ||
+                                pl.coverUrl.startsWith('/api/'))
+                          )}
                           className="object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                         <button
