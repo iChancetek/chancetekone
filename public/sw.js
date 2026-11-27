@@ -1,6 +1,6 @@
 // ChanceTEK One - 2026 Progressive Web App Service Worker (Fast Mobile PWA + Zero Stale Hydration)
-const CACHE_NAME = 'chancetekone-pwa-v3.0.0';
-const RUNTIME_CACHE = 'chancetekone-runtime-v3.0.0';
+const CACHE_NAME = 'chancetekone-pwa-v3.1.0';
+const RUNTIME_CACHE = 'chancetekone-runtime-v3.1.0';
 
 // Pre-cache only lightweight offline shell assets; HTML pages always load fresh from network
 // so installed iPhone & Android PWAs never load stale HTML referencing deleted Next.js JS chunks.

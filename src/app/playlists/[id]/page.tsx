@@ -330,19 +330,60 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                 <span className="capitalize">{playlist.type} Playlist</span>
               </span>
 
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 text-neutral-300 text-xs font-semibold">
-                {playlist.visibility === 'private' ? (
-                  <>
-                    <Lock className="w-3 h-3 text-red-400" />
-                    <span>Private</span>
-                  </>
-                ) : (
-                  <>
-                    <Globe className="w-3 h-3 text-emerald-400" />
-                    <span className="capitalize">{playlist.visibility}</span>
-                  </>
-                )}
-              </span>
+              {canManage ? (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const nextVis = playlist.visibility === 'public' ? 'private' : 'public';
+                    const res = PlaylistService.updatePlaylist(
+                      playlist.id,
+                      currentUserId || 'admin',
+                      { visibility: nextVis },
+                      isAdmin,
+                      currentEmail
+                    );
+                    if (res.success && res.playlist) {
+                      setPlaylist(res.playlist);
+                      await PlaylistService.syncPlaylistNow(res.playlist);
+                    }
+                  }}
+                  title={
+                    playlist.visibility === 'public'
+                      ? 'Public on Platform — Tap to make Private'
+                      : 'Private — Tap to make Public for all members'
+                  }
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer ${playlist.visibility === 'public'
+                      ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300 hover:bg-emerald-500/30'
+                      : 'bg-white/10 border-white/15 text-neutral-200 hover:border-emerald-400/50 hover:text-emerald-300'
+                    }`}
+                >
+                  {playlist.visibility === 'private' ? (
+                    <>
+                      <Lock className="w-3 h-3 text-red-400" />
+                      <span>Private · Tap to Make Public</span>
+                    </>
+                  ) : (
+                    <>
+                      <Globe className="w-3 h-3 text-emerald-400" />
+                      <span>Public on Platform</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 text-neutral-300 text-xs font-semibold">
+                  {playlist.visibility === 'private' ? (
+                    <>
+                      <Lock className="w-3 h-3 text-red-400" />
+                      <span>Private</span>
+                    </>
+                  ) : (
+                    <>
+                      <Globe className="w-3 h-3 text-emerald-400" />
+                      <span className="capitalize">{playlist.visibility}</span>
+                    </>
+                  )}
+                </span>
+              )}
             </div>
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
@@ -409,11 +450,10 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
 
               <button
                 onClick={handleToggleSave}
-                className={`p-3 rounded-full border transition-all ${
-                  isSaved
+                className={`p-3 rounded-full border transition-all ${isSaved
                     ? 'bg-brand-gold text-black border-brand-gold'
                     : 'bg-white/5 border-white/10 text-neutral-300 hover:text-white hover:bg-white/10'
-                }`}
+                  }`}
                 title={isSaved ? 'Saved to your library' : 'Save playlist to library'}
               >
                 <Bookmark className="w-4 h-4" />
@@ -517,25 +557,22 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
             <div className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl border border-white/10">
               <button
                 onClick={() => setCatalogType('music')}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-                  catalogType === 'music' ? 'bg-brand-purple text-white shadow-sm' : 'text-neutral-400 hover:text-white'
-                }`}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${catalogType === 'music' ? 'bg-brand-purple text-white shadow-sm' : 'text-neutral-400 hover:text-white'
+                  }`}
               >
                 Music
               </button>
               <button
                 onClick={() => setCatalogType('video')}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-                  catalogType === 'video' ? 'bg-brand-purple text-white shadow-sm' : 'text-neutral-400 hover:text-white'
-                }`}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${catalogType === 'video' ? 'bg-brand-purple text-white shadow-sm' : 'text-neutral-400 hover:text-white'
+                  }`}
               >
                 Videos
               </button>
               <button
                 onClick={() => setCatalogType('audiobook')}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-                  catalogType === 'audiobook' ? 'bg-brand-purple text-white shadow-sm' : 'text-neutral-400 hover:text-white'
-                }`}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${catalogType === 'audiobook' ? 'bg-brand-purple text-white shadow-sm' : 'text-neutral-400 hover:text-white'
+                  }`}
               >
                 Books
               </button>
@@ -583,13 +620,12 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                   <button
                     onClick={() => handleAddMedia(item.id, catalogType)}
                     disabled={inPlaylist}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1 ${
-                      inPlaylist
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1 ${inPlaylist
                         ? 'bg-white/10 text-neutral-400 cursor-default'
                         : wasJustAdded
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-gradient-to-r from-brand-gold to-brand-amber text-black hover:scale-105'
-                    }`}
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-gradient-to-r from-brand-gold to-brand-amber text-black hover:scale-105'
+                      }`}
                   >
                     {inPlaylist ? (
                       <>

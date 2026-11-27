@@ -73,9 +73,41 @@ export class PlaylistService {
   private static pendingUpserts = new Map<string, Playlist>();
   private static pendingDeletes = new Set<string>();
   private static pushedLegacyIds = new Set<string>();
+  private static inFlightUpserts = new Map<string, Promise<{ ok: boolean; error?: string }>>();
   private static retryTimer: ReturnType<typeof setTimeout> | null = null;
   private static metaUnsub: (() => void) | null = null;
   private static syncIdentity: { userId?: string; email?: string; isAdmin?: boolean } = {};
+
+  private static sanitizeUrlForCloud(url?: string, fallback?: string): string | undefined {
+    if (!url || typeof url !== 'string') return fallback;
+    const trimmed = url.trim();
+    if (!trimmed) return fallback;
+    if (trimmed.startsWith('blob:')) return fallback;
+    // Strip large inline base64 data: URLs (> 8KB) so mobile fetch & Firestore never hit size limits
+    if (trimmed.startsWith('data:') && trimmed.length > 8_000) return fallback;
+    return trimmed;
+  }
+
+  /** Produces a compact, Firestore-safe clone free of volatile blob: URLs and huge base64 images. */
+  private static preparePlaylistForCloud(playlist: Playlist): Playlist {
+    const cleanCover = this.sanitizeUrlForCloud(playlist.coverUrl, '/images/studio_cover.jpg') || '/images/studio_cover.jpg';
+    const cleanAvatar = this.sanitizeUrlForCloud(playlist.ownerAvatarUrl, undefined);
+    const cleanItems = (playlist.items || []).slice(0, 300).map((it, idx) => ({
+      ...it,
+      position: typeof it.position === 'number' ? it.position : idx,
+      coverUrl: this.sanitizeUrlForCloud(it.coverUrl, '/images/studio_cover.jpg') || '/images/studio_cover.jpg',
+      audioUrl: this.sanitizeUrlForCloud(it.audioUrl, undefined),
+      videoUrl: this.sanitizeUrlForCloud(it.videoUrl, undefined),
+    }));
+    const payload: Playlist = {
+      ...playlist,
+      coverUrl: cleanCover,
+      ownerAvatarUrl: cleanAvatar,
+      items: cleanItems,
+      itemCount: cleanItems.length,
+    };
+    return JSON.parse(JSON.stringify(payload)) as Playlist;
+  }
 
   private static loadPersistedOutbox(): void {
     if (typeof window === 'undefined') return;
@@ -291,51 +323,89 @@ export class PlaylistService {
   public static async syncPlaylistNow(
     playlist: Playlist
   ): Promise<{ ok: boolean; error?: string }> {
+    const existingFlight = this.inFlightUpserts.get(playlist.id);
+    if (existingFlight) {
+      const firstRes = await existingFlight;
+      if (firstRes.ok && !this.pendingUpserts.has(playlist.id)) {
+        return firstRes;
+      }
+    }
     return this.pushPlaylistToServer(playlist);
+  }
+
+  public static async publishAllUserPlaylistsPublic(
+    userId: string,
+    userEmail?: string,
+    isAdmin?: boolean
+  ): Promise<{ count: number; synced: number }> {
+    const mine = this.getUserPlaylists(userId, userEmail);
+    let synced = 0;
+    for (const pl of mine) {
+      let target = pl;
+      if (pl.visibility !== 'public') {
+        const res = this.updatePlaylist(pl.id, userId, { visibility: 'public' }, isAdmin, userEmail);
+        if (res.success && res.playlist) target = res.playlist;
+      }
+      const syncRes = await this.syncPlaylistNow(target);
+      if (syncRes.ok) synced++;
+    }
+    return { count: mine.length, synced };
   }
 
   private static async pushPlaylistToServer(
     playlist: Playlist
   ): Promise<{ ok: boolean; error?: string }> {
     if (typeof window === 'undefined') return { ok: false, error: 'SSR context' };
-    this.pendingDeletes.delete(playlist.id);
-    this.pendingUpserts.set(playlist.id, playlist);
+    const cleanPlaylist = this.preparePlaylistForCloud(playlist);
+    this.pendingDeletes.delete(cleanPlaylist.id);
+    this.pendingUpserts.set(cleanPlaylist.id, cleanPlaylist);
     this.persistOutbox();
-    try {
-      const headers = await this.buildSyncHeaders(true, {
-        userId: playlist.ownerId,
-        email: playlist.ownerEmail,
-      });
-      const res = await fetch('/api/playlists', {
-        method: 'POST',
-        headers,
-        keepalive: true,
-        body: JSON.stringify({ action: 'upsert', playlist }),
-      });
-      const body = await res.json().catch(() => null);
-      if (res.ok && body?.ok) {
-        if (this.pendingUpserts.get(playlist.id) === playlist) {
-          this.pendingUpserts.delete(playlist.id);
-          this.persistOutbox();
+
+    let run!: Promise<{ ok: boolean; error?: string }>;
+    run = (async (): Promise<{ ok: boolean; error?: string }> => {
+      try {
+        const headers = await this.buildSyncHeaders(true, {
+          userId: cleanPlaylist.ownerId,
+          email: cleanPlaylist.ownerEmail,
+        });
+        // IMPORTANT: Do NOT set keepalive: true here — Chrome & Safari reject keepalive requests > 64KB!
+        const res = await fetch('/api/playlists', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ action: 'upsert', playlist: cleanPlaylist }),
+        });
+        const body = await res.json().catch(() => null);
+        if (res.ok && body?.ok) {
+          if (this.pendingUpserts.get(cleanPlaylist.id) === cleanPlaylist) {
+            this.pendingUpserts.delete(cleanPlaylist.id);
+            this.persistOutbox();
+          }
+          this.pushedLegacyIds.add(cleanPlaylist.id);
+          const known = this.loadKnownRemoteIds();
+          known.add(cleanPlaylist.id);
+          this.saveKnownRemoteIds(known);
+          if (typeof body?.revision === 'number') {
+            this.lastServerRevision = body.revision;
+          }
+          return { ok: true };
         }
-        this.pushedLegacyIds.add(playlist.id);
-        const known = this.loadKnownRemoteIds();
-        known.add(playlist.id);
-        this.saveKnownRemoteIds(known);
-        if (typeof body?.revision === 'number') {
-          this.lastServerRevision = body.revision;
+        const errMsg = body?.error || `Server returned ${res.status}`;
+        console.warn('[PlaylistService] Server upsert failed, will retry:', errMsg);
+        this.scheduleOutboxRetry(3_500);
+        return { ok: false, error: errMsg };
+      } catch (err: any) {
+        console.warn('[PlaylistService] Background server upsert deferred, will retry:', err);
+        this.scheduleOutboxRetry(4_000);
+        return { ok: false, error: err?.message || 'Network error' };
+      } finally {
+        if (this.inFlightUpserts.get(cleanPlaylist.id) === run) {
+          this.inFlightUpserts.delete(cleanPlaylist.id);
         }
-        return { ok: true };
       }
-      const errMsg = body?.error || `Server returned ${res.status}`;
-      console.warn('[PlaylistService] Server upsert failed, will retry:', errMsg);
-      this.scheduleOutboxRetry(3_500);
-      return { ok: false, error: errMsg };
-    } catch (err: any) {
-      console.warn('[PlaylistService] Background server upsert deferred, will retry:', err);
-      this.scheduleOutboxRetry(4_000);
-      return { ok: false, error: err?.message || 'Network error' };
-    }
+    })();
+
+    this.inFlightUpserts.set(cleanPlaylist.id, run);
+    return run;
   }
 
   private static async pushDeleteToServer(playlistId: string, permanent = false): Promise<void> {

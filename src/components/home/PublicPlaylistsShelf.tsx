@@ -73,6 +73,13 @@ export const PublicPlaylistsShelf: React.FC = () => {
                   src={pl.coverUrl || '/images/studio_cover.jpg'}
                   alt={pl.name}
                   fill
+                  unoptimized={Boolean(
+                    pl.coverUrl &&
+                      (pl.coverUrl.startsWith('data:') ||
+                        pl.coverUrl.startsWith('blob:') ||
+                        pl.coverUrl.startsWith('http') ||
+                        pl.coverUrl.startsWith('/api/'))
+                  )}
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-md text-[9px] font-bold uppercase tracking-wider text-emerald-300 border border-emerald-400/30 flex items-center gap-1">

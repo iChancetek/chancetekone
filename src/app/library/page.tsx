@@ -887,11 +887,44 @@ function LibraryContent() {
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider text-white border border-white/10 flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (!canManage) return;
+                          const nextVis = pl.visibility === 'public' ? 'private' : 'public';
+                          const res = PlaylistService.updatePlaylist(
+                            pl.id,
+                            currentUserId || 'admin',
+                            { visibility: nextVis },
+                            isAdmin,
+                            currentEmail
+                          );
+                          if (res.success && res.playlist) {
+                            await PlaylistService.syncPlaylistNow(res.playlist);
+                          }
+                        }}
+                        disabled={!canManage}
+                        title={
+                          canManage
+                            ? pl.visibility === 'public'
+                              ? 'Public — Tap to switch to Private'
+                              : 'Private — Tap to publish Publicly for all members'
+                            : pl.visibility
+                        }
+                        className={`absolute top-2 left-2 z-10 px-2.5 py-1 rounded-md backdrop-blur-md text-[10px] font-bold uppercase tracking-wider border flex items-center gap-1 transition-all ${
+                          canManage ? 'cursor-pointer' : 'cursor-default'
+                        } ${
+                          pl.visibility === 'public'
+                            ? 'bg-emerald-950/85 text-emerald-300 border-emerald-400/50'
+                            : 'bg-black/80 text-white border-white/15 hover:border-emerald-400/50 hover:text-emerald-300'
+                        }`}
+                      >
                         {pl.visibility === 'private' ? (
                           <>
                             <Lock className="w-3 h-3 text-red-400" />
-                            <span>Private</span>
+                            <span>{canManage ? 'Private · Make Public' : 'Private'}</span>
                           </>
                         ) : (
                           <>
@@ -899,7 +932,7 @@ function LibraryContent() {
                             <span className="capitalize">{pl.visibility}</span>
                           </>
                         )}
-                      </div>
+                      </button>
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                         <Link
                           href={`/playlists/${pl.id}`}

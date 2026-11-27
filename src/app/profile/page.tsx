@@ -27,6 +27,7 @@ import {
 import { useAuth } from '@/lib/auth/AuthContext';
 import { UserAvatar } from '@/components/navigation/UserAvatar';
 import { ProfileMediaStorageService } from '@/lib/auth/ProfileMediaStorageService';
+import { PlaylistService } from '@/lib/playlist/PlaylistService';
 import { UserProfile } from '@/types/social';
 import {
   updatePassword,
@@ -1456,12 +1457,24 @@ export default function ProfilePage() {
                 onClick={async () => {
                   const next = profile.defaultPlaylistVisibility === 'public' ? 'private' : 'public';
                   await updateUserProfile({ defaultPlaylistVisibility: next });
-                  showRealTimeToast(
-                    'Playlist Default Updated',
-                    next === 'public'
-                      ? 'New playlists will default to Public.'
-                      : 'New playlists will default to Private.'
-                  );
+                  if (next === 'public') {
+                    const pubRes = await PlaylistService.publishAllUserPlaylistsPublic(
+                      profile.id,
+                      profile.email,
+                      isAdmin
+                    );
+                    showRealTimeToast(
+                      'Playlists Published Publicly',
+                      pubRes.count > 0
+                        ? `Published ${pubRes.synced} playlist${pubRes.synced === 1 ? '' : 's'} publicly for all members and set new playlists to Public.`
+                        : 'New playlists will default to Public for all platform members.'
+                    );
+                  } else {
+                    showRealTimeToast(
+                      'Playlist Default Updated',
+                      'New playlists will default to Private.'
+                    );
+                  }
                 }}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${
                   profile.defaultPlaylistVisibility === 'public'
