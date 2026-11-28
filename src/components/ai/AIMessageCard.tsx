@@ -13,15 +13,36 @@ import {
   ExternalLink,
   Copy,
   Check,
+  ShieldCheck,
+  ListMusic,
+  Music2,
+  X,
+  Disc3,
 } from 'lucide-react';
-import { AIMessage } from '@/types/agent';
+import { AIMessage, PlaybackVerificationCandidate } from '@/types/agent';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { useCart } from '@/lib/commerce/CartContext';
 import { VoiceNarrationButton } from '@/components/ai/VoiceNarrationButton';
 
-export const AIMessageCard: React.FC<{ message: AIMessage }> = ({ message }) => {
+interface AIMessageCardProps {
+  message: AIMessage;
+  onSelectVerificationCandidate?: (messageId: string, candidateId: string) => void;
+  onConfirmPlayback?: (
+    messageId: string,
+    candidate: PlaybackVerificationCandidate,
+    mode?: 'play' | 'djchancemix'
+  ) => void;
+  onCancelPlayback?: (messageId: string) => void;
+}
+
+export const AIMessageCard: React.FC<AIMessageCardProps> = ({
+  message,
+  onSelectVerificationCandidate,
+  onConfirmPlayback,
+  onCancelPlayback,
+}) => {
   const isAssistant = message.role === 'assistant';
-  const { playTrack } = usePlayer();
+  const { playTrack, playPlaylist } = usePlayer();
   const { addToCart } = useCart();
   const [copied, setCopied] = useState(false);
 
@@ -99,11 +120,166 @@ export const AIMessageCard: React.FC<{ message: AIMessage }> = ({ message }) => 
           )}
         </div>
 
+        {/* Human-in-the-Loop Playback Verification Card */}
+        {message.playbackVerification && message.playbackVerification.candidates.length > 0 && (
+          <div className="p-3 rounded-2xl bg-gradient-to-br from-[#16102b] via-[#0e0c1a] to-[#0a1320] border border-brand-gold/45 shadow-xl space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-brand-gold shrink-0" />
+                <span className="text-[11px] font-black uppercase tracking-wider text-brand-gold">
+                  {message.playbackVerification.status === 'pending'
+                    ? 'Verify Before Playing'
+                    : message.playbackVerification.status === 'confirmed'
+                    ? 'Verified · Playing'
+                    : 'Playback Cancelled'}
+                </span>
+              </div>
+              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-white/10 text-neutral-300">
+                Human-in-the-Loop
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              {message.playbackVerification.candidates.map((cand) => {
+                const isSelected = cand.id === message.playbackVerification!.selectedId;
+                const isPending = message.playbackVerification!.status === 'pending';
+                return (
+                  <button
+                    key={cand.id}
+                    type="button"
+                    disabled={!isPending}
+                    onClick={() => onSelectVerificationCandidate?.(message.id, cand.id)}
+                    className={`w-full text-left p-2 rounded-xl border transition-all flex items-center gap-2.5 ${
+                      isSelected
+                        ? 'bg-brand-gold/15 border-brand-gold text-white'
+                        : 'bg-white/[0.03] border-white/10 text-neutral-300 hover:bg-white/[0.08]'
+                    } ${isPending ? 'cursor-pointer' : 'opacity-80 cursor-default'}`}
+                  >
+                    <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-white/15 bg-neutral-900 flex items-center justify-center">
+                      {cand.coverUrl ? (
+                        <Image src={cand.coverUrl} alt={cand.title} fill unoptimized className="object-cover" />
+                      ) : cand.kind === 'playlist' ? (
+                        <ListMusic className="w-4 h-4 text-white/85" />
+                      ) : (
+                        <Music2 className="w-4 h-4 text-brand-gold" />
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-white/10 text-brand-gold shrink-0">
+                          {cand.kind === 'playlist' ? 'Playlist' : 'Song'}
+                        </span>
+                        <p className="text-xs font-bold text-white truncate">{cand.title}</p>
+                      </div>
+                      <p className="text-[10px] text-neutral-400 truncate mt-0.5">{cand.subtitle}</p>
+                      {cand.previewTracks && cand.previewTracks.length > 0 && (
+                        <p className="text-[9px] text-neutral-500 truncate mt-0.5">
+                          Includes: {cand.previewTracks.map((t) => t.title).join(' · ')}
+                        </p>
+                      )}
+                    </div>
+
+                    <div
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+                        isSelected ? 'border-brand-gold bg-brand-gold text-black' : 'border-white/25'
+                      }`}
+                    >
+                      {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {message.playbackVerification.status === 'pending' && (() => {
+              const selected =
+                message.playbackVerification!.candidates.find(
+                  (c) => c.id === message.playbackVerification!.selectedId
+                ) || message.playbackVerification!.candidates[0];
+              if (!selected) return null;
+
+              return (
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => onConfirmPlayback?.(message.id, selected, 'play')}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-brand-gold to-amber-500 text-black text-[11px] font-black uppercase tracking-wider shadow-lg hover:scale-[1.02] transition-transform cursor-pointer"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>{selected.kind === 'playlist' ? 'Confirm & Play Playlist' : 'Confirm & Play'}</span>
+                  </button>
+
+                  {selected.kind === 'playlist' && (
+                    <button
+                      type="button"
+                      onClick={() => onConfirmPlayback?.(message.id, selected, 'djchancemix')}
+                      className="inline-flex items-center gap-1 px-2.5 py-2 rounded-xl bg-brand-purple/35 hover:bg-brand-purple/55 border border-brand-purple/60 text-white text-[10px] font-bold transition-colors cursor-pointer"
+                      title="Verify and launch this playlist in DJChanceMix AutoMix Studio"
+                    >
+                      <Disc3 className="w-3.5 h-3.5 text-brand-gold" />
+                      <span>DJChanceMix</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => onCancelPlayback?.(message.id)}
+                    className="inline-flex items-center gap-1 px-2.5 py-2 rounded-xl bg-white/5 hover:bg-red-500/20 border border-white/15 text-neutral-300 hover:text-red-300 text-[10px] font-bold transition-colors cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Cancel</span>
+                  </button>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
         {/* Media Recommendations (Interactive Cards) */}
         {message.mediaRecommendations && (
           <div className="space-y-2 pt-1">
+            {/* Playlists */}
+            {message.mediaRecommendations.playlists && message.mediaRecommendations.playlists.length > 0 && !message.playbackVerification && (
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-brand-gold">
+                  Matching Playlists
+                </p>
+                {message.mediaRecommendations.playlists.map((pl) => (
+                  <div
+                    key={pl.id}
+                    className="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="relative w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 bg-neutral-900 flex items-center justify-center">
+                        {pl.coverUrl ? (
+                          <Image src={pl.coverUrl} alt={pl.name} fill unoptimized className="object-cover" />
+                        ) : (
+                          <ListMusic className="w-4 h-4 text-white/80" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-white truncate">{pl.name}</p>
+                        <p className="text-[10px] text-neutral-400 truncate">
+                          {pl.itemCount ?? pl.items?.length ?? 0} songs · {pl.ownerName || 'ChanceTEK One'}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => playPlaylist(pl, 0, false)}
+                      className="p-2 rounded-full bg-brand-gold text-black hover:scale-105 transition-transform flex-shrink-0 shadow-md cursor-pointer"
+                      title="Play Playlist"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Tracks */}
-            {message.mediaRecommendations.tracks && message.mediaRecommendations.tracks.length > 0 && (
+            {message.mediaRecommendations.tracks && message.mediaRecommendations.tracks.length > 0 && !message.playbackVerification && (
               <div className="space-y-1.5">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-brand-gold">
                   Suggested Tracks

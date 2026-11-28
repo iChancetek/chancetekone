@@ -1,6 +1,42 @@
 import { Track, Artist, Video, Audiobook, Project, Producer } from './media';
 import { Product } from './commerce';
+import { Playlist } from './playlist';
 import { ShortTermMemory, LongTermMemory, MemoryFact, TasteProfile } from './memory';
+
+export interface PlaybackVerificationCandidate {
+  kind: 'track' | 'playlist';
+  id: string;
+  title: string;
+  subtitle: string;
+  coverUrl?: string;
+  coverColor?: string;
+  bpm?: number;
+  genre?: string;
+  duration?: number;
+  itemCount?: number;
+  track?: Track;
+  playlist?: Playlist;
+  previewTracks?: { title: string; artistName: string }[];
+}
+
+export interface PlaybackVerificationState {
+  status: 'pending' | 'confirmed' | 'cancelled';
+  requestedQuery: string;
+  candidates: PlaybackVerificationCandidate[];
+  selectedId: string;
+  confirmedMode?: 'play' | 'djchancemix';
+}
+
+export interface AvailablePlaylistSummary {
+  id: string;
+  name: string;
+  description?: string;
+  ownerName?: string;
+  itemCount: number;
+  coverUrl?: string;
+  coverColor?: string;
+  trackTitles?: string[];
+}
 
 export interface AIMessage {
   id: string;
@@ -15,6 +51,7 @@ export interface AIMessage {
   }[];
   mediaRecommendations?: {
     tracks?: Track[];
+    playlists?: Playlist[];
     artists?: Artist[];
     videos?: Video[];
     audiobooks?: Audiobook[];
@@ -22,6 +59,7 @@ export interface AIMessage {
     projects?: Project[];
     producers?: Producer[];
   };
+  playbackVerification?: PlaybackVerificationState;
   memoryUpdates?: {
     newFacts?: MemoryFact[];
     updatedTaste?: Partial<TasteProfile>;
@@ -44,6 +82,7 @@ export interface AgentContextPayload {
   language?: 'en' | 'es';
   shortTermMemory?: ShortTermMemory;
   longTermMemory?: LongTermMemory;
+  availablePlaylists?: AvailablePlaylistSummary[];
 }
 
 export interface SearchIntentResult {

@@ -1,6 +1,8 @@
 import { MOCK_TRACKS, MOCK_ARTISTS, MOCK_VIDEOS, MOCK_AUDIOBOOKS, MOCK_PRODUCTS, MOCK_ALBUMS, MOCK_PROJECTS, MOCK_PRODUCERS } from '@/lib/mockData';
 import { Track, Artist, Video, Audiobook, Project, Producer } from '@/types/media';
 import { Product } from '@/types/commerce';
+import { Playlist } from '@/types/playlist';
+import { AvailablePlaylistSummary } from '@/types/agent';
 import { MemoryFact, TasteProfile } from '@/types/memory';
 import { PlaylistService } from '@/lib/playlist/PlaylistService';
 import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
@@ -18,11 +20,13 @@ export { AGENT_TOOLS_DEFINITIONS } from '@/lib/agents/tool-definitions';
 export const executeAgentTool = async (
   toolName: string,
   args: Record<string, any>,
-  userId: string = 'default-user'
+  userId: string = 'default-user',
+  availablePlaylists: AvailablePlaylistSummary[] = []
 ): Promise<{
   result: any;
   recommendations?: {
     tracks?: Track[];
+    playlists?: Playlist[];
     artists?: Artist[];
     videos?: Video[];
     audiobooks?: Audiobook[];
@@ -277,6 +281,78 @@ export const executeAgentTool = async (
           message: res.success ? `Added to playlist successfully.` : res.error,
           item: res.item,
         },
+      };
+    }
+
+    case 'searchPlaylists': {
+      const q = (args.query || '').toLowerCase().trim();
+      const serverUserPls = PlaylistService.getUserPlaylists(userId);
+      const serverPublicPls = PlaylistService.getPublicPlaylists();
+
+      const byId = new Map<string, Playlist>();
+      for (const pl of [...serverUserPls, ...serverPublicPls]) {
+        byId.set(pl.id, pl);
+      }
+      for (const summary of availablePlaylists) {
+        if (!byId.has(summary.id)) {
+          byId.set(summary.id, {
+            id: summary.id,
+            name: summary.name,
+            description: summary.description,
+            type: 'music',
+            ownerId: userId,
+            ownerName: summary.ownerName || 'ChanceTEK One Member',
+            coverUrl: summary.coverUrl || '/images/studio_cover.jpg',
+            visibility: 'public',
+            items: (summary.trackTitles || []).map((title, idx) => ({
+              id: `summary-item-${summary.id}-${idx}`,
+              playlistId: summary.id,
+              mediaId: `summary-media-${summary.id}-${idx}`,
+              mediaType: 'music',
+              title,
+              artistName: summary.ownerName || 'ChanceTEK One',
+              coverUrl: summary.coverUrl || '/images/studio_cover.jpg',
+              duration: 180,
+              position: idx,
+              addedAt: new Date().toISOString(),
+            })),
+            itemCount: summary.itemCount,
+            totalDuration: 0,
+            stats: { likes: 0, saves: 0, plays: 0, shares: 0 },
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      }
+
+      const allPlaylists = Array.from(byId.values());
+      const matches = q
+        ? allPlaylists.filter((pl) => {
+            const name = (pl.name || '').toLowerCase();
+            const desc = (pl.description || '').toLowerCase();
+            const owner = (pl.ownerName || '').toLowerCase();
+            const itemMatch = (pl.items || []).some(
+              (it) =>
+                (it.title || '').toLowerCase().includes(q) ||
+                (it.artistName || '').toLowerCase().includes(q)
+            );
+            return name.includes(q) || desc.includes(q) || owner.includes(q) || itemMatch;
+          })
+        : allPlaylists;
+
+      const sliced = matches.slice(0, 6);
+      return {
+        result: {
+          count: matches.length,
+          playlists: sliced.map((pl) => ({
+            id: pl.id,
+            name: pl.name,
+            ownerName: pl.ownerName,
+            itemCount: pl.itemCount ?? pl.items?.length ?? 0,
+            description: pl.description,
+          })),
+        },
+        recommendations: { playlists: sliced },
       };
     }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Sparkles,
   X,
@@ -18,7 +18,14 @@ import {
   Minus,
   ChevronUp,
 } from 'lucide-react';
-import { AIMessage, AgentContextPayload } from '@/types/agent';
+import {
+  AIMessage,
+  AgentContextPayload,
+  AvailablePlaylistSummary,
+  PlaybackVerificationCandidate,
+} from '@/types/agent';
+import { Playlist } from '@/types/playlist';
+import { Track } from '@/types/media';
 import { LongTermMemory, ShortTermMemory } from '@/types/memory';
 import { AIMessageCard } from './AIMessageCard';
 import { VoiceRecorder } from './VoiceRecorder';
@@ -27,6 +34,9 @@ import { MemoryManager } from '@/lib/agents/memory';
 import { usePlayer } from '@/lib/player/PlayerContext';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useAI } from '@/lib/ai/AIContext';
+import { PlaylistService } from '@/lib/playlist/PlaylistService';
+import { MusicCatalogService } from '@/lib/music/MusicCatalogService';
+import { filterAndRankTracks } from '@/lib/search/universalSearch';
 
 const INITIAL_SUGGESTIONS = [
   'What can I explore on ChanceTEK One?',
@@ -41,8 +51,9 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
   onClose: controlledOnClose,
 }) => {
   const pathname = usePathname();
-  const { currentTrack } = usePlayer();
-  const { profile } = useAuth();
+  const router = useRouter();
+  const { currentTrack, playTrack, playPlaylist } = usePlayer();
+  const { profile, user } = useAuth();
   const {
     initialPrompt,
     clearInitialPrompt,
@@ -339,9 +350,267 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
     }
   }, [initialPrompt, isOpen]);
 
+  const currentUserId = profile?.id || user?.uid || 'default-user';
+  const currentUserEmail = (profile?.email || user?.email || '').toLowerCase().trim() || undefined;
+
+  const getAllClientPlaylists = (): Playlist[] => {
+    const mine =
+      currentUserId !== 'default-user'
+        ? PlaylistService.getUserPlaylists(currentUserId, currentUserEmail)
+        : [];
+    const pub = PlaylistService.getPublicPlaylists({ sortBy: 'recent' });
+    const dedup = new Map<string, Playlist>();
+    for (const pl of [...mine, ...pub]) dedup.set(pl.id, pl);
+    return Array.from(dedup.values());
+  };
+
+  const extractPlayQuery = (raw: string): { isPlay: boolean; isPlaylist: boolean; target: string } => {
+    const lower = raw.toLowerCase().trim();
+    const isPlay = /\b(play|put on|queue|spin|mix|start playing|listen to)\b/.test(lower);
+    const isPlaylist =
+      lower.includes('playlist') ||
+      lower.includes('crate') ||
+      (/\bmix\b/.test(lower) && !lower.includes('remix'));
+
+    let t = lower;
+    const prefixes = [
+      'can you play my playlist',
+      'can you play the playlist',
+      'please play my playlist',
+      'please play the playlist',
+      'play my playlist called',
+      'play the playlist called',
+      'play my playlist',
+      'play the playlist',
+      'play playlist called',
+      'play playlist',
+      'mix my playlist',
+      'mix the playlist',
+      'mix playlist',
+      'can you play the song',
+      'please play the song',
+      'can you play',
+      'please play',
+      'play the song',
+      'play the track',
+      'play songs by',
+      'play all songs by',
+      'play tracks by',
+      'play music by',
+      'put on the song',
+      'put on',
+      'queue up',
+      'queue',
+      'start playing',
+      'listen to',
+      'play',
+      'mix',
+    ];
+    for (const p of prefixes) {
+      if (t.startsWith(p)) {
+        t = t.slice(p.length).trim();
+        break;
+      }
+    }
+    t = t.replace(/\b(playlist|crate|song|track)\b$/i, '').replace(/[?!.,;:]+$/g, '').trim();
+    return { isPlay, isPlaylist, target: t };
+  };
+
+  const buildVerificationCandidates = (
+    rawQuery: string,
+    serverTracks?: Track[],
+    serverPlaylists?: Playlist[]
+  ): PlaybackVerificationCandidate[] => {
+    const { isPlay, isPlaylist, target } = extractPlayQuery(rawQuery);
+    if (!isPlay) return [];
+
+    const q = target.toLowerCase();
+    const allClientPlaylists = getAllClientPlaylists();
+    const playlistById = new Map<string, Playlist>(allClientPlaylists.map((p) => [p.id, p]));
+    for (const sp of serverPlaylists || []) {
+      if (!playlistById.has(sp.id)) playlistById.set(sp.id, sp);
+    }
+
+    const matchedPlaylists = Array.from(playlistById.values()).filter((pl) => {
+      if (!q) return isPlaylist;
+      const name = (pl.name || '').toLowerCase();
+      const desc = (pl.description || '').toLowerCase();
+      const owner = (pl.ownerName || '').toLowerCase();
+      return name.includes(q) || desc.includes(q) || owner.includes(q);
+    });
+
+    const clientTracks = q ? filterAndRankTracks(MusicCatalogService.getAllTracks(), q) : [];
+    const trackMap = new Map<string, Track>();
+    for (const t of [...clientTracks, ...(serverTracks || [])]) {
+      if (t && !trackMap.has(t.id)) trackMap.set(t.id, t);
+    }
+    const matchedTracks = Array.from(trackMap.values());
+
+    const candidates: PlaybackVerificationCandidate[] = [];
+    const toPlaylistCandidate = (pl: Playlist): PlaybackVerificationCandidate => ({
+      kind: 'playlist',
+      id: pl.id,
+      title: pl.name,
+      subtitle: `Playlist · ${pl.itemCount ?? pl.items?.length ?? 0} songs · by ${pl.ownerName || 'ChanceTEK One'}`,
+      coverUrl: pl.coverUrl,
+      itemCount: pl.itemCount ?? pl.items?.length ?? 0,
+      playlist: pl,
+      previewTracks: (pl.items || []).slice(0, 3).map((it) => ({
+        title: it.title,
+        artistName: it.artistName || 'ChanceTEK One',
+      })),
+    });
+    const toTrackCandidate = (tr: Track): PlaybackVerificationCandidate => ({
+      kind: 'track',
+      id: tr.id,
+      title: tr.title,
+      subtitle: `${tr.artistName}${tr.albumTitle ? ` · ${tr.albumTitle}` : ''}`,
+      coverUrl: tr.coverUrl,
+      bpm: tr.bpm,
+      genre: tr.genre,
+      duration: tr.duration,
+      track: tr,
+    });
+
+    if (isPlaylist && matchedPlaylists.length > 0) {
+      matchedPlaylists.slice(0, 4).forEach((pl) => candidates.push(toPlaylistCandidate(pl)));
+    } else {
+      matchedPlaylists.slice(0, 2).forEach((pl) => candidates.push(toPlaylistCandidate(pl)));
+      matchedTracks.slice(0, 4).forEach((tr) => candidates.push(toTrackCandidate(tr)));
+    }
+
+    return candidates.slice(0, 5);
+  };
+
+  const handleSelectVerificationCandidate = (messageId: string, candidateId: string) => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === messageId && m.playbackVerification
+          ? { ...m, playbackVerification: { ...m.playbackVerification, selectedId: candidateId } }
+          : m
+      )
+    );
+  };
+
+  const handleConfirmPlayback = (
+    messageId: string,
+    candidate: PlaybackVerificationCandidate,
+    mode: 'play' | 'djchancemix' = 'play'
+  ) => {
+    if (candidate.kind === 'track' && candidate.track) {
+      playTrack(candidate.track);
+    } else if (candidate.kind === 'playlist') {
+      const fullPlaylist =
+        PlaylistService.getPlaylistById(candidate.id, currentUserId, currentUserEmail).playlist ||
+        candidate.playlist;
+      if (fullPlaylist) {
+        if (mode === 'djchancemix') {
+          router.push(`/djchancemix?playlist=${encodeURIComponent(fullPlaylist.id)}`);
+        } else {
+          playPlaylist(fullPlaylist, 0, false);
+        }
+      }
+    }
+
+    setMessages((prev) => [
+      ...prev.map((m) =>
+        m.id === messageId && m.playbackVerification
+          ? {
+              ...m,
+              playbackVerification: {
+                ...m.playbackVerification,
+                status: 'confirmed' as const,
+                selectedId: candidate.id,
+                confirmedMode: mode,
+              },
+            }
+          : m
+      ),
+      {
+        id: `ai-confirmed-${Date.now()}`,
+        role: 'assistant',
+        content:
+          mode === 'djchancemix'
+            ? `Verified — launching **${candidate.title}** in **DJChanceMix** now.`
+            : `Verified — playing **${candidate.title}** (${candidate.subtitle}) now.`,
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+  };
+
+  const handleCancelPlayback = (messageId: string) => {
+    setMessages((prev) => [
+      ...prev.map((m) =>
+        m.id === messageId && m.playbackVerification
+          ? {
+              ...m,
+              playbackVerification: { ...m.playbackVerification, status: 'cancelled' as const },
+            }
+          : m
+      ),
+      {
+        id: `ai-cancelled-${Date.now()}`,
+        role: 'assistant',
+        content: 'Got it — playback cancelled. Tell me the song or playlist name you want to find instead.',
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+  };
+
   const sendMessage = async (textToSend?: string) => {
     const text = textToSend || input;
     if (!text.trim() || loading) return;
+
+    const trimmed = text.trim();
+    const lowerTrimmed = trimmed.toLowerCase().replace(/[.!?]+$/g, '');
+
+    // Human-in-the-Loop text/voice confirmation for an active pending verification card
+    const pendingMsg = [...messages]
+      .reverse()
+      .find((m) => m.role === 'assistant' && m.playbackVerification?.status === 'pending');
+
+    if (pendingMsg?.playbackVerification) {
+      const isConfirmReply = /^(yes|yep|yeah|confirm|play|play it|go ahead|proceed|correct|that one|that's the one|thats the one|start|do it|ok|okay)$/i.test(
+        lowerTrimmed
+      );
+      const isCancelReply = /^(no|nope|cancel|stop|wrong|not that one|never mind|nevermind)$/i.test(
+        lowerTrimmed
+      );
+      if (isConfirmReply) {
+        const chosen =
+          pendingMsg.playbackVerification.candidates.find(
+            (c) => c.id === pendingMsg.playbackVerification!.selectedId
+          ) || pendingMsg.playbackVerification.candidates[0];
+        if (chosen) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `user-${Date.now()}`,
+              role: 'user',
+              content: trimmed,
+              timestamp: new Date().toISOString(),
+            },
+          ]);
+          setInput('');
+          handleConfirmPlayback(pendingMsg.id, chosen, 'play');
+          return;
+        }
+      }
+      if (isCancelReply) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `user-${Date.now()}`,
+            role: 'user',
+            content: trimmed,
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+        setInput('');
+        handleCancelPlayback(pendingMsg.id);
+        return;
+      }
+    }
 
     // 1. Check & extract instant heuristic insights into LTM
     const { newFact, tasteUpdate } = MemoryManager.extractMemoryInsights(text, profile?.id || 'default-user');
@@ -367,6 +636,18 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
 
     const currentLtm = MemoryManager.getLongTermMemory(profile?.id || 'default-user');
 
+    const availablePlaylists: AvailablePlaylistSummary[] = getAllClientPlaylists()
+      .slice(0, 30)
+      .map((pl) => ({
+        id: pl.id,
+        name: pl.name,
+        description: pl.description,
+        ownerName: pl.ownerName,
+        itemCount: pl.itemCount ?? pl.items?.length ?? 0,
+        coverUrl: pl.coverUrl,
+        trackTitles: (pl.items || []).slice(0, 6).map((it) => it.title),
+      }));
+
     const contextPayload: AgentContextPayload = {
       currentPath: pathname,
       currentTrackId: currentTrack?.id,
@@ -379,6 +660,7 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
       language: language,
       shortTermMemory: updatedStm,
       longTermMemory: currentLtm,
+      availablePlaylists,
     };
 
     try {
@@ -407,13 +689,31 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
         setLongTermMemory(MemoryManager.getLongTermMemory(profile?.id || 'default-user'));
       }
 
+      const verificationCandidates = buildVerificationCandidates(
+        text.trim(),
+        data.recommendations?.tracks,
+        data.recommendations?.playlists
+      );
+
       const assistantMsg: AIMessage = {
         id: `ai-${Date.now()}`,
         role: 'assistant',
-        content: data.content || 'Here is what I found for you!',
+        content:
+          verificationCandidates.length > 0 && !/verify|confirm/i.test(data.content || '')
+            ? `${data.content || 'I found a match for your request.'}\n\nPlease verify the selection below before I start playback.`
+            : data.content || 'Here is what I found for you!',
         timestamp: new Date().toISOString(),
         toolCalls: data.toolCalls,
         mediaRecommendations: data.recommendations,
+        playbackVerification:
+          verificationCandidates.length > 0
+            ? {
+                status: 'pending',
+                requestedQuery: text.trim(),
+                candidates: verificationCandidates,
+                selectedId: verificationCandidates[0].id,
+              }
+            : undefined,
         memoryUpdates: data.memoryUpdates,
       };
 
@@ -665,7 +965,13 @@ export const BreakBeatsAssistant: React.FC<{ isOpen?: boolean; onClose?: () => v
               {/* Messages Feed */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((msg) => (
-                  <AIMessageCard key={msg.id} message={msg} />
+                  <AIMessageCard
+                    key={msg.id}
+                    message={msg}
+                    onSelectVerificationCandidate={handleSelectVerificationCandidate}
+                    onConfirmPlayback={handleConfirmPlayback}
+                    onCancelPlayback={handleCancelPlayback}
+                  />
                 ))}
 
                 {loading && (

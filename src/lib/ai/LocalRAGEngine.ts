@@ -1,4 +1,4 @@
-﻿import {
+import {
   MusicCatalogService,
   MICHAEL_JACKSON_TRACKS,
   VAULT_CLASSIC_TRACKS,
@@ -14,11 +14,14 @@ import {
 } from '@/lib/mockData';
 import { Track, Artist, Video, Audiobook, Project, Producer, Album } from '@/types/media';
 import { Product } from '@/types/commerce';
-import { AgentContextPayload } from '@/types/agent';
+import { Playlist } from '@/types/playlist';
+import { AgentContextPayload, AvailablePlaylistSummary } from '@/types/agent';
 import { MemoryFact, TasteProfile } from '@/types/memory';
+import { PlaylistService } from '@/lib/playlist/PlaylistService';
 
 export interface LocalRAGResult {
   content: string;
+  playIntent?: boolean;
   toolCalls: Array<{
     toolName: string;
     args: Record<string, any>;
@@ -27,6 +30,7 @@ export interface LocalRAGResult {
   }>;
   recommendations: {
     tracks?: Track[];
+    playlists?: Playlist[];
     artists?: Artist[];
     albums?: Album[];
     videos?: Video[];
@@ -161,7 +165,15 @@ export class LocalRAGEngine {
     // 1. Clean query of common filler words and search verbs
     const normalizedTarget = this.extractSearchTarget(cleanLower);
 
-    // 2. Identify media intent
+    // 2. Identify media & play intent
+    const isPlayIntent =
+      /\b(play|put on|queue|spin|mix|start playing|listen to)\b/.test(cleanLower);
+
+    const isPlaylistIntent =
+      cleanLower.includes('playlist') ||
+      cleanLower.includes('crate') ||
+      (/\bmix\b/.test(cleanLower) && !cleanLower.includes('remix'));
+
     const isVideoIntent =
       cleanLower.includes('video') ||
       cleanLower.includes('watch') ||
@@ -210,6 +222,31 @@ export class LocalRAGEngine {
 
     if (cleanLower.includes('saturday night') || cleanLower.includes('kwame thompson')) {
       return this.handleSaturdayNightQuery(memoryUpdates);
+    }
+
+    // C0. Playlist Search Intent (user asked to play or find a playlist/crate)
+    if (isPlaylistIntent) {
+      const playlistMatches = this.searchPlaylists(
+        normalizedTarget,
+        context?.userId,
+        context?.availablePlaylists
+      );
+      if (playlistMatches.length > 0) {
+        return {
+          content: this.formatPlaylistResponse(playlistMatches, normalizedTarget, isPlayIntent),
+          playIntent: isPlayIntent,
+          toolCalls: [
+            {
+              toolName: 'searchPlaylists',
+              args: { query: normalizedTarget || query },
+              status: 'completed',
+              result: { count: playlistMatches.length, playlists: playlistMatches },
+            },
+          ],
+          recommendations: { playlists: playlistMatches },
+          memoryUpdates,
+        };
+      }
     }
 
     // C. Video Search Intent
@@ -277,7 +314,8 @@ export class LocalRAGEngine {
 
     if (musicResult.tracks.length > 0) {
       return {
-        content: this.formatMusicResponse(musicResult.tracks, normalizedTarget || query, musicResult.artistMatch),
+        content: this.formatMusicResponse(musicResult.tracks, normalizedTarget || query, musicResult.artistMatch, isPlayIntent),
+        playIntent: isPlayIntent,
         toolCalls: [
           {
             toolName: 'searchMusic',
@@ -628,9 +666,105 @@ export class LocalRAGEngine {
   }
 
   /**
+   * Search playlists from context summaries and server PlaylistService.
+   */
+  public static searchPlaylists(
+    target: string,
+    userId?: string,
+    availablePlaylists: AvailablePlaylistSummary[] = []
+  ): Playlist[] {
+    const clean = (target || '').toLowerCase().trim();
+    const serverPls = [
+      ...(userId ? PlaylistService.getUserPlaylists(userId) : []),
+      ...PlaylistService.getPublicPlaylists(),
+    ];
+    const byId = new Map<string, Playlist>();
+    for (const pl of serverPls) byId.set(pl.id, pl);
+    for (const summary of availablePlaylists) {
+      if (!byId.has(summary.id)) {
+        byId.set(summary.id, {
+          id: summary.id,
+          name: summary.name,
+          description: summary.description,
+          type: 'music',
+          ownerId: userId || 'default-user',
+          ownerName: summary.ownerName || 'ChanceTEK One Member',
+          coverUrl: summary.coverUrl || '/images/studio_cover.jpg',
+          visibility: 'public',
+          items: (summary.trackTitles || []).map((title, idx) => ({
+            id: `rag-item-${summary.id}-${idx}`,
+            playlistId: summary.id,
+            mediaId: `rag-media-${summary.id}-${idx}`,
+            mediaType: 'music',
+            title,
+            artistName: summary.ownerName || 'ChanceTEK One',
+            coverUrl: summary.coverUrl || '/images/studio_cover.jpg',
+            duration: 180,
+            position: idx,
+            addedAt: new Date().toISOString(),
+          })),
+          itemCount: summary.itemCount,
+          totalDuration: 0,
+          stats: { likes: 0, saves: 0, plays: 0, shares: 0 },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      }
+    }
+
+    const all = Array.from(byId.values());
+    if (!clean) return all.slice(0, 6);
+
+    return all
+      .filter((pl) => {
+        const name = (pl.name || '').toLowerCase();
+        const desc = (pl.description || '').toLowerCase();
+        const owner = (pl.ownerName || '').toLowerCase();
+        const itemMatch = (pl.items || []).some(
+          (it) =>
+            (it.title || '').toLowerCase().includes(clean) ||
+            (it.artistName || '').toLowerCase().includes(clean)
+        );
+        return name.includes(clean) || desc.includes(clean) || owner.includes(clean) || itemMatch;
+      })
+      .slice(0, 6);
+  }
+
+  /**
+   * Formats playlist search response with human-in-the-loop verification prompt.
+   */
+  private static formatPlaylistResponse(
+    playlists: Playlist[],
+    target: string,
+    isPlayIntent = false
+  ): string {
+    const count = playlists.length;
+    let header = `Found **${count} matching ${count === 1 ? 'playlist' : 'playlists'}**`;
+    if (target) header += ` for "${target}"`;
+    header += `:\n\n`;
+
+    let body = '';
+    playlists.slice(0, 5).forEach((pl, i) => {
+      const itemsCount = pl.itemCount ?? pl.items?.length ?? 0;
+      body += `${i + 1}. **${pl.name}** — ${itemsCount} songs *(by ${pl.ownerName || 'ChanceTEK One'})*\n`;
+    });
+
+    const footer = isPlayIntent
+      ? `\nPlease **verify** the playlist below and click **Confirm & Play Playlist** (or say **"yes"**) to start playback.`
+      : `\nSelect any playlist below to play or mix in **DJChanceMix**!`;
+
+    return header + body + footer;
+  }
+
+  /**
    * Formats music search response.
    */
-  private static formatMusicResponse(tracks: Track[], target: string, artistMatch?: Artist): string {
+  private static formatMusicResponse(
+    tracks: Track[],
+    target: string,
+    artistMatch?: Artist,
+    isPlayIntent = false
+  ): string {
     const count = tracks.length;
     let header = `Yo! Found **${count} matching ${count === 1 ? 'track' : 'tracks'}** in the Break Beats vault`;
     if (artistMatch) {
@@ -649,7 +783,11 @@ export class LocalRAGEngine {
       body += `\n*...and ${tracks.length - 8} more tracks available below!*`;
     }
 
-    return header + body + `\n\nTap the **Play** button on any card below to listen in studio quality!`;
+    const footer = isPlayIntent
+      ? `\n\nPlease **verify** the song below and click **Confirm & Play** (or reply **"yes"**) before I start playback.`
+      : `\n\nTap the **Play** button on any card below to listen in studio quality!`;
+
+    return header + body + footer;
   }
 
   /**
@@ -737,8 +875,34 @@ export class LocalRAGEngine {
     t = t.replace(/\bfine\b/g, 'find');
     t = t.replace(/\bsong\b/g, 'songs');
 
-    // Strip leading command phrases
+    // Strip leading command phrases (longest first)
     const phrases = [
+      'can you play my playlist',
+      'can you play the playlist',
+      'please play my playlist',
+      'please play the playlist',
+      'play my playlist called',
+      'play the playlist called',
+      'play my playlist',
+      'play the playlist',
+      'play playlist called',
+      'play playlist',
+      'mix my playlist',
+      'mix the playlist',
+      'mix playlist',
+      'find my playlist',
+      'find playlist',
+      'can you play the song',
+      'please play the song',
+      'can you play',
+      'please play',
+      'play the song',
+      'play the track',
+      'put on the song',
+      'put on',
+      'queue up',
+      'queue',
+      'start playing',
       'find all songs by',
       'find all songs of',
       'find all tracks by',
@@ -787,6 +951,9 @@ export class LocalRAGEngine {
         break;
       }
     }
+
+    // Also strip trailing "playlist" or "song" word if user wrote e.g. "play Sunday Soul playlist"
+    t = t.replace(/\b(playlist|crate|song|track)\b$/i, '').trim();
 
     // Strip trailing question marks and punctuation
     t = t.replace(/[?!.,;:]+$/g, '').trim();

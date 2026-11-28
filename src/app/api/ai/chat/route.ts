@@ -151,6 +151,7 @@ export async function POST(req: NextRequest) {
       const toolResponseMessages: any[] = [];
       const mergedRecommendations: any = {
         tracks: [],
+        playlists: [],
         videos: [],
         audiobooks: [],
         products: [],
@@ -187,7 +188,7 @@ export async function POST(req: NextRequest) {
                 count: typeof res?.result?.count === 'number' ? res.result.count : undefined,
               }),
             },
-            () => executeAgentTool(toolName, toolArgs, context?.userId)
+            () => executeAgentTool(toolName, toolArgs, context?.userId, context?.availablePlaylists)
           );
 
           executedToolCalls.push({
@@ -199,6 +200,7 @@ export async function POST(req: NextRequest) {
 
           if (recommendations) {
             if (recommendations.tracks) mergedRecommendations.tracks.push(...recommendations.tracks);
+            if (recommendations.playlists) mergedRecommendations.playlists.push(...recommendations.playlists);
             if (recommendations.videos) mergedRecommendations.videos.push(...recommendations.videos);
             if (recommendations.audiobooks) mergedRecommendations.audiobooks.push(...recommendations.audiobooks);
             if (recommendations.products) mergedRecommendations.products.push(...recommendations.products);

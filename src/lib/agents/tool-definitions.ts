@@ -202,6 +202,19 @@ export const AGENT_TOOLS_DEFINITIONS = [
   {
     type: 'function' as const,
     function: {
+      name: 'searchPlaylists',
+      description: 'Search the user\'s playlists and public ChanceTEK One playlists by name, description, owner, or song title.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'Playlist name, theme, owner, or track keyword' },
+        },
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
       name: 'getPlaylistDetails',
       description: 'Retrieve details, tracklist, and duration of a specific playlist.',
       parameters: {
