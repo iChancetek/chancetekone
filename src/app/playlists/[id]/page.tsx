@@ -455,6 +455,17 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                 Random
               </button>
 
+              {playlist.items.some((it) => it.mediaType === 'music') && (
+                <Link
+                  href={`/djchancemix?playlist=${encodeURIComponent(playlist.id)}`}
+                  className="flex items-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-brand-purple/80 to-cyan-600/80 hover:from-brand-purple hover:to-cyan-500 border border-cyan-300/40 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg hover:scale-105 transition-all"
+                  title="Launch this playlist in DJChanceMix AI AutoMix Studio"
+                >
+                  <Sparkles className="w-4 h-4 text-brand-gold" />
+                  <span>DJChanceMix</span>
+                </Link>
+              )}
+
               <button
                 onClick={handleToggleSave}
                 className={`p-3 rounded-full border transition-all ${isSaved

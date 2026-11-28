@@ -11,6 +11,7 @@
     "build": "next build && node scripts/copy-standalone.js",
     "start": "next start",
     "test:ingestion": "tsx scripts/test-ingestion.ts",
+    "test:djchancemix": "tsx scripts/test-djchancemix.ts",
     "mcp": "tsx src/mcp/cli.ts"
   },
   "repository": {

@@ -69,6 +69,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Projects', href: '/projects', icon: FolderKanban },
   { label: 'Albums', href: '/albums', icon: Disc3 },
   { label: 'Playlists', href: '/playlists', icon: ListMusic },
+  { label: 'DJChanceMix', href: '/djchancemix', icon: Disc3, badge: 'AI DJ' },
   { label: 'Brands & Collections', href: '/merch', icon: ShoppingBag, badge: 'By Members' },
   { label: 'The Fam... Famio', href: 'https://famio.us', icon: Share2, isExternal: true, badge: 'Social Media' },
   { label: 'AI Radio', href: '/radio', icon: Radio, badge: 'NEW' },
