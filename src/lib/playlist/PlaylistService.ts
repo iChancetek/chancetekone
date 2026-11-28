@@ -801,13 +801,14 @@ export class PlaylistService {
     return this.applyFilter(all, filter);
   }
 
-  public static canUserModifyPlaylist(
+  /**
+   * Strict owner-only check: returns true ONLY when the user is the playlist's creator/owner.
+   */
+  public static isPlaylistOwner(
     playlist: Playlist,
     userId?: string,
-    isAdmin?: boolean,
     userEmail?: string
   ): boolean {
-    if (isAdmin) return true;
     if (!userId && !userEmail) return false;
     if (userId && playlist.ownerId === userId) return true;
     const normalizedEmail = userEmail?.toLowerCase().trim();
@@ -815,6 +816,16 @@ export class PlaylistService {
       return true;
     }
     return false;
+  }
+
+  public static canUserModifyPlaylist(
+    playlist: Playlist,
+    userId?: string,
+    isAdmin?: boolean,
+    userEmail?: string
+  ): boolean {
+    if (isAdmin) return true;
+    return this.isPlaylistOwner(playlist, userId, userEmail);
   }
 
   public static getUserPlaylists(userId: string, filter?: PlaylistFilter): Playlist[];
@@ -1039,8 +1050,8 @@ export class PlaylistService {
     if (idx === -1) return { success: false, error: 'Playlist not found.' };
 
     const playlist = all[idx];
-    if (!this.canUserModifyPlaylist(playlist, userId, isAdmin, userEmail)) {
-      return { success: false, error: 'Only the playlist creator or an administrator can make changes to this playlist.' };
+    if (!this.isPlaylistOwner(playlist, userId, userEmail)) {
+      return { success: false, error: 'Only the playlist owner can make changes to this playlist.' };
     }
 
     // Safety check: Prevent changing type if it would invalidate existing media
@@ -1250,8 +1261,8 @@ export class PlaylistService {
     if (idx === -1) return { success: false, error: 'Playlist not found.' };
 
     const playlist = all[idx];
-    if (!this.canUserModifyPlaylist(playlist, userId, isAdmin, userEmail)) {
-      return { success: false, error: 'Only the playlist creator or an administrator can modify this playlist.' };
+    if (!this.isPlaylistOwner(playlist, userId, userEmail)) {
+      return { success: false, error: 'Only the playlist owner can modify songs in this playlist.' };
     }
 
     const newItem = this.resolveMediaItem(media, playlistId, playlist.items.length);
@@ -1300,8 +1311,8 @@ export class PlaylistService {
     if (idx === -1) return { success: false, error: 'Playlist not found.' };
 
     const playlist = all[idx];
-    if (!this.canUserModifyPlaylist(playlist, userId, isAdmin, userEmail)) {
-      return { success: false, error: 'Only the playlist creator or an administrator can modify this playlist.' };
+    if (!this.isPlaylistOwner(playlist, userId, userEmail)) {
+      return { success: false, error: 'Only the playlist owner can modify songs in this playlist.' };
     }
 
     const itemIdx = playlist.items.findIndex((it) => it.id === itemId);
@@ -1339,8 +1350,8 @@ export class PlaylistService {
     if (idx === -1) return { success: false, error: 'Playlist not found.' };
 
     const playlist = all[idx];
-    if (!this.canUserModifyPlaylist(playlist, userId, isAdmin, userEmail)) {
-      return { success: false, error: 'Only the playlist creator or an administrator can reorder this playlist.' };
+    if (!this.isPlaylistOwner(playlist, userId, userEmail)) {
+      return { success: false, error: 'Only the playlist owner can reorder songs in this playlist.' };
     }
 
     const itemMap = new Map(playlist.items.map((it) => [it.id, it]));

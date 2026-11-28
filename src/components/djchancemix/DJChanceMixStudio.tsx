@@ -22,6 +22,7 @@ import {
   ChevronDown,
   ChevronUp,
   Activity,
+  FolderPlus,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { usePlayer } from '@/lib/player/PlayerContext';
@@ -40,6 +41,7 @@ import {
   TrackAudioAnalysis,
 } from '@/types/djchancemix';
 import {
+  getRegisteredLocalAudioTracks,
   importAuthorizedLocalAudioFiles,
   playlistToDJSources,
   trackToDJSource,
@@ -49,8 +51,11 @@ import {
   optimizePlaylistFlow,
   pickSmartShuffleNext,
 } from '@/lib/djchancemix/transitionIntelligence';
+import { evaluateCamelotCompatibility } from '@/lib/djchancemix/dsp/keyDetector';
 import { getSharedDJMixerEngine } from '@/lib/djchancemix/dualDeckEngine';
 import { DJChanceMixConfigService } from '@/lib/djchancemix/configService';
+import { CreatePlaylistModal } from '@/components/playlist/CreatePlaylistModal';
+import { EditPlaylistModal } from '@/components/playlist/EditPlaylistModal';
 import { DualDeckConsole } from './DualDeckConsole';
 import { MixSettingsPanel } from './MixSettingsPanel';
 import { MixQueuePanel } from './MixQueuePanel';
@@ -74,10 +79,10 @@ function formatSec(sec: number): string {
 export const DJChanceMixStudio: React.FC = () => {
   const searchParams = useSearchParams();
   const initialPlaylistParam = searchParams?.get('playlist') || null;
-  const { profile, user, isAdmin } = useAuth();
+  const { profile, user } = useAuth();
   const { pause: pauseGlobalPlayer } = usePlayer();
   const currentUserId = profile?.id || user?.uid || 'guest';
-  const currentEmail = profile?.email || user?.email || undefined;
+  const currentEmail = (profile?.email || user?.email || '').toLowerCase().trim() || undefined;
 
   const engineRef = useRef(getSharedDJMixerEngine());
   const [snapshot, setSnapshot] = useState<MixerEngineSnapshot>(() =>
@@ -88,6 +93,12 @@ export const DJChanceMixStudio: React.FC = () => {
   );
   const [showConsole, setShowConsole] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [showCreatePlaylistModal, setShowCreatePlaylistModal] = useState(false);
+  const [editModalState, setEditModalState] = useState<{
+    open: boolean;
+    tab: 'songs' | 'view' | 'details';
+  }>({ open: false, tab: 'songs' });
+
   const [isShuffled, setIsShuffled] = useState(false);
   const [repeatPlaylist, setRepeatPlaylist] = useState(true);
 
@@ -111,6 +122,8 @@ export const DJChanceMixStudio: React.FC = () => {
   const analysesRef = useRef<Record<string, TrackAudioAnalysis>>(analyses);
   const configRef = useRef<MixConfiguration>(config);
   const playedHistoryRef = useRef<Set<string>>(new Set());
+  const hasInitializedQueueRef = useRef<boolean>(false);
+  const hydratedInitialParamRef = useRef<string | null>(null);
 
   queueRef.current = queue;
   currentIndexRef.current = currentIndex;
@@ -122,7 +135,7 @@ export const DJChanceMixStudio: React.FC = () => {
 
   const notify = useCallback((msg: string) => {
     setStatusToast(msg);
-    setTimeout(() => setStatusToast((cur) => (cur === msg ? null : cur)), 3600);
+    setTimeout(() => setStatusToast((cur) => (cur === msg ? null : cur)), 3800);
   }, []);
 
   // Load user MixConfiguration & sync from server
@@ -159,30 +172,43 @@ export const DJChanceMixStudio: React.FC = () => {
   }, [currentUserId, currentEmail]);
 
   useEffect(() => {
-    const { sources, playlistsMap } = refreshCatalogAndPlaylists();
-    void PlaylistService.syncFromServer(false);
+    const hydrateFromLatest = () => {
+      const { sources, playlistsMap } = refreshCatalogAndPlaylists();
 
-    const unsubCat = MusicCatalogService.subscribe(() => refreshCatalogAndPlaylists());
-    const unsubPl = PlaylistService.subscribe(() => refreshCatalogAndPlaylists());
-
-    // Initial queue setup from ?playlist=<id> or Studio Catalog
-    if (initialPlaylistParam && playlistsMap.has(initialPlaylistParam)) {
-      const pl = playlistsMap.get(initialPlaylistParam)!;
-      const plTracks = playlistToDJSources(pl);
-      setActivePlaylistId(pl.id);
-      setActivePlaylistName(pl.name);
-      setQueue(plTracks.length > 0 ? plTracks : sources.slice(0, 16));
-      const plSet = DJChanceMixConfigService.getPlaylistSettings(pl.id, configRef.current.defaultMode);
-      setPlaylistMixSettings(plSet);
-      if (!plSet.autoMixEnabled) {
-        engineRef.current.setMode('original');
-      } else {
-        engineRef.current.setMode(plSet.mixingMode);
+      if (
+        initialPlaylistParam &&
+        hydratedInitialParamRef.current !== initialPlaylistParam &&
+        playlistsMap.has(initialPlaylistParam)
+      ) {
+        const pl = playlistsMap.get(initialPlaylistParam)!;
+        const plTracks = playlistToDJSources(pl);
+        hydratedInitialParamRef.current = initialPlaylistParam;
+        hasInitializedQueueRef.current = true;
+        setActivePlaylistId(pl.id);
+        setActivePlaylistName(pl.name);
+        const nextQueue = plTracks.length > 0 ? plTracks : sources.slice(0, 16);
+        queueRef.current = nextQueue;
+        setQueue(nextQueue);
+        const plSet = DJChanceMixConfigService.getPlaylistSettings(pl.id, configRef.current.defaultMode);
+        setPlaylistMixSettings(plSet);
+        engineRef.current.setMode(plSet.autoMixEnabled ? plSet.mixingMode : 'original');
+        return;
       }
-    } else if (sources.length > 0) {
-      setQueue(sources.slice(0, 18));
-      setActivePlaylistName('ChanceTEK Studio Mix');
-    }
+
+      if (!hasInitializedQueueRef.current && queueRef.current.length === 0 && sources.length > 0) {
+        hasInitializedQueueRef.current = true;
+        const initialList = sources.slice(0, 18);
+        queueRef.current = initialList;
+        setQueue(initialList);
+        setActivePlaylistName('ChanceTEK Studio Mix');
+      }
+    };
+
+    hydrateFromLatest();
+    void PlaylistService.syncFromServer(false).then(() => hydrateFromLatest());
+
+    const unsubCat = MusicCatalogService.subscribe(() => hydrateFromLatest());
+    const unsubPl = PlaylistService.subscribe(() => hydrateFromLatest());
 
     return () => {
       unsubCat();
@@ -190,29 +216,42 @@ export const DJChanceMixStudio: React.FC = () => {
     };
   }, [initialPlaylistParam, refreshCatalogAndPlaylists]);
 
-  // Resolve next track honoring manual override, shuffle-aware transition planning, and repeat
+  /**
+   * Resolves the NEXT DISTINCT track in the playlist/queue.
+   * GUARANTEES:
+   * - Anchors on the actual playing track's real index in `queueRef.current` (immune to async React state delay!)
+   * - Walks sequentially through ALL tracks (0 -> 1 -> 2 -> ... -> N-1, then loops to 0 if Repeat is ON)
+   * - NEVER automatically returns the exact same track currently playing on the active deck!
+   */
   const resolveUpcomingTrack = useCallback(
-    (fromIndex?: number, excludeId?: string): DJTrackSource | null => {
+    (fromIndex?: number, currentActiveTrackId?: string): DJTrackSource | null => {
       const q = queueRef.current;
       if (q.length === 0) return null;
 
-      if (overrideNextRef.current && overrideNextRef.current.id !== excludeId) {
+      if (overrideNextRef.current && overrideNextRef.current.id !== currentActiveTrackId) {
         return overrideNextRef.current;
       }
 
-      const idx = typeof fromIndex === 'number' ? fromIndex : currentIndexRef.current;
-      const activeTrack = q[idx] || null;
+      // Anchor strictly on the real active track's position in queue
+      let anchorIdx = typeof fromIndex === 'number' ? fromIndex : currentIndexRef.current;
+      if (currentActiveTrackId) {
+        const exactIdx = q.findIndex((t) => t.id === currentActiveTrackId);
+        if (exactIdx >= 0) anchorIdx = exactIdx;
+      }
+      const activeTrack = q[anchorIdx] || null;
+      const excludeId = currentActiveTrackId || activeTrack?.id;
 
+      // Shuffle-aware intelligent selection
       if (shuffleRef.current && q.length > 1) {
         const unplayed = q.filter(
-          (t) => t.id !== (excludeId || activeTrack?.id) && !playedHistoryRef.current.has(t.id)
+          (t) => t.id !== excludeId && !playedHistoryRef.current.has(t.id)
         );
         const pool =
           unplayed.length > 0
             ? unplayed
             : repeatRef.current
-            ? q.filter((t) => t.id !== (excludeId || activeTrack?.id))
-            : [];
+              ? q.filter((t) => t.id !== excludeId)
+              : [];
         if (pool.length === 0) return null;
         if (activeTrack && configRef.current.defaultMode !== 'original') {
           return pickSmartShuffleNext(activeTrack, pool, analysesRef.current, configRef.current);
@@ -220,42 +259,83 @@ export const DJChanceMixStudio: React.FC = () => {
         return pool[Math.floor(Math.random() * pool.length)];
       }
 
-      const nextIdx = idx + 1;
-      if (nextIdx < q.length) return q[nextIdx];
-      if (repeatRef.current && q.length > 1) return q[0];
+      // Harmonic Mix: among the next 3 songs, bring the most key-compatible one forward (session queue only)
+      if (configRef.current.defaultMode === 'harmonic' && anchorIdx >= 0 && anchorIdx < q.length - 2) {
+        const activeAnalysis = activeTrack ? analysesRef.current[activeTrack.id] : undefined;
+        if (activeAnalysis && (activeAnalysis.keyConfidence ?? 0) >= 0.3) {
+          let bestIdx = -1;
+          let bestScore = -1;
+          let immediateScore = -1;
+          for (let i = anchorIdx + 1; i <= Math.min(q.length - 1, anchorIdx + 3); i++) {
+            if (q[i].id === excludeId) continue;
+            const cand = analysesRef.current[q[i].id];
+            if (!cand || (cand.keyConfidence ?? 0) < 0.3) continue;
+            const score = evaluateCamelotCompatibility(activeAnalysis.camelotCode, cand.camelotCode).score;
+            if (i === anchorIdx + 1) immediateScore = score;
+            if (score > bestScore) {
+              bestScore = score;
+              bestIdx = i;
+            }
+          }
+          if (bestIdx > anchorIdx + 1 && bestScore >= immediateScore + 10) {
+            const reordered = [...q];
+            const [picked] = reordered.splice(bestIdx, 1);
+            reordered.splice(anchorIdx + 1, 0, picked);
+            queueRef.current = reordered;
+            setQueue(reordered);
+            return picked;
+          }
+        }
+      }
+
+      // Sequential full-playlist progression skipping any duplicate of the active track
+      for (let step = 1; step < q.length; step++) {
+        const candidateIdx = anchorIdx + step;
+        if (candidateIdx < q.length) {
+          if (q[candidateIdx].id !== excludeId) return q[candidateIdx];
+        } else if (repeatRef.current) {
+          const wrappedIdx = candidateIdx % q.length;
+          if (q[wrappedIdx].id !== excludeId) return q[wrappedIdx];
+        } else {
+          return null;
+        }
+      }
       return null;
     },
     []
   );
 
-  // Subscribe to DualDeckMixerEngine
+  // Subscribe to DualDeckMixerEngine with SYNCHRONOUS queue advancement!
   useEffect(() => {
     const engine = engineRef.current;
     engine.setCallbacks({
-      onRequestNextTrack: () => {
-        const activeId = engine.getSnapshot().decks[engine.getSnapshot().activeDeck].track?.id;
-        return resolveUpcomingTrack(currentIndexRef.current, activeId);
+      onRequestNextTrack: (activeId) => {
+        const resolvedActiveId =
+          activeId || engine.getSnapshot().decks[engine.getSnapshot().activeDeck].track?.id;
+        return resolveUpcomingTrack(currentIndexRef.current, resolvedActiveId);
       },
       onTrackAdvanced: (newTrack) => {
         playedHistoryRef.current.add(newTrack.id);
         if (overrideNextRef.current?.id === newTrack.id) {
+          overrideNextRef.current = null;
           setOverrideNextTrack(null);
         }
         const newIdx = queueRef.current.findIndex((t) => t.id === newTrack.id);
         if (newIdx >= 0) {
+          // CRITICAL: Update ref synchronously BEFORE engine immediately invokes onRequestNextTrack!
+          currentIndexRef.current = newIdx;
           setCurrentIndex(newIdx);
         }
       },
       onBeforePlayExternalPause: () => {
         try {
           pauseGlobalPlayer();
-        } catch {}
+        } catch { }
       },
     });
 
     const unsub = engine.subscribe((snap) => {
       setSnapshot(snap);
-      // Merge newly completed deck analyses into React state for Queue compatibility badges
       const deckA = snap.decks.A;
       const deckB = snap.decks.B;
       if (deckA.track && deckA.analysis && !analysesRef.current[deckA.track.id]) {
@@ -271,7 +351,7 @@ export const DJChanceMixStudio: React.FC = () => {
     };
   }, [pauseGlobalPlayer, resolveUpcomingTrack]);
 
-  // Background lookahead analyzer: gently pre-analyzes up to 6 tracks around currentIndex
+  // Background lookahead analyzer: gently pre-analyzes up to 6 tracks ahead so transitions stay seamless
   useEffect(() => {
     if (queue.length === 0) return;
     let cancelled = false;
@@ -296,7 +376,7 @@ export const DJChanceMixStudio: React.FC = () => {
     };
   }, [queue, currentIndex]);
 
-  // Sync first two tracks onto Deck A / Deck B cleanly when queue loads and decks are empty
+  // Load initial two DISTINCT songs onto Deck A / Deck B when decks are empty
   useEffect(() => {
     if (queue.length === 0) return;
     const engine = engineRef.current;
@@ -304,9 +384,8 @@ export const DJChanceMixStudio: React.FC = () => {
     const activeDeckSnap = snap.decks[snap.activeDeck];
     if (!activeDeckSnap.track && queue[0]) {
       void engine.loadTrackOnDeck(snap.activeDeck, queue[0], { autoplay: false });
-      if (queue[1]) {
-        void engine.preloadNextTrack(queue[1]);
-      }
+      const distinctSecond = queue.find((t, idx) => idx > 0 && t.id !== queue[0].id) || null;
+      void engine.preloadNextTrack(distinctSecond, { allowDuplicateOfActive: false });
     }
   }, [queue]);
 
@@ -315,7 +394,12 @@ export const DJChanceMixStudio: React.FC = () => {
   const handleUpdateConfig = useCallback(
     (partial: Partial<MixConfiguration>) => {
       setConfig((prev) => {
-        const next = { ...prev, ...partial };
+        // Never let a settings change silently revert the live mixing mode (playlists can set the engine mode directly)
+        const next = {
+          ...prev,
+          ...partial,
+          defaultMode: partial.defaultMode ?? engineRef.current.getConfig().defaultMode,
+        };
         engineRef.current.updateConfig(next);
         void DJChanceMixConfigService.saveConfig(next, currentUserId !== 'guest' ? currentUserId : undefined);
         return next;
@@ -347,23 +431,100 @@ export const DJChanceMixStudio: React.FC = () => {
         );
         setPlaylistMixSettings(updated);
       }
-      notify(`Mixing Mode switched to ${MIX_MODE_META[mode].label} — active seamlessly.`);
+      const livePlan = engineRef.current.getSnapshot().activeTransitionPlan;
+      const behavior: Record<MixMode, string> = {
+        automix: 'AI picks beat-match, phrase, harmonic or vocal-safe blends per song pair.',
+        'smart-crossfade': 'Pure volume crossfade at the natural outro — tempo never changes.',
+        beatsync: 'Next song is tempo-locked to this BPM, dropped on the downbeat with a bass swap.',
+        harmonic: 'Long blends for compatible Camelot keys, tight cuts on key clashes; next song chosen by key.',
+        continuous: 'Silence trimmed on both sides and songs spliced with a 0.6s micro-fade — zero dead air.',
+        original: 'Every song plays start-to-finish, unmodified: no crossfade, tempo change or loudness gain.',
+      };
+      const planNote =
+        livePlan && mode !== 'original'
+          ? ` Next: ${livePlan.transitionType.replace(/-/g, ' ')} · ${livePlan.transitionDurationSec}s${livePlan.beatSyncEnabled
+            ? ` · BeatSync ${livePlan.tempoAdjustmentPercent > 0 ? '+' : ''}${livePlan.tempoAdjustmentPercent}%`
+            : ''
+          }.`
+          : '';
+      notify(`${MIX_MODE_META[mode].label}: ${behavior[mode]}${planNote}`);
     },
     [activePlaylistId, playlistMixSettings, currentUserId, handleUpdateConfig, notify]
   );
 
   const handlePlayTrackAt = useCallback(
-    async (index: number) => {
-      const target = queue[index];
+    async (index: number, customQueue?: DJTrackSource[]) => {
+      const q = customQueue || queueRef.current;
+      const target = q[index];
       if (!target) return;
+      currentIndexRef.current = index;
       setCurrentIndex(index);
       playedHistoryRef.current.add(target.id);
-      if (overrideNextTrack?.id === target.id) setOverrideNextTrack(null);
+      if (overrideNextRef.current?.id === target.id) {
+        overrideNextRef.current = null;
+        setOverrideNextTrack(null);
+      }
 
       const upcoming = resolveUpcomingTrack(index, target.id);
       await engineRef.current.playTrack(target, upcoming);
     },
-    [queue, overrideNextTrack, resolveUpcomingTrack]
+    [resolveUpcomingTrack]
+  );
+
+  /**
+   * 1-Click "Mix Playlist Now": loads any playlist (or Studio Mix), activates AutoMix if needed,
+   * starts Track 1 immediately, preloads Track 2 (distinct!), and mixes the ENTIRE playlist end-to-end!
+   */
+  const handleMixPlaylistNow = useCallback(
+    async (playlistId: string | null) => {
+      let targetTracks: DJTrackSource[] = [];
+      let targetName = 'ChanceTEK Studio Mix';
+
+      if (playlistId === null) {
+        targetTracks = activePlaylistId === null && queueRef.current.length > 0
+          ? queueRef.current
+          : catalogTracks.slice(0, 24);
+        setActivePlaylistId(null);
+        setActivePlaylistName(targetName);
+        setPlaylistMixSettings(null);
+      } else {
+        const pl = playlists.find((p) => p.id === playlistId);
+        if (!pl) return;
+        targetTracks = playlistToDJSources(pl);
+        targetName = pl.name;
+        setActivePlaylistId(pl.id);
+        setActivePlaylistName(pl.name);
+        const plSet = DJChanceMixConfigService.getPlaylistSettings(pl.id, configRef.current.defaultMode);
+        setPlaylistMixSettings(plSet);
+        if (plSet.autoMixEnabled) {
+          engineRef.current.setMode(plSet.mixingMode === 'original' ? 'automix' : plSet.mixingMode);
+        }
+      }
+
+      if (targetTracks.length === 0) {
+        notify(`"${targetName}" has no music tracks yet — add songs to start mixing!`);
+        return;
+      }
+
+      // Ensure AutoMix is active when user clicks "Mix Playlist Now"
+      if (engineRef.current.getConfig().defaultMode === 'original') {
+        engineRef.current.setMode('automix');
+        setConfig((prev) => ({ ...prev, defaultMode: 'automix' }));
+      }
+
+      queueRef.current = targetTracks;
+      currentIndexRef.current = 0;
+      overrideNextRef.current = null;
+      playedHistoryRef.current.clear();
+
+      setQueue(targetTracks);
+      setCurrentIndex(0);
+      setOverrideNextTrack(null);
+
+      await handlePlayTrackAt(0, targetTracks);
+      notify(`Mixing "${targetName}" live (${targetTracks.length} songs queued continuously)!`);
+    },
+    [activePlaylistId, catalogTracks, playlists, handlePlayTrackAt, notify]
   );
 
   const handlePlayPauseMain = useCallback(async () => {
@@ -376,11 +537,12 @@ export const DJChanceMixStudio: React.FC = () => {
   }, [snapshot, queue, currentIndex, handlePlayTrackAt]);
 
   const handleSkipNext = useCallback(async () => {
-    const upcoming = resolveUpcomingTrack(currentIndex, snapshot.decks[snapshot.activeDeck].track?.id);
+    const activeId = snapshot.decks[snapshot.activeDeck].track?.id;
+    const upcoming = resolveUpcomingTrack(currentIndexRef.current, activeId);
     if (!upcoming) return;
-    const idx = queue.findIndex((t) => t.id === upcoming.id);
+    const idx = queueRef.current.findIndex((t) => t.id === upcoming.id);
     await handlePlayTrackAt(idx >= 0 ? idx : 0);
-  }, [resolveUpcomingTrack, currentIndex, snapshot, queue, handlePlayTrackAt]);
+  }, [resolveUpcomingTrack, snapshot, handlePlayTrackAt]);
 
   const handleSkipPrev = useCallback(async () => {
     const activeDeck = snapshot.decks[snapshot.activeDeck];
@@ -393,10 +555,27 @@ export const DJChanceMixStudio: React.FC = () => {
     await handlePlayTrackAt(prevIdx);
   }, [snapshot, queue, currentIndex, repeatPlaylist, handlePlayTrackAt]);
 
+  const handleManualLoadToDeck = useCallback(
+    async (deckId: DeckId, track: DJTrackSource) => {
+      await engineRef.current.manualLoadTrackToDeck(deckId, track, false);
+      notify(`Manually loaded "${track.title}" onto Deck ${deckId}.`);
+    },
+    [notify]
+  );
+
+  const handleSyncDeckBpm = useCallback(
+    (deckId: DeckId) => {
+      const res = engineRef.current.syncDeckBpmToOther(deckId);
+      notify(res.message);
+    },
+    [notify]
+  );
+
   const handleCueNextTrack = useCallback(
     (track: DJTrackSource) => {
+      overrideNextRef.current = track;
       setOverrideNextTrack(track);
-      void engineRef.current.preloadNextTrack(track);
+      void engineRef.current.preloadNextTrack(track, { allowDuplicateOfActive: false });
       notify(`Cued "${track.title}" as next transition track on Deck ${snapshot.nextDeck}.`);
     },
     [snapshot.nextDeck, notify]
@@ -409,6 +588,9 @@ export const DJChanceMixStudio: React.FC = () => {
       const tracks = playlistToDJSources(pl);
       setActivePlaylistId(pl.id);
       setActivePlaylistName(pl.name);
+      queueRef.current = tracks;
+      currentIndexRef.current = 0;
+      overrideNextRef.current = null;
       setQueue(tracks);
       setCurrentIndex(0);
       setOverrideNextTrack(null);
@@ -416,14 +598,14 @@ export const DJChanceMixStudio: React.FC = () => {
 
       const plSet = DJChanceMixConfigService.getPlaylistSettings(pl.id, config.defaultMode);
       setPlaylistMixSettings(plSet);
-      const effectiveMode = plSet.autoMixEnabled ? plSet.mixingMode : 'original';
-      engineRef.current.setMode(effectiveMode);
+      engineRef.current.setMode(plSet.autoMixEnabled ? plSet.mixingMode : 'original');
 
       if (tracks[0]) {
         void engineRef.current.loadTrackOnDeck(snapshot.activeDeck, tracks[0], { autoplay: false });
-        void engineRef.current.preloadNextTrack(tracks[1] || null);
+        const second = tracks.find((t, idx) => idx > 0 && t.id !== tracks[0].id) || null;
+        void engineRef.current.preloadNextTrack(second, { allowDuplicateOfActive: false });
       }
-      notify(`Loaded playlist "${pl.name}" (${tracks.length} music tracks).`);
+      notify(`Loaded "${pl.name}" (${tracks.length} songs). Click Play or Mix Playlist Now!`);
     },
     [playlists, config.defaultMode, snapshot.activeDeck, notify]
   );
@@ -433,13 +615,17 @@ export const DJChanceMixStudio: React.FC = () => {
     setActivePlaylistId(null);
     setActivePlaylistName('ChanceTEK Studio Mix');
     setPlaylistMixSettings(null);
+    queueRef.current = list;
+    currentIndexRef.current = 0;
+    overrideNextRef.current = null;
     setQueue(list);
     setCurrentIndex(0);
     setOverrideNextTrack(null);
     playedHistoryRef.current.clear();
     if (list[0]) {
       void engineRef.current.loadTrackOnDeck(snapshot.activeDeck, list[0], { autoplay: false });
-      void engineRef.current.preloadNextTrack(list[1] || null);
+      const second = list.find((t, idx) => idx > 0 && t.id !== list[0].id) || null;
+      void engineRef.current.preloadNextTrack(second, { allowDuplicateOfActive: false });
     }
   }, [catalogTracks, snapshot.activeDeck]);
 
@@ -457,7 +643,11 @@ export const DJChanceMixStudio: React.FC = () => {
       );
       setPlaylistMixSettings(updated);
       engineRef.current.setMode(nextMode);
-      notify(enabled ? `AutoMix enabled for "${activePlaylistName}".` : `AutoMix disabled for "${activePlaylistName}" (Original Playback).`);
+      notify(
+        enabled
+          ? `AutoMix enabled for "${activePlaylistName}".`
+          : `AutoMix disabled for "${activePlaylistName}" (Original Playback).`
+      );
     },
     [activePlaylistId, playlistMixSettings, currentUserId, activePlaylistName, notify]
   );
@@ -471,116 +661,163 @@ export const DJChanceMixStudio: React.FC = () => {
       config,
       activeId
     );
+    queueRef.current = orderedTracks;
+    currentIndexRef.current = 0;
+    overrideNextRef.current = null;
     setQueue(orderedTracks);
     setCurrentIndex(0);
     setOverrideNextTrack(null);
-    if (orderedTracks[1]) {
-      void engineRef.current.preloadNextTrack(orderedTracks[1]);
+    const second = orderedTracks.find((t, i) => i > 0 && t.id !== orderedTracks[0]?.id) || null;
+    if (second) {
+      void engineRef.current.preloadNextTrack(second, { allowDuplicateOfActive: false });
     }
-    notify(`AI DJ Flow sequenced ${orderedTracks.length} tracks (${avgCompatibility}% avg harmonic & BPM compatibility).`);
+    notify(`AI DJ Flow sequenced ${orderedTracks.length} songs (${avgCompatibility}% avg harmonic & BPM match).`);
   }, [queue, snapshot, currentIndex, analyses, config, notify]);
+
+  const activePlaylistObject = useMemo(
+    () => (activePlaylistId ? playlists.find((p) => p.id === activePlaylistId) || null : null),
+    [activePlaylistId, playlists]
+  );
+
+  // STRICT OWNER-ONLY CHECK: only the owner of the playlist can make changes to the playlist!
+  const canManageActivePlaylist = useMemo(() => {
+    if (!activePlaylistObject || currentUserId === 'guest') return false;
+    return PlaylistService.isPlaylistOwner(activePlaylistObject, currentUserId, currentEmail);
+  }, [activePlaylistObject, currentUserId, currentEmail]);
 
   const handleMoveTrack = useCallback(
     (index: number, direction: 'up' | 'down') => {
+      if (activePlaylistId && !canManageActivePlaylist) {
+        notify('Only the playlist owner can rearrange songs in this playlist.');
+        return;
+      }
       const targetIdx = direction === 'up' ? index - 1 : index + 1;
       if (targetIdx < 0 || targetIdx >= queue.length) return;
       const copy = [...queue];
       const [moved] = copy.splice(index, 1);
       copy.splice(targetIdx, 0, moved);
+      queueRef.current = copy;
       setQueue(copy);
 
-      // Persist reorder if managing a ChanceTEK One playlist
-      if (activePlaylistId && currentUserId !== 'guest') {
-        const pl = playlists.find((p) => p.id === activePlaylistId);
-        if (pl && PlaylistService.canUserModifyPlaylist(pl, currentUserId, isAdmin, currentEmail)) {
-          const itemIds = copy
-            .map((t) => pl.items.find((it) => it.mediaId === t.id)?.id)
-            .filter((id): id is string => Boolean(id));
-          if (itemIds.length === pl.items.length) {
-            PlaylistService.reorderPlaylistItems(pl.id, currentUserId, itemIds, isAdmin, currentEmail);
-          }
+      if (activePlaylistObject && canManageActivePlaylist) {
+        const itemIds = copy
+          .map((t) => activePlaylistObject.items.find((it) => it.mediaId === t.id)?.id)
+          .filter((id): id is string => Boolean(id));
+        if (itemIds.length === activePlaylistObject.items.length) {
+          PlaylistService.reorderPlaylistItems(
+            activePlaylistObject.id,
+            currentUserId,
+            itemIds,
+            false,
+            currentEmail
+          );
         }
       }
 
       const activeId = snapshot.decks[snapshot.activeDeck].track?.id;
       const newCurIdx = activeId ? copy.findIndex((t) => t.id === activeId) : currentIndex;
       if (newCurIdx >= 0) {
+        currentIndexRef.current = newCurIdx;
         setCurrentIndex(newCurIdx);
-        if (copy[newCurIdx + 1]) {
-          void engineRef.current.preloadNextTrack(copy[newCurIdx + 1]);
-        }
+        const upcoming = resolveUpcomingTrack(newCurIdx, activeId);
+        void engineRef.current.preloadNextTrack(upcoming, { allowDuplicateOfActive: false });
       }
     },
-    [queue, activePlaylistId, currentUserId, playlists, isAdmin, currentEmail, snapshot, currentIndex]
+    [
+      activePlaylistId,
+      canManageActivePlaylist,
+      queue,
+      activePlaylistObject,
+      currentUserId,
+      currentEmail,
+      snapshot,
+      currentIndex,
+      resolveUpcomingTrack,
+      notify,
+    ]
   );
 
   const handleRemoveTrack = useCallback(
     (index: number) => {
+      if (activePlaylistId && !canManageActivePlaylist) {
+        notify('Only the playlist owner can delete songs from this playlist.');
+        return;
+      }
       const removed = queue[index];
       const nextQueue = queue.filter((_, i) => i !== index);
+      queueRef.current = nextQueue;
       setQueue(nextQueue);
-      if (activePlaylistId && removed && currentUserId !== 'guest') {
-        const pl = playlists.find((p) => p.id === activePlaylistId);
-        if (pl && PlaylistService.canUserModifyPlaylist(pl, currentUserId, isAdmin, currentEmail)) {
-          const plItem = pl.items.find((it) => it.mediaId === removed.id);
-          if (plItem) {
-            PlaylistService.removeItemFromPlaylist(pl.id, currentUserId, plItem.id, isAdmin, currentEmail);
-          }
+      if (activePlaylistObject && canManageActivePlaylist && removed) {
+        const plItem = activePlaylistObject.items.find((it) => it.mediaId === removed.id);
+        if (plItem) {
+          PlaylistService.removeItemFromPlaylist(
+            activePlaylistObject.id,
+            currentUserId,
+            plItem.id,
+            false,
+            currentEmail
+          );
         }
       }
       if (index < currentIndex) {
-        setCurrentIndex((c) => Math.max(0, c - 1));
+        const nextIdx = Math.max(0, currentIndex - 1);
+        currentIndexRef.current = nextIdx;
+        setCurrentIndex(nextIdx);
       }
     },
-    [queue, activePlaylistId, currentUserId, playlists, isAdmin, currentEmail, currentIndex]
+    [activePlaylistId, canManageActivePlaylist, queue, activePlaylistObject, currentUserId, currentEmail, currentIndex, notify]
   );
 
   const handleAddCatalogTrack = useCallback(
     (track: DJTrackSource) => {
+      if (activePlaylistId && !canManageActivePlaylist) {
+        notify('Only the playlist owner can add songs to this playlist.');
+        return;
+      }
       if (queue.some((t) => t.id === track.id)) {
         notify(`"${track.title}" is already in the mix queue.`);
         return;
       }
       const nextQueue = [...queue, track];
+      queueRef.current = nextQueue;
       setQueue(nextQueue);
-      if (activePlaylistId && currentUserId !== 'guest') {
-        const pl = playlists.find((p) => p.id === activePlaylistId);
-        if (pl && PlaylistService.canUserModifyPlaylist(pl, currentUserId, isAdmin, currentEmail)) {
-          PlaylistService.addItemToPlaylist(
-            pl.id,
-            currentUserId,
-            {
-              mediaId: track.id,
-              mediaType: 'music',
-              title: track.title,
-              artistName: track.artistName,
-              coverUrl: track.coverUrl,
-              duration: track.duration,
-              audioUrl: track.audioUrl,
-              genre: track.genre,
-            },
-            isAdmin,
-            currentEmail
-          );
-        }
+      if (activePlaylistObject && canManageActivePlaylist) {
+        PlaylistService.addItemToPlaylist(
+          activePlaylistObject.id,
+          currentUserId,
+          {
+            mediaId: track.id,
+            mediaType: 'music',
+            title: track.title,
+            artistName: track.artistName,
+            coverUrl: track.coverUrl,
+            duration: track.duration,
+            audioUrl: track.audioUrl,
+            genre: track.genre,
+          },
+          false,
+          currentEmail
+        );
       }
       if (!snapshot.decks[snapshot.nextDeck].track) {
-        void engineRef.current.preloadNextTrack(track);
+        void engineRef.current.preloadNextTrack(track, { allowDuplicateOfActive: false });
       }
       notify(`Added "${track.title}" to DJChanceMix queue.`);
     },
-    [queue, activePlaylistId, currentUserId, playlists, isAdmin, currentEmail, snapshot, notify]
+    [activePlaylistId, canManageActivePlaylist, queue, activePlaylistObject, currentUserId, currentEmail, snapshot, notify]
   );
 
   const handleImportLocalFiles = useCallback(
     (files: FileList) => {
       const { imported, rejected } = importAuthorizedLocalAudioFiles(files);
       if (imported.length > 0) {
-        setQueue((prev) => [...prev, ...imported]);
+        const merged = [...queueRef.current, ...imported];
+        queueRef.current = merged;
+        setQueue(merged);
         if (!snapshot.decks[snapshot.activeDeck].track) {
           void engineRef.current.loadTrackOnDeck(snapshot.activeDeck, imported[0], { autoplay: false });
         } else if (!snapshot.decks[snapshot.nextDeck].track) {
-          void engineRef.current.preloadNextTrack(imported[0]);
+          void engineRef.current.preloadNextTrack(imported[0], { allowDuplicateOfActive: false });
         }
       }
       if (rejected.length > 0) {
@@ -589,87 +826,21 @@ export const DJChanceMixStudio: React.FC = () => {
         );
       } else if (imported.length > 0) {
         setImportNotice(
-          `Imported ${imported.length} local audio file(s) privately in browser memory (never uploaded to third-party servers).`
+          `Imported ${imported.length} local audio file(s) privately in browser memory.`
         );
       }
     },
     [snapshot]
   );
 
-  const handleCreateOrSavePlaylist = useCallback(
-    (name: string, includeCurrentQueue: boolean) => {
-      if (currentUserId === 'guest') {
-        notify('Sign in to save DJChanceMix playlists to your ChanceTEK One Library.');
-        return;
-      }
-      const initialItems = includeCurrentQueue
-        ? queue
-            .filter((t) => t.sourceType !== 'local-file')
-            .map((t) => ({
-              mediaId: t.id,
-              mediaType: 'music' as const,
-              title: t.title,
-              artistName: t.artistName,
-              coverUrl: t.coverUrl,
-              duration: t.duration,
-              audioUrl: t.audioUrl,
-              genre: t.genre,
-            }))
-        : [];
-      const created = PlaylistService.createPlaylist({
-        ownerId: currentUserId,
-        ownerName: profile?.name || user?.displayName || 'ChanceTEK One Member',
-        ownerEmail: currentEmail,
-        ownerAvatarUrl: profile?.avatarUrl,
-        name,
-        description: `Mixed in DJChanceMix (${MIX_MODE_META[config.defaultMode].label})`,
-        type: 'music',
-        visibility: 'private',
-        initialItems,
-      });
-      refreshCatalogAndPlaylists();
-      setActivePlaylistId(created.id);
-      setActivePlaylistName(created.name);
-      if (!includeCurrentQueue) setQueue([]);
-      notify(`Saved playlist "${created.name}" (${created.itemCount} tracks).`);
-    },
-    [currentUserId, profile, currentEmail, queue, config.defaultMode, refreshCatalogAndPlaylists, notify]
-  );
-
-  const handleRenamePlaylist = useCallback(
-    (newName: string) => {
-      if (!activePlaylistId || currentUserId === 'guest') return;
-      const res = PlaylistService.updatePlaylist(
-        activePlaylistId,
-        currentUserId,
-        { name: newName },
-        isAdmin,
-        currentEmail
-      );
-      if (res.success) {
-        setActivePlaylistName(newName);
-        refreshCatalogAndPlaylists();
-        notify(`Renamed playlist to "${newName}".`);
-      }
-    },
-    [activePlaylistId, currentUserId, isAdmin, currentEmail, refreshCatalogAndPlaylists, notify]
-  );
-
-  const handleDeletePlaylist = useCallback(() => {
-    if (!activePlaylistId || currentUserId === 'guest') return;
-    const res = PlaylistService.deletePlaylist(activePlaylistId, currentUserId, isAdmin, currentEmail);
-    if (res.success) {
-      notify(`Deleted playlist "${activePlaylistName}".`);
-      refreshCatalogAndPlaylists();
-      handleSelectAllCatalog();
+  // Merge catalog + queue + local files for Manual Deck A/B Loader picker
+  const allAvailableTracksForDecks = useMemo(() => {
+    const map = new Map<string, DJTrackSource>();
+    for (const t of [...queue, ...getRegisteredLocalAudioTracks(), ...catalogTracks]) {
+      if (!map.has(t.id)) map.set(t.id, t);
     }
-  }, [activePlaylistId, currentUserId, isAdmin, currentEmail, activePlaylistName, notify, refreshCatalogAndPlaylists, handleSelectAllCatalog]);
-
-  const canManageActivePlaylist = useMemo(() => {
-    if (!activePlaylistId || currentUserId === 'guest') return false;
-    const pl = playlists.find((p) => p.id === activePlaylistId);
-    return Boolean(pl && PlaylistService.canUserModifyPlaylist(pl, currentUserId, isAdmin, currentEmail));
-  }, [activePlaylistId, currentUserId, playlists, isAdmin, currentEmail]);
+    return Array.from(map.values());
+  }, [queue, catalogTracks]);
 
   const activeDeck = snapshot.decks[snapshot.activeDeck];
   const nextDeck = snapshot.decks[snapshot.nextDeck];
@@ -680,6 +851,10 @@ export const DJChanceMixStudio: React.FC = () => {
     activePlan && activeDeck.duration > 0
       ? Math.min(100, (activePlan.mixOutSec / activeDeck.duration) * 100)
       : null;
+
+  const activePosInQueue = activeDeck.track
+    ? queue.findIndex((t) => t.id === activeDeck.track!.id)
+    : -1;
 
   return (
     <div className="space-y-6 py-4 sm:py-6">
@@ -713,39 +888,59 @@ export const DJChanceMixStudio: React.FC = () => {
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
-              DJ<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold via-amber-300 to-cyan-300">ChanceMix</span>
+              DJ
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold via-amber-300 to-cyan-300">
+                ChanceMix
+              </span>
             </h1>
             <p className="text-xs sm:text-sm text-neutral-300 max-w-2xl">
-              <span className="text-brand-gold font-semibold">Let the music flow.</span> Real-time BPM beat matching, Camelot harmonic mixing, vocal-aware transition points, and studio loudness normalization — engineered directly into ChanceTEK One.
+              <span className="text-brand-gold font-semibold">Let the music flow.</span> Continuous full-playlist AI AutoMix, BPM beat-locking, Camelot harmonic mixing, Club DJ Filter sweep, and manual Deck A / Deck B control.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               type="button"
+              onClick={() => void handleMixPlaylistNow(activePlaylistId)}
+              disabled={queue.length === 0}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-brand-gold to-amber-500 text-black text-xs font-black uppercase tracking-wider shadow-[0_0_24px_rgba(245,195,68,0.4)] hover:scale-105 active:scale-95 transition-all disabled:opacity-40 cursor-pointer"
+            >
+              <Zap className="w-4 h-4 fill-current" />
+              <span>Mix Playlist Now</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowCreatePlaylistModal(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/40 text-emerald-300 text-xs font-extrabold transition-all cursor-pointer"
+            >
+              <FolderPlus className="w-4 h-4" />
+              <span>Create Playlist</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setShowConsole((v) => !v)}
-              className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-xs font-extrabold border transition-all cursor-pointer ${
-                showConsole
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl text-xs font-extrabold border transition-all cursor-pointer ${showConsole
                   ? 'bg-brand-gold/15 border-brand-gold/50 text-brand-gold'
                   : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
-              }`}
+                }`}
             >
               <Sliders className="w-4 h-4" />
-              <span>DJ Console</span>
+              <span>Console</span>
               {showConsole ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             </button>
 
             <button
               type="button"
               onClick={() => setShowSettings((v) => !v)}
-              className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-xs font-extrabold border transition-all cursor-pointer ${
-                showSettings
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl text-xs font-extrabold border transition-all cursor-pointer ${showSettings
                   ? 'bg-brand-purple/30 border-brand-neon text-white'
                   : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
-              }`}
+                }`}
             >
               <SlidersHorizontal className="w-4 h-4 text-brand-gold" />
-              <span>Mix Settings</span>
+              <span>Settings</span>
             </button>
           </div>
         </div>
@@ -761,11 +956,10 @@ export const DJChanceMixStudio: React.FC = () => {
                   key={m}
                   type="button"
                   onClick={() => handleSelectMode(m)}
-                  className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                    isSelected
+                  className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer ${isSelected
                       ? 'bg-gradient-to-br from-brand-gold/20 via-brand-purple/25 to-transparent border-brand-gold text-white shadow-[0_0_20px_rgba(245,195,68,0.18)]'
                       : 'bg-white/[0.03] hover:bg-white/[0.08] border-white/10 text-neutral-300'
-                  }`}
+                    }`}
                 >
                   <p className={`text-xs font-extrabold ${isSelected ? 'text-brand-gold' : 'text-white'}`}>
                     {meta.label}
@@ -775,17 +969,81 @@ export const DJChanceMixStudio: React.FC = () => {
               );
             })}
           </div>
-          <p className="text-[11px] text-neutral-400">
-            <span className="text-brand-gold font-bold">{MIX_MODE_META[snapshot.mode].label}:</span>{' '}
-            {MIX_MODE_META[snapshot.mode].description}
-          </p>
+          {/* Live Mode Behavior Panel: shows exactly what the selected mode will do on the NEXT transition */}
+          <div className="p-3 rounded-2xl bg-black/30 border border-white/10 space-y-2">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+              <p className="text-[11px] text-neutral-300">
+                <span className="text-brand-gold font-bold">{MIX_MODE_META[snapshot.mode].label}:</span>{' '}
+                {MIX_MODE_META[snapshot.mode].description}
+              </p>
+              <button
+                type="button"
+                onClick={() => void engineRef.current.triggerTransitionNow()}
+                disabled={!nextDeck.track || !activeDeck.track || snapshot.transitionPhase === 'mixing'}
+                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-gold/15 hover:bg-brand-gold/25 border border-brand-gold/40 text-brand-gold text-[11px] font-extrabold transition-all disabled:opacity-35 cursor-pointer"
+                title="Hear this mode's transition into the cued song right now"
+              >
+                <Zap className="w-3.5 h-3.5 fill-current" />
+                <span>Preview {MIX_MODE_META[snapshot.mode].shortLabel} Transition</span>
+              </button>
+            </div>
+            {snapshot.mode === 'original' ? (
+              <div className="flex flex-wrap gap-1.5 text-[10px] font-mono">
+                <span className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-neutral-300">No crossfade</span>
+                <span className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-neutral-300">Tempo 1.00x</span>
+                <span className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-neutral-300">No loudness gain</span>
+                <span className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-neutral-300">Plays to the final second</span>
+              </div>
+            ) : activePlan ? (
+              <div className="flex flex-wrap gap-1.5 text-[10px] font-mono">
+                <span className="px-2 py-0.5 rounded-lg bg-brand-gold/15 border border-brand-gold/30 text-brand-gold font-bold capitalize">
+                  {activePlan.transitionType.replace(/-/g, ' ')}
+                </span>
+                <span className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-neutral-200">
+                  {activePlan.transitionDurationSec}s blend
+                </span>
+                <span
+                  className={`px-2 py-0.5 rounded-lg border ${activePlan.beatSyncEnabled
+                      ? 'bg-cyan-500/15 border-cyan-400/40 text-cyan-200'
+                      : 'bg-white/5 border-white/10 text-neutral-400'
+                    }`}
+                >
+                  {activePlan.beatSyncEnabled
+                    ? `BeatSync ${activePlan.tempoAdjustmentPercent > 0 ? '+' : ''}${activePlan.tempoAdjustmentPercent}%${activePlan.mode === 'beatsync' ? ' · held' : ''
+                    }`
+                    : 'Natural tempo'}
+                </span>
+                <span className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-neutral-300">
+                  {activePlan.crossfadeCurve} curve
+                </span>
+                {activePlan.eqSweepEnabled && (
+                  <span className="px-2 py-0.5 rounded-lg bg-brand-purple/25 border border-brand-purple/50 text-brand-neon">
+                    Bass swap
+                  </span>
+                )}
+                <span className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-neutral-300">
+                  Mix-out {formatSec(activePlan.mixOutSec)} · Cue-in {formatSec(activePlan.cueInSec)}
+                </span>
+                <span className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-neutral-300">
+                  Key {activePlan.harmonicRelation === 'unknown' ? 'verifying' : `${activePlan.keyCompatibility}%`}
+                </span>
+              </div>
+            ) : (
+              <p className="text-[10px] text-neutral-500">
+                Load a song on both decks (or start a playlist) to see this mode&apos;s live transition plan.
+              </p>
+            )}
+            {activePlan && snapshot.mode !== 'original' && activePlan.warnings.length > 0 && (
+              <p className="text-[10px] text-amber-300/90">{activePlan.warnings[0]}</p>
+            )}
+          </div>
         </div>
       </header>
 
       {/* 3. Main Now Playing + Next Up Transition Card */}
       <section className="rounded-3xl p-5 sm:p-6 bg-[#0a0a14]/95 border border-white/10 shadow-xl space-y-5">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
-          {/* Now Playing (Left 7 cols) */}
+          {/* Now Playing */}
           <div className="lg:col-span-7 flex items-center gap-4 min-w-0">
             <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-brand-gold/40 shrink-0 bg-neutral-900 shadow-2xl">
               {activeDeck.track ? (
@@ -807,6 +1065,7 @@ export const DJChanceMixStudio: React.FC = () => {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-gold">
                   Now Playing · Deck {snapshot.activeDeck}
+                  {activePosInQueue >= 0 ? ` · Track ${activePosInQueue + 1} of ${queue.length}` : ''}
                 </span>
                 {snapshot.transitionPhase === 'mixing' && (
                   <span className="px-2 py-0.5 rounded-full bg-brand-gold text-black text-[10px] font-black uppercase animate-pulse">
@@ -821,7 +1080,7 @@ export const DJChanceMixStudio: React.FC = () => {
               </div>
 
               <h2 className="text-lg sm:text-2xl font-black text-white truncate">
-                {activeDeck.track?.title || 'Select a playlist or press Play'}
+                {activeDeck.track?.title || 'Select a playlist or press Mix Playlist Now'}
               </h2>
               <p className="text-xs sm:text-sm text-neutral-300 truncate">
                 {activeDeck.track?.artistName || 'ChanceTEK One Catalog'}
@@ -844,7 +1103,7 @@ export const DJChanceMixStudio: React.FC = () => {
             </div>
           </div>
 
-          {/* Upcoming Next Track & Transition Preview (Right 5 cols) */}
+          {/* Upcoming Next Track Preview */}
           <div className="lg:col-span-5 p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5">
             <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
               <span className="text-cyan-300 flex items-center gap-1.5">
@@ -884,12 +1143,14 @@ export const DJChanceMixStudio: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-neutral-400">End of queue — enable Repeat or add tracks below.</p>
+              <p className="text-xs text-neutral-400">
+                Add at least 2 tracks or manually click &ldquo;Load {snapshot.nextDeck}&rdquo; to mix decks.
+              </p>
             )}
           </div>
         </div>
 
-        {/* Scrubber Bar with Mix-Out Indicator */}
+        {/* Scrubber Bar */}
         <div className="space-y-1.5">
           <div
             onClick={(e) => {
@@ -917,7 +1178,7 @@ export const DJChanceMixStudio: React.FC = () => {
             <span>{formatSec(activeDeck.currentTime)}</span>
             <span className="text-neutral-500">
               {activePlan && snapshot.mode !== 'original'
-                ? `Mix-Out at ${formatSec(activePlan.mixOutSec)}`
+                ? `AutoMix Transition at ${formatSec(activePlan.mixOutSec)}`
                 : activePlaylistName}
             </span>
             <span>{formatSec(activeDeck.duration)}</span>
@@ -930,28 +1191,36 @@ export const DJChanceMixStudio: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                setIsShuffled((s) => !s);
-                notify(!isShuffled ? 'Shuffle enabled — AI evaluates compatible next tracks before mixing.' : 'Shuffle disabled.');
+                const nextShuffle = !isShuffled;
+                shuffleRef.current = nextShuffle;
+                setIsShuffled(nextShuffle);
+                notify(
+                  nextShuffle
+                    ? 'Smart Shuffle ON — AI selects compatible next tracks before mixing.'
+                    : 'Sequential playlist mixing restored.'
+                );
               }}
-              className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
-                isShuffled
+              className={`p-2.5 rounded-xl border transition-all cursor-pointer ${isShuffled
                   ? 'bg-brand-purple/30 border-brand-gold text-brand-gold'
                   : 'bg-white/5 hover:bg-white/10 border-white/10 text-neutral-400 hover:text-white'
-              }`}
-              title="Smart Shuffle (Evaluates harmonic & BPM transitions before mixing)"
+                }`}
+              title="Smart Shuffle"
             >
               <Shuffle className="w-4 h-4" />
             </button>
 
             <button
               type="button"
-              onClick={() => setRepeatPlaylist((r) => !r)}
-              className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
-                repeatPlaylist
+              onClick={() => {
+                const nextRep = !repeatPlaylist;
+                repeatRef.current = nextRep;
+                setRepeatPlaylist(nextRep);
+              }}
+              className={`p-2.5 rounded-xl border transition-all cursor-pointer ${repeatPlaylist
                   ? 'bg-brand-purple/30 border-brand-gold text-brand-gold'
                   : 'bg-white/5 hover:bg-white/10 border-white/10 text-neutral-400 hover:text-white'
-              }`}
-              title="Repeat Playlist"
+                }`}
+              title="Repeat Entire Playlist Continuously"
             >
               <Repeat className="w-4 h-4" />
             </button>
@@ -994,8 +1263,8 @@ export const DJChanceMixStudio: React.FC = () => {
               type="button"
               onClick={() => void engineRef.current.triggerTransitionNow()}
               disabled={!nextDeck.track || snapshot.transitionPhase === 'mixing'}
-              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-200 text-xs font-extrabold transition-all disabled:opacity-35 cursor-pointer"
-              title="Execute AI transition into Deck B immediately"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-200 text-xs font-extrabold transition-all disabled:opacity-35 cursor-pointer"
+              title="Execute AI transition into standby deck immediately"
             >
               <Zap className="w-3.5 h-3.5 text-brand-gold fill-current" />
               <span>Mix Now</span>
@@ -1026,15 +1295,20 @@ export const DJChanceMixStudio: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. Optional Expanded Dual-Deck DJ Mixing Console */}
+      {/* 4. Pro Dual-Deck DJ Mixing Console */}
       {showConsole && (
         <DualDeckConsole
           snapshot={snapshot}
           config={config}
+          availableTracks={allAvailableTracksForDecks}
           onSeekDeck={(deckId: DeckId, sec: number) => engineRef.current.seekDeck(deckId, sec)}
           onTempoChange={(deckId: DeckId, rate: number) => engineRef.current.setDeckTempoRate(deckId, rate)}
           onDeckVolumeChange={(deckId: DeckId, vol: number) => engineRef.current.setDeckVolume(deckId, vol)}
+          onToggleDeckPlay={(deckId: DeckId) => void engineRef.current.toggleDeckPlay(deckId)}
+          onSyncDeckBpm={handleSyncDeckBpm}
+          onManualLoadDeck={(deckId: DeckId, track: DJTrackSource) => void handleManualLoadToDeck(deckId, track)}
           onCrossfaderChange={(pos: number) => engineRef.current.setCrossfader(pos)}
+          onDjFilterChange={(amt: number) => engineRef.current.setDjFilter(amt)}
           onTriggerMixNow={() => void engineRef.current.triggerTransitionNow()}
         />
       )}
@@ -1053,6 +1327,7 @@ export const DJChanceMixStudio: React.FC = () => {
         playlists={playlists}
         activePlaylistId={activePlaylistId}
         activePlaylistName={activePlaylistName}
+        activePlaylistOwnerName={activePlaylistObject?.ownerName}
         canManageActivePlaylist={canManageActivePlaylist}
         playlistMixSettings={playlistMixSettings}
         queue={queue}
@@ -1062,14 +1337,14 @@ export const DJChanceMixStudio: React.FC = () => {
         config={config}
         catalogTracks={catalogTracks}
         onSelectPlaylist={handleSelectPlaylist}
+        onMixPlaylistNow={(plId) => void handleMixPlaylistNow(plId)}
         onSelectAllCatalog={handleSelectAllCatalog}
         onTogglePlaylistAutoMix={handleTogglePlaylistAutoMix}
-        onCreatePlaylist={(name) => handleCreateOrSavePlaylist(name, false)}
-        onRenamePlaylist={handleRenamePlaylist}
-        onDeletePlaylist={handleDeletePlaylist}
-        onSaveQueueAsPlaylist={(name) => handleCreateOrSavePlaylist(name, true)}
+        onOpenCreatePlaylistModal={() => setShowCreatePlaylistModal(true)}
+        onOpenEditPlaylistModal={(tab) => setEditModalState({ open: true, tab })}
         onOptimizeDjFlow={handleOptimizeDjFlow}
         onPlayTrackAt={(idx) => void handlePlayTrackAt(idx)}
+        onManualLoadToDeck={(deckId, track) => void handleManualLoadToDeck(deckId, track)}
         onCueNextTrack={handleCueNextTrack}
         onMoveTrack={handleMoveTrack}
         onRemoveTrack={handleRemoveTrack}
@@ -1077,7 +1352,58 @@ export const DJChanceMixStudio: React.FC = () => {
         onImportLocalFiles={handleImportLocalFiles}
         importNotice={importNotice}
       />
+
+      {/* Full Create Playlist Modal inside DJChanceMix */}
+      {showCreatePlaylistModal && (
+        <CreatePlaylistModal
+          isOpen={showCreatePlaylistModal}
+          onClose={() => setShowCreatePlaylistModal(false)}
+          onCreated={(newPlaylist) => {
+            setShowCreatePlaylistModal(false);
+            refreshCatalogAndPlaylists();
+            const plTracks = playlistToDJSources(newPlaylist);
+            setActivePlaylistId(newPlaylist.id);
+            setActivePlaylistName(newPlaylist.name);
+            queueRef.current = plTracks;
+            currentIndexRef.current = 0;
+            setQueue(plTracks);
+            setCurrentIndex(0);
+            const plSet = DJChanceMixConfigService.getPlaylistSettings(
+              newPlaylist.id,
+              config.defaultMode
+            );
+            setPlaylistMixSettings(plSet);
+            if (plTracks.length > 0) {
+              void handlePlayTrackAt(0, plTracks);
+              notify(`Created & now mixing "${newPlaylist.name}" (${plTracks.length} songs)!`);
+            } else {
+              notify(`Created playlist "${newPlaylist.name}" — add songs below to start mixing.`);
+            }
+          }}
+        />
+      )}
+
+      {/* Full View / Edit Songs Modal inside DJChanceMix (strictly owner-only for edits) */}
+      {editModalState.open && activePlaylistObject && (
+        <EditPlaylistModal
+          isOpen={editModalState.open}
+          onClose={() => setEditModalState({ open: false, tab: 'songs' })}
+          playlist={activePlaylistObject}
+          initialTab={canManageActivePlaylist ? editModalState.tab : 'view'}
+          onUpdated={(updated) => {
+            refreshCatalogAndPlaylists();
+            setActivePlaylistName(updated.name);
+            const updatedTracks = playlistToDJSources(updated);
+            queueRef.current = updatedTracks;
+            setQueue(updatedTracks);
+          }}
+          onDeleted={() => {
+            setEditModalState({ open: false, tab: 'songs' });
+            refreshCatalogAndPlaylists();
+            handleSelectAllCatalog();
+          }}
+        />
+      )}
     </div>
   );
 };
-

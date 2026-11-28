@@ -27,6 +27,7 @@ import {
   Users,
   MessageSquare,
   RefreshCw,
+  Eye,
 } from 'lucide-react';
 import { Playlist, PlaylistType, PlaylistFilter } from '@/types/playlist';
 import { PlaylistService } from '@/lib/playlist/PlaylistService';
@@ -57,6 +58,7 @@ export default function PlaylistsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [shareTargetPlaylist, setShareTargetPlaylist] = useState<Playlist | null>(null);
   const [editTargetPlaylist, setEditTargetPlaylist] = useState<Playlist | null>(null);
+  const [editInitialTab, setEditInitialTab] = useState<'songs' | 'view' | 'details'>('songs');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authPromptAction, setAuthPromptAction] = useState<string>('create');
@@ -502,10 +504,23 @@ export default function PlaylistsPage() {
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
+                              setEditInitialTab('view');
                               setEditTargetPlaylist(pl);
                             }}
-                            className="p-1.5 rounded-lg bg-white/5 hover:bg-brand-gold/20 text-neutral-300 hover:text-brand-gold transition-colors"
-                            title="Edit playlist"
+                            className="p-1.5 rounded-lg bg-white/5 hover:bg-cyan-500/20 text-neutral-300 hover:text-cyan-300 transition-colors cursor-pointer"
+                            title="View songs in playlist"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setEditInitialTab('songs');
+                              setEditTargetPlaylist(pl);
+                            }}
+                            className="p-1.5 rounded-lg bg-white/5 hover:bg-brand-gold/20 text-neutral-300 hover:text-brand-gold transition-colors cursor-pointer"
+                            title="Edit songs & playlist"
                           >
                             <Edit className="w-3.5 h-3.5" />
                           </button>
@@ -713,7 +728,7 @@ export default function PlaylistsPage() {
                   (user?.uid && pl.ownerId === user.uid) ||
                   (currentEmail && pl.ownerEmail && currentEmail.toLowerCase() === pl.ownerEmail.toLowerCase())
                 );
-                const canManagePublic = Boolean(isDirectOwner || isAdmin);
+                const canManagePublic = Boolean(isDirectOwner);
 
                 return (
                   <div
@@ -826,16 +841,29 @@ export default function PlaylistsPage() {
                           >
                             <Share2 className="w-3.5 h-3.5" />
                           </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setEditInitialTab('view');
+                              setEditTargetPlaylist(pl);
+                            }}
+                            className="p-1.5 rounded-lg bg-white/5 hover:bg-cyan-500/20 text-neutral-300 hover:text-cyan-300 transition-colors cursor-pointer"
+                            title="View songs in playlist"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
                           {canManagePublic && (
                             <>
                               <button
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
+                                  setEditInitialTab('songs');
                                   setEditTargetPlaylist(pl);
                                 }}
-                                className="p-1.5 rounded-lg bg-white/5 hover:bg-brand-gold/20 text-neutral-300 hover:text-brand-gold transition-colors"
-                                title="Edit playlist"
+                                className="p-1.5 rounded-lg bg-white/5 hover:bg-brand-gold/20 text-neutral-300 hover:text-brand-gold transition-colors cursor-pointer"
+                                title="Edit songs & playlist"
                               >
                                 <Edit className="w-3.5 h-3.5" />
                               </button>
@@ -922,8 +950,9 @@ export default function PlaylistsPage() {
           isOpen={Boolean(editTargetPlaylist)}
           onClose={() => setEditTargetPlaylist(null)}
           playlist={editTargetPlaylist}
+          initialTab={editInitialTab}
           onUpdated={(updated) => {
-            setEditTargetPlaylist(null);
+            setEditTargetPlaylist(updated);
             refreshPlaylists();
           }}
           onDeleted={() => {

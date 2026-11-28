@@ -192,7 +192,13 @@ export function planTransition(input: EvaluateTransitionInput): TransitionPlan {
 
   // Evaluate all musical dimensions
   const tempo = evaluateTempoRelationship(a.bpm, b.bpm, cfg.maxTempoAdjustmentPercent);
-  const harmony = evaluateCamelotCompatibility(a.camelotCode, b.camelotCode);
+
+  // Only trust Camelot keys that were actually measured from the audio (fallback analyses carry a placeholder key)
+  const keyReliable = (a.keyConfidence ?? 0) >= 0.3 && (b.keyConfidence ?? 0) >= 0.3;
+  const harmony: { score: number; relation: TransitionPlan['harmonicRelation']; description: string } = keyReliable
+    ? evaluateCamelotCompatibility(a.camelotCode, b.camelotCode)
+    : { score: 65, relation: 'unknown', description: 'Key not yet verified from audio' };
+
   const genreCompatibility = evaluateGenreCompatibility(fromTrack.genre, toTrack.genre);
   const energyDelta = Math.abs((a.energyScore || 60) - (b.energyScore || 60));
   const energyCompatibility = Math.max(20, Math.round(100 - energyDelta * 1.15));
@@ -201,15 +207,19 @@ export function planTransition(input: EvaluateTransitionInput): TransitionPlan {
   const rawVocalOverlap = Math.min(1, a.outroVocalRisk * 0.55 + b.introVocalRisk * 0.55 + a.outroVocalRisk * b.introVocalRisk * 0.7);
   const vocalOverlapRisk = Math.round(rawVocalOverlap * 100);
   const bothInstrumental = a.outroVocalRisk < 0.28 && b.introVocalRisk < 0.28;
+  const vocalClash = cfg.vocalProtectionEnabled && vocalOverlapRisk >= 62;
 
-  // Rhythm reliability check (never force beat-matching on ambient, spoken-word, classical, or low-confidence audio)
+  // Rhythm reliability check (never force beat-matching on ambient, spoken-word, classical, or low-confidence audio).
+  // BeatSync mode is the dedicated tempo-lock mode, so it accepts a lower (metadata-assisted) confidence floor.
   const rhythmConf = Math.min(a.bpmConfidence || 0, b.bpmConfidence || 0);
-  const isSpokenOrAmbient =
+  const isSpokenOrAmbientGenre =
     (fromTrack.genre || '').toLowerCase().match(/ambient|spoken|classical|audiobook|podcast/) !== null ||
-    (toTrack.genre || '').toLowerCase().match(/ambient|spoken|classical|audiobook|podcast/) !== null ||
-    rhythmConf < 0.42;
+    (toTrack.genre || '').toLowerCase().match(/ambient|spoken|classical|audiobook|podcast/) !== null;
+  const rhythmFloor = mode === 'beatsync' ? 0.25 : 0.42;
+  const rhythmReliable = !isSpokenOrAmbientGenre && rhythmConf >= rhythmFloor;
+  const canSync = rhythmReliable && tempo.canBeatSync;
 
-  if (isSpokenOrAmbient && (mode === 'automix' || mode === 'beatsync')) {
+  if (!rhythmReliable && (mode === 'automix' || mode === 'beatsync')) {
     warnings.push('Low rhythmic confidence or ambient/spoken passage detected — falling back to smooth blend.');
   }
   if (!tempo.canBeatSync && (mode === 'automix' || mode === 'beatsync')) {
@@ -217,104 +227,178 @@ export function planTransition(input: EvaluateTransitionInput): TransitionPlan {
       `Tempo gap (${a.bpm} → ${b.bpm} BPM) exceeds ±${cfg.maxTempoAdjustmentPercent}% limit — preserving natural tempo.`
     );
   }
-  if (harmony.relation === 'incompatible' && cfg.harmonicMixingEnabled) {
+  if (harmony.relation === 'incompatible' && (cfg.harmonicMixingEnabled || mode === 'harmonic')) {
     warnings.push(`Harmonic key clash (${a.camelotCode} → ${b.camelotCode}) — keeping blend tight.`);
   }
-  if (vocalOverlapRisk >= 62 && cfg.vocalProtectionEnabled) {
+  if (!keyReliable && mode === 'harmonic') {
+    warnings.push('Musical key still being verified — using a conservative blend until analysis completes.');
+  }
+  if (vocalClash) {
     warnings.push('Vocal overlap risk detected between outro and intro — applying vocal-safe transition.');
   }
 
-  // Decide BeatSync eligibility based on mode, confidence, and tempo bounds
-  let beatSyncEnabled = false;
-  if (mode === 'beatsync' || mode === 'automix' || mode === 'harmonic') {
-    if (!isSpokenOrAmbient && tempo.canBeatSync) {
-      beatSyncEnabled = mode === 'beatsync' ? true : mode === 'automix' ? true : harmony.score >= 70;
-    }
-  }
+  const barA = a.barDurationSec > 0 ? a.barDurationSec : (60 / Math.max(60, a.bpm || 100)) * 4;
+  const manualDur = cfg.crossfadeDurationSec;
 
-  // Decide Transition Type, Curve & Duration
+  // Per-mode execution profile
+  let beatSyncEnabled = false;
   let transitionType: TransitionType = 'adaptive-crossfade';
   let crossfadeCurve: CrossfadeCurve = cfg.crossfadeCurve;
-  let targetDuration = cfg.crossfadeDurationSec;
+  let targetDuration = manualDur;
+  let eqSweepEnabled = false;
+  let minDuration = 1.2;
+  let cueStrategy: 'active-start' | 'suggested' = 'active-start';
+  let snapToDownbeat = false;
+  // Continuous Play ALWAYS trims dead air, regardless of the global silence toggle
+  let effectiveEndA = activeEndA;
+  let effectiveStartB = activeStartB;
 
-  if (mode === 'smart-crossfade') {
-    beatSyncEnabled = false;
-    transitionType = vocalOverlapRisk >= 62 && cfg.vocalProtectionEnabled ? 'vocal-safe-fade' : 'outro-to-intro';
-    crossfadeCurve = 'volume-aware';
-    targetDuration = cfg.autoTransitionDuration ? (vocalOverlapRisk >= 62 ? 4 : 6) : cfg.crossfadeDurationSec;
-  } else if (mode === 'continuous') {
-    beatSyncEnabled = false;
-    if (bothInstrumental && harmony.score >= 74) {
-      transitionType = 'outro-to-intro';
-      targetDuration = 3;
-      crossfadeCurve = 'equal-power';
-    } else {
-      transitionType = 'gapless-cut';
-      targetDuration = 1.5;
-      crossfadeCurve = 'volume-aware';
+  switch (mode) {
+    case 'smart-crossfade': {
+      // Pure volume blend at the natural outro → intro: no tempo change, no EQ, user's curve & duration.
+      transitionType = vocalClash ? 'vocal-safe-fade' : 'outro-to-intro';
+      crossfadeCurve = cfg.crossfadeCurve;
+      targetDuration = cfg.autoTransitionDuration ? (vocalClash ? 5 : 8) : manualDur;
+      break;
     }
-  } else {
-    // AutoMix, BeatSync, Harmonic
-    if (vocalOverlapRisk >= 65 && cfg.vocalProtectionEnabled && mode !== 'beatsync') {
-      transitionType = 'vocal-safe-fade';
-      crossfadeCurve = 'volume-aware';
-      targetDuration = cfg.autoTransitionDuration ? 3.5 : Math.min(5, cfg.crossfadeDurationSec);
-      // Avoid forcing unnatural long beat blend over colliding lead vocals
-      if (vocalOverlapRisk >= 78) beatSyncEnabled = false;
-    } else if (mode === 'harmonic' && harmony.score >= 88) {
-      transitionType = 'harmonic-blend';
-      crossfadeCurve = 'equal-power';
-      targetDuration = cfg.autoTransitionDuration ? (bothInstrumental ? 12 : 9) : cfg.crossfadeDurationSec;
-    } else if (beatSyncEnabled && bothInstrumental && harmony.score >= 80) {
-      transitionType = 'phrase-matched-crossfade';
-      crossfadeCurve = 'equal-power';
-      // Snap automatic blend duration to exact 4 or 8 bars (clamped 6..14s)
-      const bars4 = a.barDurationSec > 0 ? a.barDurationSec * 4 : 8;
-      const bars2 = a.barDurationSec > 0 ? a.barDurationSec * 2 : 4;
-      targetDuration = cfg.autoTransitionDuration
-        ? Math.max(5, Math.min(14, Math.round((bars4 <= 12 ? bars4 : bars2) * 10) / 10))
-        : cfg.crossfadeDurationSec;
-    } else if (beatSyncEnabled) {
-      transitionType = 'beat-matched-blend';
-      crossfadeCurve = 'adaptive';
-      const bars2 = a.barDurationSec > 0 ? a.barDurationSec * 2 : 6;
-      targetDuration = cfg.autoTransitionDuration
-        ? Math.max(4, Math.min(10, Math.round(bars2 * 10) / 10))
-        : cfg.crossfadeDurationSec;
-    } else if (bothInstrumental) {
-      transitionType = 'instrumental-bridge';
-      crossfadeCurve = 'equal-power';
-      targetDuration = cfg.autoTransitionDuration ? 7 : cfg.crossfadeDurationSec;
-    } else {
-      transitionType = 'adaptive-crossfade';
-      crossfadeCurve = 'volume-aware';
-      targetDuration = cfg.autoTransitionDuration
-        ? harmony.relation === 'incompatible'
-          ? 3.5
-          : 5.5
-        : cfg.crossfadeDurationSec;
+
+    case 'beatsync': {
+      // Club tempo lock: incoming track is time-stretched to the outgoing BPM, phase-aligned on a downbeat,
+      // blended over whole bars with a low-end bass swap, and held locked through the entire blend.
+      snapToDownbeat = true;
+      if (canSync) {
+        beatSyncEnabled = true;
+        transitionType = 'beat-matched-blend';
+        crossfadeCurve = 'linear';
+        eqSweepEnabled = cfg.eqBassSwapEnabled;
+        cueStrategy = 'suggested';
+        const bars8 = barA * 8;
+        const bars4 = barA * 4;
+        targetDuration = cfg.autoTransitionDuration
+          ? Math.max(6, Math.min(16, Math.round((bars8 <= 16 ? bars8 : bars4) * 10) / 10))
+          : manualDur;
+      } else {
+        // Tempos too far apart for a natural lock — quick 1-bar drop on the downbeat
+        transitionType = 'adaptive-crossfade';
+        crossfadeCurve = 'linear';
+        targetDuration = cfg.autoTransitionDuration ? Math.max(2, Math.min(4, Math.round(barA * 10) / 10)) : manualDur;
+      }
+      break;
+    }
+
+    case 'harmonic': {
+      // Key-first blending: long overlaps for compatible keys, tight cuts on clashes.
+      if (harmony.relation === 'unknown') {
+        transitionType = 'adaptive-crossfade';
+        crossfadeCurve = 'equal-power';
+        targetDuration = cfg.autoTransitionDuration ? 6 : manualDur;
+      } else if (harmony.score >= 88) {
+        transitionType = 'harmonic-blend';
+        crossfadeCurve = 'equal-power';
+        beatSyncEnabled = canSync;
+        eqSweepEnabled = beatSyncEnabled && cfg.eqBassSwapEnabled;
+        cueStrategy = beatSyncEnabled ? 'suggested' : 'active-start';
+        snapToDownbeat = beatSyncEnabled;
+        const longBlend = Math.max(10, Math.min(18, Math.round(barA * 8 * 10) / 10));
+        targetDuration = cfg.autoTransitionDuration ? (vocalClash ? 8 : longBlend) : manualDur;
+      } else if (harmony.score >= 70) {
+        transitionType = 'harmonic-blend';
+        crossfadeCurve = 'adaptive';
+        beatSyncEnabled = canSync;
+        snapToDownbeat = beatSyncEnabled;
+        targetDuration = cfg.autoTransitionDuration ? 8 : manualDur;
+      } else {
+        // Key clash: keep both keys from sounding together
+        transitionType = 'adaptive-crossfade';
+        crossfadeCurve = 'volume-aware';
+        targetDuration = cfg.autoTransitionDuration ? 2.5 : Math.min(3, manualDur);
+      }
+      break;
+    }
+
+    case 'continuous': {
+      // Zero dead air: trim silence on both sides and butt-splice with a micro crossfade.
+      effectiveEndA = Math.min(durationA, a.activeEndSec || durationA);
+      effectiveStartB = Math.max(0, b.activeStartSec || 0);
+      if (bothInstrumental && keyReliable && harmony.score >= 74) {
+        transitionType = 'outro-to-intro';
+        crossfadeCurve = 'equal-power';
+        targetDuration = 2;
+      } else {
+        transitionType = 'gapless-cut';
+        crossfadeCurve = 'equal-power';
+        targetDuration = 0.6;
+      }
+      minDuration = 0.5;
+      break;
+    }
+
+    case 'automix':
+    default: {
+      // Full AI DJ: picks the best technique per pair of songs.
+      beatSyncEnabled = canSync;
+      snapToDownbeat = beatSyncEnabled;
+      cueStrategy = beatSyncEnabled ? 'suggested' : 'active-start';
+      if (vocalOverlapRisk >= 65 && cfg.vocalProtectionEnabled) {
+        transitionType = 'vocal-safe-fade';
+        crossfadeCurve = 'volume-aware';
+        targetDuration = cfg.autoTransitionDuration ? 3.5 : Math.min(5, manualDur);
+        // Avoid forcing unnatural long beat blend over colliding lead vocals
+        if (vocalOverlapRisk >= 78) beatSyncEnabled = false;
+      } else if (beatSyncEnabled && bothInstrumental && harmony.score >= 80) {
+        transitionType = 'phrase-matched-crossfade';
+        crossfadeCurve = 'equal-power';
+        // Snap automatic blend duration to exact 4 or 2 bars (clamped 5..14s)
+        const bars4 = barA * 4;
+        const bars2 = barA * 2;
+        targetDuration = cfg.autoTransitionDuration
+          ? Math.max(5, Math.min(14, Math.round((bars4 <= 12 ? bars4 : bars2) * 10) / 10))
+          : manualDur;
+      } else if (beatSyncEnabled) {
+        transitionType = 'beat-matched-blend';
+        crossfadeCurve = 'adaptive';
+        targetDuration = cfg.autoTransitionDuration
+          ? Math.max(4, Math.min(10, Math.round(barA * 2 * 10) / 10))
+          : manualDur;
+      } else if (bothInstrumental) {
+        transitionType = 'instrumental-bridge';
+        crossfadeCurve = 'equal-power';
+        targetDuration = cfg.autoTransitionDuration ? 7 : manualDur;
+      } else {
+        transitionType = 'adaptive-crossfade';
+        crossfadeCurve = 'volume-aware';
+        targetDuration = cfg.autoTransitionDuration
+          ? harmony.relation === 'incompatible'
+            ? 3.5
+            : 5.5
+          : manualDur;
+      }
+      eqSweepEnabled = Boolean(cfg.eqBassSwapEnabled && beatSyncEnabled);
+      break;
     }
   }
 
   // Clamp transition duration cleanly to available track lengths
-  const maxSafeFade = Math.max(1.5, Math.min(18, Math.min(activeEndA * 0.35, durationB * 0.35)));
-  const transitionDurationSec = Math.round(Math.max(1.2, Math.min(maxSafeFade, targetDuration)) * 10) / 10;
+  const maxSafeFade = Math.max(minDuration, Math.min(18, Math.min(effectiveEndA * 0.35, durationB * 0.35)));
+  const transitionDurationSec =
+    Math.round(Math.max(minDuration, Math.min(maxSafeFade, targetDuration)) * 10) / 10;
+  if (eqSweepEnabled && transitionDurationSec < 4) eqSweepEnabled = false;
 
-  // Choose Cue-In (Track B) and Mix-Out (Track A) aligned to musical structure & silence boundaries
+  // Choose Cue-In (Track B) aligned to musical structure & silence boundaries
   const cueInSec = Math.max(
-    activeStartB,
-    Math.min(durationB * 0.2, beatSyncEnabled ? b.suggestedCueInSec : activeStartB)
+    effectiveStartB,
+    Math.min(durationB * 0.2, cueStrategy === 'suggested' ? b.suggestedCueInSec : effectiveStartB)
   );
 
-  // Place Mix-Out so Track A finishes cleanly near activeEndA without cutting off chorus prematurely
-  const naturalMixOut = Math.max(4, activeEndA - transitionDurationSec);
+  // Place Mix-Out so Track A finishes cleanly near its end without cutting off the chorus prematurely
+  const naturalMixOut = Math.max(2, effectiveEndA - transitionDurationSec);
   let mixOutSec = naturalMixOut;
-  if (beatSyncEnabled && a.downbeats.length > 0) {
+  if (snapToDownbeat && a.downbeats.length > 0) {
     // Snap mix-out to nearest downbeat within ±2.5s of naturalMixOut
     let nearestDb = naturalMixOut;
     let bestDist = Infinity;
     for (const db of a.downbeats) {
-      if (db < activeEndA - 2 && db > 4) {
+      if (db < effectiveEndA - 2 && db > 4) {
         const d = Math.abs(db - naturalMixOut);
         if (d < bestDist) {
           bestDist = d;
@@ -326,7 +410,8 @@ export function planTransition(input: EvaluateTransitionInput): TransitionPlan {
       mixOutSec = nearestDb;
     }
   }
-  mixOutSec = Math.round(Math.max(2, Math.min(activeEndA - 1.2, mixOutSec)) * 100) / 100;
+  mixOutSec =
+    Math.round(Math.max(2, Math.min(effectiveEndA - Math.min(1.2, transitionDurationSec), mixOutSec)) * 100) / 100;
 
   // Compute component quality metrics & weighted compatibility score (0..100)
   const beatAlignmentQuality = beatSyncEnabled
@@ -369,12 +454,17 @@ export function planTransition(input: EvaluateTransitionInput): TransitionPlan {
       ) * 100
     ) / 100;
 
-  const eqSweepEnabled = Boolean(
-    cfg.eqBassSwapEnabled && beatSyncEnabled && transitionDurationSec >= 4
-  );
-
   // Build concise, musical DJ rationale
   const parts: string[] = [];
+  const modeLead: Record<MixMode, string> = {
+    automix: 'AutoMix AI',
+    'smart-crossfade': 'Smart Crossfade (no tempo change)',
+    beatsync: beatSyncEnabled ? 'BeatSync tempo lock held through blend' : 'BeatSync downbeat drop',
+    harmonic: 'Harmonic key-first blend',
+    continuous: 'Continuous Play gapless splice',
+    original: 'Original Playback',
+  };
+  parts.push(modeLead[mode]);
   if (beatSyncEnabled) {
     const adjStr =
       Math.abs(tempo.deltaPercent) < 0.3

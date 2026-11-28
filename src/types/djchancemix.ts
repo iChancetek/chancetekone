@@ -229,6 +229,10 @@ export interface MixerEngineSnapshot {
   webAudioActive: boolean;
   vuLevel: number; // 0..1 live master RMS
   limitingActive: boolean;
+  /** DJ Color Filter sweep: -1 = deep low-pass, 0 = clean flat bypass, +1 = airy high-pass */
+  djFilterAmount: number;
+  /** Live 16-band master frequency bars (0..1) while actively playing */
+  spectrumBands: number[];
 }
 
 export const MIX_MODE_META: Record<

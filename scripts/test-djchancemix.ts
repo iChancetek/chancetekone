@@ -291,6 +291,56 @@ async function runTests() {
     }
   });
 
+  // 6b. Every mixing mode must behave distinctly (regression: "all modes do the same thing")
+  await check('All 6 mixing modes produce distinct transition plans for the same song pair', () => {
+    const a = makeMockAnalysis({ trackId: 'a', bpm: 100, camelotCode: '8A', outroVocalRisk: 0.4 });
+    const b = makeMockAnalysis({ trackId: 'b', bpm: 103, camelotCode: '9A', introVocalRisk: 0.4 });
+    const modes = ['automix', 'smart-crossfade', 'beatsync', 'harmonic', 'continuous', 'original'] as const;
+    const signatures = modes.map((mode) => {
+      const p = planTransition({
+        fromTrack: { id: 'a', title: 'A', artistName: 'A', genre: 'R&B', duration: 210 },
+        toTrack: { id: 'b', title: 'B', artistName: 'B', genre: 'R&B', duration: 210 },
+        fromAnalysis: a,
+        toAnalysis: b,
+        modeOverride: mode,
+      });
+      return `${p.transitionType}|${p.transitionDurationSec}|${p.beatSyncEnabled}|${p.crossfadeCurve}|${p.eqSweepEnabled}`;
+    });
+    assert.equal(new Set(signatures).size, modes.length, `Modes collapsed: ${signatures.join(' / ')}`);
+  });
+
+  await check('Modes stay distinct even on fallback (unverified) analysis; harmonic never trusts placeholder keys', () => {
+    const fb = (id: string) =>
+      makeMockAnalysis({
+        trackId: id,
+        analysisStatus: 'fallback',
+        bpm: 100,
+        bpmConfidence: 0.28,
+        keyConfidence: 0.2,
+        camelotCode: '8A',
+        introVocalRisk: 0.35,
+        outroVocalRisk: 0.35,
+        downbeats: [],
+      });
+    const modes = ['automix', 'smart-crossfade', 'beatsync', 'harmonic', 'continuous'] as const;
+    const plans = modes.map((mode) =>
+      planTransition({
+        fromTrack: { id: 'x', title: 'X', artistName: 'X', genre: 'Hip Hop', duration: 200 },
+        toTrack: { id: 'y', title: 'Y', artistName: 'Y', genre: 'Hip Hop', duration: 200 },
+        fromAnalysis: fb('x'),
+        toAnalysis: fb('y'),
+        modeOverride: mode,
+      })
+    );
+    const sigs = plans.map((p) => `${p.transitionType}|${p.transitionDurationSec}|${p.beatSyncEnabled}|${p.crossfadeCurve}`);
+    assert.equal(new Set(sigs).size, modes.length, `Fallback modes collapsed: ${sigs.join(' / ')}`);
+    const harmonic = plans[3];
+    assert.equal(harmonic.harmonicRelation, 'unknown');
+    assert.notEqual(harmonic.transitionType, 'harmonic-blend');
+    assert.equal(plans[2].beatSyncEnabled, true, 'BeatSync mode should lock tempo with metadata-assisted confidence');
+    assert.ok(plans[4].transitionDurationSec < 1, 'Continuous Play should splice with a sub-second micro-fade');
+  });
+
   // 7. AI DJ Flow Playlist Sequencing
   await check('AI DJ Flow sequences playlist to place harmonically & tempo compatible tracks consecutively', () => {
     const tracks: DJTrackSource[] = [

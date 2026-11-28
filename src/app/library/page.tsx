@@ -859,7 +859,8 @@ function LibraryContent() {
                   (user?.uid && pl.ownerId === user.uid) ||
                   (currentEmail && pl.ownerEmail && currentEmail.toLowerCase() === pl.ownerEmail.toLowerCase())
                 );
-                const canManage = Boolean(isOwner || isAdmin);
+                // STRICT OWNER-ONLY: Only the playlist owner can edit playlist settings or songs
+                const canManage = Boolean(isOwner);
                 return (
                   <div
                     key={pl.id}

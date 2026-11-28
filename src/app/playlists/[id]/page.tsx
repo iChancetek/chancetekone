@@ -74,8 +74,9 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
   const [justAddedIds, setJustAddedIds] = useState<Set<string>>(new Set());
 
   const currentEmail = (profile?.email || user?.email) || undefined;
-  const currentUserId = profile?.id || user?.uid || (isAdmin ? 'admin' : '');
-  const canManage = Boolean(isOwner || isAdmin);
+  const currentUserId = profile?.id || user?.uid || '';
+  // STRICT OWNER-ONLY: Only the playlist owner can make changes to the playlist.
+  const canManage = Boolean(isOwner);
 
   const applyLocalPlaylistResult = (res: ReturnType<typeof PlaylistService.getPlaylistById>) => {
     if (res.playlist) {
@@ -536,10 +537,10 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                   <button
                     onClick={() => setShowEditModal(true)}
                     className="flex items-center gap-1.5 px-4 py-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-white text-xs font-bold transition-all cursor-pointer shadow-sm hover:border-brand-gold/50"
-                    title="Edit Playlist Name, Artwork, & Privacy"
+                    title="Edit Songs, Order, Name, Artwork, & Privacy"
                   >
                     <Edit className="w-4 h-4 text-brand-gold" />
-                    <span>Edit Playlist</span>
+                    <span>Edit Songs &amp; Playlist</span>
                   </button>
 
                   <button

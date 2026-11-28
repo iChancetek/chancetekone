@@ -14,14 +14,17 @@ import {
   Check,
   Search,
   Edit3,
-  Save,
+  Eye,
   X,
   FolderPlus,
   Disc3,
   Radio,
+  Zap,
+  Lock,
 } from 'lucide-react';
 import { Playlist } from '@/types/playlist';
 import {
+  DeckId,
   DJTrackSource,
   MixConfiguration,
   PlaylistMixSettings,
@@ -33,6 +36,7 @@ interface MixQueuePanelProps {
   playlists: Playlist[];
   activePlaylistId: string | null;
   activePlaylistName: string;
+  activePlaylistOwnerName?: string;
   canManageActivePlaylist: boolean;
   playlistMixSettings: PlaylistMixSettings | null;
   queue: DJTrackSource[];
@@ -42,14 +46,14 @@ interface MixQueuePanelProps {
   config: MixConfiguration;
   catalogTracks: DJTrackSource[];
   onSelectPlaylist: (playlistId: string) => void;
+  onMixPlaylistNow: (playlistId: string | null) => void;
   onSelectAllCatalog: () => void;
   onTogglePlaylistAutoMix: (enabled: boolean) => void;
-  onCreatePlaylist: (name: string) => void;
-  onRenamePlaylist: (newName: string) => void;
-  onDeletePlaylist: () => void;
-  onSaveQueueAsPlaylist: (name: string) => void;
+  onOpenCreatePlaylistModal: () => void;
+  onOpenEditPlaylistModal: (tab: 'songs' | 'view' | 'details') => void;
   onOptimizeDjFlow: () => void;
   onPlayTrackAt: (index: number) => void;
+  onManualLoadToDeck: (deckId: DeckId, track: DJTrackSource) => void;
   onCueNextTrack: (track: DJTrackSource) => void;
   onMoveTrack: (index: number, direction: 'up' | 'down') => void;
   onRemoveTrack: (index: number) => void;
@@ -62,6 +66,7 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
   playlists,
   activePlaylistId,
   activePlaylistName,
+  activePlaylistOwnerName,
   canManageActivePlaylist,
   playlistMixSettings,
   queue,
@@ -71,14 +76,14 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
   config,
   catalogTracks,
   onSelectPlaylist,
+  onMixPlaylistNow,
   onSelectAllCatalog,
   onTogglePlaylistAutoMix,
-  onCreatePlaylist,
-  onRenamePlaylist,
-  onDeletePlaylist,
-  onSaveQueueAsPlaylist,
+  onOpenCreatePlaylistModal,
+  onOpenEditPlaylistModal,
   onOptimizeDjFlow,
   onPlayTrackAt,
+  onManualLoadToDeck,
   onCueNextTrack,
   onMoveTrack,
   onRemoveTrack,
@@ -89,14 +94,10 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [showAddDrawer, setShowAddDrawer] = useState(false);
   const [catalogSearch, setCatalogSearch] = useState('');
-  const [showNewPlaylistInput, setShowNewPlaylistInput] = useState(false);
-  const [newPlaylistName, setNewPlaylistName] = useState('');
-  const [isRenaming, setIsRenaming] = useState(false);
-  const [renameDraft, setRenameDraft] = useState(activePlaylistName);
-  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const activeTrack = queue.find((t) => t.id === activeTrackId) || null;
   const activeAnalysis = activeTrack ? analyses[activeTrack.id] : null;
+  const isEditingAllowedOnQueue = !activePlaylistId || canManageActivePlaylist;
 
   const filteredCatalog = catalogTracks
     .filter((t) => {
@@ -108,55 +109,27 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
         (t.genre || '').toLowerCase().includes(q)
       );
     })
-    .slice(0, 30);
+    .slice(0, 36);
 
   return (
     <section className="rounded-3xl p-5 sm:p-6 bg-[#0a0a14]/95 border border-white/10 space-y-5">
-      {/* Header & Playlist Selector */}
+      {/* Header & Playlist Actions */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/10 pb-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             <ListMusic className="w-5 h-5 text-brand-gold" />
-            {isRenaming ? (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (renameDraft.trim()) {
-                    onRenamePlaylist(renameDraft.trim());
-                    setIsRenaming(false);
-                  }
-                }}
-                className="flex items-center gap-1.5"
-              >
-                <input
-                  type="text"
-                  value={renameDraft}
-                  onChange={(e) => setRenameDraft(e.target.value)}
-                  className="px-2.5 py-1 rounded-lg bg-white/10 border border-brand-gold/50 text-sm font-bold text-white focus:outline-none"
-                  autoFocus
-                />
-                <button
-                  type="submit"
-                  className="p-1.5 rounded-lg bg-brand-gold text-black cursor-pointer"
-                  title="Save name"
-                >
-                  <Check className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsRenaming(false)}
-                  className="p-1.5 rounded-lg bg-white/10 text-neutral-300 cursor-pointer"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </form>
-            ) : (
-              <h3 className="text-lg font-extrabold text-white">{activePlaylistName}</h3>
-            )}
+            <h3 className="text-lg font-extrabold text-white">{activePlaylistName}</h3>
 
             <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[11px] font-mono text-brand-neon">
-              {queue.length} tracks
+              {queue.length} {queue.length === 1 ? 'song' : 'songs'}
             </span>
+
+            {activePlaylistId && !canManageActivePlaylist && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/15 text-[10px] font-bold text-neutral-300">
+                <Lock className="w-3 h-3 text-neutral-400" />
+                <span>Owned by {activePlaylistOwnerName || 'Member'} · View &amp; Mix Only</span>
+              </span>
+            )}
 
             {activePlaylistId && playlistMixSettings && (
               <button
@@ -167,19 +140,29 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
                     ? 'bg-emerald-500/15 border-emerald-400/40 text-emerald-300'
                     : 'bg-white/5 border-white/15 text-neutral-400'
                 }`}
-                title="Enable or disable AutoMix for this specific playlist"
+                title="Enable or disable AutoMix for this playlist"
               >
-                Playlist AutoMix: {playlistMixSettings.autoMixEnabled ? 'ON' : 'OFF'}
+                AutoMix: {playlistMixSettings.autoMixEnabled ? 'ON' : 'OFF'}
               </button>
             )}
           </div>
           <p className="text-xs text-neutral-400">
-            Harmonic & BPM scores update automatically as tracks finish DSP analysis.
+            Select any playlist and hit <span className="text-brand-gold font-semibold">Mix Playlist Now</span> to play &amp; auto-mix every song continuously, or load tracks manually to Deck A / Deck B.
           </p>
         </div>
 
         {/* Action Toolbar */}
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onMixPlaylistNow(activePlaylistId)}
+            disabled={queue.length === 0}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-gold to-amber-500 text-black text-xs font-black uppercase tracking-wider shadow-[0_0_18px_rgba(245,195,68,0.35)] hover:scale-[1.03] active:scale-95 transition-all disabled:opacity-40 cursor-pointer"
+          >
+            <Zap className="w-3.5 h-3.5 fill-current" />
+            <span>Mix Playlist Now</span>
+          </button>
+
           <button
             type="button"
             onClick={onOptimizeDjFlow}
@@ -193,12 +176,47 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
 
           <button
             type="button"
-            onClick={() => setShowAddDrawer((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white cursor-pointer"
+            onClick={onOpenCreatePlaylistModal}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/40 text-emerald-300 text-xs font-extrabold cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5 text-brand-gold" />
-            <span>Add Tracks</span>
+            <FolderPlus className="w-3.5 h-3.5" />
+            <span>+ Create Playlist</span>
           </button>
+
+          {activePlaylistId && (
+            <button
+              type="button"
+              onClick={() => onOpenEditPlaylistModal('view')}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400/40 text-cyan-200 text-xs font-bold cursor-pointer"
+              title="View all songs in this playlist"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>View Songs</span>
+            </button>
+          )}
+
+          {activePlaylistId && canManageActivePlaylist && (
+            <button
+              type="button"
+              onClick={() => onOpenEditPlaylistModal('songs')}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-gold/15 hover:bg-brand-gold/25 border border-brand-gold/40 text-brand-gold text-xs font-extrabold cursor-pointer"
+              title="Owner-only: rearrange, delete, and add songs in this playlist"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>Edit Songs</span>
+            </button>
+          )}
+
+          {isEditingAllowedOnQueue && (
+            <button
+              type="button"
+              onClick={() => setShowAddDrawer((v) => !v)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5 text-brand-gold" />
+              <span>Add Songs</span>
+            </button>
+          )}
 
           <button
             type="button"
@@ -222,112 +240,8 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
               }
             }}
           />
-
-          <button
-            type="button"
-            onClick={() => {
-              setNewPlaylistName('');
-              setShowNewPlaylistInput((v) => !v);
-            }}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-neutral-200 cursor-pointer"
-            title="Create or save playlist"
-          >
-            <FolderPlus className="w-3.5 h-3.5 text-brand-gold" />
-            <span>Save / New</span>
-          </button>
-
-          {activePlaylistId && canManageActivePlaylist && (
-            <>
-              <button
-                type="button"
-                onClick={() => {
-                  setRenameDraft(activePlaylistName);
-                  setIsRenaming(true);
-                }}
-                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-brand-gold cursor-pointer"
-                title="Rename playlist"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                className="p-2 rounded-xl bg-white/5 hover:bg-red-500/20 border border-white/10 text-neutral-400 hover:text-red-400 cursor-pointer"
-                title="Delete playlist"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </>
-          )}
         </div>
       </div>
-
-      {/* Delete Confirmation Bar */}
-      {confirmDelete && activePlaylistId && (
-        <div className="p-3.5 rounded-2xl bg-red-950/50 border border-red-500/40 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <span className="text-red-200 font-semibold">
-            Delete playlist &ldquo;{activePlaylistName}&rdquo;? Tracks stay safe in the catalog.
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setConfirmDelete(false)}
-              className="px-3 py-1.5 rounded-xl bg-white/10 text-white font-semibold cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                onDeletePlaylist();
-                setConfirmDelete(false);
-              }}
-              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold cursor-pointer"
-            >
-              Confirm Delete
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Save / Create New Playlist Inline Bar */}
-      {showNewPlaylistInput && (
-        <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-brand-gold/30 flex flex-wrap items-center gap-2">
-          <input
-            type="text"
-            value={newPlaylistName}
-            onChange={(e) => setNewPlaylistName(e.target.value)}
-            placeholder="Name your DJ mix playlist..."
-            className="flex-1 min-w-[200px] px-3 py-2 rounded-xl bg-black/50 border border-white/15 text-xs text-white placeholder-neutral-400 focus:outline-none focus:border-brand-gold"
-          />
-          <button
-            type="button"
-            disabled={!newPlaylistName.trim()}
-            onClick={() => {
-              onSaveQueueAsPlaylist(newPlaylistName.trim());
-              setNewPlaylistName('');
-              setShowNewPlaylistInput(false);
-            }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-gold text-black text-xs font-black disabled:opacity-40 cursor-pointer"
-          >
-            <Save className="w-3.5 h-3.5" />
-            <span>Save Current Queue</span>
-          </button>
-          <button
-            type="button"
-            disabled={!newPlaylistName.trim()}
-            onClick={() => {
-              onCreatePlaylist(newPlaylistName.trim());
-              setNewPlaylistName('');
-              setShowNewPlaylistInput(false);
-            }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold disabled:opacity-40 cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Create Empty</span>
-          </button>
-        </div>
-      )}
 
       {importNotice && (
         <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-400/30 text-xs text-cyan-200">
@@ -335,39 +249,69 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
         </div>
       )}
 
-      {/* Playlist Pills Switcher */}
+      {/* Playlists Switcher with 1-Click "Mix Now" on Every Playlist */}
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-        <button
-          type="button"
-          onClick={onSelectAllCatalog}
-          className={`px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 border transition-all cursor-pointer ${
+        <div
+          className={`inline-flex items-center rounded-full border shrink-0 transition-all overflow-hidden ${
             activePlaylistId === null
-              ? 'bg-brand-gold text-black border-brand-gold shadow-md'
-              : 'bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10'
+              ? 'bg-brand-gold/20 border-brand-gold text-white shadow-md'
+              : 'bg-white/5 border-white/10 text-neutral-300'
           }`}
         >
-          ChanceTEK Studio Mix ({catalogTracks.length})
-        </button>
-
-        {playlists.map((pl) => (
           <button
-            key={pl.id}
             type="button"
-            onClick={() => onSelectPlaylist(pl.id)}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 border transition-all cursor-pointer flex items-center gap-1.5 ${
-              activePlaylistId === pl.id
-                ? 'bg-brand-purple text-white border-brand-gold shadow-md'
-                : 'bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10'
-            }`}
+            onClick={onSelectAllCatalog}
+            className="px-3.5 py-1.5 text-xs font-bold hover:text-white cursor-pointer"
           >
-            <span>{pl.name}</span>
-            <span className="text-[10px] opacity-75 font-mono">({pl.itemCount})</span>
+            ChanceTEK Studio Mix ({catalogTracks.length})
           </button>
-        ))}
+          <button
+            type="button"
+            onClick={() => onMixPlaylistNow(null)}
+            className="px-2.5 py-1.5 bg-brand-gold text-black text-[10px] font-black uppercase flex items-center gap-1 hover:brightness-110 cursor-pointer"
+            title="Start mixing Studio Mix immediately"
+          >
+            <Zap className="w-3 h-3 fill-current" />
+            <span>Mix</span>
+          </button>
+        </div>
+
+        {playlists.map((pl) => {
+          const isSelected = activePlaylistId === pl.id;
+          return (
+            <div
+              key={pl.id}
+              className={`inline-flex items-center rounded-full border shrink-0 transition-all overflow-hidden ${
+                isSelected
+                  ? 'bg-brand-purple/40 border-brand-gold text-white shadow-md'
+                  : 'bg-white/5 border-white/10 text-neutral-300'
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => onSelectPlaylist(pl.id)}
+                className="px-3.5 py-1.5 text-xs font-bold hover:text-white flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>{pl.name}</span>
+                <span className="text-[10px] opacity-75 font-mono">({pl.itemCount})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onMixPlaylistNow(pl.id)}
+                disabled={pl.itemCount === 0}
+                className="px-2.5 py-1.5 bg-gradient-to-r from-brand-gold to-amber-500 text-black text-[10px] font-black uppercase flex items-center gap-1 hover:brightness-110 disabled:opacity-40 cursor-pointer"
+                title={`Start playing and auto-mixing "${pl.name}" right now`}
+              >
+                <Zap className="w-3 h-3 fill-current" />
+                <span>Mix</span>
+              </button>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Add Tracks Catalog Browser Drawer */}
-      {showAddDrawer && (
+      {/* Add Tracks Catalog Browser Drawer (Owner / Local Session Queue Only) */}
+      {showAddDrawer && isEditingAllowedOnQueue && (
         <div className="p-4 rounded-2xl bg-black/50 border border-brand-purple/30 space-y-3">
           <div className="flex items-center justify-between gap-2">
             <div className="relative flex-1">
@@ -392,17 +336,15 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
             {filteredCatalog.map((track) => {
               const inQueue = queue.some((q) => q.id === track.id);
               return (
-                <button
+                <div
                   key={track.id}
-                  type="button"
-                  onClick={() => onAddCatalogTrack(track)}
-                  className={`p-2 rounded-xl border flex items-center justify-between gap-2 text-left transition-all cursor-pointer ${
+                  className={`p-2 rounded-xl border flex items-center justify-between gap-2 transition-all ${
                     inQueue
                       ? 'bg-emerald-500/10 border-emerald-400/35 text-emerald-200'
                       : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <div className="relative w-9 h-9 rounded-lg overflow-hidden shrink-0 bg-neutral-900">
                       <Image src={track.coverUrl} alt={track.title} fill unoptimized className="object-cover" />
                     </div>
@@ -413,10 +355,33 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
                       </p>
                     </div>
                   </div>
-                  <span className="shrink-0 p-1 rounded-lg bg-white/10">
-                    {inQueue ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Plus className="w-3.5 h-3.5 text-brand-gold" />}
-                  </span>
-                </button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => onManualLoadToDeck('A', track)}
+                      className="px-1.5 py-1 rounded bg-brand-gold/20 hover:bg-brand-gold text-brand-gold hover:text-black text-[10px] font-black cursor-pointer"
+                      title="Load onto Deck A"
+                    >
+                      A
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onManualLoadToDeck('B', track)}
+                      className="px-1.5 py-1 rounded bg-cyan-500/20 hover:bg-cyan-400 text-cyan-300 hover:text-black text-[10px] font-black cursor-pointer"
+                      title="Load onto Deck B"
+                    >
+                      B
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onAddCatalogTrack(track)}
+                      className="p-1.5 rounded-lg bg-white/10 hover:bg-brand-gold hover:text-black cursor-pointer"
+                      title="Add to playlist / mix queue"
+                    >
+                      {inQueue ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Plus className="w-3.5 h-3.5 text-brand-gold" />}
+                    </button>
+                  </div>
+                </div>
               );
             })}
           </div>
@@ -425,15 +390,23 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
 
       {/* Mix Queue Track List */}
       {queue.length === 0 ? (
-        <div className="py-12 text-center space-y-2 text-neutral-400">
+        <div className="py-12 text-center space-y-3 text-neutral-400">
           <Disc3 className="w-10 h-10 mx-auto text-neutral-600" />
           <p className="text-sm font-bold text-white">Your DJ mix queue is empty</p>
           <p className="text-xs">
-            Select a playlist above, click <span className="text-brand-gold font-semibold">Add Tracks</span>, or import authorized local audio files.
+            Create a playlist, pick one above, add tracks, or import authorized local audio files.
           </p>
+          <button
+            type="button"
+            onClick={onOpenCreatePlaylistModal}
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-gradient-to-r from-brand-gold to-amber-500 text-black text-xs font-black uppercase tracking-wider cursor-pointer"
+          >
+            <FolderPlus className="w-3.5 h-3.5" />
+            <span>Create New Playlist to Mix</span>
+          </button>
         </div>
       ) : (
-        <div className="divide-y divide-white/5 max-h-[460px] overflow-y-auto pr-1">
+        <div className="divide-y divide-white/5 max-h-[480px] overflow-y-auto pr-1">
           {queue.map((track, idx) => {
             const isCurrent = track.id === activeTrackId;
             const isNext = track.id === nextTrackId;
@@ -453,7 +426,7 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
             return (
               <div
                 key={`${track.id}-${idx}`}
-                className={`py-2.5 px-2.5 rounded-2xl flex items-center justify-between gap-3 transition-all ${
+                className={`py-2.5 px-2.5 rounded-2xl flex items-center justify-between gap-2.5 transition-all ${
                   isCurrent
                     ? 'bg-brand-gold/10 border border-brand-gold/30'
                     : isNext
@@ -461,7 +434,10 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
                     : 'hover:bg-white/[0.04] border border-transparent'
                 }`}
               >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                  <span className="w-5 text-center text-[11px] font-mono text-neutral-500 shrink-0">
+                    {idx + 1}
+                  </span>
                   <button
                     type="button"
                     onClick={() => onPlayTrackAt(idx)}
@@ -470,9 +446,13 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
                         ? 'bg-brand-gold text-black shadow-md'
                         : 'bg-white/5 hover:bg-brand-gold hover:text-black text-neutral-300'
                     }`}
-                    title={`Play ${track.title}`}
+                    title={`Play & mix from "${track.title}"`}
                   >
-                    {isCurrent ? <Radio className="w-4 h-4 animate-pulse" /> : <Play className="w-3.5 h-3.5 fill-current ml-0.5" />}
+                    {isCurrent ? (
+                      <Radio className="w-4 h-4 animate-pulse" />
+                    ) : (
+                      <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                    )}
                   </button>
 
                   <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-neutral-900">
@@ -502,7 +482,7 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
                 </div>
 
                 {/* Musical Telemetry Badges */}
-                <div className="hidden sm:flex items-center gap-1.5 shrink-0 font-mono text-[10px]">
+                <div className="hidden md:flex items-center gap-1.5 shrink-0 font-mono text-[10px]">
                   <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-neutral-200">
                     {analysis ? `${analysis.bpm} BPM` : track.bpm ? `${track.bpm} BPM` : '…'}
                   </span>
@@ -518,51 +498,72 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
                           ? 'bg-brand-gold/20 text-brand-gold'
                           : 'bg-white/10 text-neutral-400'
                       }`}
-                      title="Harmonic + BPM transition compatibility with currently playing song"
                     >
                       {compatScore}%
                     </span>
                   )}
                 </div>
 
-                {/* Queue Controls */}
+                {/* Manual Deck A / B Load + Queue Controls */}
                 <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => onManualLoadToDeck('A', track)}
+                    className="px-2 py-1 rounded-lg bg-brand-gold/15 hover:bg-brand-gold border border-brand-gold/35 text-brand-gold hover:text-black text-[10px] font-black transition-all cursor-pointer"
+                    title={`Manually load "${track.title}" onto Deck A`}
+                  >
+                    A
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onManualLoadToDeck('B', track)}
+                    className="px-2 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-400 border border-cyan-400/35 text-cyan-300 hover:text-black text-[10px] font-black transition-all cursor-pointer"
+                    title={`Manually load "${track.title}" onto Deck B`}
+                  >
+                    B
+                  </button>
+
                   {!isCurrent && !isNext && (
                     <button
                       type="button"
                       onClick={() => onCueNextTrack(track)}
-                      className="px-2 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/30 border border-cyan-400/30 text-cyan-200 text-[10px] font-bold cursor-pointer"
+                      className="hidden sm:inline-flex px-2 py-1 rounded-lg bg-white/5 hover:bg-cyan-500/25 border border-white/10 hover:border-cyan-400/40 text-neutral-200 hover:text-cyan-200 text-[10px] font-bold cursor-pointer"
                       title="Override and cue as next transition track"
                     >
-                      Cue Next
+                      Next
                     </button>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => onMoveTrack(idx, 'up')}
-                    disabled={idx === 0}
-                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white disabled:opacity-25 cursor-pointer"
-                    title="Move up"
-                  >
-                    <ArrowUp className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onMoveTrack(idx, 'down')}
-                    disabled={idx === queue.length - 1}
-                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white disabled:opacity-25 cursor-pointer"
-                    title="Move down"
-                  >
-                    <ArrowDown className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onRemoveTrack(idx)}
-                    className="p-1.5 rounded-lg bg-white/5 hover:bg-red-500/20 text-neutral-400 hover:text-red-400 cursor-pointer"
-                    title="Remove from queue"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+
+                  {isEditingAllowedOnQueue && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => onMoveTrack(idx, 'up')}
+                        disabled={idx === 0}
+                        className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white disabled:opacity-25 cursor-pointer"
+                        title="Move song up"
+                      >
+                        <ArrowUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onMoveTrack(idx, 'down')}
+                        disabled={idx === queue.length - 1}
+                        className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white disabled:opacity-25 cursor-pointer"
+                        title="Move song down"
+                      >
+                        <ArrowDown className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onRemoveTrack(idx)}
+                        className="p-1.5 rounded-lg bg-white/5 hover:bg-red-500/20 text-neutral-400 hover:text-red-400 cursor-pointer"
+                        title="Remove song"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             );
@@ -572,4 +573,3 @@ export const MixQueuePanel: React.FC<MixQueuePanelProps> = ({
     </section>
   );
 };
-
